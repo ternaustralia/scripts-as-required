@@ -1,0 +1,1645 @@
+<registryObjects xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
+                 xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                 xmlns:mcp="http://bluenet3.antcrc.utas.edu.au/mcp"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xsi:schemaLocation="http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd">
+   <registryObject group="Australian Institute of Marine Science">
+      <key>AIMS/5eb5f350-4ade-11dc-8f56-00008a07204e</key>
+      <originatingSource>http://data.aims.gov.au</originatingSource>
+      <activity type="project">
+         <identifier type="uri">http://data.aims.gov.au/geonetwork/srv/en/metadata.show?uuid=5eb5f350-4ade-11dc-8f56-00008a07204e</identifier>
+         <name type="primary">
+            <namePart>Recovery of Great Barrier Reef coral reefs from disturbance (The Three Reefs Project)</namePart>
+         </name>
+         <location>
+            <address>
+               <electronic type="url">
+                  <value>http://data.aims.gov.au/geonetwork/srv/en/metadata.show?uuid=5eb5f350-4ade-11dc-8f56-00008a07204e</value>
+               </electronic>
+            </address>
+         </location>
+         <relatedObject>
+            <key>AIMS/Done,TerenceJ(Terry),Dr</key>
+            <relation type="principalInvestigator"/>
+         </relatedObject>
+         <relatedObject>
+            <key>AIMS/Wakeford,Mary,Ms</key>
+            <relation type="custodian"/>
+         </relatedObject>
+         <relatedObject>
+            <key>AIMS/AustralianInstituteofMarineScience</key>
+            <relation type="custodian"/>
+            <relation type="pointOfContact"/>
+            <relation type="distributor"/>
+         </relatedObject>
+         <subject type="local">oceans</subject>
+         <subject type="local">biota</subject>
+         <subject type="local">environment</subject>
+         <subject type="local">Oceans - Coastal Processes - Coral Reefs</subject>
+         <subject type="local">Biosphere - Aquatic Ecosystems - Benthic Habitat</subject>
+         <subject type="local">Biological Classification - Animals/Invertebrates - Echinoderms , Sea Stars</subject>
+         <subject type="local">Biological Classification - Animals/Invertebrates - Cnidarians , Anthozoans/Hexacorals , Hard Or Stony Corals</subject>
+         <subject type="local">Biosphere - Ecological Dynamics - Community Dynamics , Biodiversity Functions</subject>
+         <subject type="local">Ecology</subject>
+         <subject type="local">Monitoring</subject>
+         <subject type="local">Climate change</subject>
+         <subject type="local">Resilience</subject>
+         <subject type="local">Benchmarks</subject>
+         <subject type="local">Recovery</subject>
+         <subject type="local">Acropora</subject>
+         <subject type="local">Cyphastrea</subject>
+         <subject type="local">Favites</subject>
+         <subject type="local">Galaxea</subject>
+         <subject type="local">Goniastrea</subject>
+         <subject type="local">Montipora</subject>
+         <subject type="local">Pocillopora</subject>
+         <subject type="local">Porites</subject>
+         <subject type="local">Seriatopora</subject>
+         <subject type="local">Stylophora</subject>
+         <subject type="local">Helioporacea</subject>
+         <subject type="local">Milliporina</subject>
+         <description type="full">Monitoring of the recovery of Green Island reef, Feather Reef and Rib Reef, after outbreaks of the crown-of-thorns starfish (Acanthaster planci) commenced in 1989. Starfish outbreaks had reached maximum levels on Green Island reef in 1980, on Feather Reef in 1982 and at Rib Reef in 1984. Surveys were repeated in 1990, 1993, 1994 and in 2003, after subsequent starfish outbreaks at Green Island reef in 1998, Feather Reef in 2000 and Rib Reef in 2002. These reefs were also affected by bleaching events in 1998 and in January-February 2002. A site was chosen in the north to northeast sector and in the southwest sector of each reef. Each site encompassed a near-horizontal reef shoulder and adjacent shallow reef slope. At each site, 3 replicate belt transects (32 x 0.6 m), separated by approximately 10 to 15 m were haphazardly placed along each of three depth contours (1, 3 and 6 m below the reef flat).Each coral colony (hard or soft) wholly or partly in each transect was recorded. Species (or if not known, genus and growth form) and maximum lateral dimension were recorded.</description>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-17.533333; southlimit=-17.533333; westlimit=146.383333; eastLimit=146.383333; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-17.533333; southlimit=-17.533333; westlimit=146.383333; eastLimit=146.383333; projection=WGS84</spatial>
+         </coverage>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-18.483333; southlimit=-18.483333; westlimit=146.883333; eastLimit=146.883333; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-18.483333; southlimit=-18.483333; westlimit=146.883333; eastLimit=146.883333; projection=WGS84</spatial>
+         </coverage>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-16.758333; southlimit=-16.758333; westlimit=145.98; eastLimit=145.98; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-16.758333; southlimit=-16.758333; westlimit=145.98; eastLimit=145.98; projection=WGS84</spatial>
+         </coverage>
+         <relatedInfo type="website">
+            <identifier type="uri">http://epubs.aims.gov.au/handle/11068/8505</identifier>
+            <relation type="hasAssociationWith"/>
+            <title>Coral growth on three reefs: development of recovery benchmarks using a space for time approach</title>
+            <notes>Done TJ, DeVantier LM, Turak EI, Fisk DA, Wakeford M and Van Woesik R (2010) Coral growth on three reefs: development of recovery benchmarks using a space for time approach. Coral Reefs. 29: 815-833.</notes>
+         </relatedInfo>
+         <relatedInfo type="website">
+            <identifier type="uri">http://epubs.aims.gov.au/handle/11068/3132</identifier>
+            <relation type="hasAssociationWith"/>
+            <title>Fundamental change in coral community structure at Green Island</title>
+            <notes>Done TJ and DeVantier LM (1990) Fundamental change in coral community structure at Green Island. Coral Reefs. 9: 166-166.</notes>
+         </relatedInfo>
+         <relatedInfo type="service">
+            <identifier type="uri">http://data.aims.gov.au/mestmapkml/5eb5f350-4ade-11dc-8f56-00008a07204e.kml</identifier>
+            <relation type="isAvailableThrough"/>
+            <title>Map</title>
+         </relatedInfo>
+         <rights>
+            <rightsStatement>All AIMS data, products and services are provided "as is" and AIMS does not warrant their fitness for a particular purpose or non-infringement. While AIMS has made every reasonable effort to ensure high quality of the data, products and services, to the extent permitted by law the data, products and services are provided without any warranties of any kind, either expressed or implied, including without limitation any implied warranties of title, merchantability, and fitness for a particular purpose or non-infringement. AIMS make no representation or warranty that the data, products and services are accurate, complete, reliable or current.To the extent permitted by law, AIMS exclude all liability to any person arising directly or indirectly from the use of the data, products and services.</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>Ownership of all Intellectual Property Rights in the data remains with the Australian Institute of Marine Science (AIMS) and all use of the data must acknowledge AIMS.</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>All users of AIMS data must acknowledge the source of the material in the following manner: "Data was sourced from the Australian Institute of Marine Science (AIMS)."</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>Format for citation of data sourced from Australian Institute of Marine Science (AIMS) in a list of reference is as follows: "Australian Institute of Marine Science. [year-of-data-download], [Title], [data-access-URL], accessed (date-of-access]".</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>Use of the AIMS data is for not-for-profit applications only. All other users shall seek permission for use by contacting AIMS. Acknowledgements as prescribed must be clearly set out in the user's formal communications or publications.</rightsStatement>
+         </rights>
+      </activity>
+   </registryObject>
+   <registryObject group="Australian Institute of Marine Science">
+      <key>AIMS/Done,TerenceJ(Terry),Dr</key>
+      <originatingSource>http://data.aims.gov.au</originatingSource>
+      <party type="person">
+         <name type="primary">
+            <namePart>Done, Terence J (Terry), Dr</namePart>
+         </name>
+      </party>
+   </registryObject>
+   <registryObject group="Australian Institute of Marine Science">
+      <key>AIMS/Wakeford,Mary,Ms</key>
+      <originatingSource>http://data.aims.gov.au</originatingSource>
+      <party type="person">
+         <name type="primary">
+            <namePart>Wakeford, Mary, Ms</namePart>
+         </name>
+         <relatedObject>
+            <key>AIMS/AustralianInstituteofMarineScience</key>
+            <relation type="isMemberOf"/>
+         </relatedObject>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="telephoneNumber">+61 7 4753 4444</addressPart>
+               </physical>
+            </address>
+         </location>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="faxNumber">+61 7 4772 5852</addressPart>
+               </physical>
+            </address>
+         </location>
+         <location>
+            <address>
+               <electronic type="email">
+                  <value>reception@aims.gov.au</value>
+               </electronic>
+            </address>
+         </location>
+      </party>
+   </registryObject>
+   <registryObject group="Australian Institute of Marine Science">
+      <key>AIMS/AustralianInstituteofMarineScience</key>
+      <originatingSource>http://data.aims.gov.au</originatingSource>
+      <party type="group">
+         <name type="primary">
+            <namePart>Australian Institute of Marine Science</namePart>
+         </name>
+         <location>
+            <address>
+               <electronic type="url">
+                  <value>http://www.aims.gov.au</value>
+               </electronic>
+            </address>
+         </location>
+         <location>
+            <address>
+               <electronic type="url">
+                  <value>http://www.aims.gov.au/adc</value>
+               </electronic>
+            </address>
+         </location>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="addressLine">Australian Institute of Marine Science (AIMS)</addressPart>
+                  <addressPart type="suburbOrPlaceLocality">TOWNSVILLE MAIL CENTRE</addressPart>
+                  <addressPart type="stateOrTerritory">Queensland</addressPart>
+                  <addressPart type="postCode">4810</addressPart>
+                  <addressPart type="country">Australia</addressPart>
+               </physical>
+            </address>
+         </location>
+      </party>
+   </registryObject>
+   <registryObject group="Australian Institute of Marine Science">
+      <key>AIMS/603df2e0-4ade-11dc-8f56-00008a07204e</key>
+      <originatingSource>http://data.aims.gov.au</originatingSource>
+      <activity type="project">
+         <identifier type="uri">http://data.aims.gov.au/geonetwork/srv/en/metadata.show?uuid=603df2e0-4ade-11dc-8f56-00008a07204e</identifier>
+         <name type="primary">
+            <namePart>Hardy Reef Automatic Weather Station (Great Barrier Reef)</namePart>
+         </name>
+         <relatedObject>"
+                <key>AIMS/0887cb5b-b443-4e08-a169-038208109466</key>
+            <relation type="isPartOf"/>
+         </relatedObject>
+         <location>
+            <address>
+               <electronic type="url">
+                  <value>http://data.aims.gov.au/geonetwork/srv/en/metadata.show?uuid=603df2e0-4ade-11dc-8f56-00008a07204e</value>
+               </electronic>
+            </address>
+         </location>
+         <relatedObject>
+            <key>AIMS/Bainbridge,Scott,Mr</key>
+            <relation type="custodian"/>
+         </relatedObject>
+         <relatedObject>
+            <key>AIMS/AustralianInstituteofMarineScience</key>
+            <relation type="custodian"/>
+            <relation type="pointOfContact"/>
+            <relation type="distributor"/>
+         </relatedObject>
+         <subject type="local">oceans</subject>
+         <subject type="local">climatologyMeteorologyAtmosphere</subject>
+         <subject type="local">Oceans - Ocean Temperature - Water Temperature</subject>
+         <subject type="local">EARTH SCIENCES - Atmospheric Sciences - Meteorology</subject>
+         <subject type="anzsrc-for">04</subject>
+         <subject type="anzsrc-for">0401</subject>
+         <subject type="anzsrc-for">040107</subject>
+         <description type="full">This dataset contains meteorological and sea temperature data from the weather station attached to the Fantasea pontoon on Hardy Reef on the Great Barrier Reef.</description>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-19.733; southlimit=-19.733; westlimit=149.167; eastLimit=149.167; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-19.733; southlimit=-19.733; westlimit=149.167; eastLimit=149.167; projection=WGS84</spatial>
+         </coverage>
+         <relatedInfo type="website">
+            <identifier type="uri">http://data.aims.gov.au/aimsrtds/station.xhtml?station=6</identifier>
+            <relation type="hasAssociationWith"/>
+            <title>Marine Weather Observations for Hardy Reef</title>
+         </relatedInfo>
+         <rights>
+            <licence type="CC-BY" rightsUri="http://creativecommons.org/licenses/by/3.0/au/">Creative Commons Attribution</licence>
+         </rights>
+         <rights>
+            <rightsStatement>Format for citation of data sourced from the Australian Institute of Marine Science (AIMS) in a list of references is as follows: "Australian Institute of Marine Science. [year-of-data-download], [Title], [data-access-URL], accessed [date-of-access]".</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>Data, products and services from AIMS are provided "as is" without any warranty as to fitness for a particular purpose.</rightsStatement>
+         </rights>
+      </activity>
+   </registryObject>
+   <registryObject group="Australian Institute of Marine Science">
+      <key>AIMS/Bainbridge,Scott,Mr</key>
+      <originatingSource>http://data.aims.gov.au</originatingSource>
+      <party type="person">
+         <name type="primary">
+            <namePart>Bainbridge, Scott, Mr</namePart>
+         </name>
+         <relatedObject>
+            <key>AIMS/AustralianInstituteofMarineScience</key>
+            <relation type="isMemberOf"/>
+         </relatedObject>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="telephoneNumber">+61 7 4753 4444</addressPart>
+               </physical>
+            </address>
+         </location>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="faxNumber">+61 7 4772 5852</addressPart>
+               </physical>
+            </address>
+         </location>
+         <location>
+            <address>
+               <electronic type="email">
+                  <value>reception@aims.gov.au</value>
+               </electronic>
+            </address>
+         </location>
+      </party>
+   </registryObject>
+   <registryObject group="Australian Institute of Marine Science">
+      <key>AIMS/AustralianInstituteofMarineScience</key>
+      <originatingSource>http://data.aims.gov.au</originatingSource>
+      <party type="group">
+         <name type="primary">
+            <namePart>Australian Institute of Marine Science</namePart>
+         </name>
+         <location>
+            <address>
+               <electronic type="url">
+                  <value>http://www.aims.gov.au</value>
+               </electronic>
+            </address>
+         </location>
+         <location>
+            <address>
+               <electronic type="url">
+                  <value>http://www.aims.gov.au/adc</value>
+               </electronic>
+            </address>
+         </location>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="addressLine">Australian Institute of Marine Science (AIMS)</addressPart>
+                  <addressPart type="suburbOrPlaceLocality">TOWNSVILLE MAIL CENTRE</addressPart>
+                  <addressPart type="stateOrTerritory">Queensland</addressPart>
+                  <addressPart type="postCode">4810</addressPart>
+                  <addressPart type="country">Australia</addressPart>
+               </physical>
+            </address>
+         </location>
+      </party>
+   </registryObject>
+   <registryObject group="Australian Institute of Marine Science">
+      <key>AIMS/7db747be-b780-4dc2-baf8-9cd4cbbf1a42</key>
+      <originatingSource>http://data.aims.gov.au</originatingSource>
+      <activity type="project">
+         <identifier type="uri">http://data.aims.gov.au/geonetwork/srv/en/metadata.show?uuid=7db747be-b780-4dc2-baf8-9cd4cbbf1a42</identifier>
+         <name type="primary">
+            <namePart>Status of near shore reefs of the Great Barrier Reef 2004 (CRC Reef Research Centre: Project C1.14)</namePart>
+         </name>
+         <location>
+            <address>
+               <electronic type="url">
+                  <value>http://data.aims.gov.au/geonetwork/srv/en/metadata.show?uuid=7db747be-b780-4dc2-baf8-9cd4cbbf1a42</value>
+               </electronic>
+            </address>
+         </location>
+         <relatedObject>
+            <key>AIMS/Sweatman,HughPA,Dr</key>
+            <relation type="custodian"/>
+         </relatedObject>
+         <relatedObject>
+            <key>AIMS/AustralianInstituteofMarineScience</key>
+            <relation type="custodian"/>
+            <relation type="pointOfContact"/>
+            <relation type="distributor"/>
+         </relatedObject>
+         <subject type="local">oceans</subject>
+         <subject type="local">biota</subject>
+         <subject type="local">Oceans - Coastal Processes - Coral Reefs</subject>
+         <subject type="local">Biosphere - Aquatic Ecosystems - Reef Habitat</subject>
+         <subject type="local">Biosphere - Aquatic Ecosystems - Benthic Habitat</subject>
+         <subject type="local">Biological Classification - Animals/Invertebrates - Cnidarians , Anthozoans/Hexacorals , Hard Or Stony Corals</subject>
+         <subject type="local">Biological Classification - Animals/Invertebrates - Cnidarians , Anthozoans/Octocorals , Soft Corals</subject>
+         <subject type="local">Crown-of-thorns starfish (COTS)</subject>
+         <subject type="local">Drupella spp.</subject>
+         <subject type="local">Coral bleaching</subject>
+         <subject type="local">Coral disease</subject>
+         <subject type="local">Coral diversity</subject>
+         <subject type="local">Community composition</subject>
+         <subject type="local">Size structure</subject>
+         <subject type="local">Substrate type</subject>
+         <subject type="local">Nearshore habitat</subject>
+         <description type="full">The benthic communities at 33 near shore reefs between Cape Tribulation (16°S) and Keppel Is (23°S) were surveyed in 2004. Prospective near-shore coral reef sampling locations were initially selected from six broad geographic regions of the GBR: Cairns, Innisfail, Townsville, Whitsunday, Mackay, and Keppel. Each of these regions has a unique combination of climatic regime, coastal and shelf topography and the characteristics of adjacent catchments. Where topography allowed, two depths were surveyed at replicate sites at each reef giving a total of 63 locations. 
+
+Surveys measured benthic cover, community composition, diversity of coral species and size-structures of coral communities. Environmental factors recorded included sediment composition, transect depth, adjacent depth, exposure to runoff, exposure, fetch and distance to land.
+
+Voucher specimens of some coral species of uncertain identity were collected and lodged with the Museum of Tropical Queensland for identification and future reference.</description>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-15.997933; southlimit=-16.7293; westlimit=145.44245; eastLimit=145.692267; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-15.997933; southlimit=-16.7293; westlimit=145.44245; eastLimit=145.692267; projection=WGS84</spatial>
+         </coverage>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-17.15815; southlimit=-17.9611; westlimit=146.00575; eastLimit=146.163033; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-17.15815; southlimit=-17.9611; westlimit=146.00575; eastLimit=146.163033; projection=WGS84</spatial>
+         </coverage>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-18.8107; southlimit=-19.196033; westlimit=146.43005; eastLimit=146.868467; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-18.8107; southlimit=-19.196033; westlimit=146.43005; eastLimit=146.868467; projection=WGS84</spatial>
+         </coverage>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-20.065667; southlimit=-20.427583; westlimit=148.481; eastLimit=148.888433; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-20.065667; southlimit=-20.427583; westlimit=148.481; eastLimit=148.888433; projection=WGS84</spatial>
+         </coverage>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-20.90345; southlimit=-20.92735; westlimit=149.38855; eastLimit=149.443083; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-20.90345; southlimit=-20.92735; westlimit=149.38855; eastLimit=149.443083; projection=WGS84</spatial>
+         </coverage>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-23.085217; southlimit=-23.352967; westlimit=150.874517; eastLimit=150.974633; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-23.085217; southlimit=-23.352967; westlimit=150.874517; eastLimit=150.974633; projection=WGS84</spatial>
+         </coverage>
+         <relatedInfo type="publication">
+            <identifier type="uri">http://data.aims.gov.au/extpubs/do/viewPub.do?articleId=7535</identifier>
+            <relation type="isReferencedBy"/>
+            <title>Status of near-shore reefs of the Great Barrier Reef 2004</title>
+            <notes>Sweatman HPA, Thompson AA, Delean S, Davidson J and Neale SJ (2007) Status of near-shore reefs of the Great Barrier Reef 2004. MTSRF Report No. 2. Reef and Rainforest Research Centre. 169 p.</notes>
+         </relatedInfo>
+         <relatedInfo type="website">
+            <identifier type="uri">http://www.iobis.org/OBISWEB/DisplayMetaData.jsp?content=maps_and_metadata/137.html</identifier>
+            <relation type="hasAssociationWith"/>
+            <title>OBIS dataset</title>
+         </relatedInfo>
+         <relatedInfo type="website">
+            <identifier type="uri">http://www.rrrc.org.au/publications/downloads/Final-Status-of-Near-Shore-Reefs-120707.pdf</identifier>
+            <relation type="hasAssociationWith"/>
+            <title>Report: Status of near-shore reefs of the Great Barrier Reef 2004</title>
+         </relatedInfo>
+         <rights>
+            <rightsStatement>All AIMS data, products and services are provided "as is" and AIMS does not warrant their fitness for a particular purpose or non-infringement. While AIMS has made every reasonable effort to ensure high quality of the data, products and services, to the extent permitted by law the data, products and services are provided without any warranties of any kind, either expressed or implied, including without limitation any implied warranties of title, merchantability, and fitness for a particular purpose or non-infringement. AIMS make no representation or warranty that the data, products and services are accurate, complete, reliable or current. To the extent permitted by law, AIMS exclude all liability to any person arising directly or indirectly from the use of the data, products and services.</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>Ownership of all Intellectual Property Rights in the data remains with the Australian Institute of Marine Science (AIMS) and all use of the data must acknowledge AIMS.</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>All users of AIMS data must acknowledge the source of the material in the following manner: "Data was sourced from the Australian Institute of Marine Science (AIMS)."</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>Format for citation of data sourced from Australian Institute of Marine Science (AIMS) in a list of reference is as follows: "Australian Institute of Marine Science. [year-of-data-download], [Title], [data-access-URL], accessed (date-of-access]".</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>Use of the AIMS data is for not-for-profit applications only. All other users shall seek permission for use by contacting AIMS. Acknowledgements as prescribed must be clearly set out in the user's formal communications or publications.</rightsStatement>
+         </rights>
+      </activity>
+   </registryObject>
+   <registryObject group="Australian Institute of Marine Science">
+      <key>AIMS/Sweatman,HughPA,Dr</key>
+      <originatingSource>http://data.aims.gov.au</originatingSource>
+      <party type="person">
+         <name type="primary">
+            <namePart>Sweatman, Hugh PA, Dr</namePart>
+         </name>
+         <relatedObject>
+            <key>AIMS/AustralianInstituteofMarineScience</key>
+            <relation type="isMemberOf"/>
+         </relatedObject>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="telephoneNumber">+61 7 4753 4444</addressPart>
+               </physical>
+            </address>
+         </location>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="faxNumber">+61 7 4772 5852</addressPart>
+               </physical>
+            </address>
+         </location>
+         <location>
+            <address>
+               <electronic type="email">
+                  <value>reception@aims.gov.au</value>
+               </electronic>
+            </address>
+         </location>
+      </party>
+   </registryObject>
+   <registryObject group="Australian Institute of Marine Science">
+      <key>AIMS/AustralianInstituteofMarineScience</key>
+      <originatingSource>http://data.aims.gov.au</originatingSource>
+      <party type="group">
+         <name type="primary">
+            <namePart>Australian Institute of Marine Science</namePart>
+         </name>
+         <location>
+            <address>
+               <electronic type="url">
+                  <value>http://www.aims.gov.au</value>
+               </electronic>
+            </address>
+         </location>
+         <location>
+            <address>
+               <electronic type="url">
+                  <value>http://www.aims.gov.au/adc</value>
+               </electronic>
+            </address>
+         </location>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="addressLine">Australian Institute of Marine Science (AIMS)</addressPart>
+                  <addressPart type="suburbOrPlaceLocality">TOWNSVILLE MAIL CENTRE</addressPart>
+                  <addressPart type="stateOrTerritory">Queensland</addressPart>
+                  <addressPart type="postCode">4810</addressPart>
+                  <addressPart type="country">Australia</addressPart>
+               </physical>
+            </address>
+         </location>
+      </party>
+   </registryObject>
+   <registryObject group="Australian Institute of Marine Science">
+      <key>AIMS/adc44fac-9c8a-4e32-adfd-e68201c44dd9</key>
+      <originatingSource>http://data.aims.gov.au</originatingSource>
+      <activity type="project">
+         <identifier type="uri">http://data.aims.gov.au/geonetwork/srv/en/metadata.show?uuid=adc44fac-9c8a-4e32-adfd-e68201c44dd9</identifier>
+         <name type="primary">
+            <namePart>Cape Ferguson Automatic Weather Station (North Queensland)</namePart>
+         </name>
+         <relatedObject>"
+                <key>AIMS/0887cb5b-b443-4e08-a169-038208109466</key>
+            <relation type="isPartOf"/>
+         </relatedObject>
+         <location>
+            <address>
+               <electronic type="url">
+                  <value>http://data.aims.gov.au/geonetwork/srv/en/metadata.show?uuid=adc44fac-9c8a-4e32-adfd-e68201c44dd9</value>
+               </electronic>
+            </address>
+         </location>
+         <relatedObject>
+            <key>AIMS/Bainbridge,Scott,Mr</key>
+            <relation type="custodian"/>
+         </relatedObject>
+         <relatedObject>
+            <key>AIMS/AustralianInstituteofMarineScience</key>
+            <relation type="custodian"/>
+            <relation type="pointOfContact"/>
+            <relation type="distributor"/>
+         </relatedObject>
+         <subject type="local">oceans</subject>
+         <subject type="local">climatologyMeteorologyAtmosphere</subject>
+         <subject type="local">EARTH SCIENCES - Atmospheric Sciences - Meteorology</subject>
+         <subject type="local">Oceans - Ocean Temperature - Water Temperature</subject>
+         <subject type="local">Oceans - Ocean Winds - Surface Winds</subject>
+         <subject type="local">Atmosphere - Atmospheric Pressure - Atmospheric Pressure Measurements</subject>
+         <subject type="anzsrc-for">04</subject>
+         <subject type="anzsrc-for">0401</subject>
+         <subject type="anzsrc-for">040107</subject>
+         <description type="full">This historical weather data from the Cape Ferguson (AIMS Wharf) weather outstation covers the period 1-11-1983 to 30-5-1984.
+
+Afterwards, the same unit was deployed at Cape Bowling Green and collected data at that location for the period 18-9-1984 to 4-10-1985.
+
+Both data collection periods used telemetery to send binary data daily to a computer controlled base station. Data was verified by comparing three sets of the same data, received over three days. The base station passed data to the central computing facility at AIMS for processing.
+
+Data recorded covers: Wind direction (0-360°); Wind run (km/hr); Air temperature (0-40°C); Water temperature (0-40°C); Barometric pressure (mB); Solar radiation (0-2500 µE/sec/M2).
+
+Other variables:
+Time of day (e.g. 23:46:03); Day of the year (e.g. 118); Year (e.g. 86).</description>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-19.2773833; southlimit=-19.2773833; westlimit=147.058833; eastLimit=147.058833; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-19.2773833; southlimit=-19.2773833; westlimit=147.058833; eastLimit=147.058833; projection=WGS84</spatial>
+         </coverage>
+         <relatedInfo type="publication">
+            <identifier type="uri">http://data.aims.gov.au/extpubs/do/viewPub.do?articleId=2205</identifier>
+            <relation type="isReferencedBy"/>
+            <title>Technical notes on weather monitoring telemetry system</title>
+            <notes>Gill EF (1988) Technical notes on weather monitoring telemetry system. Australian Institute of Marine Science. 35 p.</notes>
+         </relatedInfo>
+         <relatedInfo type="publication">
+            <identifier type="uri">http://data.aims.gov.au/extpubs/do/viewPub.do?articleId=2036</identifier>
+            <relation type="isReferencedBy"/>
+            <title>A versatile long-range telementry system particularly suited to meterological, environmental sensing at remote locations. Technical bulletin. Instrumental facilities</title>
+            <notes>Colman RS, Carr K and Gill EF (1982) A versatile long-range telementry system particularly suited to meterological, environmental sensing at remote locations. Technical bulletin. Instrumental facilities. AIMS-IF-82-1. Australian Institute of Marine Science. 30 p.</notes>
+         </relatedInfo>
+         <rights>
+            <licence type="CC-BY" rightsUri="http://creativecommons.org/licenses/by/3.0/au/">Creative Commons Attribution</licence>
+         </rights>
+         <rights>
+            <rightsStatement>Format for citation of data sourced from the Australian Institute of Marine Science (AIMS) in a list of references is as follows: "Australian Institute of Marine Science. [year-of-data-download], [Title], [data-access-URL], accessed [date-of-access]".</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>Data, products and services from AIMS are provided "as is" without any warranty as to fitness for a particular purpose.</rightsStatement>
+         </rights>
+      </activity>
+   </registryObject>
+   <registryObject group="Australian Institute of Marine Science">
+      <key>AIMS/Bainbridge,Scott,Mr</key>
+      <originatingSource>http://data.aims.gov.au</originatingSource>
+      <party type="person">
+         <name type="primary">
+            <namePart>Bainbridge, Scott, Mr</namePart>
+         </name>
+         <relatedObject>
+            <key>AIMS/AustralianInstituteofMarineScience</key>
+            <relation type="isMemberOf"/>
+         </relatedObject>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="telephoneNumber">+61 7 4753 4444</addressPart>
+               </physical>
+            </address>
+         </location>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="faxNumber">+61 7 4772 5852</addressPart>
+               </physical>
+            </address>
+         </location>
+         <location>
+            <address>
+               <electronic type="email">
+                  <value>adc@aims.gov.au</value>
+               </electronic>
+            </address>
+         </location>
+      </party>
+   </registryObject>
+   <registryObject group="Australian Institute of Marine Science">
+      <key>AIMS/AustralianInstituteofMarineScience</key>
+      <originatingSource>http://data.aims.gov.au</originatingSource>
+      <party type="group">
+         <name type="primary">
+            <namePart>Australian Institute of Marine Science</namePart>
+         </name>
+         <location>
+            <address>
+               <electronic type="url">
+                  <value>http://www.aims.gov.au</value>
+               </electronic>
+            </address>
+         </location>
+         <location>
+            <address>
+               <electronic type="url">
+                  <value>http://www.aims.gov.au/adc</value>
+               </electronic>
+            </address>
+         </location>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="addressLine">Australian Institute of Marine Science (AIMS)</addressPart>
+                  <addressPart type="suburbOrPlaceLocality">TOWNSVILLE MAIL CENTRE</addressPart>
+                  <addressPart type="stateOrTerritory">Queensland</addressPart>
+                  <addressPart type="postCode">4810</addressPart>
+                  <addressPart type="country">Australia</addressPart>
+               </physical>
+            </address>
+         </location>
+      </party>
+   </registryObject>
+   <registryObject group="Australian Institute of Marine Science">
+      <key>AIMS/9aea83a2-cbb3-4b7b-94fb-b7f90359b87d</key>
+      <originatingSource>http://data.aims.gov.au</originatingSource>
+      <activity type="project">
+         <identifier type="uri">http://data.aims.gov.au/geonetwork/srv/en/metadata.show?uuid=9aea83a2-cbb3-4b7b-94fb-b7f90359b87d</identifier>
+         <name type="primary">
+            <namePart>The influence of recruitment and post-settlement mortality on coral communities across the central Great Barrier Reef</namePart>
+         </name>
+         <location>
+            <address>
+               <electronic type="url">
+                  <value>http://data.aims.gov.au/geonetwork/srv/en/metadata.show?uuid=9aea83a2-cbb3-4b7b-94fb-b7f90359b87d</value>
+               </electronic>
+            </address>
+         </location>
+         <relatedObject>
+            <key>AIMS/Sammarco,PaulW,Dr</key>
+            <relation type="principalInvestigator"/>
+         </relatedObject>
+         <relatedObject>
+            <key>AIMS/AustralianInstituteofMarineScience</key>
+            <relation type="custodian"/>
+            <relation type="pointOfContact"/>
+            <relation type="distributor"/>
+         </relatedObject>
+         <subject type="local">oceans</subject>
+         <subject type="local">biota</subject>
+         <subject type="local">Oceans - Coastal Processes - Coral Reefs</subject>
+         <subject type="local">Biosphere - Aquatic Ecosystems - Reef Habitat</subject>
+         <subject type="local">Biological Classification - Animals/Invertebrates - Cnidarians , Anthozoans/Hexacorals , Hard Or Stony Corals</subject>
+         <subject type="local">Biosphere - Ecological Dynamics - Community Dynamics , Species Recruitment</subject>
+         <subject type="local">Biosphere - Ecological Dynamics - Community Dynamics , Community Structure</subject>
+         <subject type="local">Postsettlement mortality</subject>
+         <subject type="local">Geographic isolation</subject>
+         <subject type="local">Caryophyliid</subject>
+         <subject type="local">Faviid</subject>
+         <subject type="local">Fungiid</subject>
+         <subject type="local">Mussid</subject>
+         <subject type="local">Pectiniid</subject>
+         <subject type="local">Pocilloporid</subject>
+         <subject type="local">Oculinidae</subject>
+         <subject type="local">Acropora</subject>
+         <subject type="local">Alveopora</subject>
+         <subject type="local">Galaxea</subject>
+         <subject type="local">Goniopora</subject>
+         <subject type="local">Merulina</subject>
+         <subject type="local">Pocillopora</subject>
+         <subject type="local">Porites</subject>
+         <subject type="local">Seriatopora hystrix</subject>
+         <subject type="local">Stylophora</subject>
+         <description type="full">Pandora Reef, Rib Reef and Myrmidon Reef, located 16.6 km, 57.6 km and 116.9 km from the coastline respectively, were chosen for a year long series of cross-shelf coral recruitment experiments, commencing in January 1981. Settling plates approximately 15 mm thick and 300-400 cm² in total surface area (sum of upper and lower surfaces) were cut from natural, uncleaned heads of the massive corals Porites and Goniastrea spp. Plates were attached to each of four pins on a galvanized steel support rack at an angle of 37-45°. Racks were then secured on the reef by attaching them to two solid steel reinforcement bars driven into the reef. 
+
+On each reef, racks were placed on the exposed, windward E-SE forereef slope, with plates facing into the wave surge. To investigate natural recruitment, two racks of plates (four plates per rack) were deployed at both 3m and between 14 and 18m on each reef. One rack at each depth was retrieved after 6 months and the second after 12 months. A third rack was deployed at each depth at the end of the first 6 months and retrieved 6 months later. 
+
+Transplant experiments were carried out to investigate survival of coral recruits when moved to a new environment. Two additional racks of plates (three per rack) were deployed at each depth, at each reef in January 1981. After 6 months the racks were redeployed to make all possible combinations of transplants between reefs, while maintaining original depths. A further rack of plates was deployed at each depth, at each reef in January 1981, as a control for handling. Racks were retrieved after 6 months, held onboard ship for one to several days and replaced at the same site. All transplant and control plates were retrieved within 12 months of the initiation of the experiment.
+
+After retrieval, all plates were stored frozen at -20°C until analysed. In the laboratory, plates were thawed, cleaned of sediment and debris and dried in an oven at -45°C.  Each plate was then cleaned of algae and examined using a dissecting microscope. Taxonomic identification was based primarily on calical structure. Juveniles were usually identified to family, often to genus, and occasionally to species, with scanning electron microscopy (SEM) and taxonomic guides available for corals of this region. 
+
+Coral spat were assessed for post-settlement mortality as follows: skeleton intact with at least remnants of tissue; coral overgrown and damaged; and complete colony mortality. Only the last category was utilized in estimating post-settlement mortality frequencies, which were calculated simply as the proportion in this state within a given taxon.
+
+Intra- and interspecific competition for space involving corals and other sessile epibiota was also assessed from the coral's perspective. Associates within 8 mm of the juvenile colony were recorded and examined for interactions and a static observation of overgrowth was taken as evidence of competition for space. A competition parameter was defined as the number of competitive wins over the total number of encounters within a taxon. 
+
+Placement of settled corals or relative exposure was also assessed by differentiating between juvenile corals found on upper surfaces of the plate and those settling cryptically on the lateral or lower surface. An exposure parameter was calculated as the proportion of those juveniles in the latter state.</description>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-18.26667; southlimit=-18.26667; westlimit=147.383333; eastLimit=147.383333; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-18.26667; southlimit=-18.26667; westlimit=147.383333; eastLimit=147.383333; projection=WGS84</spatial>
+         </coverage>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-18.816667; southlimit=-18.816667; westlimit=146.433333; eastLimit=146.433333; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-18.816667; southlimit=-18.816667; westlimit=146.433333; eastLimit=146.433333; projection=WGS84</spatial>
+         </coverage>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-18.483333; southlimit=-18.483333; westlimit=146.866667; eastLimit=146.866667; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-18.483333; southlimit=-18.483333; westlimit=146.866667; eastLimit=146.866667; projection=WGS84</spatial>
+         </coverage>
+         <relatedInfo type="publication">
+            <identifier type="uri">http://data.aims.gov.au/extpubs/do/viewPub.do?articleId=8275</identifier>
+            <relation type="isReferencedBy"/>
+            <title>Geographically specific recruitment and postsettlement mortality as influences on coral communities: The cross-continental shelf transplant experiment</title>
+            <notes>Sammarco PW (1991) Geographically specific recruitment and postsettlement mortality as influences on coral communities: The cross-continental shelf transplant experiment. Limnology and Oceanography 36: 496-514.</notes>
+         </relatedInfo>
+         <relatedInfo type="publication">
+            <identifier type="uri">http://data.aims.gov.au/extpubs/do/viewPub.do?articleId=2980</identifier>
+            <relation type="isReferencedBy"/>
+            <title>Coral recruitment across the central Great Barrier Reef : a preliminary report</title>
+            <notes>Sammarco PW (1983) Coral recruitment across the central Great Barrier Reef : a preliminary report. pp. 245-250. In: Baker JT, Carter RM, Sammarco PW and Stark KP (eds) Proceedings: Inaugural Great Barrier Reef Conference, Townsville Aug 28 - Sept 2, 1983. James Cook University Press.</notes>
+         </relatedInfo>
+         <rights>
+            <rightsStatement>All AIMS data, products and services are provided "as is" and AIMS does not warrant their fitness for a particular purpose or non-infringement. While AIMS has made every reasonable effort to ensure high quality of the data, products and services, to the extent permitted by law the data, products and services are provided without any warranties of any kind, either expressed or implied, including without limitation any implied warranties of title, merchantability, and fitness for a particular purpose or non-infringement. AIMS make no representation or warranty that the data, products and services are accurate, complete, reliable or current. To the extent permitted by law, AIMS exclude all liability to any person arising directly or indirectly from the use of the data, products and services.</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>Ownership of all Intellectual Property Rights in the data remains with the Australian Institute of Marine Science (AIMS) and all use of the data must acknowledge AIMS.</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>All users of AIMS data must acknowledge the source of the material in the following manner: "Data was sourced from the Australian Institute of Marine Science (AIMS)."</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>Format for citation of data sourced from Australian Institute of Marine Science (AIMS) in a list of reference is as follows: "Australian Institute of Marine Science. [year-of-data-download], [Title], [data-access-URL], accessed (date-of-access]".</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>Use of the AIMS data is for not-for-profit applications only. All other users shall seek permission for use by contacting AIMS. Acknowledgements as prescribed must be clearly set out in the user's formal communications or publications.</rightsStatement>
+         </rights>
+      </activity>
+   </registryObject>
+   <registryObject group="Australian Institute of Marine Science">
+      <key>AIMS/Sammarco,PaulW,Dr</key>
+      <originatingSource>http://data.aims.gov.au</originatingSource>
+      <party type="person">
+         <name type="primary">
+            <namePart>Sammarco, Paul W, Dr</namePart>
+         </name>
+      </party>
+   </registryObject>
+   <registryObject group="Australian Institute of Marine Science">
+      <key>AIMS/AustralianInstituteofMarineScience</key>
+      <originatingSource>http://data.aims.gov.au</originatingSource>
+      <party type="group">
+         <name type="primary">
+            <namePart>Australian Institute of Marine Science</namePart>
+         </name>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="telephoneNumber">+61 7 4753 4444</addressPart>
+               </physical>
+            </address>
+         </location>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="faxNumber">+61 7 4772 5852</addressPart>
+               </physical>
+            </address>
+         </location>
+         <location>
+            <address>
+               <electronic type="email">
+                  <value>adc@aims.gov.au</value>
+               </electronic>
+            </address>
+         </location>
+         <location>
+            <address>
+               <electronic type="url">
+                  <value>http://www.aims.gov.au/adc</value>
+               </electronic>
+            </address>
+         </location>
+         <location>
+            <address>
+               <electronic type="url">
+                  <value>http://www.aims.gov.au</value>
+               </electronic>
+            </address>
+         </location>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="addressLine">Australian Institute of Marine Science (AIMS)</addressPart>
+                  <addressPart type="suburbOrPlaceLocality">TOWNSVILLE MAIL CENTRE</addressPart>
+                  <addressPart type="stateOrTerritory">Queensland</addressPart>
+                  <addressPart type="postCode">4810</addressPart>
+                  <addressPart type="country">Australia</addressPart>
+               </physical>
+            </address>
+         </location>
+      </party>
+   </registryObject>
+   <registryObject group="Australian Institute of Marine Science">
+      <key>AIMS/868e5236-b8d8-4d35-a586-f34f870b0711</key>
+      <originatingSource>http://data.aims.gov.au</originatingSource>
+      <activity type="project">
+         <identifier type="uri">http://data.aims.gov.au/geonetwork/srv/en/metadata.show?uuid=868e5236-b8d8-4d35-a586-f34f870b0711</identifier>
+         <name type="primary">
+            <namePart>Oxygen uptake, ammonia and phosphate excretion and chemical composition of Antarctic zooplankton (RV Kaiyo Maru Cruise)</namePart>
+         </name>
+         <location>
+            <address>
+               <electronic type="url">
+                  <value>http://data.aims.gov.au/geonetwork/srv/en/metadata.show?uuid=868e5236-b8d8-4d35-a586-f34f870b0711</value>
+               </electronic>
+            </address>
+         </location>
+         <relatedObject>
+            <key>AIMS/Ikeda,Tsutomu,Dr</key>
+            <relation type="principalInvestigator"/>
+         </relatedObject>
+         <relatedObject>
+            <key>AIMS/AustralianInstituteofMarineScience</key>
+            <relation type="custodian"/>
+            <relation type="pointOfContact"/>
+            <relation type="distributor"/>
+         </relatedObject>
+         <subject type="local">oceans</subject>
+         <subject type="local">biota</subject>
+         <subject type="local">Biosphere - Aquatic Ecosystems - Plankton , Zooplankton</subject>
+         <subject type="local">Biological Classification - Animals/Invertebrates - Arthropods , Crustaceans , Copepods</subject>
+         <subject type="local">Biological Classification - Animals/Invertebrates - Arthropods , Crustaceans , Amphipods</subject>
+         <subject type="local">Biological Classification - Animals/Invertebrates - Arthropods , Crustaceans , Euphausiids (krill)</subject>
+         <subject type="local">Biological Classification - Animals/Invertebrates - Tunicates , Salps</subject>
+         <subject type="local">Biosphere - Ecological Dynamics - Ecosystem Functions , Excretion Rates</subject>
+         <subject type="local">Oxygen uptake</subject>
+         <subject type="local">Phosphate</subject>
+         <subject type="local">Ammonia</subject>
+         <subject type="local">Carbon</subject>
+         <subject type="local">Nitrogen</subject>
+         <subject type="local">Phosphorous</subject>
+         <subject type="local">Ctenophora</subject>
+         <subject type="local">Pteropoda</subject>
+         <subject type="local">Polychaeta</subject>
+         <subject type="local">Thaliacea</subject>
+         <subject type="local">Beroe sp.</subject>
+         <subject type="local">Limacina antarctica</subject>
+         <subject type="local">Clione antarctica</subject>
+         <subject type="local">Cleodora sulcata</subject>
+         <subject type="local">Tomopteris carpenteri</subject>
+         <subject type="local">Calanus propinquus</subject>
+         <subject type="local">Metridia gerlachei</subject>
+         <subject type="local">Parathemisto gaudichaudii</subject>
+         <subject type="local">Viblia antarctica</subject>
+         <subject type="local">Hyperia gaudichaudii</subject>
+         <subject type="local">Euphausia superba</subject>
+         <subject type="local">Euphausia triacantha</subject>
+         <subject type="local">Ihlea racovitzai</subject>
+         <subject type="local">Salpa thompsoni</subject>
+         <description type="full">Zooplankton were collected from 15 stations in Antarctic waters, adjacent to Wilkes Land in January 1980. The location, type of net used and the sea surface temperature were recorded for each plankton tow. Water from each sampling site was collected and filtered for use in experiments. Undamaged animals were sorted by species and maintained separately until experiments commenced, usually between 8 to 24 hours later. 
+
+Of the 14 species collected, the following were classified as herbivore filter-feeders: the pteropods, Limacina antarctica and Cleodora sulcata; the copepods, Calanus propinquus and Metridia gerlachei; the Euphausiids, Euphausia surperba and Euphausia triacantha; and the salps, Ihlea racovitzai and Salpa thompsoni. The remaining species, classified as carnivores were: the ctenophore, Beroe sp.; the pteropod, Clione antarctica; the polychaete, Tomopteris carpenteri; and the amphipods, Parathemisto gaudichaudii, Viblia antarctica and Hyperia gaudichaudii.
+
+Oxygen uptake, ammonia excretion and phosphate excretion measurements were made on board the RV Kaiyo Maru, using a water-bottle method. Zooplankton were placed in bottles of filtered seawater. The size of the bottle used ranged from 250 to 2000 ml, depending on the size of the animal. Larger individuals were incubated individually, while for smaller species, up to 30 individuals were placed in a bottle. Bottles were wrapped in aluminium foil to exclude light and placed in a water bath to maintain a constant temperature, which was slightly below the surface temperature at the sampling site. After incubation for 24 hours, duplicate water samples were drawn for dissolved oxygen, and ammonia and phosphate measurements. The animals remaining in the bottles were collected and frozen at -50°C for later determination of dry weight, by freeze drying, and elemental analysis.
+
+For elemental analyses of carbon (C), nitrogen (N) and Phosphorous (P), dried specimens were ground, pooled by experiment or body size group (when the range of body sizes was large) for each species. C and N were measured with a Perkin Elmer Model 240 elemental analyser, using acetanilide as a standard. P analysis required samples to be digested in 50% (v/v) sulphuric acid for 1 hour at close to 100°C and neutralized by KOH. P was then measured as phosphate using the molybdate method.</description>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-65.566667; southlimit=-65.566667; westlimit=120.023333; eastLimit=120.023333; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-65.566667; southlimit=-65.566667; westlimit=120.023333; eastLimit=120.023333; projection=WGS84</spatial>
+         </coverage>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-64.311667; southlimit=-64.311667; westlimit=99.948333; eastLimit=99.948333; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-64.311667; southlimit=-64.311667; westlimit=99.948333; eastLimit=99.948333; projection=WGS84</spatial>
+         </coverage>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-64.691667; southlimit=-64.691667; westlimit=101.821667; eastLimit=101.821667; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-64.691667; southlimit=-64.691667; westlimit=101.821667; eastLimit=101.821667; projection=WGS84</spatial>
+         </coverage>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-61.001667; southlimit=-61.001667; westlimit=109.998333; eastLimit=109.998333; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-61.001667; southlimit=-61.001667; westlimit=109.998333; eastLimit=109.998333; projection=WGS84</spatial>
+         </coverage>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-64.333333; southlimit=-64.333333; westlimit=105.013333; eastLimit=105.013333; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-64.333333; southlimit=-64.333333; westlimit=105.013333; eastLimit=105.013333; projection=WGS84</spatial>
+         </coverage>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-62.306667; southlimit=-62.306667; westlimit=104.94; eastLimit=104.94; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-62.306667; southlimit=-62.306667; westlimit=104.94; eastLimit=104.94; projection=WGS84</spatial>
+         </coverage>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-61.656667; southlimit=-61.656667; westlimit=99.97; eastLimit=99.97; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-61.656667; southlimit=-61.656667; westlimit=99.97; eastLimit=99.97; projection=WGS84</spatial>
+         </coverage>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-61.025; southlimit=-61.025; westlimit=119.971667; eastLimit=119.971667; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-61.025; southlimit=-61.025; westlimit=119.971667; eastLimit=119.971667; projection=WGS84</spatial>
+         </coverage>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-63.66; southlimit=-63.66; westlimit=115.0; eastLimit=115.0; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-63.66; southlimit=-63.66; westlimit=115.0; eastLimit=115.0; projection=WGS84</spatial>
+         </coverage>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-64.888333; southlimit=-64.888333; westlimit=105.046667; eastLimit=105.046667; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-64.888333; southlimit=-64.888333; westlimit=105.046667; eastLimit=105.046667; projection=WGS84</spatial>
+         </coverage>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-64.471667; southlimit=-64.471667; westlimit=114.51; eastLimit=114.51; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-64.471667; southlimit=-64.471667; westlimit=114.51; eastLimit=114.51; projection=WGS84</spatial>
+         </coverage>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-64.523333; southlimit=-64.523333; westlimit=114.406667; eastLimit=114.406667; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-64.523333; southlimit=-64.523333; westlimit=114.406667; eastLimit=114.406667; projection=WGS84</spatial>
+         </coverage>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-64.93; southlimit=-64.93; westlimit=115.563333; eastLimit=115.563333; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-64.93; southlimit=-64.93; westlimit=115.563333; eastLimit=115.563333; projection=WGS84</spatial>
+         </coverage>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-63.718333; southlimit=-63.718333; westlimit=120.005; eastLimit=120.005; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-63.718333; southlimit=-63.718333; westlimit=120.005; eastLimit=120.005; projection=WGS84</spatial>
+         </coverage>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-61.673333; southlimit=-61.673333; westlimit=115.003333; eastLimit=115.003333; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-61.673333; southlimit=-61.673333; westlimit=115.003333; eastLimit=115.003333; projection=WGS84</spatial>
+         </coverage>
+         <relatedInfo type="publication">
+            <identifier type="uri">http://data.aims.gov.au/extpubs/do/viewPub.do?articleId=2348</identifier>
+            <relation type="isReferencedBy"/>
+            <title>Oxygen uptake, ammonia excretion and phosphate excretion by krill and other antarctic zooplankton in relation to their body size and chemical composition</title>
+            <notes>Ikeda T and Mitchell AW (1982) Oxygen uptake, ammonia excretion and phosphate excretion by krill and other antarctic zooplankton in relation to their body size and chemical composition. Marine Biology 71: 283-298.</notes>
+         </relatedInfo>
+         <rights>
+            <rightsStatement>All AIMS data, products and services are provided "as is" and AIMS does not warrant their fitness for a particular purpose or non-infringement. While AIMS has made every reasonable effort to ensure high quality of the data, products and services, to the extent permitted by law the data, products and services are provided without any warranties of any kind, either expressed or implied, including without limitation any implied warranties of title, merchantability, and fitness for a particular purpose or non-infringement. AIMS make no representation or warranty that the data, products and services are accurate, complete, reliable or current.To the extent permitted by law, AIMS exclude all liability to any person arising directly or indirectly from the use of the data, products and services.</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>Ownership of all Intellectual Property Rights in the data remains with the Australian Institute of Marine Science (AIMS) and all use of the data must acknowledge AIMS.</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>All users of AIMS data must acknowledge the source of the material in the following manner: "Data was sourced from the Australian Institute of Marine Science (AIMS)."</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>Format for citation of data sourced from Australian Institute of Marine Science (AIMS) in a list of reference is as follows: "Australian Institute of Marine Science. [year-of-data-download], [Title], [data-access-URL], accessed (date-of-access]".</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>Use of the AIMS data is for not-for-profit applications only. All other users shall seek permission for use by contacting AIMS. Acknowledgements as prescribed must be clearly set out in the user's formal communications or publications.</rightsStatement>
+         </rights>
+      </activity>
+   </registryObject>
+   <registryObject group="Australian Institute of Marine Science">
+      <key>AIMS/Ikeda,Tsutomu,Dr</key>
+      <originatingSource>http://data.aims.gov.au</originatingSource>
+      <party type="person">
+         <name type="primary">
+            <namePart>Ikeda, Tsutomu, Dr</namePart>
+         </name>
+      </party>
+   </registryObject>
+   <registryObject group="Australian Institute of Marine Science">
+      <key>AIMS/AustralianInstituteofMarineScience</key>
+      <originatingSource>http://data.aims.gov.au</originatingSource>
+      <party type="group">
+         <name type="primary">
+            <namePart>Australian Institute of Marine Science</namePart>
+         </name>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="telephoneNumber">+61 7 4753 4444</addressPart>
+               </physical>
+            </address>
+         </location>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="faxNumber">+61 7 4772 5852</addressPart>
+               </physical>
+            </address>
+         </location>
+         <location>
+            <address>
+               <electronic type="email">
+                  <value>adc@aims.gov.au</value>
+               </electronic>
+            </address>
+         </location>
+         <location>
+            <address>
+               <electronic type="url">
+                  <value>http://www.aims.gov.au</value>
+               </electronic>
+            </address>
+         </location>
+         <location>
+            <address>
+               <electronic type="url">
+                  <value>http://www.aims.gov.au/adc</value>
+               </electronic>
+            </address>
+         </location>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="addressLine">Australian Institute of Marine Science (AIMS)</addressPart>
+                  <addressPart type="suburbOrPlaceLocality">TOWNSVILLE MAIL CENTRE</addressPart>
+                  <addressPart type="stateOrTerritory">Queensland</addressPart>
+                  <addressPart type="postCode">4810</addressPart>
+                  <addressPart type="country">Australia</addressPart>
+               </physical>
+            </address>
+         </location>
+      </party>
+   </registryObject>
+   <registryObject group="Australian Institute of Marine Science">
+      <key>AIMS/b8679630-7ae8-11dc-b1b7-00008a07204e</key>
+      <originatingSource>http://data.aims.gov.au</originatingSource>
+      <activity type="project">
+         <identifier type="uri">http://data.aims.gov.au/geonetwork/srv/en/metadata.show?uuid=b8679630-7ae8-11dc-b1b7-00008a07204e</identifier>
+         <name type="primary">
+            <namePart>Population genetics of the starfish, Linckia laevigata, in the Indian Ocean and the western Pacific Ocean</namePart>
+         </name>
+         <location>
+            <address>
+               <electronic type="url">
+                  <value>http://data.aims.gov.au/geonetwork/srv/en/metadata.show?uuid=b8679630-7ae8-11dc-b1b7-00008a07204e</value>
+               </electronic>
+            </address>
+         </location>
+         <relatedObject>
+            <key>AIMS/Williams,SuzanneT,Dr</key>
+            <relation type="principalInvestigator"/>
+         </relatedObject>
+         <relatedObject>
+            <key>AIMS/Ballment,ElizabethR(Beth),Ms</key>
+            <relation type="custodian"/>
+         </relatedObject>
+         <relatedObject>
+            <key>AIMS/AustralianInstituteofMarineScience</key>
+            <relation type="custodian"/>
+            <relation type="pointOfContact"/>
+            <relation type="distributor"/>
+         </relatedObject>
+         <subject type="local">oceans</subject>
+         <subject type="local">biota</subject>
+         <subject type="local">Biological Classification - Animals/Invertebrates - Echinoderms , Sea Stars</subject>
+         <subject type="local">Genetics, Population, Invertebrates</subject>
+         <subject type="local">Genetic variation</subject>
+         <subject type="local">Allozymes</subject>
+         <subject type="local">Mitochondrial DNA</subject>
+         <subject type="local">Gene frequencies</subject>
+         <description type="full">A study of the population genetics of the starfish Linckia laevigata throughout the Indian and Pacific Oceans. Seven allozyme loci (GPI, ENO, HK, LP, LT-1, LT-2, SOD) were examined. Variations in gene frequencies of allozymes and common proteins, as well as mitochondrial D-loop DNA (the Restriction Fragment Length Polymorphism - RFLP) were used to estimate connectivity and dispersal between populations in the region.</description>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-9.0; southlimit=-23.5; westlimit=141.0; eastLimit=152.1; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-9.0; southlimit=-23.5; westlimit=141.0; eastLimit=152.1; projection=WGS84</spatial>
+         </coverage>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-13.5; southlimit=-17.5; westlimit=119.0; eastLimit=122.0; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-13.5; southlimit=-17.5; westlimit=119.0; eastLimit=122.0; projection=WGS84</spatial>
+         </coverage>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=13.95; southlimit=9.05; westlimit=122.8; eastLimit=123.3; projection=WGS84</spatial>
+            <spatial type="text">northlimit=13.95; southlimit=9.05; westlimit=122.8; eastLimit=123.3; projection=WGS84</spatial>
+         </coverage>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=8.05; southlimit=7.8; westlimit=98.28; eastLimit=98.45; projection=WGS84</spatial>
+            <spatial type="text">northlimit=8.05; southlimit=7.8; westlimit=98.28; eastLimit=98.45; projection=WGS84</spatial>
+         </coverage>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=13.6; southlimit=13.0; westlimit=144.6; eastLimit=145.0; projection=WGS84</spatial>
+            <spatial type="text">northlimit=13.6; southlimit=13.0; westlimit=144.6; eastLimit=145.0; projection=WGS84</spatial>
+         </coverage>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-9.0; southlimit=-9.9; westlimit=159.1; eastLimit=160.8; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-9.0; southlimit=-9.9; westlimit=159.1; eastLimit=160.8; projection=WGS84</spatial>
+         </coverage>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-18.1; southlimit=-18.9; westlimit=178.4; eastLimit=178.6; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-18.1; southlimit=-18.9; westlimit=178.4; eastLimit=178.6; projection=WGS84</spatial>
+         </coverage>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=26.7; southlimit=26.2; westlimit=127.8; eastLimit=128.0; projection=WGS84</spatial>
+            <spatial type="text">northlimit=26.7; southlimit=26.2; westlimit=127.8; eastLimit=128.0; projection=WGS84</spatial>
+         </coverage>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-19.9; southlimit=-22.4; westlimit=163.5; eastLimit=167.1; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-19.9; southlimit=-22.4; westlimit=163.5; eastLimit=167.1; projection=WGS84</spatial>
+         </coverage>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-26.99527; southlimit=-26.99527; westlimit=32.87277; eastLimit=32.87277; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-26.99527; southlimit=-26.99527; westlimit=32.87277; eastLimit=32.87277; projection=WGS84</spatial>
+         </coverage>
+         <relatedInfo type="publication">
+            <identifier type="uri">http://data.aims.gov.au/extpubs/do/viewPub.do?articleId=1412</identifier>
+            <relation type="isReferencedBy"/>
+            <title>Evidence of a biogeographic break between populations of a high dispersal starfish: congruent regions within the Indo-West Pacific defined by color morphs, MTDNA, and allozyme data</title>
+            <notes>Williams ST and Benzie JAH (1998) Evidence of a biogeographic break between populations of a high dispersal starfish: congruent regions within the Indo-West Pacific defined by color morphs, MTDNA, and allozyme data. Evolution 52: 87-99.</notes>
+         </relatedInfo>
+         <relatedInfo type="publication">
+            <identifier type="uri">http://data.aims.gov.au/extpubs/do/viewPub.do?articleId=2919</identifier>
+            <relation type="isReferencedBy"/>
+            <title>Indo-west Pacific patterns of genetic differentiation in the high-dispersal starfish Linckia Laevigata</title>
+            <notes>Williams ST and Benzie JAH (1997) Indo-west Pacific patterns of genetic differentiation in the high-dispersal starfish Linckia laevigata. Molecular Ecology 6: 559-573.</notes>
+         </relatedInfo>
+         <relatedInfo type="publication">
+            <identifier type="uri">http://data.aims.gov.au/extpubs/do/viewPub.do?articleId=1034</identifier>
+            <relation type="isReferencedBy"/>
+            <title>Genetic uniformity of widely separated populations of the coral reef starfish Linckia laevigata from the East Indian and West Pacific Oceans revealed by allozyme electrophoresis</title>
+            <notes>Williams ST and Benzie JAH (1996) Genetic uniformity of widely separated populations of the coral reef starfish Linckia laevigata from the East Indian and West Pacific Oceans revealed by allozyme electrophoresis. Marine Biology 126:99-107.</notes>
+         </relatedInfo>
+         <relatedInfo type="publication">
+            <identifier type="uri">http://data.aims.gov.au/extpubs/do/viewPub.do?articleId=2608</identifier>
+            <relation type="isReferencedBy"/>
+            <title>Genetic consequences of long larval life in the starfish Linckia laevigata (Echinodermta: Asteroidea) on the Great Barrier Reef</title>
+            <notes>Williams ST and Benzie JAH (1993) Genetic consequences of long larval life in the starfish Linckia laevigata (Echinodermta: Asteroidea) on the Great Barrier Reef. Marine Biology 117: 71-77.</notes>
+         </relatedInfo>
+         <relatedInfo type="publication">
+            <identifier type="uri">http://data.aims.gov.au/extpubs/do/viewPub.do?articleId=7053</identifier>
+            <relation type="isReferencedBy"/>
+            <title>Methods for the analysis of genetic variation in the starfish, Linckia laevigata, using allozyme electrophoresis</title>
+            <notes>Williams ST (1992) Methods for the analysis of genetic variation in the starfish, Linckia laevigata, using allozyme electrophoresis. AIMS report no 6. Australian Institute of Marine Science. 34 p.</notes>
+         </relatedInfo>
+         <rights>
+            <rightsStatement>All AIMS data, products and services are provided "as is" and AIMS does not warrant their fitness for a particular purpose or non-infringement. While AIMS has made every reasonable effort to ensure high quality of the data, products and services, to the extent permitted by law the data, products and services are provided without any warranties of any kind, either expressed or implied, including without limitation any implied warranties of title, merchantability, and fitness for a particular purpose or non-infringement. AIMS make no representation or warranty that the data, products and services are accurate, complete, reliable or current.To the extent permitted by law, AIMS exclude all liability to any person arising directly or indirectly from the use of the data, products and services.</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>Ownership of all Intellectual Property Rights in the data remains with the Australian Institute of Marine Science (AIMS) and all use of the data must acknowledge AIMS.</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>All users of AIMS data must acknowledge the source of the material in the following manner: "Data was sourced from the Australian Institute of Marine Science (AIMS)."</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>Format for citation of data sourced from Australian Institute of Marine Science (AIMS) in a list of reference is as follows: "Australian Institute of Marine Science. [year-of-data-download], [Title], [data-access-URL], accessed (date-of-access]".</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>Use of the AIMS data is for not-for-profit applications only. All other users shall seek permission for use by contacting AIMS. Acknowledgements as prescribed must be clearly set out in the user's formal communications or publications.</rightsStatement>
+         </rights>
+      </activity>
+   </registryObject>
+   <registryObject group="Australian Institute of Marine Science">
+      <key>AIMS/Williams,SuzanneT,Dr</key>
+      <originatingSource>http://data.aims.gov.au</originatingSource>
+      <party type="person">
+         <name type="primary">
+            <namePart>Williams, Suzanne T, Dr</namePart>
+         </name>
+      </party>
+   </registryObject>
+   <registryObject group="Australian Institute of Marine Science">
+      <key>AIMS/Ballment,ElizabethR(Beth),Ms</key>
+      <originatingSource>http://data.aims.gov.au</originatingSource>
+      <party type="person">
+         <name type="primary">
+            <namePart>Ballment, Elizabeth R (Beth), Ms</namePart>
+         </name>
+         <relatedObject>
+            <key>AIMS/AustralianInstituteofMarineScience</key>
+            <relation type="isMemberOf"/>
+         </relatedObject>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="telephoneNumber">+61 7 4753 4444</addressPart>
+               </physical>
+            </address>
+         </location>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="faxNumber">+61 7 4772 5852</addressPart>
+               </physical>
+            </address>
+         </location>
+         <location>
+            <address>
+               <electronic type="email">
+                  <value>adc@aims.gov.au</value>
+               </electronic>
+            </address>
+         </location>
+      </party>
+   </registryObject>
+   <registryObject group="Australian Institute of Marine Science">
+      <key>AIMS/AustralianInstituteofMarineScience</key>
+      <originatingSource>http://data.aims.gov.au</originatingSource>
+      <party type="group">
+         <name type="primary">
+            <namePart>Australian Institute of Marine Science</namePart>
+         </name>
+         <location>
+            <address>
+               <electronic type="url">
+                  <value>http://www.aims.gov.au</value>
+               </electronic>
+            </address>
+         </location>
+         <location>
+            <address>
+               <electronic type="url">
+                  <value>http://www.aims.gov.au/adc</value>
+               </electronic>
+            </address>
+         </location>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="addressLine">Australian Institute of Marine Science (AIMS)</addressPart>
+                  <addressPart type="suburbOrPlaceLocality">TOWNSVILLE MAIL CENTRE</addressPart>
+                  <addressPart type="stateOrTerritory">Queensland</addressPart>
+                  <addressPart type="postCode">4810</addressPart>
+                  <addressPart type="country">Australia</addressPart>
+               </physical>
+            </address>
+         </location>
+      </party>
+   </registryObject>
+   <registryObject group="Australian Institute of Marine Science">
+      <key>AIMS/07a8014d-f254-4db4-b9b0-996bfcda4e3e</key>
+      <originatingSource>http://data.aims.gov.au</originatingSource>
+      <activity type="project">
+         <identifier type="uri">http://data.aims.gov.au/geonetwork/srv/en/metadata.show?uuid=07a8014d-f254-4db4-b9b0-996bfcda4e3e</identifier>
+         <name type="primary">
+            <namePart>Hydrocarbons in surface sediments from the north Queensland coast and Great Barrier Reef after tropical Cyclone Winifred</namePart>
+         </name>
+         <location>
+            <address>
+               <electronic type="url">
+                  <value>http://data.aims.gov.au/geonetwork/srv/en/metadata.show?uuid=07a8014d-f254-4db4-b9b0-996bfcda4e3e</value>
+               </electronic>
+            </address>
+         </location>
+         <relatedObject>
+            <key>AIMS/Sandstrom,MarkW,Dr</key>
+            <relation type="coInvestigator"/>
+         </relatedObject>
+         <relatedObject>
+            <key>AIMS/Gagan,MichaelK,Dr</key>
+            <relation type="coInvestigator"/>
+         </relatedObject>
+         <relatedObject>
+            <key>AIMS/AustralianInstituteofMarineScience</key>
+            <relation type="custodian"/>
+            <relation type="pointOfContact"/>
+            <relation type="distributor"/>
+         </relatedObject>
+         <subject type="local">oceans</subject>
+         <subject type="local">Oceans - Marine Sediments - Sediment Chemistry</subject>
+         <subject type="local">Oceans - Marine Sediments - Sediment Composition</subject>
+         <subject type="local">Oceans - Marine Sediments - Sediment Transport</subject>
+         <subject type="local">Oceans - Coastal Processes - Coral Reefs</subject>
+         <subject type="local">Atmosphere - Atmospheric Phenomena - Cyclones</subject>
+         <subject type="local">Aliphatic hydrocarbons</subject>
+         <subject type="local">n-alkanes</subject>
+         <subject type="local">alkenes</subject>
+         <subject type="local">Terrestrial material</subject>
+         <subject type="local">Recent marine sediments</subject>
+         <subject type="local">Sedimentary sources</subject>
+         <subject type="local">Coral reef sediments</subject>
+         <description type="full">Reef sediments were collected from the lagoons of Feather Reef, Gilby Reef and Potter Reef on 7-8 February 1986, about 5 days after Cyclone Winifred had passed through the region. Sediments were collected by divers, who scraped the surface layer (0-2 cm) into clean glass jars. The sediments were covered with a thin (1-2 mm) layer of light brown flocculant material. Samples of the upper 10-15 cm of the seabed were also collected before (8-20 January) and after the cyclone (9-10 February) in nearshore and innershelf locations (1 to 36 km offshore), using a frame supported Van Veen grab sampler. A sample of the surface layer (0-2 cm) was collected from each grab sample and transferred to clean glass jars. All sediment samples were quickly frozen in the shipboard laboratory and stored frozen until analysis, when samples were freeze-dried, sieved to remove coarse (&gt;2.0 mm) material and ground to a fine powder in an agate ring mill. Lipids were extracted twice from 5-10 g of sediment by vigorous agitation with hexane:isopropanol:water (HIP) 3:2:0.13 The extracts were combined and partitioned against 0.5 M Na2SO4, and the resulting upper hexane-rich layer was reduced to ~1 ml using a rotary evaporator and transferred to a glass vial. The total lipid extract was taken to a few µl under a stream of nitrogen, and immediately dissolved in a known volume of HIP. The total lipid yield was determined by weighing aliquots (2 µl) on a microbalance.Total lipids were then fractionated on columns (10 mm i.d. x 300 mm) of aluminum oxide (3.5 g; Ajax 70-200 mesh; activated at 110°C) over silica (7.0 g; Merck 70-230 mesh, activated at 80°C) prepared by slurry packing in n-hexane. Aliphatic hydrocarbons (alkanes and alkenes) were eluted with n-hexane (25 ml), polycyclic aromatic hydrocarbons (PAH) with toluene:hexane 1:1 (25 ml), and polar lipids with HIP-HOH 3:4:7 (30 ml). Each fraction was transferred to clean glass vial and stored at 4°C.All hydrocarbon fractions were analyzed by flame ionization gas chromatography on a Hewlett-Packard 5840 gas chromatograph equipped with an on-column injector (SGE Pty Ltd). Individual alkanes and alkenes were quantified using the peak area of the internal injection standard chlorotetradecane. Selected hydrocarbon samples were analyzed by capillary GC-MS using a Hewlett-Packard 5970B mass selective detector attached to a Hewlett-Packard 5792A gas chromatograph equipped with an on-column injector (Hewlett-Packard).The organic carbon content of carbonate free sediment was measured directly using a Beckman Tocamaster Model 915B total carbon analyzer. Total carbon was determined using a Leco CHN Analyzer.For carbon isotope analyses, two gram subsamples of the ground sediment were acidified with 20-100 ml of 0.75 M HC1 to remove carbonates. The residue was centrifuged and rinsed with distilled water (3-6 times) until a pH of 5-6 was reached. After the final rinse, the samples were freeze-dried. The residues were combusted with excess CuO and Ag wire in evacuated silica tubes for 6 h at 900°C. The evolved CO2 was analyzed with a modified MS-12 triple-collector mass-spectrometer. All isotope ratios are reported relative to the Cretaceous Peedee belemnite (PDB) standard. We determined an overall analytical uncertainty of 0.2 ppt for replicate combustion and isotopic analyses of the same sediment sample.</description>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-17.533528; southlimit=-17.533528; westlimit=146.376807; eastLimit=146.376807; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-17.533528; southlimit=-17.533528; westlimit=146.376807; eastLimit=146.376807; projection=WGS84</spatial>
+         </coverage>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-17.582266; southlimit=-17.582266; westlimit=146.578481; eastLimit=146.578481; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-17.582266; southlimit=-17.582266; westlimit=146.578481; eastLimit=146.578481; projection=WGS84</spatial>
+         </coverage>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-17.69985; southlimit=-17.69985; westlimit=146.544746; eastLimit=146.544746; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-17.69985; southlimit=-17.69985; westlimit=146.544746; eastLimit=146.544746; projection=WGS84</spatial>
+         </coverage>
+         <relatedInfo type="publication">
+            <identifier type="uri">http://data.aims.gov.au/extpubs/do/viewPub.do?articleId=2227</identifier>
+            <relation type="isReferencedBy"/>
+            <title>Aliphatic hydrocarbons in surface sediments from the north Queensland coast and Great Barrier Reef: effects of tropical Cyclone Winifred</title>
+            <notes>Sandstrom MW (1988) Aliphatic hydrocarbons in surface sediments from the north Queensland coast and Great Barrier Reef: effects of tropical Cyclone Winifred. Organic Geochemistry 12: 445-454.</notes>
+         </relatedInfo>
+         <relatedInfo type="publication">
+            <identifier type="uri">http://data.aims.gov.au/extpubs/do/viewPub.do?articleId=2118</identifier>
+            <relation type="isReferencedBy"/>
+            <title>Restricted terrestrial carbon input to the continental shelf during Cyclone Winifred: implications for terrestrial runoff to the Great Barrier Reef province</title>
+            <notes>Gagan MK, Sandstrom MW and Chivas AR (1987) Restricted terrestrial carbon input to the continental shelf during Cyclone Winifred: implications for terrestrial runoff to the Great Barrier Reef province. Coral Reefs. 6: 113-119.</notes>
+         </relatedInfo>
+         <relatedInfo type="service">
+            <identifier type="uri">http://data.aims.gov.au/mestmapkml/07a8014d-f254-4db4-b9b0-996bfcda4e3e.kml</identifier>
+            <relation type="isAvailableThrough"/>
+            <title>Map</title>
+         </relatedInfo>
+         <rights>
+            <rightsStatement>All AIMS data, products and services are provided "as is" and AIMS does not warrant their fitness for a particular purpose or non-infringement. While AIMS has made every reasonable effort to ensure high quality of the data, products and services, to the extent permitted by law the data, products and services are provided without any warranties of any kind, either expressed or implied, including without limitation any implied warranties of title, merchantability, and fitness for a particular purpose or non-infringement. AIMS make no representation or warranty that the data, products and services are accurate, complete, reliable or current. To the extent permitted by law, AIMS exclude all liability to any person arising directly or indirectly from the use of the data, products and services.</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>Ownership of all Intellectual Property Rights in the data remains with the Australian Institute of Marine Science (AIMS) and all use of the data must acknowledge AIMS.</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>All users of AIMS data must acknowledge the source of the material in the following manner: "Data was sourced from the Australian Institute of Marine Science (AIMS)."</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>Format for citation of data sourced from Australian Institute of Marine Science (AIMS) in a list of reference is as follows: "Australian Institute of Marine Science. [year-of-data-download], [Title], [data-access-URL], accessed (date-of-access]".</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>Use of the AIMS data is for not-for-profit applications only. All other users shall seek permission for use by contacting AIMS. Acknowledgements as prescribed must be clearly set out in the user's formal communications or publications.</rightsStatement>
+         </rights>
+      </activity>
+   </registryObject>
+   <registryObject group="Australian Institute of Marine Science">
+      <key>AIMS/Sandstrom,MarkW,Dr</key>
+      <originatingSource>http://data.aims.gov.au</originatingSource>
+      <party type="person">
+         <name type="primary">
+            <namePart>Sandstrom, Mark W, Dr</namePart>
+         </name>
+      </party>
+   </registryObject>
+   <registryObject group="Australian Institute of Marine Science">
+      <key>AIMS/Gagan,MichaelK,Dr</key>
+      <originatingSource>http://data.aims.gov.au</originatingSource>
+      <party type="person">
+         <name type="primary">
+            <namePart>Gagan, Michael K, Dr</namePart>
+         </name>
+      </party>
+   </registryObject>
+   <registryObject group="Australian Institute of Marine Science">
+      <key>AIMS/AustralianInstituteofMarineScience</key>
+      <originatingSource>http://data.aims.gov.au</originatingSource>
+      <party type="group">
+         <name type="primary">
+            <namePart>Australian Institute of Marine Science</namePart>
+         </name>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="telephoneNumber">+61 7 4753 4444</addressPart>
+               </physical>
+            </address>
+         </location>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="faxNumber">+61 7 4772 5852</addressPart>
+               </physical>
+            </address>
+         </location>
+         <location>
+            <address>
+               <electronic type="email">
+                  <value>adc@aims.gov.au</value>
+               </electronic>
+            </address>
+         </location>
+         <location>
+            <address>
+               <electronic type="url">
+                  <value>http://www.aims.gov.au/adc</value>
+               </electronic>
+            </address>
+         </location>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="addressLine">Australian Institute of Marine Science (AIMS)</addressPart>
+                  <addressPart type="suburbOrPlaceLocality">TOWNSVILLE MAIL CENTRE</addressPart>
+                  <addressPart type="stateOrTerritory">Queensland</addressPart>
+                  <addressPart type="postCode">4810</addressPart>
+                  <addressPart type="country">Australia</addressPart>
+               </physical>
+            </address>
+         </location>
+      </party>
+   </registryObject>
+   <registryObject group="Australian Institute of Marine Science">
+      <key>AIMS/d8b989a7-2efa-41a9-b05c-57a6a2281848</key>
+      <originatingSource>http://data.aims.gov.au</originatingSource>
+      <activity type="project">
+         <identifier type="uri">http://data.aims.gov.au/geonetwork/srv/en/metadata.show?uuid=d8b989a7-2efa-41a9-b05c-57a6a2281848</identifier>
+         <name type="primary">
+            <namePart>The hydrodynamic regime at John Brewer Reef, Great Barrier Reef: Mooring CM6: Current Meter</namePart>
+         </name>
+         <relatedObject>"
+                <key>AIMS/0cdd7eb0-55e0-11dc-8d3c-00008a07204e</key>
+            <relation type="isPartOf"/>
+         </relatedObject>
+         <location>
+            <address>
+               <electronic type="url">
+                  <value>http://data.aims.gov.au/geonetwork/srv/en/metadata.show?uuid=d8b989a7-2efa-41a9-b05c-57a6a2281848</value>
+               </electronic>
+            </address>
+         </location>
+         <relatedObject>
+            <key>AIMS/Andrews,JohnC,Dr</key>
+            <relation type="principalInvestigator"/>
+         </relatedObject>
+         <relatedObject>
+            <key>AIMS/Steinberg,CraigR,Mr</key>
+            <relation type="custodian"/>
+         </relatedObject>
+         <relatedObject>
+            <key>AIMS/AustralianInstituteofMarineScience</key>
+            <relation type="custodian"/>
+            <relation type="pointOfContact"/>
+            <relation type="distributor"/>
+         </relatedObject>
+         <subject type="local">oceans</subject>
+         <subject type="local">Oceans - Ocean Circulation - Ocean Currents</subject>
+         <subject type="local">Current Meters/Profilers - Current Meters</subject>
+         <subject type="local">EARTH SCIENCES - Oceanography - Physical Oceanography</subject>
+         <subject type="local">Crown-of-thorns starfish</subject>
+         <subject type="anzsrc-for">04</subject>
+         <subject type="anzsrc-for">0405</subject>
+         <subject type="anzsrc-for">040503</subject>
+         <description type="full">An Aanderaa RCM current meter was attached to mooring CM6, which was deployed in 50m of water. 
+
+Deployment Details:
+Date Deployed: 2/4/1987
+Date Recovered: 6/9/1987
+
+Instrument Deployed:
+RCM #6332; Depth: 25m</description>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-18.623333; southlimit=-18.623333; westlimit=147.096667; eastLimit=147.096667; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-18.623333; southlimit=-18.623333; westlimit=147.096667; eastLimit=147.096667; projection=WGS84</spatial>
+         </coverage>
+         <relatedInfo type="publication">
+            <identifier type="uri">http://data.aims.gov.au/extpubs/do/viewPub.do?articleId=8331</identifier>
+            <relation type="isReferencedBy"/>
+            <title>Dispersal of neutrally-buoyant material near John Brewer Reef</title>
+            <notes>Gay SL, Andrews JC and Black KP (1990) Dispersal of neutrally-buoyant material near John Brewer Reef. pp. 95-119. In: Bradbury RH (ed) Acanthaster and the coral reef: a theoretical perspective; Proceedings of a workshop held at the Australian Institute of Marine Science, Townsville, Aug.6-7,1988. Lecture Notes in Biomathematics. 88. Springer-Verlag.</notes>
+         </relatedInfo>
+         <relatedInfo type="publication">
+            <identifier type="uri">http://data.aims.gov.au/extpubs/do/viewPub.do?articleId=7590</identifier>
+            <relation type="isReferencedBy"/>
+            <title>Field Survey Physical Oceanography John Brewer Reef March to September 1987</title>
+            <notes>Gay SL and Andrews JC (1987) Field Survey Physical Oceanography John Brewer Reef March to September 1987. 66 p.</notes>
+         </relatedInfo>
+         <rights>
+            <rightsStatement>All AIMS data, products and services are provided "as is" and AIMS does not warrant their fitness for a particular purpose or non-infringement. While AIMS has made every reasonable effort to ensure high quality of the data, products and services, to the extent permitted by law the data, products and services are provided without any warranties of any kind, either expressed or implied, including without limitation any implied warranties of title, merchantability, and fitness for a particular purpose or non-infringement. AIMS make no representation or warranty that the data, products and services are accurate, complete, reliable or current.To the extent permitted by law, AIMS exclude all liability to any person arising directly or indirectly from the use of the data, products and services.</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>Map products not to be used for navigation</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>Ownership of all Intellectual Property Rights in the data remains with the Australian Institute of Marine Science (AIMS) and all use of the data must acknowledge AIMS.</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>All users of AIMS data must acknowledge the source of the material in the following manner: "Data was sourced from the Australian Institute of Marine Science (AIMS)."</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>Format for citation of data sourced from Australian Institute of Marine Science (AIMS) in a list of reference is as follows: "Australian Institute of Marine Science. [year-of-data-download], [Title], [data-access-URL], accessed (date-of-access]".</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>Use of the AIMS data is for not-for-profit applications only. All other users shall seek permission for use by contacting AIMS. Acknowledgements as prescribed must be clearly set out in the user's formal communications or publications.</rightsStatement>
+         </rights>
+      </activity>
+   </registryObject>
+   <registryObject group="Australian Institute of Marine Science">
+      <key>AIMS/Andrews,JohnC,Dr</key>
+      <originatingSource>http://data.aims.gov.au</originatingSource>
+      <party type="person">
+         <name type="primary">
+            <namePart>Andrews, John C, Dr</namePart>
+         </name>
+      </party>
+   </registryObject>
+   <registryObject group="Australian Institute of Marine Science">
+      <key>AIMS/Steinberg,CraigR,Mr</key>
+      <originatingSource>http://data.aims.gov.au</originatingSource>
+      <party type="person">
+         <name type="primary">
+            <namePart>Steinberg, Craig R, Mr</namePart>
+         </name>
+         <relatedObject>
+            <key>AIMS/AustralianInstituteofMarineScience</key>
+            <relation type="isMemberOf"/>
+         </relatedObject>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="telephoneNumber">+61 7 4753 4444</addressPart>
+               </physical>
+            </address>
+         </location>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="faxNumber">+61 7 4772 5852</addressPart>
+               </physical>
+            </address>
+         </location>
+         <location>
+            <address>
+               <electronic type="email">
+                  <value>reception@aims.gov.au</value>
+               </electronic>
+            </address>
+         </location>
+      </party>
+   </registryObject>
+   <registryObject group="Australian Institute of Marine Science">
+      <key>AIMS/AustralianInstituteofMarineScience</key>
+      <originatingSource>http://data.aims.gov.au</originatingSource>
+      <party type="group">
+         <name type="primary">
+            <namePart>Australian Institute of Marine Science</namePart>
+         </name>
+         <location>
+            <address>
+               <electronic type="url">
+                  <value>http://www.aims.gov.au</value>
+               </electronic>
+            </address>
+         </location>
+         <location>
+            <address>
+               <electronic type="url">
+                  <value>http://www.aims.gov.au/adc</value>
+               </electronic>
+            </address>
+         </location>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="addressLine">Australian Institute of Marine Science (AIMS)</addressPart>
+                  <addressPart type="suburbOrPlaceLocality">TOWNSVILLE MAIL CENTRE</addressPart>
+                  <addressPart type="stateOrTerritory">Queensland</addressPart>
+                  <addressPart type="postCode">4810</addressPart>
+                  <addressPart type="country">Australia</addressPart>
+               </physical>
+            </address>
+         </location>
+      </party>
+   </registryObject>
+   <registryObject group="Australian Institute of Marine Science">
+      <key>AIMS/231f1f72-32f1-46ef-97c1-93f5293fd10e</key>
+      <originatingSource>http://data.aims.gov.au</originatingSource>
+      <activity type="project">
+         <identifier type="uri">http://data.aims.gov.au/geonetwork/srv/en/metadata.show?uuid=231f1f72-32f1-46ef-97c1-93f5293fd10e</identifier>
+         <name type="primary">
+            <namePart>Investigations into the use of Landsat Thematic Mapper data for monitoring coastal habitats, Bowling Green Bay, north Queensland</namePart>
+         </name>
+         <location>
+            <address>
+               <electronic type="url">
+                  <value>http://data.aims.gov.au/geonetwork/srv/en/metadata.show?uuid=231f1f72-32f1-46ef-97c1-93f5293fd10e</value>
+               </electronic>
+            </address>
+         </location>
+         <relatedObject>
+            <key>AIMS/Bainbridge,Scott,Mr</key>
+            <relation type="principalInvestigator"/>
+         </relatedObject>
+         <relatedObject>
+            <key>AIMS/AustralianInstituteofMarineScience</key>
+            <relation type="principalInvestigator"/>
+            <relation type="pointOfContact"/>
+            <relation type="distributor"/>
+         </relatedObject>
+         <subject type="local">oceans</subject>
+         <subject type="local">imageryBaseMapsEarthCover</subject>
+         <subject type="local">biota</subject>
+         <subject type="local">Oceans - Ocean Chemistry - Pigments , Chlorophyll</subject>
+         <subject type="local">Oceans - Bathymetry/Seafloor Topography - Water Depth</subject>
+         <subject type="local">Oceans - Ocean Optics - Secchi Depth</subject>
+         <subject type="local">Landsat Thematic Mapper</subject>
+         <subject type="local">Suspended sediment</subject>
+         <description type="full">An investigation was carried out into the feasibility of using Landsat Thematic Mapper data to map wetlands and coastal habitats.  A series of images covering Bowling Green Bay were obained and classified using the microBRIAN software package. Ground truthing was then done to validate the resulting classifications.</description>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-19.15; southlimit=-19.6; westlimit=146.9; eastLimit=147.5; projection=WGS84</spatial>
+            <spatial type="text">northlimit=-19.15; southlimit=-19.6; westlimit=146.9; eastLimit=147.5; projection=WGS84</spatial>
+         </coverage>
+         <rights>
+            <rightsStatement>All AIMS data, products and services are provided "as is" and AIMS does not warrant their fitness for a particular purpose or non-infringement. While AIMS has made every reasonable effort to ensure high quality of the data, products and services, to the extent permitted by law the data, products and services are provided without any warranties of any kind, either expressed or implied, including without limitation any implied warranties of title, merchantability, and fitness for a particular purpose or non-infringement. AIMS make no representation or warranty that the data, products and services are accurate, complete, reliable or current.To the extent permitted by law, AIMS exclude all liability to any person arising directly or indirectly from the use of the data, products and services.</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>Ownership of all Intellectual Property Rights in the data remains with the Australian Institute of Marine Science (AIMS) and all use of the data must acknowledge AIMS.</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>All users of AIMS data must acknowledge the source of the material in the following manner: "Data was sourced from the Australian Institute of Marine Science (AIMS)."</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>Format for citation of data sourced from Australian Institute of Marine Science (AIMS) in a list of reference is as follows: "Australian Institute of Marine Science. [year-of-data-download], [Title], [data-access-URL], accessed (date-of-access]".</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>Use of the AIMS data is for not-for-profit applications only. All other users shall seek permission for use by contacting AIMS. Acknowledgements as prescribed must be clearly set out in the user's formal communications or publications.</rightsStatement>
+         </rights>
+      </activity>
+   </registryObject>
+   <registryObject group="Australian Institute of Marine Science">
+      <key>AIMS/Bainbridge,Scott,Mr</key>
+      <originatingSource>http://data.aims.gov.au</originatingSource>
+      <party type="person">
+         <name type="primary">
+            <namePart>Bainbridge, Scott, Mr</namePart>
+         </name>
+         <relatedObject>
+            <key>AIMS/AustralianInstituteofMarineScience</key>
+            <relation type="isMemberOf"/>
+         </relatedObject>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="telephoneNumber">+61 7 4753 4444</addressPart>
+               </physical>
+            </address>
+         </location>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="faxNumber">+61 7 4772 5852</addressPart>
+               </physical>
+            </address>
+         </location>
+         <location>
+            <address>
+               <electronic type="email">
+                  <value>reception@aims.gov.au</value>
+               </electronic>
+            </address>
+         </location>
+      </party>
+   </registryObject>
+   <registryObject group="Australian Institute of Marine Science">
+      <key>AIMS/AustralianInstituteofMarineScience</key>
+      <originatingSource>http://data.aims.gov.au</originatingSource>
+      <party type="group">
+         <name type="primary">
+            <namePart>Australian Institute of Marine Science</namePart>
+         </name>
+         <location>
+            <address>
+               <electronic type="url">
+                  <value>http://www.aims.gov.au</value>
+               </electronic>
+            </address>
+         </location>
+         <location>
+            <address>
+               <electronic type="url">
+                  <value>http://www.aims.gov.au/adc</value>
+               </electronic>
+            </address>
+         </location>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="addressLine">Australian Institute of Marine Science (AIMS)</addressPart>
+                  <addressPart type="suburbOrPlaceLocality">TOWNSVILLE MAIL CENTRE</addressPart>
+                  <addressPart type="stateOrTerritory">Queensland</addressPart>
+                  <addressPart type="postCode">4810</addressPart>
+                  <addressPart type="country">Australia</addressPart>
+               </physical>
+            </address>
+         </location>
+      </party>
+   </registryObject>
+</registryObjects>
