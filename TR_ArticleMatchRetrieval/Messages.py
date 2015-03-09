@@ -4,8 +4,8 @@ requestTemplate = \
         <list>
             <!-- WHO'S REQUESTING -->
             <map>
-                <val name="username">ANDS</val>
-                <val name="password">ANDS!2015</val>
+                <val name="username">{0}</val>
+                <val name="password">{1}</val>
             </map>
             <!-- WHAT'S REQUESTED -->
             <map>
