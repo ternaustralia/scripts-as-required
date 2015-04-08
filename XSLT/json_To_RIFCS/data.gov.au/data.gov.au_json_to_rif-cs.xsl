@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:custom="http://custom.nowhere.yet"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+    xmlns:custom="http://custom.nowhere.yet"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects">
     <!-- stylesheet to convert data.gov.au xml (transformed from json with python script) to RIF-CS -->
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
@@ -250,7 +251,7 @@
                 </relation>
             </relatedObject>
 
-            <xsl:apply-templates select="../." mode="collection_relatedInfo"/>
+            <!--xsl:apply-templates select="../." mode="collection_relatedInfo"/-->
         </xsl:if>
     </xsl:template>
 
@@ -289,30 +290,6 @@
             </description>
         </xsl:if>
     </xsl:template>
-
-    <!-- Collection - Coverage Spatial Element -->
-    <!--xsl:template match="spatial_coverage" mode="collection_coverage_spatial">
-        <xsl:if test="string-length(normalize-space(.)) > 0">
-            <xsl:variable name="spatial_sequence" as="xs:string*">
-                <xsl:call-template name="splitText">
-                    <xsl:with-param name="string" select="normalize-space(.)"/>
-                </xsl:call-template>
-            </xsl:variable>
-            <xsl:for-each select="$spatial_sequence">
-                <xsl:variable name="spatial" select='.'/>
-                <xsl:if test="(string-length($spatial) > 0) and not(boolean(contains(lower-case($spatial), 'not specified')))">
-                    <coverage>
-                         <spatial>
-                             <xsl:attribute name="type">
-                                 <xsl:text>text</xsl:text>
-                             </xsl:attribute>
-                             <xsl:value-of select="."/>
-                         </spatial>
-                    </coverage>
-                </xsl:if>
-            </xsl:for-each>
-        </xsl:if>
-    </xsl:template-->
 
     <xsl:template match="spatial_coverage" mode="collection_coverage_spatial">
         <xsl:variable name="spatial" select="normalize-space(.)"/>
@@ -367,55 +344,7 @@
             <xsl:variable name="url" select="normalize-space(url)"/>
             <xsl:message select="concat('url: ', $url)"/>
             <xsl:if test="string-length($url)">
-                <xsl:variable name="serviceUrl">
-                    <xsl:choose>
-                        <xsl:when test="contains($url, '?')">
-                            <!-- Indicates parameters -->
-                            <xsl:variable name="baseURL" select="substring-before($url, '?')"/>
-                            <xsl:choose>
-                                <xsl:when
-                                    test="substring($baseURL, string-length($baseURL), 1) = '/'">
-                                    <xsl:value-of
-                                        select="substring($baseURL, 1, string-length($baseURL)-1)"/>
-                                </xsl:when>
-                                <xsl:otherwise>
-                                    <xsl:value-of select="$baseURL"/>
-                                </xsl:otherwise>
-                            </xsl:choose>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <xsl:if
-                                test="contains(lower-case(normalize-space(resource_type)), 'api')">
-                                <xsl:choose>
-                                    <xsl:when test="contains($url, '?')">
-                                        <!-- Indicates parameters -->
-                                        <xsl:variable name="baseURL"
-                                            select="substring-before($url, '?')"/>
-                                        <!-- obtain base url before '?' and parameters -->
-                                        <xsl:choose>
-                                            <xsl:when
-                                                test="substring($baseURL, string-length($baseURL), 1) = '/'">
-                                                <!-- remove trailing backslash if there is one -->
-                                                <xsl:value-of
-                                                  select="substring($baseURL, 1, string-length($baseURL)-1)"
-                                                />
-                                            </xsl:when>
-                                            <xsl:otherwise>
-                                                <xsl:value-of select="$baseURL"/>
-                                            </xsl:otherwise>
-                                        </xsl:choose>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <!-- retrieve url before file name and extension if there is one-->
-                                        <xsl:value-of
-                                            select="string-join(tokenize($url,'/')[position()!=last()],'/')"
-                                        />
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </xsl:if>
-                        </xsl:otherwise>
-                    </xsl:choose>
-                </xsl:variable>
+               <xsl:variable name="serviceUrl" select="custom:getServiceUrl(.)"/>
                 <xsl:choose>
                     <xsl:when test="string-length($serviceUrl) > 0">
                         <xsl:message select="concat('serviceUrl: ', $serviceUrl)"/>
@@ -432,6 +361,11 @@
                                 <title>
                                     <xsl:value-of select="name"/>
                                 </title>
+                            </xsl:if>
+                            <xsl:if test="string-length(normalize-space(description))">
+                                <notes>
+                                    <xsl:value-of select="normalize-space(description)"/>
+                                </notes>
                             </xsl:if>
                         </relatedInfo>
                     </xsl:when>
@@ -584,8 +518,7 @@
             <registryObject group="{$global_group}">
 
                 <key>
-                    <xsl:value-of
-                        select="concat($global_group, '/', translate(lower-case($title),' ',''))"/>
+                    <xsl:value-of select="concat($global_group, '/', translate(lower-case($title),' ',''))"/>
                 </key>
 
                 <originatingSource>
@@ -646,6 +579,31 @@
                             <xsl:value-of select="normalize-space(description)"/>
                         </description>
                     </xsl:if>
+                    
+                    <xsl:for-each select="../resources">
+                        <xsl:message>resources</xsl:message>
+                        <xsl:variable name="serviceUrl" select="custom:getServiceUrl(.)"/>
+                        <xsl:if test="string-length($serviceUrl) > 0">
+                            <xsl:message select="concat('resources serviceUrl: ', $serviceUrl)"/>
+                            <relatedInfo type="service">
+                                <identifier type="uri">
+                                    <xsl:value-of select="$serviceUrl"/>
+                                </identifier>
+                                <relation type="isManagerOf"/>
+                                <xsl:if test="string-length(name) > 0">
+                                    <title>
+                                        <xsl:value-of select="name"/>
+                                    </title>
+                                </xsl:if>
+                                <xsl:if test="string-length(normalize-space(description))">
+                                    <notes>
+                                        <xsl:value-of select="normalize-space(description)"/>
+                                    </notes>
+                                </xsl:if>
+                            </relatedInfo>
+                        </xsl:if>
+                    </xsl:for-each>
+                    
                 </party>
             </registryObject>
         </xsl:if>
@@ -748,11 +706,7 @@
                             <xsl:value-of select="$serviceURI"/>
                         </identifier>
 
-                        <xsl:variable name="serviceName">
-                            <xsl:call-template name="getServiceName">
-                                <xsl:with-param name="url" select="$serviceURI"/>
-                            </xsl:call-template>
-                        </xsl:variable>
+                        <xsl:variable name="serviceName" select="custom:getServiceName($serviceURI)"/>
 
                         <name type="primary">
                             <namePart>
@@ -888,7 +842,7 @@
         </rights>
     </xsl:template>
 
-    <xsl:template name="getServiceName">
+    <xsl:function name="custom:getServiceName">
         <xsl:param name="url"/>
         <xsl:choose>
             <xsl:when test="contains($url, 'rest/services/')">
@@ -907,26 +861,58 @@
                 </xsl:for-each>
             </xsl:otherwise>
         </xsl:choose>
-    </xsl:template>
+    </xsl:function>
 
-    <xsl:template name="splitText" as="xs:string*">
-        <xsl:param name="string"/>
-        <xsl:param name="separator" select="','"/>
+    <xsl:function name="custom:getServiceUrl">
+        <xsl:param name="resources"/>
+        <xsl:variable name="url" select="$resources/url"/>
+        <xsl:message select="concat('getServiceUrl url: ', $url)"/>
         <xsl:choose>
-            <xsl:when test="contains($string, $separator)">
-                <xsl:if test="not(starts-with($string, $separator))">
-                    <xsl:value-of select="substring-before($string, $separator)"/>
-                </xsl:if>
-                <xsl:call-template name="splitText">
-                    <xsl:with-param name="string"
-                        select="normalize-space(substring-after($string,$separator))"/>
-                </xsl:call-template>
+            <xsl:when test="contains($url, '?')">
+                <!-- Indicates parameters -->
+                <xsl:variable name="baseURL" select="substring-before($url, '?')"/>
+                <xsl:choose>
+                    <xsl:when
+                        test="substring($baseURL, string-length($baseURL), 1) = '/'">
+                        <xsl:value-of
+                            select="substring($baseURL, 1, string-length($baseURL)-1)"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:value-of select="$baseURL"/>
+                    </xsl:otherwise>
+                </xsl:choose>
             </xsl:when>
             <xsl:otherwise>
-                <xsl:if test="string-length(normalize-space($string)) > 0">
-                    <xsl:value-of select="$string"/>
+                <xsl:if
+                    test="contains(lower-case(normalize-space($resources/resource_type)), 'api')">
+                    <xsl:choose>
+                        <xsl:when test="contains($url, '?')">
+                            <!-- Indicates parameters -->
+                            <xsl:variable name="baseURL"
+                                select="substring-before($url, '?')"/>
+                            <!-- obtain base url before '?' and parameters -->
+                            <xsl:choose>
+                                <xsl:when
+                                    test="substring($baseURL, string-length($baseURL), 1) = '/'">
+                                    <!-- remove trailing backslash if there is one -->
+                                    <xsl:value-of
+                                        select="substring($baseURL, 1, string-length($baseURL)-1)"
+                                    />
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:value-of select="$baseURL"/>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <!-- retrieve url before file name and extension if there is one-->
+                            <xsl:value-of
+                                select="string-join(tokenize($url,'/')[position()!=last()],'/')"
+                            />
+                        </xsl:otherwise>
+                    </xsl:choose>
                 </xsl:if>
             </xsl:otherwise>
         </xsl:choose>
-    </xsl:template>
+    </xsl:function>
 </xsl:stylesheet>
