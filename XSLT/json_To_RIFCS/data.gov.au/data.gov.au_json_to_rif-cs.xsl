@@ -339,12 +339,15 @@
 
     <!-- Collection - Related Info Element - Services -->
     <xsl:template match="result" mode="collection_relatedInfo">
+        <xsl:variable name="organizationTitle" select="organization/title"/>
         <!-- Related Services -->
         <xsl:for-each select="resources">
             <xsl:variable name="url" select="normalize-space(url)"/>
             <xsl:message select="concat('url: ', $url)"/>
             <xsl:if test="string-length($url)">
-               <xsl:variable name="serviceUrl" select="custom:getServiceUrl(.)"/>
+                <xsl:variable name="serviceUrl" select="custom:getServiceUrl(.)"/>
+                <xsl:variable name="serviceName" select="custom:getServiceName($serviceUrl)"/>
+                
                 <xsl:choose>
                     <xsl:when test="string-length($serviceUrl) > 0">
                         <xsl:message select="concat('serviceUrl: ', $serviceUrl)"/>
@@ -353,19 +356,30 @@
                                 <xsl:value-of select="$serviceUrl"/>
                             </identifier>
                             <relation type="supports">
+                                <xsl:if test="string-length(name) > 0">
+                                    <description>
+                                        <xsl:value-of select="name"/>
+                                    </description>
+                                </xsl:if>
                                 <url>
                                     <xsl:value-of select="$url"/>
                                 </url>
                             </relation>
-                            <xsl:if test="string-length(name) > 0">
+                            <xsl:if test="string-length($organizationTitle) > 0 or string-length($serviceName) > 0">
                                 <title>
-                                    <xsl:value-of select="name"/>
+                                    <xsl:choose>
+                                        <xsl:when test="string-length($serviceName)">
+                                            <xsl:value-of
+                                                select="concat($serviceName, ' for access to ', $organizationTitle, ' data')"
+                                            />
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:value-of
+                                                select="concat('Service for access to ', $organizationTitle, ' data')"
+                                            />
+                                        </xsl:otherwise>
+                                    </xsl:choose>
                                 </title>
-                            </xsl:if>
-                            <xsl:if test="string-length(normalize-space(description))">
-                                <notes>
-                                    <xsl:value-of select="normalize-space(description)"/>
-                                </notes>
                             </xsl:if>
                         </relatedInfo>
                     </xsl:when>
@@ -382,14 +396,7 @@
                                      </identifier>
                                  </xsl:if>
                                  <xsl:variable name="format" select="'Tabular data in JSON'"/>
-                                 <relation type="supports">
-                                     <url>
-                                         <xsl:value-of
-                                             select="concat($global_baseURI, 'api/3/action/datastore_search?resource_id=', $id)"
-                                         />
-                                     </url>
-                                 </relation>
-                                 <title>
+                                 <xsl:variable name="description">
                                      <xsl:choose>
                                          <xsl:when test="string-length(normalize-space(name))">
                                              <xsl:value-of select="concat(normalize-space(name), ' (',$format, ')')"
@@ -399,11 +406,37 @@
                                              <xsl:value-of select="concat('(',$format, ')')"/>
                                          </xsl:otherwise>
                                      </xsl:choose>
-                                 </title>
-                                 <xsl:if test="string-length(normalize-space(description))">
-                                     <notes>
-                                         <xsl:value-of select="normalize-space(description)"/>
-                                     </notes>
+                                     <xsl:if test="string-length(normalize-space(description))">
+                                        <xsl:value-of select="concat(' ', normalize-space(description))"/>
+                                     </xsl:if>
+                                 </xsl:variable>
+                                 <relation type="supports">
+                                     <xsl:if test="string-length(normalize-space($description)) > 0">
+                                        <description>
+                                           <xsl:value-of select="$description"/>
+                                        </description>
+                                     </xsl:if>
+                                     <url>
+                                         <xsl:value-of
+                                             select="concat($global_baseURI, 'api/3/action/datastore_search?resource_id=', $id)"
+                                         />
+                                     </url>
+                                 </relation>
+                                 <xsl:if test="string-length($organizationTitle) > 0 or string-length($serviceName) > 0">
+                                     <title>
+                                         <xsl:choose>
+                                             <xsl:when test="string-length($serviceName)">
+                                                 <xsl:value-of
+                                                     select="concat($serviceName, ' for access to ', $organizationTitle, ' data')"
+                                                 />
+                                             </xsl:when>
+                                             <xsl:otherwise>
+                                                 <xsl:value-of
+                                                     select="concat('Service at ', $global_baseURI)"
+                                                 />
+                                             </xsl:otherwise>
+                                         </xsl:choose>
+                                     </title>
                                  </xsl:if>
                              </relatedInfo>
                          </xsl:if>
@@ -583,6 +616,7 @@
                     <xsl:for-each select="../resources">
                         <xsl:message>resources</xsl:message>
                         <xsl:variable name="serviceUrl" select="custom:getServiceUrl(.)"/>
+                        <xsl:variable name="serviceName" select="custom:getServiceName($serviceUrl)"/>
                         <xsl:if test="string-length($serviceUrl) > 0">
                             <xsl:message select="concat('resources serviceUrl: ', $serviceUrl)"/>
                             <relatedInfo type="service">
@@ -590,15 +624,21 @@
                                     <xsl:value-of select="$serviceUrl"/>
                                 </identifier>
                                 <relation type="isManagerOf"/>
-                                <xsl:if test="string-length(name) > 0">
+                                <xsl:if test="string-length($title) > 0 or string-length($serviceName) > 0">
                                     <title>
-                                        <xsl:value-of select="name"/>
+                                        <xsl:choose>
+                                            <xsl:when test="string-length($serviceName)">
+                                                <xsl:value-of
+                                                    select="concat($serviceName, ' for access to ', $title, ' data')"
+                                                />
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:value-of
+                                                    select="concat('Service for access to ', $title, ' data')"
+                                                />
+                                            </xsl:otherwise>
+                                        </xsl:choose>
                                     </title>
-                                </xsl:if>
-                                <xsl:if test="string-length(normalize-space(description))">
-                                    <notes>
-                                        <xsl:value-of select="normalize-space(description)"/>
-                                    </notes>
                                 </xsl:if>
                             </relatedInfo>
                         </xsl:if>
@@ -713,12 +753,12 @@
                                 <xsl:choose>
                                     <xsl:when test="string-length($serviceName)">
                                         <xsl:value-of
-                                            select="concat($serviceName, ' - ', $organizationTitle)"
+                                            select="concat($serviceName, ' for access to ', $organizationTitle, ' data')"
                                         />
                                     </xsl:when>
                                     <xsl:otherwise>
                                         <xsl:value-of
-                                            select="concat('Service linked to ', $organizationTitle)"
+                                            select="concat('Service for access to ', $organizationTitle, ' data')"
                                         />
                                     </xsl:otherwise>
                                 </xsl:choose>
@@ -731,7 +771,7 @@
                                     <xsl:text>brief</xsl:text>
                                 </xsl:attribute>
                                 <xsl:value-of
-                                    select="concat('Description of organisation that provides this service: ',  $organizationDescription)"
+                                    select="concat('Service for access to ', $organizationTitle, ' data - ',  $organizationDescription)"
                                 />
                             </description>
                         </xsl:if>

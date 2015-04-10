@@ -99,8 +99,7 @@ def testArticleList():
     articleList = list()
 
     articleList.append(Article({'uid': 'DRCI:DATA2014050004990054'}))
-    #articleList.append(Article({'ut': 'http://hdl.handle.net/10536/DRO/DU:30046067'}))
-    #articleList.append(Article({'sourceURL': 'http://hdl.handle.net/10536/DRO/DU:30046067'}))
+    articleList.append(Article({'sourceURL': 'http://hdl.handle.net/10536/DRO/DU:30046067'}))
 
     articleList.append(Article({'doi': '10.14264/uql.2014.80'}))
 
