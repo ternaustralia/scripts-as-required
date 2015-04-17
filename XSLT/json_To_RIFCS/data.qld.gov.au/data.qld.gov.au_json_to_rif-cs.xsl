@@ -107,7 +107,7 @@
 
                 <xsl:apply-templates select="spatial_coverage" mode="collection_coverage_spatial"/>
 
-                <xsl:apply-templates select="." mode="collection_relatedInfo"/>
+                <xsl:apply-templates select="isopen" mode="collection_rights_accessRights"/>
 
                 <xsl:call-template name="collection_license">
                     <xsl:with-param name="title" select="license_title"/>
@@ -115,6 +115,9 @@
                     <xsl:with-param name="url" select="license_url"/>
                 </xsl:call-template>
 
+                <xsl:apply-templates select="." mode="collection_relatedInfo"/>
+                
+                
                 <!--xsl:apply-templates select="" 
                     mode="collection_relatedInfo"/-->
 
@@ -290,6 +293,14 @@
         </xsl:if>
     </xsl:template>
 
+    <xsl:template match="isopen" mode="collection_rights_accessRights">
+        <xsl:if test="contains(lower-case(.), 'true')">
+            <rights>
+                <accessRights type="open"/>
+            </rights>
+        </xsl:if>
+    </xsl:template>
+   
     <xsl:template match="spatial_coverage" mode="collection_coverage_spatial">
         <xsl:variable name="spatial" select="normalize-space(.)"/>
         <xsl:variable name="coordinate_sequence" as="xs:string*">
@@ -476,7 +487,7 @@
         </xsl:for-each>
     </xsl:template>
 
-    <!-- Collection - CitationInfo Element -->
+        <!-- Collection - CitationInfo Element -->
     <xsl:template name="collection_citation">
         <xsl:param name="title"/>
         <xsl:param name="id"/>
@@ -613,7 +624,7 @@
                             <xsl:value-of select="normalize-space(description)"/>
                         </description>
                     </xsl:if>
-                                        <xsl:for-each select="../resources">
+                                                            <xsl:for-each select="../resources">
                         <xsl:message>resources</xsl:message>
                         <xsl:variable name="serviceUrl" select="custom:getServiceUrl(.)"/>
                         <xsl:variable name="serviceName" select="custom:getServiceName($serviceUrl)"/>
