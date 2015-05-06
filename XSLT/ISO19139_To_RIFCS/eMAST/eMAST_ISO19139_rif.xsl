@@ -183,8 +183,8 @@
                         <xsl:apply-templates select="gmd:parentIdentifier"
                             mode="registryObject_related_object"/>
     
-                        <xsl:copy-of select="custom:set_registryObject_location_metadata($locationURL)"/>
-                        <xsl:copy-of select="custom:set_registryObject_location_metadata($dataSetURI)"/>
+                        <xsl:copy-of select="custom:set_registryObject_location_metadata($locationURL, 'landingPage')"/>
+                        <!--xsl:copy-of select="custom:set_registryObject_location_metadata($dataSetURI, 'directDownload')"/-->
                                                
                         <xsl:for-each-group
                             select="descendant::gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification) and (string-length(normalize-space(gmd:individualName))) > 0] |
@@ -251,6 +251,10 @@
                             select="descendant::gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent[ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification]"
                             mode="registryObject_coverage_temporal_period"/>
     
+                        <xsl:apply-templates
+                            select="gmd:dataSetURI"
+                            mode="registryObject_relatedInfo_data_via_service"/>
+                        
                         <xsl:apply-templates
                             select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions"
                             mode="registryObject_relatedInfo"/>
@@ -492,12 +496,16 @@
     <!-- RegistryObject - Location Element  -->
     <xsl:function name="custom:set_registryObject_location_metadata">
         <xsl:param name="uri"/>
+        <xsl:param name="target"/>
         <xsl:if test="string-length(normalize-space($uri)) > 0">
             <location>
                 <address>
                     <electronic>
                         <xsl:attribute name="type">
                             <xsl:text>url</xsl:text>
+                        </xsl:attribute>
+                        <xsl:attribute name="target">
+                            <xsl:value-of select="$target"/>
                         </xsl:attribute>
                         <value>
                             <xsl:value-of select="normalize-space($uri)"/>
@@ -656,7 +664,7 @@
     <!-- RegistryObject - Decription Element -->
     <xsl:template match="gmd:abstract" mode="registryObject_description_brief">
         <xsl:if test="string-length(normalize-space(.)) > 0">
-            <description type="brief">
+            <description type="full">
                 <xsl:value-of select="."/>
             </description>
         </xsl:if>
@@ -828,7 +836,24 @@
             </coverage>
         </xsl:if>
     </xsl:template>
-
+    
+    <!--RegistryObject - RelatedInfo Element -->
+    <xsl:template match="gmd:dataSetURI" mode="registryObject_relatedInfo_data_via_service">
+        <xsl:variable name="dataAccessLink" select="normalize-space(.)"/>
+        <xsl:if test="contains($dataAccessLink, 'thredds/catalog')">
+            <relatedInfo type="service">
+                <identifier type="uri">
+                    <xsl:value-of select="concat(substring-before($dataAccessLink, 'thredds/catalog'), 'thredds/catalog.html')"/>
+                </identifier>
+                <relation type="supports">
+                    <description>Data via the thredds server</description>
+                    <url><xsl:value-of select="$dataAccessLink"/></url>
+                </relation>
+                <title>thredds server</title>
+            </relatedInfo>
+        </xsl:if>
+    </xsl:template>
+ 
     <!-- RegistryObject - RelatedInfo Element  -->
     <xsl:template match="gmd:MD_DigitalTransferOptions" mode="registryObject_relatedInfo">
         <xsl:for-each select="gmd:onLine/gmd:CI_OnlineResource">
@@ -1174,8 +1199,16 @@
                         contains(lower-case($otherConstraints), 'license')">
                         <rights>
                             <licence>
+                                <xsl:if test="contains(lower-case($otherConstraints), 'tern-by')">
+                                    <xsl:attribute name="type">TERN-BY</xsl:attribute>
+                                </xsl:if>
                                 <xsl:value-of select="$otherConstraints"/>
                             </licence>
+                        </rights>
+                    </xsl:when>
+                    <xsl:when test="contains(lower-case($otherConstraints), 'freely download')">
+                        <rights>
+                            <accessRights type="open"/>
                         </rights>
                     </xsl:when>
                     <xsl:otherwise>

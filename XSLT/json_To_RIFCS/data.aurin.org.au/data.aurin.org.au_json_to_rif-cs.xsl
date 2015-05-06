@@ -6,6 +6,7 @@
     <!-- stylesheet to convert data.gov.au xml (transformed from json with python script) to RIF-CS -->
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
+    <xsl:param name="global_portalURI" select="'https://portal.aurin.org.au'"/>
     <xsl:param name="global_originatingSource" select="'External Data Hub'"/>
     <xsl:param name="global_baseURI" select="'http://data.aurin.org.au/'"/>
     <xsl:param name="global_baseGroupURI" select="'http://data.aurin.org.au/uploads/group/'"/>
@@ -111,15 +112,16 @@
 
                 <xsl:apply-templates select="notes" mode="collection_description"/>
 
-                <xsl:apply-templates select="spatial_coverage" mode="collection_coverage_spatial"/>
-
-                <xsl:apply-templates select="." mode="collection_relatedInfo"/>
+                <xsl:apply-templates select="isopen" mode="collection_rights_accessRights"/>
 
                 <xsl:call-template name="collection_license">
                     <xsl:with-param name="title" select="license_title"/>
                     <xsl:with-param name="id" select="license_id"/>
                     <xsl:with-param name="url" select="license_url"/>
                 </xsl:call-template>
+
+                <xsl:apply-templates select="." mode="collection_relatedInfo"/>
+
 
                 <!--xsl:apply-templates select="" 
                     mode="collection_relatedInfo"/-->
@@ -209,10 +211,7 @@
         <xsl:if test="string-length($name)">
             <location>
                 <address>
-                    <electronic>
-                        <xsl:attribute name="type">
-                            <xsl:text>url</xsl:text>
-                        </xsl:attribute>
+                    <electronic type="url" target="landingPage">
                         <value>
                             <xsl:value-of select="concat($global_baseURI, 'dataset/', $name)"/>
                         </value>
@@ -225,18 +224,20 @@
     <xsl:template match="url" mode="collection_location_url">
         <xsl:variable name="url" select="normalize-space(.)"/>
         <xsl:if test="string-length($url)">
-            <location>
-                <address>
-                    <electronic>
-                        <xsl:attribute name="type">
-                            <xsl:text>url</xsl:text>
-                        </xsl:attribute>
-                        <value>
-                            <xsl:value-of select="$url"/>
-                        </value>
-                    </electronic>
-                </address>
-            </location>
+            <xsl:if test="normalize-space($url) != $global_portalURI">
+                <location>
+                    <address>
+                        <electronic>
+                            <xsl:attribute name="type">
+                                <xsl:text>url</xsl:text>
+                            </xsl:attribute>
+                            <value>
+                                <xsl:value-of select="$url"/>
+                            </value>
+                        </electronic>
+                    </address>
+                </location>
+            </xsl:if>
         </xsl:if>
     </xsl:template>
 
@@ -366,6 +367,22 @@
         </xsl:if>
     </xsl:template>
 
+    <!-- Collection - AccessRights -->
+    <xsl:template match="isopen" mode="collection_rights_accessRights">
+        <xsl:choose>
+            <xsl:when test="contains(lower-case(.), 'true')">
+                <rights>
+                    <accessRights type="open"/>
+                </rights>
+            </xsl:when>
+            <xsl:when test="contains(lower-case(.), 'false')">
+                <rights>
+                    <accessRights type="restricted"/>
+                </rights>
+            </xsl:when>
+        </xsl:choose>
+    </xsl:template>
+    
     <!-- Collection - Citation -->
     <xsl:template match="value" mode="collection_citation">
         <citationInfo>
@@ -424,12 +441,23 @@
 
     <!-- Collection - Related Info Element - Services -->
     <xsl:template match="result" mode="collection_relatedInfo">
+        <xsl:variable name="organizationTitle" select="organization/title"/>
         <!-- Related Services -->
         <xsl:for-each select="resources">
             <xsl:variable name="url" select="normalize-space(url)"/>
             <xsl:message select="concat('url: ', $url)"/>
             <xsl:if test="string-length($url)">
-                <xsl:variable name="serviceUrl" select="custom:getServiceUrl(.)"/>
+                <xsl:variable name="serviceUrl">
+                    <xsl:choose>
+                        <xsl:when test="normalize-space($url) = $global_portalURI">
+                            <xsl:value-of select="$global_portalURI"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:copy-of select="custom:getServiceUrl(.)"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:variable>
+                <xsl:variable name="serviceName" select="custom:getServiceName($serviceUrl)"/>
                 <xsl:choose>
                     <xsl:when test="string-length($serviceUrl) > 0">
                         <xsl:message select="concat('serviceUrl: ', $serviceUrl)"/>
@@ -438,20 +466,34 @@
                                 <xsl:value-of select="$serviceUrl"/>
                             </identifier>
                             <relation type="supports">
+                            <xsl:if test="$serviceUrl != $url">
                                 <url>
                                     <xsl:value-of select="$url"/>
                                 </url>
+                            </xsl:if>
                             </relation>
                             <xsl:if test="string-length(name) > 0">
                                 <title>
                                     <xsl:value-of select="name"/>
                                 </title>
                             </xsl:if>
-                            <xsl:if test="string-length(description) > 0">
-                                <notes>
-                                    <xsl:value-of select="description"/>
-                                </notes>
-                            </xsl:if>
+                            <!--xsl:if
+                                test="string-length($organizationTitle) > 0 or string-length($serviceName) > 0">
+                                <title>
+                                    <xsl:choose>
+                                        <xsl:when test="string-length($serviceName)">
+                                            <xsl:value-of
+                                                select="concat($serviceName, ' for access to ', $organizationTitle, ' data')"
+                                            />
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:value-of
+                                                select="concat('Service for access to ', $organizationTitle, ' data')"
+                                            />
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </title>
+                            </xsl:if-->
                         </relatedInfo>
                     </xsl:when>
                     <xsl:otherwise>
@@ -467,14 +509,7 @@
                                     </identifier>
                                 </xsl:if>
                                 <xsl:variable name="format" select="'Tabular data in JSON'"/>
-                                <relation type="supports">
-                                    <url>
-                                        <xsl:value-of
-                                            select="concat($global_baseURI, 'api/3/action/datastore_search?resource_id=', $id)"
-                                        />
-                                    </url>
-                                </relation>
-                                <title>
+                                <xsl:variable name="description">
                                     <xsl:choose>
                                         <xsl:when test="string-length(normalize-space(name))">
                                             <xsl:value-of
@@ -485,44 +520,73 @@
                                             <xsl:value-of select="concat('(',$format, ')')"/>
                                         </xsl:otherwise>
                                     </xsl:choose>
-                                </title>
-                                <xsl:if test="string-length(normalize-space(description))">
-                                    <notes>
-                                        <xsl:value-of select="normalize-space(description)"/>
-                                    </notes>
+                                    <xsl:if test="string-length(normalize-space(description))">
+                                        <xsl:value-of
+                                            select="concat(' ', normalize-space(description))"/>
+                                    </xsl:if>
+                                </xsl:variable>
+                                <relation type="supports">
+                                    <xsl:if test="string-length(normalize-space($description)) > 0">
+                                        <description>
+                                            <xsl:value-of select="$description"/>
+                                        </description>
+                                    </xsl:if>
+                                    <url>
+                                        <xsl:value-of
+                                            select="concat($global_baseURI, 'api/3/action/datastore_search?resource_id=', $id)"
+                                        />
+                                    </url>
+                                </relation>
+                                <xsl:if
+                                    test="string-length($organizationTitle) > 0 or string-length($serviceName) > 0">
+                                    <title>
+                                        <xsl:choose>
+                                            <xsl:when test="string-length($serviceName)">
+                                                <xsl:value-of
+                                                  select="concat($serviceName, ' for access to ', $organizationTitle, ' data')"
+                                                />
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:value-of
+                                                  select="concat('Service at ', $global_baseURI)"/>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
+                                    </title>
                                 </xsl:if>
                             </relatedInfo>
 
                         </xsl:if>
-                        <location>
-                            <address>
-                                <electronic type="url" target="directDownload">
-                <value>
-                                        <xsl:value-of select="normalize-space(url)"/>
-                </value>
-                                    <xsl:if test="string-length(name) > 0">
-                    <title>
-                        <xsl:value-of select="name"/>
-                    </title>
-                </xsl:if>
-                <xsl:if test="string-length(normalize-space(description))">
-                                        <notes>
-                                            <xsl:value-of select="normalize-space(description)"/>
-                </notes>
-                    </xsl:if>
-                        <xsl:if test="string-length(mimetype) > 0">
-                            <mediaType>
-                        <xsl:value-of select="mimetype"/>
-                        </mediaType>
-                    </xsl:if>
-                <xsl:if test="string-length(size) > 0">
-                    <byteSize>
-                        <xsl:value-of select="size"/>
-                    </byteSize>
-                </xsl:if>
-            </electronic>
-        </address>
-                        </location>
+                        <xsl:if test="normalize-space($url) != $global_portalURI">
+                            <location>
+                                <address>
+                                    <electronic type="url" target="directDownload">
+                                        <value>
+                                            <xsl:value-of select="normalize-space(url)"/>
+                                        </value>
+                                        <xsl:if test="string-length(name) > 0">
+                                            <title>
+                                                <xsl:value-of select="name"/>
+                                            </title>
+                                        </xsl:if>
+                                        <xsl:if test="string-length(normalize-space(description))">
+                                            <notes>
+                                                <xsl:value-of select="normalize-space(description)"/>
+                                            </notes>
+                                        </xsl:if>
+                                        <xsl:if test="string-length(mimetype) > 0">
+                                            <mediaType>
+                                                <xsl:value-of select="mimetype"/>
+                                            </mediaType>
+                                        </xsl:if>
+                                        <xsl:if test="string-length(size) > 0">
+                                            <byteSize>
+                                                <xsl:value-of select="size"/>
+                                            </byteSize>
+                                        </xsl:if>
+                                    </electronic>
+                                </address>
+                            </location>
+                        </xsl:if>
                     </xsl:otherwise>
                 </xsl:choose>
             </xsl:if>

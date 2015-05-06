@@ -211,6 +211,9 @@
                         <xsl:attribute name="type">
                             <xsl:text>url</xsl:text>
                         </xsl:attribute>
+                        <xsl:attribute name="target">
+                            <xsl:text>landingPage</xsl:text>
+                        </xsl:attribute>
                         <value>
                             <xsl:value-of select="concat($global_baseURI, 'dataset/', $name)"/>
                         </value>
@@ -228,6 +231,9 @@
                     <electronic>
                         <xsl:attribute name="type">
                             <xsl:text>url</xsl:text>
+                        </xsl:attribute>
+                        <xsl:attribute name="target">
+                            <xsl:text>landingPage</xsl:text>
                         </xsl:attribute>
                         <value>
                             <xsl:value-of select="$url"/>

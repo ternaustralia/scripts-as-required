@@ -40,7 +40,7 @@
         <xsl:variable name="metadataURL">
             <xsl:variable name="name" select="normalize-space(name)"/>
             <xsl:if test="string-length($name)">
-                <xsl:value-of select="concat($global_baseURI, 'dataset/', $name)"/>
+                <xsl:value-of select="concat($global_baseURI, 'data/dataset/', $name)"/>
             </xsl:if>
         </xsl:variable>
 
@@ -181,7 +181,7 @@
                 <xsl:attribute name="type">
                     <xsl:text>uri</xsl:text>
                 </xsl:attribute>
-                <xsl:value-of select="concat($global_baseURI, 'dataset/', normalize-space(.))"/>
+                <xsl:value-of select="concat($global_baseURI, 'data/dataset/', normalize-space(.))"/>
             </identifier>
         </xsl:if>
     </xsl:template>
@@ -210,8 +210,11 @@
                         <xsl:attribute name="type">
                             <xsl:text>url</xsl:text>
                         </xsl:attribute>
+                        <xsl:attribute name="target">
+                            <xsl:text>landingPage</xsl:text>
+                        </xsl:attribute>
                         <value>
-                            <xsl:value-of select="concat($global_baseURI, 'dataset/', $name)"/>
+                            <xsl:value-of select="concat($global_baseURI, 'data/dataset/', $name)"/>
                         </value>
                     </electronic>
                 </address>
@@ -227,6 +230,9 @@
                     <electronic>
                         <xsl:attribute name="type">
                             <xsl:text>url</xsl:text>
+                        </xsl:attribute>
+                        <xsl:attribute name="target">
+                            <xsl:text>landingPage</xsl:text>
                         </xsl:attribute>
                         <value>
                             <xsl:value-of select="$url"/>
@@ -487,7 +493,7 @@
         </xsl:for-each>
     </xsl:template>
 
-        <!-- Collection - CitationInfo Element -->
+            <!-- Collection - CitationInfo Element -->
     <xsl:template name="collection_citation">
         <xsl:param name="title"/>
         <xsl:param name="id"/>
@@ -624,7 +630,7 @@
                             <xsl:value-of select="normalize-space(description)"/>
                         </description>
                     </xsl:if>
-                                                                                                    <xsl:for-each select="../resources">
+                                                                                                                        <xsl:for-each select="../resources">
                         <xsl:message>resources</xsl:message>
                         <xsl:variable name="serviceUrl" select="custom:getServiceUrl(.)"/>
                         <xsl:variable name="serviceName" select="custom:getServiceName($serviceUrl)"/>
