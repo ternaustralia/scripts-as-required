@@ -56,7 +56,7 @@
         <xsl:param name="key" select="oai:header/oai:identifier/text()"/>
         <xsl:param name="class" select="'activity'"/>
         <xsl:param name="type" select="'project'"/>
-        <xsl:param name="originatingSource" select="'Edith Cowan University'"/>
+        <xsl:param name="originatingSource" select="'Southern Cross University'"/>
 
         <registryObject xmlns="http://ands.org.au/standards/rif-cs/registryObjects">
             <xsl:attribute name="group"><xsl:value-of select="$originatingSource"/></xsl:attribute>
