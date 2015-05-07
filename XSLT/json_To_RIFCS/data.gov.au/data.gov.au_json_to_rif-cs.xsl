@@ -311,7 +311,7 @@
     <xsl:template match="spatial_coverage" mode="collection_coverage_spatial">
         <xsl:variable name="spatial" select="normalize-space(.)"/>
         <xsl:variable name="coordinate_sequence" as="xs:string*">
-            <xsl:if test="contains($spatial, 'Polygon') and contains($spatial, 'coordinates')">
+            <xsl:if test="contains($spatial, 'coordinates')">
                 <xsl:analyze-string select="$spatial" regex="\[([^\[]*?)\]">
                     <xsl:matching-substring>
                         <xsl:value-of select="regex-group(0)"/>
