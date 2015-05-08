@@ -378,9 +378,11 @@
                                         <xsl:value-of select="name"/>
                                     </description>
                                 </xsl:if>
-                                <url>
-                                    <xsl:value-of select="$url"/>
-                                </url>
+                                <xsl:if test="not(contains($url, '?')) or string-length(substring-after($url, '?')) > 0">
+                                    <url>
+                                        <xsl:value-of select="$url"/>
+                                    </url>
+                                </xsl:if>
                             </relation>
                             <xsl:if test="string-length($organizationTitle) > 0 or string-length($serviceName) > 0">
                                 <title>

@@ -310,7 +310,7 @@
     <xsl:template match="spatial_coverage" mode="collection_coverage_spatial">
         <xsl:variable name="spatial" select="normalize-space(.)"/>
         <xsl:variable name="coordinate_sequence" as="xs:string*">
-            <xsl:if test="contains($spatial, 'Polygon') and contains($spatial, 'coordinates')">
+            <xsl:if test="contains($spatial, 'coordinates')">
                 <xsl:analyze-string select="$spatial" regex="\[([^\[]*?)\]">
                     <xsl:matching-substring>
                         <xsl:value-of select="regex-group(0)"/>
@@ -377,8 +377,7 @@
                                         <xsl:value-of select="name"/>
                                     </description>
                                 </xsl:if>
-                                <!-- If we have parameters after a '?' -->
-                                <xsl:if test="string-length(substring-after($url, '?')) > 0">
+                                <xsl:if test="not(contains($url, '?')) or string-length(substring-after($url, '?')) > 0">
                                     <url>
                                         <xsl:value-of select="$url"/>
                                     </url>
