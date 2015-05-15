@@ -130,7 +130,7 @@
             <xsl:if test="string-length(.) > 0">
                 <relatedObject>
                     <key>
-                        <xsl:value-of select="translate(normalize-space(.), '', '')"/>
+                        <xsl:value-of select="concat($global_baseURI, '/', translate(normalize-space(.), ' ', ''))"/>
                     </key>
                     <relation type="isEnrichedBy"/>
                     
@@ -323,7 +323,7 @@
         <xsl:for-each select="dc:creator">
             <xsl:if test="string-length(normalize-space(.)) > 0"></xsl:if>
             
-            <xsl:variable name="key" select="translate(normalize-space(.), '', '')"/>
+            <xsl:variable name="key" select="translate(normalize-space(.), ' ', '')"/>
             
             <xsl:variable name="type">
                 <xsl:choose>
@@ -339,7 +339,7 @@
              <xsl:if test="string-length($key) > 0">
                  <registryObject group="{$global_group}">
                      <key>
-                         <xsl:value-of select="$key"/>
+                         <xsl:value-of select="concat($global_baseURI, '/', $key)"/>
                      </key>
                      <originatingSource>
                          <xsl:value-of select="$global_originatingSource"/>
