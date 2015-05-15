@@ -83,7 +83,7 @@ def retrieveXML(count, filePath, uri):
         return resumptionTokenList.item(0).firstChild.data
 
   return None
-   
+  
 # Copied from http://code.activestate.com/recipes/541096-prompt-the-user-for-confirmation/
 def confirm(prompt=None, resp=False):
     """prompts for yes or no response from the user. Returns True for yes and
@@ -134,6 +134,7 @@ usage = "usage: %prog [options] arg1"
 parser = OptionParser(usage=usage)
 parser.add_option("--input", action="store", dest="data_source_uri", help="uri of OAI-PMH data source, e.g. http://spatial-dev.ala.org.au/geonetwork/srv/en/oaipmh")
 parser.add_option("--metadata_prefix", action="store", dest="metadata_prefix", help="metadata prefix, e.g. 'rif' or 'oai_dc' or 'iso19139.anzlic' or 'iso19139.mcp' ")
+parser.add_option("--set", action="store", dest="set", help="set to narrow down what is to be retrieved' ")
 parser.add_option("--output_directory", action="store", dest="output_directory", help="directory to write output to, e.g. 'AIMS'")
 
 (options, args) = parser.parse_args()
@@ -171,6 +172,20 @@ if len(options.metadata_prefix) < 1:
 metadataPrefix = options.metadata_prefix
 dataSourceURI = options.data_source_uri
 outputDirectory = options.output_directory
+subset = options.set
+
+def requestURI(dataSourceURI, subset, metadataPrefix):
+  path = ""
+  if len(dataSourceURI) > 0:
+    path = dataSourceURI+"?verb=ListRecords"
+
+  if len(subset) > 0:
+    path = path+"&set="+subset
+
+  if len(metadataPrefix) > 0:
+    path = path+"&metadataPrefix="+metadataPrefix
+    
+  return path
 
 ###############################################################################################################################
 #
@@ -193,7 +208,9 @@ filePath = outputDirectory + '/' + outFileName
 
 count=0
 
-resumptionToken = retrieveXML(count, filePath, dataSourceURI+"?verb=ListRecords&metadataPrefix="+metadataPrefix)
+requestURI = requestURI(dataSourceURI, subset, metadataPrefix)
+
+resumptionToken = retrieveXML(count, filePath, requestURI)
    
 while resumptionToken is not None:
   assert(len(resumptionToken) > 1)
