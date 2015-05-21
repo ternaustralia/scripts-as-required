@@ -10,6 +10,7 @@
     xmlns:gmx="http://www.isotc211.org/2005/gmx"
     xmlns:oai="http://www.openarchives.org/OAI/2.0/"
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:custom="http://custom.nowhere.yet"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
     exclude-result-prefixes="geonet gmx oai xsi gmd srv gml gco gts">
     <!-- stylesheet to convert iso19139 in OAI-PMH ListRecords response to RIF-CS -->
@@ -23,34 +24,31 @@
     <xsl:variable name="anzsrcCodelist" select="document('anzsrc-codelist.xml')"/>
     <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>
     <xsl:variable name="gmdCodelists" select="document('codelists.xml')"/>
-    <xsl:template match="/">
-        <xsl:apply-templates/>
-    </xsl:template>
     <xsl:template match="oai:responseDate"/>
     <xsl:template match="oai:request"/>
+    <xsl:template match="oai:error"/>
     <xsl:template match="oai:GetRecord/oai:record/oai:header/oai:identifier"/>
     <xsl:template match="oai:GetRecord/oai:record/oai:header/oai:datestamp"/>
     <xsl:template match="oai:GetRecord/oai:record/oai:header/oai:setSpec"/>
-    <xsl:template match="root">
-        <xsl:apply-templates/>
-    </xsl:template>
+    <xsl:template match="oai:ListRecords/oai:record/oai:header/oai:identifier"/>
+    <xsl:template match="oai:ListRecords/oai:record/oai:header/oai:datestamp"/>
+    <xsl:template match="oai:ListRecords/oai:record/oai:header/oai:setSpec"/>
     
     <!-- =========================================== -->
     <!-- RegistryObjects (root) Template             -->
     <!-- =========================================== -->
     
-    <xsl:template match="gmd:MD_Metadata">
+    <xsl:template match="/">
         <registryObjects>
             <xsl:attribute name="xsi:schemaLocation">
                 <xsl:text>http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd</xsl:text>
             </xsl:attribute>
-            <xsl:apply-templates select="." mode="collection"/>
-            <xsl:apply-templates select="." mode="party"/>
+            <xsl:apply-templates select="//*:MD_Metadata" mode="collection"/>
+            <xsl:apply-templates select="//*:MD_Metadata" mode="party"/>
         </registryObjects>
     </xsl:template>
     
-    <!--xsl:template match="node()"/-->
-    
+      
     <!-- =========================================== -->
     <!-- Collection RegistryObject Template          -->
     <!-- =========================================== -->
@@ -70,93 +68,132 @@
                 <xsl:value-of select="$global_originatingSource"/>
             </originatingSource>
             
-            <collection>
-                
-                <xsl:apply-templates select="gmd:hierarchyLevel/gmd:MD_ScopeCode/@codeListValue" 
-                    mode="collection_type_attribute"/>
-                
-                <xsl:apply-templates select="gmd:fileIdentifier" 
-                    mode="collection_identifier"/>
-                
-                <xsl:apply-templates select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:title" 
-                    mode="collection_name"/>
-                
-                <xsl:apply-templates select="gmd:dataSetURI" 
-                    mode="collection_location"/>
-               
-                <xsl:for-each-group select="gmd:contact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) and 
-                    (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)))] | 
-                    gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) and 
-                    (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)))] |
-                    gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) and 
-                    (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)))] |
-                    gmd:identificationInfo/gmd:MD_DataIdentification/gmd:pointOfContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) and 
-                    (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)))]"
-                    group-by="gmd:individualName">
-                    <xsl:apply-templates select="." 
-                        mode="collection_related_object"/>
-                </xsl:for-each-group>
-                
-                <xsl:for-each-group select="gmd:contact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName)) and not(string-length(normalize-space(gmd:individualName)))) and  
-                    (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)))] | 
-                    gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName)) and not(string-length(normalize-space(gmd:individualName)))) and 
-                    (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)))] |
-                    gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName)) and not(string-length(normalize-space(gmd:individualName)))) and 
-                    (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)))] |
-                    gmd:identificationInfo/gmd:MD_DataIdentification/gmd:pointOfContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName)) and not(string-length(normalize-space(gmd:individualName)))) and 
-                    (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)))]"
-                    group-by="gmd:organisationName">
-                    <xsl:apply-templates select="." 
-                        mode="collection_related_object"/>
-                </xsl:for-each-group>
-                
-                <xsl:apply-templates select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:topicCategory/gmd:MD_TopicCategoryCode" 
-                    mode="collection_subject"/>
-                
-                <xsl:apply-templates select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword" 
-                    mode="collection_subject"/>
-                
-                <xsl:apply-templates select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword" 
-                    mode="collection_subject_anzsrc"/>
-                
-                <xsl:apply-templates select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:abstract" 
-                    mode="collection_description"/>
-                
-                <xsl:apply-templates select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_GeographicBoundingBox" 
-                    mode="collection_coverage_spatial"/>
-                
-                <xsl:variable name="organisationOwnerName">
-                    <xsl:apply-templates select="gmd:identificationInfo/gmd:MD_DataIdentification" mode="variable_owner_name"/>
-                </xsl:variable>
-                
-                <xsl:variable name="individualOwnerName">
-                    <xsl:apply-templates select="gmd:identificationInfo/gmd:MD_DataIdentification" mode="variable_individual_name"/>
-                </xsl:variable>
+            <xsl:variable name="scopeCode" select="normalize-space(gmd:hierarchyLevel/*:MD_ScopeCode/@codeListValue)"/>
+            
+            <xsl:variable name="registryObjectTypeSubType_sequence" as="xs:string*" select="custom:getRegistryObjectTypeSubType($scopeCode)"/>
+            <xsl:if test="(count($registryObjectTypeSubType_sequence) = 2)">
+                <xsl:element name="{$registryObjectTypeSubType_sequence[1]}">
                     
-                <xsl:variable name="publishDate">
-                    <xsl:apply-templates select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation" mode="variable_publish_date"/>
-                </xsl:variable>
-                
-                <xsl:call-template name="collection_rights_rightsStatement">
-                    <xsl:with-param name="organisationOwnerName" select="$organisationOwnerName"/>
-                    <xsl:with-param name="individualOwnerName" select="$individualOwnerName"/>
-                    <xsl:with-param name="publishDate" select="$publishDate"/>
-                </xsl:call-template>
-                
-                <xsl:apply-templates select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:resourceConstraints/gmd:MD_LegalConstraints[exists(gmd:useConstraints)]"
-                    mode="collection_rights_licence"/> 
+                    <xsl:attribute name="type">
+                        <xsl:value-of select="$registryObjectTypeSubType_sequence[2]"/>
+                    </xsl:attribute>
+                    
+                    <xsl:if test="$registryObjectTypeSubType_sequence[1] = 'collection'">
                         
-                <xsl:apply-templates select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:resourceConstraints/gmd:MD_LegalConstraints[exists(gmd:accessConstraints)]" 
-                    mode="collection_rights_accessRights"/> 
+                        <xsl:variable name="metadataCreationDate">
+                            <xsl:if test="string-length(normalize-space(gmd:dateStamp/gco:Date)) > 0">
+                                <xsl:value-of select="normalize-space(gmd:dateStamp/gco:Date)"/>
+                            </xsl:if>
+                            <xsl:if test="string-length(normalize-space(gmd:dateStamp/gco:DateTime)) > 0">
+                                <xsl:value-of select="normalize-space(gmd:dateStamp/gco:DateTime)"/>
+                            </xsl:if>
+                        </xsl:variable>
+                        
+                        <xsl:attribute name="dateAccessioned">
+                            <xsl:value-of select="$metadataCreationDate"/>
+                        </xsl:attribute>
+                    </xsl:if>
                 
-                <xsl:for-each select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation">
-                   <xsl:call-template name="collection_citationMetadata_citationInfo">
-                       <xsl:with-param name="dataSetURI" select="$dataSetURI"/>
-                       <xsl:with-param name="citation" select="."/>
-                   </xsl:call-template>
-                </xsl:for-each> 
-               
-            </collection>
+                     <xsl:apply-templates select="gmd:fileIdentifier" 
+                         mode="collection_identifier"/>
+                    
+                    <xsl:apply-templates select="gmd:dataSetURI" 
+                        mode="collection_identifier"/>
+                     
+                     <xsl:apply-templates select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:title" 
+                         mode="collection_name"/>
+                     
+                     <xsl:apply-templates select="gmd:dataSetURI" 
+                         mode="collection_location"/>
+                    
+                    <xsl:apply-templates
+                        select="gmd:distributionInfo/gmd:MD_Distribution"
+                        mode="collection_location_download"/>
+                    
+                     <xsl:for-each-group select="gmd:contact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) and 
+                         (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)))] | 
+                         gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) and 
+                         (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)))] |
+                         gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) and 
+                         (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)))] |
+                         gmd:identificationInfo/gmd:MD_DataIdentification/gmd:pointOfContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) and 
+                         (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)))]"
+                         group-by="gmd:individualName">
+                         <xsl:apply-templates select="." 
+                             mode="collection_related_object"/>
+                     </xsl:for-each-group>
+                     
+                     <xsl:for-each-group select="gmd:contact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName)) and not(string-length(normalize-space(gmd:individualName)))) and  
+                         (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)))] | 
+                         gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName)) and not(string-length(normalize-space(gmd:individualName)))) and 
+                         (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)))] |
+                         gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName)) and not(string-length(normalize-space(gmd:individualName)))) and 
+                         (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)))] |
+                         gmd:identificationInfo/gmd:MD_DataIdentification/gmd:pointOfContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName)) and not(string-length(normalize-space(gmd:individualName)))) and 
+                         (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)))]"
+                         group-by="gmd:organisationName">
+                         <xsl:apply-templates select="." 
+                             mode="collection_related_object"/>
+                     </xsl:for-each-group>
+                     
+                     <xsl:apply-templates select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:topicCategory/gmd:MD_TopicCategoryCode" 
+                         mode="collection_subject"/>
+                     
+                     <xsl:apply-templates select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword" 
+                         mode="collection_subject"/>
+                     
+                     <xsl:apply-templates select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword" 
+                         mode="collection_subject_anzsrc"/>
+                     
+                     <xsl:apply-templates select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:abstract" 
+                         mode="collection_description"/>
+                     
+                     <xsl:apply-templates select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_GeographicBoundingBox" 
+                         mode="collection_coverage_spatial"/>
+                    
+                    <xsl:apply-templates
+                        select="gmd:distributionInfo/gmd:MD_Distribution"
+                        mode="collection_relatedInfo"/>
+                    
+                     
+                     <xsl:variable name="organisationOwnerName">
+                         <xsl:apply-templates select="gmd:identificationInfo/gmd:MD_DataIdentification" mode="variable_owner_name"/>
+                     </xsl:variable>
+                     
+                     <xsl:variable name="individualOwnerName">
+                         <xsl:apply-templates select="gmd:identificationInfo/gmd:MD_DataIdentification" mode="variable_individual_name"/>
+                     </xsl:variable>
+                         
+                     <xsl:variable name="publishDate">
+                         <xsl:apply-templates select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation" mode="variable_publish_date"/>
+                     </xsl:variable>
+                     
+                     <xsl:call-template name="collection_rights_rightsStatement">
+                         <xsl:with-param name="organisationOwnerName" select="$organisationOwnerName"/>
+                         <xsl:with-param name="individualOwnerName" select="$individualOwnerName"/>
+                         <xsl:with-param name="publishDate" select="$publishDate"/>
+                     </xsl:call-template>
+                     
+                     <xsl:apply-templates select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:resourceConstraints/gmd:MD_LegalConstraints[exists(gmd:useConstraints)]"
+                         mode="collection_rights_licence"/> 
+                             
+                     <!--xsl:apply-templates select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:resourceConstraints/gmd:MD_LegalConstraints[exists(gmd:accessConstraints)]" 
+                         mode="collection_rights_accessRights"/--> 
+                    
+                    <xsl:variable name="fees_sequence" select="*:distributionInfo/*:MD_Distribution/*:distributor/*:MD_Distributor/*:distributionOrderProcess/*:MD_StandardOrderProcess/*:fees"/>
+                    <xsl:variable name="restrictionCode_sequence" select="*:identificationInfo/*/*:resourceConstraints/*/*/*:MD_RestrictionCode/@codeListValue"/>
+                    <xsl:variable name="downloaddataURL_sequence" select="custom:getProtocolURL_sequence('download', *:distributionInfo/*:MD_Distribution/*:transferOptions/*:MD_DigitalTransferOptions)"/>
+                    <xsl:variable name="otherConstraints_sequence" select="*:identificationInfo/*/*:resourceConstraints/*/*:otherConstraints"/>
+                    <xsl:copy-of select="custom:set_collection_accessRights($fees_sequence, $downloaddataURL_sequence, $restrictionCode_sequence, $otherConstraints_sequence)"/>
+                     
+                     <xsl:for-each select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation">
+                        <xsl:call-template name="collection_citationMetadata_citationInfo">
+                            <xsl:with-param name="dataSetURI" select="$dataSetURI"/>
+                            <xsl:with-param name="citation" select="."/>
+                        </xsl:call-template>
+                     </xsl:for-each> 
+                </xsl:element>
+            </xsl:if>
         </registryObject>
     </xsl:template>   
     
@@ -216,12 +253,25 @@
     
     <!-- Collection - Identifier Element  -->
     <xsl:template match="gmd:fileIdentifier" mode="collection_identifier">
-        <identifier>
-            <xsl:attribute name="type">
-                 <xsl:text>local</xsl:text>
-            </xsl:attribute>
-            <xsl:value-of select="."/>
-        </identifier>
+        <xsl:if test="string-length(.) > 0">
+            <identifier>
+                <xsl:attribute name="type">
+                     <xsl:text>local</xsl:text>
+                </xsl:attribute>
+                <xsl:value-of select="."/>
+            </identifier>
+        </xsl:if>
+    </xsl:template>
+    
+    <xsl:template match="gmd:dataSetURI" mode="collection_identifier">
+        <xsl:if test="string-length(.) > 0">
+            <identifier>
+                <xsl:attribute name="type">
+                    <xsl:text>uri</xsl:text>
+                </xsl:attribute>
+                <xsl:value-of select="."/>
+            </identifier>
+        </xsl:if>
     </xsl:template>
     
     <!-- Collection - Name Element  -->
@@ -244,12 +294,64 @@
                     <xsl:attribute name="type">
                         <xsl:text>url</xsl:text>
                     </xsl:attribute>
+                     <xsl:attribute name="target">
+                        <xsl:text>landingPage</xsl:text>
+                    </xsl:attribute>
                     <value>
                         <xsl:value-of select="."/>
                     </value>
                 </electronic>
             </address>
        </location>
+    </xsl:template>
+    
+    <!-- RegistryObject - Location Address Electronic Element  -->
+    <xsl:template match="gmd:MD_Distribution" mode="collection_location_download">
+        <xsl:for-each select="*:transferOptions/*:MD_DigitalTransferOptions/*:onLine/*:CI_OnlineResource">
+            <xsl:if test="contains(lower-case(*:protocol), 'download')">
+                <xsl:if test="string-length(normalize-space(*:linkage/*:URL)) > 0">
+                    <xsl:variable name="title" select="*:description"/>
+                    <xsl:variable name="notes" select="''"/>
+                    <xsl:variable name="mediaType" select="*:name/*:MimeFileType/@type"/>
+                    <xsl:variable name="byteSize" select="../../*:transferSize/*:Real"/>
+                    <location>
+                        <address>
+                        <electronic>
+                            <xsl:attribute name="type">
+                                <xsl:text>url</xsl:text>
+                            </xsl:attribute>
+                            <xsl:attribute name="target">
+                                <xsl:text>directDownload</xsl:text>
+                            </xsl:attribute>
+                            <value>
+                                <xsl:value-of select="normalize-space(*:linkage/*:URL)"/>
+                            </value>
+                            <xsl:if test="string-length($title) > 0">
+                                <title>
+                                    <xsl:value-of select="$title"/>
+                                </title>
+                            </xsl:if>
+                            <xsl:if test="string-length($notes) > 0">
+                                <notes>
+                                    <xsl:value-of select="$notes"/>
+                                </notes>
+                            </xsl:if>
+                            <xsl:if test="string-length($mediaType) > 0">
+                                <mediaType>
+                                    <xsl:value-of select="$mediaType"/>
+                                </mediaType>
+                            </xsl:if>
+                            <xsl:if test="string-length($byteSize) > 0">
+                                <byteSize>
+                                    <xsl:value-of select="$byteSize"/>
+                                </byteSize>
+                            </xsl:if>
+                        </electronic>
+                    </address>
+                    </location>   
+                </xsl:if>
+            </xsl:if>
+        </xsl:for-each>
     </xsl:template>
     
     <!-- Collection - Related Object (Organisation or Individual) Element -->
@@ -337,6 +439,156 @@
         </xsl:if>
     </xsl:template>
     
+    <!-- RegistryObject - RelatedInfo Element  -->
+    <xsl:template match="gmd:MD_Distribution" mode="collection_relatedInfo">
+        
+        <xsl:for-each-group select="*:transferOptions/*:MD_DigitalTransferOptions/*:onLine/*:CI_OnlineResource" group-by="*:linkage/*:URL">
+            
+            <xsl:variable name="protocol" select="normalize-space(*:protocol)"/>
+            <!-- metadata-URL was added as electronic address and possibly citation identifier, too
+                (if there was no alternative identifier - e.g. DOI - specified in CI_Citation)
+                Add all other online resources here as relatedInfo -->
+            <xsl:if test="(string-length($protocol) > 0) and not(contains(lower-case($protocol), 'metadata-url'))">
+                
+                <xsl:variable name="url" select="normalize-space(current-grouping-key())"/>
+                <xsl:if test="string-length($url) > 0">
+                    <relatedInfo>
+                        <xsl:choose>
+                            <xsl:when test="contains(lower-case($protocol), 'related')">
+                                <xsl:attribute name="type">
+                                    <xsl:choose>
+                                        <xsl:when test="contains(lower-case($url), 'extpubs')">
+                                            <xsl:text>publication</xsl:text>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:text>website</xsl:text>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </xsl:attribute>
+                                
+                                <identifier>
+                                    <xsl:attribute name="type">
+                                        <xsl:choose>
+                                            <xsl:when test="contains(lower-case($url), 'doi')">
+                                                <xsl:text>doi</xsl:text>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:text>uri</xsl:text>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
+                                    </xsl:attribute>
+                                    <xsl:value-of select="custom:serviceURI($url)"/>
+                                </identifier>
+                                
+                                <relation>
+                                    <xsl:attribute name="type">
+                                        <xsl:choose>
+                                            <xsl:when test="contains(lower-case($url), 'extpubs')">
+                                                <xsl:text>isReferencedBy</xsl:text>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:text>hasAssociationWith</xsl:text>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
+                                    </xsl:attribute>
+                                </relation>
+                            </xsl:when>
+                            <xsl:when test="contains(lower-case($protocol), 'link') or contains(lower-case($protocol), 'ogc:')">
+                                <xsl:attribute name="type">
+                                    <xsl:choose>
+                                        <xsl:when test="contains(lower-case($url), 'datatool')">
+                                            <xsl:text>service</xsl:text>
+                                        </xsl:when>
+                                        <xsl:when test="contains(lower-case($url), 'rss')">
+                                            <xsl:text>service</xsl:text>
+                                        </xsl:when>
+                                        <xsl:when test="contains(lower-case($url), 'services')">
+                                            <xsl:text>service</xsl:text>
+                                        </xsl:when>
+                                        <xsl:when test="contains(lower-case($url), '?')">
+                                            <xsl:text>service</xsl:text>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:text>website</xsl:text>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </xsl:attribute>
+                                
+                                <identifier>
+                                    <xsl:attribute name="type">
+                                        <xsl:choose>
+                                            <xsl:when test="contains(lower-case($url), 'doi')">
+                                                <xsl:text>doi</xsl:text>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:text>uri</xsl:text>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
+                                    </xsl:attribute>
+                                    <xsl:value-of select="custom:serviceURI($url)"/>
+                                </identifier>
+                                
+                                <relation>
+                                    <xsl:attribute name="type">
+                                        <xsl:choose>
+                                            <xsl:when
+                                                test="contains(lower-case($url), 'datatool') or 
+                                                contains(lower-case($url), 'rss') or 
+                                                contains(lower-case($url), 'services') or 
+                                                contains(lower-case($url), '?') or
+                                                contains(lower-case($protocol), 'ogc:')">
+                                                <xsl:text>supports</xsl:text>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:text>hasAssociationWith</xsl:text>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
+                                    </xsl:attribute>
+                                    <xsl:if test="custom:serviceURI($url) != $url">
+                                        <description>
+                                            <xsl:text>Access via service</xsl:text>
+                                        </description>
+                                        <url>
+                                            <xsl:value-of select="$url"/>
+                                        </url>
+                                    </xsl:if> 
+                                </relation>
+                            </xsl:when>
+                        </xsl:choose>
+                        
+                        <xsl:choose>
+                            <!-- Use name as title if we have it... -->
+                            <xsl:when test="string-length(normalize-space(*:name)) > 0">
+                                <title>
+                                    <xsl:value-of select="normalize-space(*:name)"/>
+                                </title>
+                                <!-- ...and then description as notes -->
+                                <xsl:if
+                                    test="string-length(normalize-space(*:description)) > 0">
+                                    <notes>
+                                        <xsl:value-of
+                                            select="normalize-space(*:description)"/>
+                                    </notes>
+                                </xsl:if>
+                            </xsl:when>
+                            <!-- No name, so use description as title if we have it -->
+                            <xsl:otherwise>
+                                <xsl:if
+                                    test="string-length(normalize-space(*:description)) > 0">
+                                    <title>
+                                        <xsl:value-of
+                                            select="normalize-space(*:description)"/>
+                                    </title>
+                                </xsl:if>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                        
+                    </relatedInfo>
+                </xsl:if>
+            </xsl:if>
+        </xsl:for-each-group>
+    </xsl:template>
+    
     <!-- Variable - Owner Name -->
     <xsl:template match="gmd:MD_DataIdentification" mode="variable_owner_name">
         <xsl:call-template name="childValueForRole">
@@ -418,7 +670,7 @@
                 </xsl:if>
             </xsl:variable>
             
-            <xsl:message>Licence type: <xsl:value-of select="$licenceType"></xsl:value-of></xsl:message>
+            <!--xsl:message>Licence type: <xsl:value-of select="$licenceType"></xsl:value-of></xsl:message-->
             
              <xsl:if test="string-length($licenceText)">
                  <rights>
@@ -443,9 +695,8 @@
     </xsl:template>
     
     <!-- Collection - Rights AccessRights Element -->
-    <xsl:template match="gmd:MD_LegalConstraints" mode="collection_rights_accessRights">
+    <!--xsl:template match="gmd:MD_LegalConstraints" mode="collection_rights_accessRights">
         <xsl:for-each select="gmd:accessConstraints">
-            <!-- If there is text in other contraints, use this; otherwise, do nothing -->
             <xsl:if test="string-length(normalize-space(../gmd:otherConstraints))">
                 <rights>
                     <accessRights>
@@ -454,7 +705,7 @@
                 </rights>
             </xsl:if>
         </xsl:for-each>
-    </xsl:template>
+    </xsl:template-->
     
     <xsl:template match="gmd:otherConstraints">
         <xsl:value-of select="gco:CharacterString"/>
@@ -876,7 +1127,7 @@
     </xsl:template>
     
     <xsl:template name="publishNameToUse">
-        <xsl:message>Module: publishNameToUse</xsl:message>
+        <!--xsl:message>Module: publishNameToUse</xsl:message-->
         <xsl:variable name="organisationPublisherName">
             <xsl:call-template name="childValueForRole">
                 <xsl:with-param name="roleSubstring">
@@ -888,7 +1139,7 @@
             </xsl:call-template>
         </xsl:variable>
         
-        <xsl:message>Organisation publisher name: <xsl:value-of select="$organisationPublisherName"></xsl:value-of></xsl:message>
+        <!--xsl:message>Organisation publisher name: <xsl:value-of select="$organisationPublisherName"></xsl:value-of></xsl:message-->
         
         <xsl:variable name="transformedOrganisationPublisherName">
             <xsl:call-template name="transform">
@@ -907,7 +1158,7 @@
             </xsl:call-template>
         </xsl:variable>
         
-        <xsl:message>Individual publisher name: <xsl:value-of select="$individualPublisherName"></xsl:value-of></xsl:message>
+        <!--xsl:message>Individual publisher name: <xsl:value-of select="$individualPublisherName"></xsl:value-of></xsl:message-->
         
         <xsl:variable name="transformedIndividualPublisherName">
             <xsl:call-template name="transform">
@@ -941,7 +1192,7 @@
             </xsl:call-template>
         </xsl:variable>
         
-        <xsl:message>City: <xsl:value-of select="$publishCity"/></xsl:message>
+        <!--xsl:message>City: <xsl:value-of select="$publishCity"/></xsl:message-->
         
         <xsl:variable name="publishCountry">
             <xsl:call-template name="childValueForRole">
@@ -954,7 +1205,7 @@
             </xsl:call-template>
         </xsl:variable>
         
-        <xsl:message>Country: <xsl:value-of select="$publishCountry"/></xsl:message>
+        <!--xsl:message>Country: <xsl:value-of select="$publishCountry"/></xsl:message-->
         
         <xsl:choose>
             <xsl:when test="string-length($publishCity)">
@@ -996,7 +1247,7 @@
                 <xsl:with-param name="inputString" select="$roleSubstring"/>
             </xsl:call-template>
         </xsl:variable>
-        <xsl:message>Child element name: <xsl:value-of select="$childElementName"></xsl:value-of></xsl:message>
+        <!--xsl:message>Child element name: <xsl:value-of select="$childElementName"></xsl:value-of></xsl:message-->
         <xsl:variable name="nameSequence" as="xs:string*">
             <xsl:for-each-group
                 select="descendant::gmd:CI_ResponsibleParty[
@@ -1008,7 +1259,7 @@
                         responsible parties under citation of thesauruses used -->
                     <xsl:when test="contains(local-name(..), 'pointOfContact') or 
                                     contains(local-name(../../..), 'citation')">
-                        <xsl:message>Parent: <xsl:value-of select="ancestor::node()"></xsl:value-of></xsl:message>
+                        <!--xsl:message>Parent: <xsl:value-of select="ancestor::node()"></xsl:value-of></xsl:message-->
                         <xsl:variable name="lowerCode">
                             <xsl:call-template name="toLower">
                                 <xsl:with-param name="inputString" select="gmd:role/gmd:CI_RoleCode/@codeListValue"/>
@@ -1016,7 +1267,7 @@
                         </xsl:variable>
                         <xsl:if test="contains($lowerCode, $lowerRoleSubstring)">
                             <xsl:sequence select="descendant::node()[local-name()=$childElementName]"/> 
-                            <xsl:message>Child value: <xsl:value-of select="descendant::node()[local-name()=$childElementName]"></xsl:value-of></xsl:message>
+                            <!--xsl:message>Child value: <xsl:value-of select="descendant::node()[local-name()=$childElementName]"></xsl:value-of></xsl:message-->
                         </xsl:if>
                     </xsl:when>
                 </xsl:choose>
@@ -1037,7 +1288,7 @@
                 <xsl:value-of select="."/>
             </xsl:for-each>
         </xsl:variable>
-        <xsl:message>Formatted values: <xsl:value-of select="$formattedValues"></xsl:value-of></xsl:message>
+        <!--xsl:message>Formatted values: <xsl:value-of select="$formattedValues"></xsl:value-of></xsl:message-->
         <xsl:value-of select="$formattedValues"/>
     </xsl:template>
     
@@ -1070,4 +1321,148 @@
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
+    
+    <xsl:function name="custom:serviceURI" as="xs:string">
+        <xsl:param name="uri"/>
+        <xsl:choose>
+            <xsl:when test="contains($uri, '?')">
+                <!-- Indicates parameters -->
+                <xsl:variable name="serviceIdentifier">
+                    <xsl:variable name="baseURL" select="substring-before($uri, '?')"/>
+                    <xsl:choose>
+                        <xsl:when
+                            test="substring($baseURL, string-length($baseURL), 1) = '/'">
+                            <xsl:copy-of
+                                select="substring($baseURL, 1, string-length($baseURL)-1)"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:copy-of select="$baseURL"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:variable>
+                <xsl:value-of select="$serviceIdentifier"/>
+            </xsl:when>
+            <xsl:when test="contains($uri, '/')">
+                <xsl:variable name="serviceURI" select="string-join(tokenize($uri,'/')[position()!=last()],'/')"/>
+                <xsl:variable name="serviceName" select="substring-after($uri, $serviceURI)"/>
+                <xsl:choose>
+                    <xsl:when test="contains($serviceName, '.')">
+                        <xsl:value-of select="$serviceURI"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:value-of select="$uri"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="$uri"/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:function>
+    
+    <xsl:function name="custom:serviceName">
+        <xsl:param name="url"/>
+             <xsl:for-each select="tokenize($url, '/')">
+                <xsl:if test="position() = count(tokenize($url, '/'))">
+                    <xsl:value-of select="concat(normalize-space(.), ' service')"/>
+                </xsl:if>
+            </xsl:for-each>
+    </xsl:function>
+    
+    <xsl:function name="custom:sequence_contains" as="xs:boolean">
+        <xsl:param name="sequence" as="xs:string*"/>
+        <xsl:param name="substring" as="xs:string"/>
+        
+        <!--xsl:message select="concat('match substring:', $substring)"/-->
+        
+        <xsl:variable name="matches_sequence" as="xs:string*">
+            <xsl:for-each select="distinct-values($sequence)">
+                <xsl:if test="string-length(normalize-space(.)) > 0">
+                    <xsl:if test="contains(lower-case(normalize-space(.)), $substring)">
+                        <xsl:copy-of select="normalize-space(.)"/>
+                    </xsl:if>
+                </xsl:if>
+            </xsl:for-each>
+        </xsl:variable>
+        
+        <!--xsl:message select="concat('count matches :', count($matches_sequence))"/-->
+        <!--xsl:for-each select="distinct-values($matches_sequence)">
+            <xsl:message select="concat('match :', .)"/>
+        </xsl:for-each-->
+        
+        
+        <xsl:choose>
+            <xsl:when test="count($matches_sequence) > 0">
+                <xsl:copy-of select="true()"/>  
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:copy-of select="false()"/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:function>
+    
+    <xsl:function name="custom:getProtocolURL_sequence" as="xs:string*">
+        <xsl:param name="protocol"/> 
+        <xsl:param name="transferOptions"/>
+        <xsl:for-each select="$transferOptions/*:onLine/*:CI_OnlineResource">
+            <xsl:if test="contains(lower-case(*:protocol), $protocol)">
+                <xsl:variable name="metadataURL" select="normalize-space(*:linkage/*:URL)"/>
+                <xsl:if test="string-length($metadataURL) > 0">
+                    <xsl:copy-of select="$metadataURL"/>
+                </xsl:if>
+            </xsl:if>
+        </xsl:for-each>
+    </xsl:function>
+    
+    <!-- RegistryObject - Access Rights Element  -->
+    <xsl:function name="custom:set_collection_accessRights">
+        <xsl:param name="fees_sequence"/>
+        <xsl:param name="downloaddataURL_sequence"/>
+        <xsl:param name="restrictionCode_sequence"/>
+        <xsl:param name="otherConstraints_sequence"/>
+        
+        <xsl:variable name="totalFee" as="xs:double" select="sum($fees_sequence)"/>
+        <!--xsl:message select="concat('Total fee: ', $totalFee)"/-->
+        <xsl:variable name="type">
+            <xsl:choose>
+                <xsl:when test="$totalFee > 0">
+                     <xsl:text>conditional</xsl:text>
+                </xsl:when>
+                <xsl:when test="boolean(custom:sequence_contains($restrictionCode_sequence, 'restricted')) = true()">
+                    <xsl:text>restricted</xsl:text>
+                </xsl:when>
+                <xsl:when test="boolean(custom:sequence_contains($otherConstraints_sequence, 'public access')) = true()">
+                    <xsl:text>open</xsl:text>
+                </xsl:when>
+                <xsl:when test="count($downloaddataURL_sequence) > 0">
+                    <xsl:text>open</xsl:text>
+                </xsl:when>
+            </xsl:choose>
+        </xsl:variable>
+        <xsl:if test="string-length($type) > 0">
+            <rights>
+                <accessRights>
+                    <xsl:attribute name="type" select="$type"/>
+                </accessRights>
+            </rights>
+        </xsl:if>
+     </xsl:function>
+    
+    <xsl:function name="custom:getRegistryObjectTypeSubType" as="xs:string*">
+        <xsl:param name="scopeCode"/>
+        <xsl:choose>
+            <xsl:when test="substring(lower-case($scopeCode), 0, 21) = 'nongeographicdataset'">
+                <xsl:text>collection</xsl:text>
+                <xsl:text>publication</xsl:text>
+            </xsl:when>
+            <xsl:when test="substring(lower-case($scopeCode), 0, 8) = 'dataset'">
+                <xsl:text>collection</xsl:text>
+                <xsl:text>dataset</xsl:text>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:text>unknown_1</xsl:text>
+                <xsl:text>unknown_2</xsl:text>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:function>
 </xsl:stylesheet>

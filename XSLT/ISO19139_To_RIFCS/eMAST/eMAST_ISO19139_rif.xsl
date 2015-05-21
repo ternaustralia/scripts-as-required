@@ -717,7 +717,7 @@
                                  <xsl:value-of select="concat('; projection=', $crsCode)"/>
                               </xsl:when>
                              <xsl:otherwise>
-                                 <xsl:text>; projection=GDA94</xsl:text>
+                                 <xsl:text></xsl:text>
                              </xsl:otherwise>
                          </xsl:choose>
                      </xsl:variable>
@@ -1186,17 +1186,12 @@
         <xsl:for-each select="$currentNode/gmd:otherConstraints">
             <xsl:variable name="otherConstraints" select="normalize-space(.)"/>
             <!-- If there is text in other contraints, use this; otherwise, do nothing -->
+            <xsl:message select="concat('Other constraints: ', $otherConstraints)"/> 
             <xsl:if test="string-length($otherConstraints) > 0">
                 <xsl:choose>
-                    <xsl:when test="contains(lower-case($otherConstraints), 'copyright')">
-                        <rights>
-                            <rightsStatement>
-                                <xsl:value-of select="$otherConstraints"/>
-                            </rightsStatement>
-                        </rights>
-                    </xsl:when>
-                    <xsl:when test="contains(lower-case($otherConstraints), 'licence') or 
-                        contains(lower-case($otherConstraints), 'license')">
+                    <xsl:when
+                        test="contains(lower-case($otherConstraints), 'licence') or 
+                                contains(lower-case($otherConstraints), 'license')">
                         <rights>
                             <licence>
                                 <xsl:if test="contains(lower-case($otherConstraints), 'tern-by')">
@@ -1204,11 +1199,6 @@
                                 </xsl:if>
                                 <xsl:value-of select="$otherConstraints"/>
                             </licence>
-                        </rights>
-                    </xsl:when>
-                    <xsl:when test="contains(lower-case($otherConstraints), 'freely download')">
-                        <rights>
-                            <accessRights type="open"/>
                         </rights>
                     </xsl:when>
                     <xsl:otherwise>
@@ -1219,7 +1209,13 @@
                         </rights>
                     </xsl:otherwise>
                 </xsl:choose>
-            </xsl:if>
+                
+                <xsl:if test="contains(lower-case($otherConstraints), 'freely download')">
+                    <rights>
+                        <accessRights type="open"/>
+                    </rights>
+                </xsl:if>
+             </xsl:if>
             <xsl:if test="contains(lower-case($otherConstraints), 'picccby')">
                 <rights>
                     <licence><xsl:text disable-output-escaping="yes">&lt;![CDATA[&lt;a href="http://polarcommons.org/ethics-and-norms-of-data-sharing.php"&gt; &lt;img src="http://polarcommons.org/images/PIC_print_small.png" style="border-width:0; width:40px; height:40px;" alt="Polar Information Commons's PICCCBY license."/&gt;&lt;/a&gt;&lt;a rel="license" href="http://creativecommons.org/licenses/by/3.0/" rel="license"&gt; &lt;img alt="Creative Commons License" style="border-width:0; width: 88px; height: 31px;" src="http://i.creativecommons.org/l/by/3.0/88x31.png" /&gt;&lt;/a&gt;]]&gt;</xsl:text>

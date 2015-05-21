@@ -179,7 +179,7 @@ def requestURI(dataSourceURI, subset, metadataPrefix):
   if len(dataSourceURI) > 0:
     path = dataSourceURI+"?verb=ListRecords"
 
-  if len(subset) > 0:
+  if (subset is not None) and (len(subset) > 0):
     path = path+"&set="+subset
 
   if len(metadataPrefix) > 0:
