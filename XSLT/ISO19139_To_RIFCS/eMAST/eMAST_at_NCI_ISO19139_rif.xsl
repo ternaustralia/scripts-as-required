@@ -184,7 +184,7 @@
                             mode="registryObject_related_object"/>
     
                         <xsl:copy-of select="custom:set_registryObject_location_metadata($locationURL, 'landingPage')"/>
-                        <!--xsl:copy-of select="custom:set_registryObject_location_metadata($dataSetURI, 'directDownload')"/-->
+                        <xsl:copy-of select="custom:set_registryObject_location_metadata($dataSetURI, 'directDownload')"/>
                                                
                         <xsl:for-each-group
                             select="descendant::gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification) and (string-length(normalize-space(gmd:individualName))) > 0] |
@@ -250,11 +250,11 @@
                         <xsl:apply-templates
                             select="descendant::gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent[ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification]"
                             mode="registryObject_coverage_temporal_period"/>
-    
+                        
                         <xsl:apply-templates
                             select="gmd:dataSetURI"
                             mode="registryObject_relatedInfo_data_via_service"/>
-                        
+    
                         <xsl:apply-templates
                             select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions"
                             mode="registryObject_relatedInfo"/>
@@ -481,7 +481,7 @@
     <xsl:function name="custom:set_registryObject_location_metadata">
         <xsl:param name="uri"/>
         <xsl:param name="target"/>
-        <xsl:if test="string-length(normalize-space($uri)) > 0">
+        <xsl:if test="string-length(normalize-space($uri)) > 0 and contains($uri, 'http')">
             <location>
                 <address>
                     <electronic>
@@ -696,14 +696,9 @@
                                  select="normalize-space(concat('; uplimit=',gmd:EX_VerticalExtent/gmd:maximumValue/gco:Real,'; downlimit=',gmd:EX_VerticalExtent/gmd:minimumValue/gco:Real))"
                              />
                          </xsl:if>
-                         <xsl:choose>
-                              <xsl:when test="string-length(normalize-space($crsCode)) > 0">
+                              <xsl:if test="string-length(normalize-space($crsCode)) > 0">
                                  <xsl:value-of select="concat('; projection=', $crsCode)"/>
-                              </xsl:when>
-                             <xsl:otherwise>
-                                 <xsl:text></xsl:text>
-                             </xsl:otherwise>
-                         </xsl:choose>
+                              </xsl:if>
                      </xsl:variable>
                      <coverage>
                          <spatial>
@@ -820,24 +815,7 @@
             </coverage>
         </xsl:if>
     </xsl:template>
-    
-    <!--RegistryObject - RelatedInfo Element -->
-    <xsl:template match="gmd:dataSetURI" mode="registryObject_relatedInfo_data_via_service">
-        <xsl:variable name="dataAccessLink" select="normalize-space(.)"/>
-        <xsl:if test="contains($dataAccessLink, 'thredds/catalog')">
-            <relatedInfo type="service">
-                <identifier type="uri">
-                    <xsl:value-of select="concat(substring-before($dataAccessLink, 'thredds/catalog'), 'thredds/catalog.html')"/>
-                </identifier>
-                <relation type="supports">
-                    <description>Data via the thredds server</description>
-                    <url><xsl:value-of select="$dataAccessLink"/></url>
-                </relation>
-                <title>thredds server</title>
-            </relatedInfo>
-        </xsl:if>
-    </xsl:template>
- 
+
     <!-- RegistryObject - RelatedInfo Element  -->
     <xsl:template match="gmd:MD_DigitalTransferOptions" mode="registryObject_relatedInfo">
         <xsl:for-each select="gmd:onLine/gmd:CI_OnlineResource">
@@ -995,6 +973,23 @@
         </xsl:for-each>
     </xsl:template>
     
+    <!--RegistryObject - RelatedInfo Element -->
+    <xsl:template match="gmd:dataSetURI" mode="registryObject_relatedInfo_data_via_service">
+        <xsl:variable name="dataAccessLink" select="normalize-space(.)"/>
+        <xsl:if test="contains($dataAccessLink, 'thredds/catalog')">
+            <relatedInfo type="service">
+                <identifier type="uri">
+                    <xsl:value-of select="concat(substring-before($dataAccessLink, 'thredds/catalog'), 'thredds/catalog.html')"/>
+                </identifier>
+                <relation type="supports">
+                    <description>Data via the thredds server</description>
+                    <url><xsl:value-of select="$dataAccessLink"/></url>
+                </relation>
+                <title>thredds server</title>
+            </relatedInfo>
+        </xsl:if>
+    </xsl:template>
+    
     <xsl:template match="gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:source/gmd:LI_Source" mode="registryObject_relatedInfo">
         <xsl:variable name="relatedType_sequence" as="xs:string*">
             <xsl:call-template name="getRelatedInfoTypeRelationship">
@@ -1077,59 +1072,41 @@
                 </rights>
             </xsl:if>
         </xsl:for-each>
-        <xsl:variable name="codevalue" select="normalize-space($currentNode/gmd:useConstraints[1]/gmd:MD_RestrictionCode/@codeListValue)"/>
+        
         <xsl:for-each select="$currentNode/gmd:otherConstraints">
             <xsl:variable name="otherConstraints" select="normalize-space(.)"/>
-            <!-- If there is text in other contraints, use this; otherwise, do nothing -->
-            <xsl:message select="concat('Other constraints: ', $otherConstraints)"/> 
-            <xsl:if test="string-length($otherConstraints) > 0">
-                <xsl:variable name="licenceText">
-                    <!-- If the code value is Licence and there is text in other contraints, use this; otherwise, use codeDescription -->
-                    <xsl:choose>
-                        <xsl:when test="((lower-case($codevalue) = 'licence') or (lower-case($codevalue) = 'license')) and (string-length($otherConstraints))">
-                            <xsl:value-of select="$otherConstraints"/>
-                        </xsl:when> 
-                        <xsl:otherwise>
-                            <!-- in all othercases, use default content (ignore otherConstraints) -->
-                            <xsl:text>Please contact copyright@ga.gov.au for permission to use this product</xsl:text> 
-                        </xsl:otherwise>
-                    </xsl:choose>
-                </xsl:variable>
-                
-                <!-- From GA, the only licence type mapping we currently have...-->
-                <xsl:variable name="licenceType">
-                    <xsl:if test="(lower-case($codevalue) = 'licence') or (lower-case($codevalue) = 'license')">
-                        <xsl:value-of select="(normalize-space($licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCode']/gmx:codeEntry/gmx:CodeDefinition/gml:identifier[following-sibling::gml:name = replace($otherConstraints, 'icence', 'icense', 'i')]))[1]"/>   
-                    </xsl:if>
-                </xsl:variable>
-                
-                <xsl:variable name="licenceURI">
-                    <xsl:if test="(lower-case($codevalue) = 'licence') or (lower-case($codevalue) = 'license')">
-                        <xsl:value-of select="(normalize-space($licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCode']/gmx:codeEntry/gmx:CodeDefinition/gml:remarks[preceding-sibling::gml:name = replace($otherConstraints, 'icence', 'icense', 'i')]))[1]"/>   
-                    </xsl:if>
-                </xsl:variable>
-                
-                <!--xsl:message>Licence type: <xsl:value-of select="$licenceType"></xsl:value-of></xsl:message-->
-                
+             <xsl:if test="string-length($otherConstraints) > 0">
                 <xsl:choose>
-                    <xsl:when test="string-length($licenceText)">
-                        <rights>
-                            <licence>
-                                <xsl:if test="string-length($licenceURI)">
-                                    <xsl:attribute name="rightsUri">
-                                        <xsl:value-of select='$licenceURI'/>
-                                    </xsl:attribute>
+                    <xsl:when test="contains(preceding-sibling::gmd:useConstraints/gmd:MD_RestrictionCode/@codeListValue, 'licence')">
+                        <xsl:if test="contains($otherConstraints, 'http')">
+                            <xsl:variable name="licenceURI" select="$otherConstraints"/>
+                            <xsl:for-each select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCode']/gmx:codeEntry/gmx:CodeDefinition">
+                                <xsl:message select="concat('remarks: ', gml:remarks)"/>
+                                <xsl:message select="concat('otherConstraints: ', $otherConstraints)"/>
+                                <xsl:if test="string-length(gml:remarks) > 0">
+                                    <xsl:if test="contains($otherConstraints, gml:remarks) or
+                                                    contains(replace($otherConstraints, 'https', 'http'), gml:remarks)">
+                                       <rights>
+                                           <licence>
+                                               <xsl:if test="string-length(gml:identifier)">
+                                                   <xsl:attribute name="type">
+                                                       <xsl:value-of select="gml:identifier"/>
+                                                   </xsl:attribute>
+                                               </xsl:if>
+                                           </licence>
+                                       </rights>
+                                    </xsl:if>
                                 </xsl:if>
-                                <xsl:if test="string-length($licenceType)">
-                                    <xsl:attribute name="type">
-                                        <xsl:value-of select='$licenceType'/>
-                                    </xsl:attribute>
-                                </xsl:if>
-                                <xsl:value-of select='$licenceText'/>
-                            </licence>
-                        </rights>
+                            </xsl:for-each>
+                        </xsl:if>
                     </xsl:when>
                     <xsl:otherwise>
+                        <xsl:if test="contains(lower-case($otherConstraints), 'freely download')">
+                            <rights>
+                                <accessRights type="open"/>
+                            </rights>
+                        </xsl:if>
+                    
                         <rights>
                             <rightsStatement>
                                 <xsl:value-of select="$otherConstraints"/>
@@ -1137,17 +1114,11 @@
                         </rights>
                     </xsl:otherwise>
                 </xsl:choose>
-                
-                <xsl:if test="contains(lower-case($otherConstraints), 'freely download')">
-                    <rights>
-                        <accessRights type="open"/>
-                    </rights>
-                </xsl:if>
-             </xsl:if>
+            </xsl:if>
         </xsl:for-each>
-        
     </xsl:function>
-    <!-- RegistryObject - CitationInfo Element -->
+    
+   <!-- RegistryObject - CitationInfo Element -->
     <xsl:template name="registryObject_citationMetadata_citationInfo">
         <xsl:param name="locationURL"/>
         <xsl:param name="originatingSource"/>
