@@ -1439,7 +1439,8 @@
                 </xsl:when>
             </xsl:choose>
         </xsl:variable>
-        <xsl:if test="string-length($type) > 0">
+        <!-- only indicate open datasets at the moment - until we've verified whether fee implies 'conditional' or 'open'-->
+        <xsl:if test="string-length($type) > 0 and ($type = 'open')">
             <rights>
                 <accessRights>
                     <xsl:attribute name="type" select="$type"/>
