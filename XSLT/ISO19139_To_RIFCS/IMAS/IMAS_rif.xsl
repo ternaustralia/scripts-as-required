@@ -693,6 +693,9 @@
                         <xsl:variable name="notes" select="''"/>
                         <xsl:variable name="mediaType" select="*:name/*:MimeFileType/@type"/>
                         <xsl:variable name="byteSize" select="../../*:transferSize/*:Real"/>
+                        <rights>
+                            <accessRights type='open'/>
+                        </rights>
                         <location>
                             <address>
                             <electronic>
@@ -1361,7 +1364,7 @@
         </xsl:if>
 
     </xsl:template>
-
+    
     <!-- RegistryObject - Rights AccessRights Element -->
     <xsl:template match="gmd:MD_Constraints" mode="registryObject_rights_accessRights">
         <xsl:for-each select="gmd:otherConstraints">
@@ -1828,15 +1831,22 @@
             </xsl:for-each>
         </xsl:variable>
         <xsl:for-each select="distinct-values($url_sequence)">
-            <location>
-                <address>
-                    <electronic type="url">
-                        <value>
-                            <xsl:value-of select="."/>
-                        </value>
-                    </electronic>
-                </address>
-            </location>
+            <identifier>
+                <xsl:attribute name="type">
+                    <xsl:choose>
+                        <xsl:when test="contains(lower-case(.), 'orcid')">
+                            <xsl:text>orcid</xsl:text>
+                        </xsl:when>
+                        <xsl:when test="contains(lower-case(.), 'doi')">
+                            <xsl:text>doi</xsl:text>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:text>uri</xsl:text>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:attribute>
+                <xsl:value-of select="."/>
+            </identifier>
         </xsl:for-each>
     </xsl:template>
 
