@@ -385,6 +385,10 @@
                    <xsl:apply-templates select="gmd:distributionInfo/gmd:MD_Distribution"
                         mode="registryObject_location"/>
                     
+                    <xsl:apply-templates select="gmd:distributionInfo/gmd:MD_Distribution"
+                        mode="registryObject_accessRights_type"/>
+                    
+                    
                     <xsl:for-each-group
                         select="gmd:identificationInfo/*/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName)) > 0) and 
                          (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)) > 0)] |
@@ -682,7 +686,27 @@
             </relatedObject>
         </xsl:if>
     </xsl:template>
-
+    
+    <xsl:template match="gmd:MD_Distribution" mode="registryObject_accessRights_type">
+        <xsl:message select="concat('transferOptions', 'transfer')"/>
+        <xsl:variable name="open_sequence" as="xs:boolean*">
+            <xsl:for-each select="gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource">
+                <xsl:choose>
+                    <xsl:when test="
+                        contains(lower-case(gmd:protocol), 'downloaddata') or
+                        contains(lower-case(gmd:protocol), 'get-map')">
+                        <xsl:value-of select='true()'/>
+                    </xsl:when>
+                </xsl:choose>
+            </xsl:for-each>
+        </xsl:variable>
+        <xsl:if test="count($open_sequence) > 0">
+            <rights>
+                <accessRights type='open'/>
+            </rights>
+        </xsl:if>
+    </xsl:template>
+    
     <xsl:template match="gmd:MD_Distribution" mode="registryObject_location">
         <xsl:message select="concat('transferOptions', 'transfer')"/>
         <xsl:for-each select="gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource">
@@ -693,9 +717,6 @@
                         <xsl:variable name="notes" select="''"/>
                         <xsl:variable name="mediaType" select="*:name/*:MimeFileType/@type"/>
                         <xsl:variable name="byteSize" select="../../*:transferSize/*:Real"/>
-                        <rights>
-                            <accessRights type='open'/>
-                        </rights>
                         <location>
                             <address>
                             <electronic>
