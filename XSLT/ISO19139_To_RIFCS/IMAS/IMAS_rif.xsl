@@ -711,7 +711,7 @@
         <xsl:message select="concat('transferOptions', 'transfer')"/>
         <xsl:for-each select="gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource">
             <xsl:choose>
-                <xsl:when test="contains(lower-case(gmd:protocol), 'downloaddata')">
+                <!--xsl:when test="contains(lower-case(gmd:protocol), 'downloaddata')">
                     <xsl:if test="string-length(normalize-space(*:linkage/*:URL)) > 0">
                         <xsl:variable name="title" select="*:description"/>
                         <xsl:variable name="notes" select="''"/>
@@ -753,7 +753,7 @@
                         </address>
                         </location>   
                     </xsl:if>
-                </xsl:when>
+                </xsl:when-->
                 
                 <xsl:when test="contains(lower-case(gmd:protocol), 'metadata-url')">
                     <location>
@@ -788,7 +788,7 @@
             <!-- if current grouping key is organisation name and there is an individual name, make relation soft-->
             <xsl:choose>
                 <xsl:when test="(current-grouping-key() = gmd:organisationName) and (string-length(normalize-space(gmd:individualName)) > 0)">
-                         <relation type="isEnrichedBy"/>
+                         <relation type="hasAssociationWith"/>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:for-each-group select="current-group()/gmd:role"
