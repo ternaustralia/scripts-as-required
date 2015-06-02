@@ -186,12 +186,14 @@
                     <xsl:variable name="otherConstraints_sequence" select="*:identificationInfo/*/*:resourceConstraints/*/*:otherConstraints"/>
                     <xsl:copy-of select="custom:set_registryObject_accessRights($fees_sequence, $downloaddataURL_sequence, $restrictionCode_sequence, $otherConstraints_sequence)"/>
                      
-                     <xsl:for-each select="gmd:identificationInfo/*/gmd:citation/gmd:CI_Citation">
-                        <xsl:call-template name="registryObject_citationMetadata_citationInfo">
-                            <xsl:with-param name="dataSetURI" select="$dataSetURI"/>
-                            <xsl:with-param name="citation" select="."/>
-                        </xsl:call-template>
-                     </xsl:for-each> 
+                    <xsl:if test="$registryObjectTypeSubType_sequence[1] = 'collection'">
+                        <xsl:for-each select="gmd:identificationInfo/*/gmd:citation/gmd:CI_Citation">
+                           <xsl:call-template name="registryObject_citationMetadata_citationInfo">
+                               <xsl:with-param name="dataSetURI" select="$dataSetURI"/>
+                               <xsl:with-param name="citation" select="."/>
+                           </xsl:call-template>
+                        </xsl:for-each> 
+                    </xsl:if>
                 </xsl:element>
             </xsl:if>
         </registryObject>
