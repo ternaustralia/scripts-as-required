@@ -22,8 +22,7 @@
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
     <xsl:param name="global_defaultOriginatingSource" select="'external'"/>
-    <xsl:param name="global_acronym" select="'IMAS'"/>
-    <xsl:param name="global_defaultPublisher" select="'Institute for Marine and Antarctic Studies'"/>
+    <xsl:param name="global_acronym" select="'UTAS'"/>
     <xsl:param name="global_group" select="'University of Tasmania, Australia'"/> 
     <xsl:param name="global_baseURI" select="'http://metadata.imas.utas.edu.au'"/>
     <xsl:param name="global_path" select="'/metadataviewer/faces/view.xhtml?uuid='"/>
@@ -1911,7 +1910,7 @@
         <xsl:param name="inputString"/>
         <xsl:choose>
             <xsl:when test="contains(lower-case($inputString), 'imas')">
-                <xsl:text>Institute for Marine and Antarctic Studies (IMAS)</xsl:text>
+                <xsl:text>Institute for Marine and Antarctic Studies, University of Tasmania</xsl:text>
             </xsl:when>
             <xsl:when test="contains($inputString, 'imos')">
                 <xsl:text>Integrated Marine Observing System (IMOS)</xsl:text>
@@ -2249,7 +2248,7 @@
         <xsl:param name="inputString"/>
         <xsl:choose>
             <xsl:when test="contains(lower-case($inputString), 'imas')">
-                <xsl:text>Institute for Marine and Antarctic Studies (IMAS)</xsl:text>
+                <xsl:text>Institute for Marine and Antarctic Studies, University of Tasmania</xsl:text>
             </xsl:when>
             <xsl:when test="contains(lower-case($inputString), 'imos')">
                 <xsl:text>Integrated Marine Observing System (IMOS)</xsl:text>
@@ -2273,6 +2272,9 @@
     <xsl:function name="custom:getTransformedPublisher">
         <xsl:param name="inputString"/>
         <xsl:choose>
+            <xsl:when test="contains(lower-case($inputString), 'imas')">
+                <xsl:text>Institute for Marine and Antarctic Studies, University of Tasmania</xsl:text>
+            </xsl:when>
             <xsl:when test="contains(lower-case($inputString), 'imos')">
                 <xsl:text>Integrated Marine Observing System (IMOS)</xsl:text>
             </xsl:when>
