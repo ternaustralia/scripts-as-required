@@ -1338,6 +1338,24 @@
 
     <!-- RegistryObject - Rights RightsStatement - From CreativeCommons -->
     <xsl:template match="mcp:MD_Commons" mode="registryObject_rights_rightsStatement_creative">
+        <xsl:for-each select="gmd:useLimitation">
+            <xsl:if test="(string-length(normalize-space(.)) > 0)">
+            <rights>
+                <rightsStatement>
+                    <xsl:value-of select="normalize-space(.)"/>
+                </rightsStatement>
+                </rights>
+            </xsl:if>
+        </xsl:for-each>   
+        <xsl:for-each select="*:otherConstraints">
+            <xsl:if test="(string-length(normalize-space(.)) > 0)">
+                <rights>
+                    <rightsStatement>
+                        <xsl:value-of select="normalize-space(.)"/>
+                    </rightsStatement>
+                </rights>
+            </xsl:if>
+        </xsl:for-each>   
         <xsl:for-each select="mcp:attributionConstraints">
             <!-- If there is text in other contraints, use this; otherwise, do nothing -->
             <xsl:if test="(string-length(normalize-space(.)) > 0) and
