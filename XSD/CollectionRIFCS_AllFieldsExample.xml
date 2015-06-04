@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<registryObjects xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:custom="http://custom.nowhere.yet"
+    xmlns:mcp="http://bluenet3.antcrc.utas.edu.au/mcp"
+    xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://ands.org.au/standards/rif-cs/registryObjects ./registryObjects_modified.xsd">
+    <registryObject group="registryGroup">
+        <key>key</key>
+        <originatingSource>originatingSource</originatingSource>
+        <collection type="dataset" dateAccessioned="dateAccessioned">
+            <identifier type="type">identifier</identifier>
+              <name type="nameType" dateFrom="dateFrom" dateTo="dateTo" lang="lang">
+                <namePart type="type">namePart</namePart>
+            </name>
+            <location dateFrom="dateFrom" dateTo="dateTo" type="type">
+                <address>
+                 <electronic type="type" target="target">
+                    <value>value</value>
+                    <title></title> 
+                    <notes></notes>
+                    <mediaType></mediaType>
+                     <byteSize></byteSize>
+                     <arg required="true" type="type" use="use">arg</arg>
+                 </electronic>
+                    <physical type="type" lang="lang">
+                        <addressPart type="type">addressPart</addressPart>
+                    </physical>
+                </address>
+                <spatial type="type" lang="lang">spatial</spatial>
+            </location>
+            <relatedObject>
+                <key>key</key>
+                <relation type="type">
+                    <description lang="lang"></description>
+                    <url>url</url>
+                </relation>
+            </relatedObject>
+           <subject type="type" termIdentifier="termIdentifier" lang="lang">value</subject>
+            <description type="type" lang="lang">description</description>
+            <coverage>
+                <temporal>
+                    <date type="type" dateFormat="dateFormat"></date>
+                    <text></text>
+                </temporal>
+                <spatial type="type" lang="lang">spatial</spatial>
+            </coverage>
+            <relatedInfo type="type">
+                <identifier type="type"></identifier>
+                <relation type="type">
+                    <description lang="lang"></description>
+                    <url></url>
+                </relation>
+                <format>
+                    <identifier type="type"></identifier>
+                </format>
+                <title>title</title>
+                <notes>notes</notes>
+            </relatedInfo>
+            <rights>
+                 <licence type="type" rightsUri="rightsUri">Creative Commons Attribution</licence>
+                <rightsStatement rightsUri="rightsUri">rightsStatement</rightsStatement>
+                <accessRights type="type" rightsUri="rightsUri">accessRights</accessRights>
+            </rights>
+            <dates type="type">
+                <date type="type" dateFormat="dataFormat">date</date>
+            </dates>
+            <citationInfo>
+                <fullCitation style="style"></fullCitation>
+            </citationInfo>
+            <citationInfo>
+                <citationMetadata>
+                    <identifier type="type">identifier</identifier>
+                    <contributor seq="1">
+                        <namePart type="type">namePart</namePart>
+                    </contributor>
+                    <title>title</title>
+                    <version>version</version>
+                    <publisher>publisher</publisher>
+                    <placePublished>placePublished</placePublished>
+                    <date type="type">date</date>
+                    <url></url>
+                    <context></context>
+                </citationMetadata>
+            </citationInfo>
+        </collection>
+    </registryObject>
+</registryObjects>
+
