@@ -687,7 +687,6 @@
     </xsl:template>
     
     <xsl:template match="gmd:MD_Distribution" mode="registryObject_accessRights_type">
-        <xsl:message select="concat('transferOptions', 'transfer')"/>
         <xsl:variable name="open_sequence" as="xs:boolean*">
             <xsl:for-each select="gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource">
                 <xsl:choose>
@@ -707,7 +706,6 @@
     </xsl:template>
     
     <xsl:template match="gmd:MD_Distribution" mode="registryObject_location">
-        <xsl:message select="concat('transferOptions', 'transfer')"/>
         <xsl:for-each select="gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource">
             <xsl:choose>
                 <!--xsl:when test="contains(lower-case(gmd:protocol), 'downloaddata')">
@@ -781,7 +779,7 @@
         <relatedObject>
             <key>
                 <xsl:value-of
-                    select="concat($global_acronym,'/', translate($name,' ',''))"
+                    select="concat($global_acronym,'/', translate(custom:nameNoTitle($name),' ',''))"
                 />
             </key>
             <!-- if current grouping key is organisation name and there is an individual name, make relation soft-->
@@ -1127,7 +1125,6 @@
                 not(contains($protocol, 'downloaddata'))">
 
                 <xsl:variable name="identifierValue" select="normalize-space(gmd:linkage/gmd:URL)"/>
-                <xsl:message select="concat('Identifier value', $identifierValue)"/>
                 <xsl:if test="string-length($identifierValue) > 0">
                     <relatedInfo>
                         <identifier>
@@ -1627,8 +1624,6 @@
         </xsl:if>
     </xsl:template>
 
-
-
     <!-- ====================================== -->
     <!-- Party RegistryObject - Child Templates -->
     <!-- ====================================== -->
@@ -1640,11 +1635,9 @@
         <registryObject group="{$global_group}">
 
             <xsl:variable name="name" select="normalize-space(current-grouping-key())"/>
-      
+            <!-- Name is to be 'surname,firstname' or 'surname,i', to attempt to reduce replicated records -->
             <key>
-                <xsl:value-of
-                    select="concat($global_acronym, '/', translate($name,' ',''))"
-                />
+                <xsl:value-of select="concat($global_acronym, '/', translate(custom:nameNoTitle($name),' ',''))"/>
             </key>
 
             <originatingSource>
@@ -1656,13 +1649,8 @@
                     we want to make sure that we use 'group', not 'person', if this anomoly occurs -->
 
             <xsl:variable name="typeToUse">
-                <xsl:variable name="isKnownOrganisation" as="xs:boolean">
-                    <xsl:call-template name="get_isKnownOrganisation">
-                        <xsl:with-param name="name" select="$name"/>
-                    </xsl:call-template>
-                </xsl:variable>
-                <xsl:choose>
-                    <xsl:when test="boolean($isKnownOrganisation)">
+               <xsl:choose>
+                   <xsl:when test="custom:isKnownOrganisation($name)">
                         <!--xsl:message select="concat('Is known organisation ', $transformedName)"/-->
                         <xsl:text>group</xsl:text>
                     </xsl:when>
@@ -1893,12 +1881,13 @@
 
     <!-- Modules -->
 
-    <xsl:template name="get_isKnownOrganisation">
+    <xsl:function name="custom:isKnownOrganisation">
         <xsl:param name="name"/>
         <xsl:choose>
             <xsl:when
                 test="
                 contains($name, 'Institute for Marine and Antarctic Studies') or
+                contains($name, 'University of Tasmania') or
                 contains($name, 'Institute for Marine &amp; Antarctic Studies') or 
                 contains($name, 'Integrated Marine Observing System') or
                 contains($name, 'Australian Institute of Marine Science') or
@@ -1912,7 +1901,7 @@
                 <xsl:value-of select="false()"/>
             </xsl:otherwise>
         </xsl:choose>
-    </xsl:template>
+    </xsl:function>
 
    <xsl:function name="custom:doiFromIdentifiers">
         <xsl:param name="identifier_sequence"/>
@@ -2311,8 +2300,47 @@
             </xsl:otherwise>
         </xsl:choose>
     </xsl:function>
-
-    <xsl:function name="custom:getMetadataTruthURL">
+    
+   <xsl:function name="custom:nameNoTitle">
+        <xsl:param name="name"/>
+        <xsl:variable name="extractedTitle_sequence" select="custom:extractTitle($name)"/>
+        <xsl:choose>
+            <xsl:when test="count($extractedTitle_sequence) > 0">
+                <xsl:message select="concat('Name before extract:', $name)"/>
+                <xsl:variable name="temp">
+                    <xsl:for-each select="distinct-values($extractedTitle_sequence)">
+                        <xsl:value-of select="replace($name, ., '')"/>
+                    </xsl:for-each>
+                </xsl:variable>
+                <xsl:variable name="nameNoTitle" select="normalize-space(translate($temp, '.', ''))"/>
+                <xsl:choose>
+                 <xsl:when test="substring($nameNoTitle, string-length($nameNoTitle), 1) = ','">
+                     <xsl:message select="concat('Returning:', substring($nameNoTitle, 1, string-length($nameNoTitle)-1))"/>
+                     <xsl:value-of select="substring($nameNoTitle, 1, string-length($nameNoTitle)-1)"/>
+                 </xsl:when>
+                 <xsl:otherwise>
+                     <xsl:message select="concat('Returning nameNoTitle:', $nameNoTitle)"/>
+                     <xsl:value-of select="$nameNoTitle"/>
+                 </xsl:otherwise>
+                </xsl:choose>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="$name"/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:function>
+    
+    <xsl:function name="custom:extractTitle" as="xs:string*">
+        <xsl:param name="name"/>
+       <xsl:analyze-string select="$name"
+            regex="(Miss|Mr|Mrs|Ms|Dr|PhD|Assoc/Prof|Professor|Prof)">
+            <xsl:matching-substring>
+                <xsl:value-of select="regex-group(0)"/>
+            </xsl:matching-substring>
+        </xsl:analyze-string>
+    </xsl:function>
+    
+   <xsl:function name="custom:getMetadataTruthURL">
         <xsl:param name="transferOptions"/>
         
         <xsl:variable name="metadataTruth_sequence" as="xs:string*">
