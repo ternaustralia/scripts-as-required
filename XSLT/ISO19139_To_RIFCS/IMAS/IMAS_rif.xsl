@@ -1649,7 +1649,7 @@
 
             <xsl:variable name="typeToUse">
                <xsl:choose>
-                   <xsl:when test="custom:isKnownOrganisation($name)">
+                   <xsl:when test="boolean(custom:isKnownOrganisation($name)) = true()">
                         <!--xsl:message select="concat('Is known organisation ', $transformedName)"/-->
                         <xsl:text>group</xsl:text>
                     </xsl:when>
@@ -1658,7 +1658,11 @@
                     </xsl:otherwise>
                 </xsl:choose>
             </xsl:variable>
-
+            
+            <xsl:message select="concat('name:', $name)"/>
+            <xsl:message select="concat('type:', $type)"/>
+            <xsl:message select="concat('typeToUse:', $typeToUse)"/>
+            
             <party type="{$typeToUse}">
                 <name type="primary">
                     <namePart>
@@ -1894,10 +1898,10 @@
                 contains($name, 'Australian Antarctic Division') or
                 contains($name, 'CSIRO Marine and Atmospheric Research') or
                 contains($name, 'Commonwealth Scientific and Industrial Research Organisation')">
-                <xsl:value-of select="true()"/>
+                <xsl:copy-of select="true()"/>
             </xsl:when>
             <xsl:otherwise>
-                <xsl:value-of select="false()"/>
+                <xsl:copy-of select="false()"/>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:function>
