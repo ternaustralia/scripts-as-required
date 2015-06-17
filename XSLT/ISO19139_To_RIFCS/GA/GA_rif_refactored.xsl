@@ -660,26 +660,38 @@
             </xsl:variable>
             
             <!-- From GA, the only licence type mapping we currently have...-->
+            <xsl:message select="concat('$otherConstraints: ', replace(replace($otherConstraints, 'icence', 'icense', 'i'), '[\d.]+', ''))"/>
             <xsl:variable name="licenceType">
                 <xsl:if test="($lowerCode = 'licence') or ($lowerCode = 'license')">
-                    <xsl:value-of select="(normalize-space($licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCode']/gmx:codeEntry/gmx:CodeDefinition/gml:identifier[following-sibling::gml:name = replace($otherConstraints, 'icence', 'icense', 'i')]))[1]"/>   
+                    <xsl:value-of select="(normalize-space($licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCodeAustralia' or @gml:id='LicenseCodeInternational']/gmx:codeEntry/gmx:CodeDefinition/gml:identifier[replace(following-sibling::gml:name, '\{n\}', '') = replace(replace($otherConstraints, 'icence', 'icense', 'i'), '[\d.]+', '')]))[1]"/>   
                 </xsl:if>
             </xsl:variable>
             
             <xsl:variable name="licenceURI">
                 <xsl:if test="($lowerCode = 'licence') or ($lowerCode = 'license')">
-                    <xsl:value-of select="(normalize-space($licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCode']/gmx:codeEntry/gmx:CodeDefinition/gml:remarks[preceding-sibling::gml:name = replace($otherConstraints, 'icence', 'icense', 'i')]))[1]"/>   
+                    <xsl:value-of select="(normalize-space($licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCodeAustralia' or @gml:id='LicenseCodeInternational']/gmx:codeEntry/gmx:CodeDefinition/gml:remarks[replace(preceding-sibling::gml:name, '\{n\}', '') = replace(replace($otherConstraints, 'icence', 'icense', 'i'), '[\d.]+', '')]))[1]"/>   
                 </xsl:if>
             </xsl:variable>
             
             <!--xsl:message>Licence type: <xsl:value-of select="$licenceType"></xsl:value-of></xsl:message-->
             
+            <xsl:variable name="licenceVersion" as="xs:string*">
+                <xsl:analyze-string select="normalize-space(.)"
+                    regex="[\d.]+">
+                    <xsl:matching-substring>
+                        <xsl:value-of select="regex-group(0)"/>
+                    </xsl:matching-substring>
+                </xsl:analyze-string>
+            </xsl:variable>
+            
+            
+               
              <xsl:if test="string-length($licenceText)">
                  <rights>
                      <licence>
-                         <xsl:if test="string-length($licenceURI)">
+                         <xsl:if test="string-length($licenceURI) and count($licenceVersion) > 0">
                              <xsl:attribute name="rightsUri">
-                                 <xsl:value-of select='$licenceURI'/>
+                                 <xsl:value-of select="replace($licenceURI, '\{n\}', $licenceVersion)"/>
                              </xsl:attribute>
                          </xsl:if>
                          <xsl:if test="string-length($licenceType)">
@@ -1442,12 +1454,14 @@
             </xsl:choose>
         </xsl:variable>
         <!-- only indicate open datasets at the moment - until we've verified whether fee implies 'conditional' or 'open'-->
-        <xsl:if test="string-length($type) > 0 and ($type = 'open')">
-            <rights>
-                <accessRights>
-                    <xsl:attribute name="type" select="$type"/>
-                </accessRights>
-            </rights>
+        <xsl:if test="string-length($type) > 0">
+            <xsl:if test="($type = 'open') or ($type = 'restricted')">
+                <rights>
+                    <accessRights>
+                        <xsl:attribute name="type" select="$type"/>
+                    </accessRights>
+                </rights>
+            </xsl:if>
         </xsl:if>
      </xsl:function>
     
