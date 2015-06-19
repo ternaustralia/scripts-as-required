@@ -27,6 +27,7 @@
     <xsl:param name="global_baseURI" select="'http://metadata.imas.utas.edu.au'"/>
     <xsl:param name="global_path" select="'/metadataviewer/faces/view.xhtml?uuid='"/>
     <xsl:param name="global_cannedCitation" select="'The citation in a list of references is: citation author name/s (year metadata published), metadata title. Citation author organisation/s. File identifier and Data accessed at (add http link).'"/>
+    <xsl:param name="global_identifier_open" select="'39060c33-9246-49fe-8f97-758b67ced4ce'"/>
     <!--xsl:param name="global_ActivityKeyNERP" select="'to be determined'"/-->
     <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>
     <xsl:variable name="gmdCodelists" select="document('codelists.xml')"/>

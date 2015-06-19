@@ -58,7 +58,8 @@
     <xsl:template match="*:MD_Metadata">
 
         <xsl:variable name="metadataURL_sequence" select="custom:getProtocolURL_sequence('metadata-url', *:distributionInfo/*:MD_Distribution/*:transferOptions/*:MD_DigitalTransferOptions)"/>
-        <xsl:variable name="downloaddataURL_sequence" select="custom:getProtocolURL_sequence('downloaddata', *:distributionInfo/*:MD_Distribution/*:transferOptions/*:MD_DigitalTransferOptions)"/>
+        <!--xsl:variable name="downloaddataURL_sequence" select="custom:getProtocolURL_sequence('downloaddata', *:distributionInfo/*:MD_Distribution/*:transferOptions/*:MD_DigitalTransferOptions)"/-->
+        <xsl:variable name="downloaddataURL_sequence" select="custom:getDownloadURL_sequence(*:distributionInfo/*:MD_Distribution/*:transferOptions/*:MD_DigitalTransferOptions)"/>
         <xsl:variable name="title" select="*:identificationInfo/*/*:citation/*:CI_Citation/*:title"/>
         <xsl:variable name="restrictionCode_sequence" select="*:identificationInfo/*/*:resourceConstraints/*/*/*:MD_RestrictionCode/@codeListValue"/>
         <xsl:variable name="otherConstraints_sequence" select="*:identificationInfo/*/*:resourceConstraints/*/*:otherConstraints"/>
@@ -67,10 +68,6 @@
         
         <xsl:for-each select="distinct-values($restrictionCode_sequence)">
             <xsl:message select="concat('restrictionCode :', .)"/>
-        </xsl:for-each>
-        
-        <xsl:for-each select="distinct-values($otherConstraints_sequence)">
-            <xsl:message select="concat('otherConstraints :', .)"/>
         </xsl:for-each>
         
         <xsl:variable name="coordinateReferenceSystem">
@@ -92,8 +89,6 @@
             </xsl:if>
         </xsl:variable>
            
-        <xsl:message select="concat('crs :', $coordinateReferenceSystem)"/>
-        
         <xsl:variable name="locationURL_sequence" as="xs:string*">
             <xsl:choose>
                 <xsl:when test="count($metadataURL_sequence) > 0">
@@ -211,7 +206,8 @@
                         <xsl:apply-templates select="*:parentIdentifier"
                             mode="registryObject_related_object"/>
     
-                        <xsl:copy-of select="custom:set_registryObject_location_metadata($locationURL_sequence)"/>
+                        <xsl:copy-of select="custom:set_registryObject_location_metadata($locationURL_sequence, 'landingPage')"/>
+                        <xsl:copy-of select="custom:set_registryObject_location_metadata($downloaddataURL_sequence, 'directDownload')"/>
                         
                         <xsl:copy-of select="custom:set_registryObject_accessRights($downloaddataURL_sequence, $restrictionCode_sequence, $otherConstraints_sequence)"/>
                         
@@ -584,6 +580,7 @@
     <!-- RegistryObject - Location Element  -->
     <xsl:function name="custom:set_registryObject_location_metadata">
         <xsl:param name="uri_sequence" as="xs:string*"/>
+        <xsl:param name="target" as="xs:string"/>
         <xsl:for-each select="distinct-values($uri_sequence)">
             <xsl:if test="string-length(normalize-space(.)) > 0">
                 <location>
@@ -593,7 +590,7 @@
                                 <xsl:text>url</xsl:text>
                             </xsl:attribute>
                             <xsl:attribute name="target">
-                                <xsl:text>landingPage</xsl:text>
+                                <xsl:value-of select="$target"/>
                             </xsl:attribute>
                             <value>
                                 <xsl:value-of select="normalize-space(.)"/>
@@ -623,7 +620,7 @@
                 </xsl:when>
             </xsl:choose>
         </xsl:variable>
-        <xsl:if test="string-length($type) > 0">
+        <xsl:if test="$type = 'open'">
             <rights>
                 <accessRights>
                     <xsl:attribute name="type" select="$type"/>
@@ -1391,8 +1388,6 @@
         <xsl:param name="sequence" as="xs:string*"/>
         <xsl:param name="substring" as="xs:string"/>
         
-        <xsl:message select="concat('match substring:', $substring)"/>
-        
         <xsl:variable name="matches_sequence" as="xs:string*">
             <xsl:for-each select="distinct-values($sequence)">
                 <xsl:if test="string-length(normalize-space(.)) > 0">
@@ -1402,12 +1397,6 @@
                 </xsl:if>
             </xsl:for-each>
         </xsl:variable>
-        
-        <xsl:message select="concat('count matches :', count($matches_sequence))"/>
-        <xsl:for-each select="distinct-values($matches_sequence)">
-            <xsl:message select="concat('match :', .)"/>
-        </xsl:for-each>
-        
         
         <xsl:choose>
          <xsl:when test="count($matches_sequence) > 0">
@@ -2372,9 +2361,23 @@
        <xsl:param name="transferOptions"/>
         <xsl:for-each select="$transferOptions/*:onLine/*:CI_OnlineResource">
             <xsl:if test="contains(lower-case(*:protocol), $protocol)">
-                <xsl:variable name="metadataURL" select="normalize-space(*:linkage/*:URL)"/>
-                <xsl:if test="string-length($metadataURL) > 0">
-                    <xsl:copy-of select="$metadataURL"/>
+                <xsl:variable name="url" select="normalize-space(*:linkage/*:URL)"/>
+                <xsl:if test="string-length($url) > 0">
+                    <xsl:copy-of select="$url"/>
+                </xsl:if>
+            </xsl:if>
+        </xsl:for-each>
+    </xsl:function>
+    
+    <xsl:function name="custom:getDownloadURL_sequence" as="xs:string*">
+        <xsl:param name="transferOptions"/>
+        <xsl:for-each select="$transferOptions/*:onLine/*:CI_OnlineResource">
+            <xsl:if test="
+                contains(lower-case(*:protocol), 'downloaddata') or 
+                contains(lower-case(*:linkage/*:URL), 'data-download')">
+                <xsl:variable name="url" select="normalize-space(*:linkage/*:URL)"/>
+                <xsl:if test="string-length($url) > 0">
+                    <xsl:copy-of select="$url"/>
                 </xsl:if>
             </xsl:if>
         </xsl:for-each>
