@@ -333,24 +333,48 @@
                 <xsl:with-param name="inputString" select="current-grouping-key()"/>
             </xsl:call-template>
         </xsl:variable>
-        <relatedObject>
-            <key>
-                <xsl:value-of
-                    select="concat($global_baseURI,'/', translate(normalize-space($transformedName),' ',''))"
-                />
-            </key>
-            <xsl:for-each-group select="current-group()/gmd:role"
-                group-by="gmd:CI_RoleCode/@codeListValue">
-                <xsl:variable name="code">
-                    <xsl:value-of select="current-grouping-key()"/>
-                </xsl:variable>
-                <relation>
-                    <xsl:attribute name="type">
-                        <xsl:value-of select="$code"/>
-                    </xsl:attribute>
-                </relation>
-            </xsl:for-each-group>
-        </relatedObject>
+        
+        <xsl:variable name="identifier_sequence" as="xs:string*" select="custom:identifiers($transformedName)"/>
+        <xsl:choose>
+            <xsl:when test="count($identifier_sequence) = 2">
+                <relatedInfo type="party">
+                    <identifier type="{$identifier_sequence[1]}">
+                        <xsl:value-of select="$identifier_sequence[2]"/>
+                    </identifier>
+                    <xsl:for-each-group select="current-group()/gmd:role"
+                        group-by="gmd:CI_RoleCode/@codeListValue">
+                        <xsl:variable name="code">
+                            <xsl:value-of select="current-grouping-key()"/>
+                        </xsl:variable>
+                        <relation>
+                            <xsl:attribute name="type">
+                                <xsl:value-of select="$code"/>
+                            </xsl:attribute>
+                        </relation>
+                    </xsl:for-each-group>
+                </relatedInfo>
+            </xsl:when>
+            <xsl:otherwise>
+                <relatedObject>
+                    <key>
+                        <xsl:value-of
+                            select="concat($global_baseURI,'/', translate(normalize-space($transformedName),' ',''))"
+                        />
+                    </key>
+                    <xsl:for-each-group select="current-group()/gmd:role"
+                        group-by="gmd:CI_RoleCode/@codeListValue">
+                        <xsl:variable name="code">
+                            <xsl:value-of select="current-grouping-key()"/>
+                        </xsl:variable>
+                        <relation>
+                            <xsl:attribute name="type">
+                                <xsl:value-of select="$code"/>
+                            </xsl:attribute>
+                        </relation>
+                    </xsl:for-each-group>
+                </relatedObject>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:template>
 
 
@@ -637,6 +661,14 @@
 
                     <xsl:variable name="individualName"
                         select="normalize-space(current-grouping-key())"/>
+                    
+                    <xsl:variable name="transformedName">
+                        <xsl:call-template name="transform">
+                            <xsl:with-param name="inputString" select="$individualName"/>
+                        </xsl:call-template>
+                    </xsl:variable>
+                    
+                    
                     <xsl:variable name="isPublisher" as="xs:boolean*">
                         <xsl:for-each-group select="current-group()/gmd:role"
                             group-by="gmd:CI_RoleCode/@codeListValue">
@@ -648,7 +680,7 @@
                     <xsl:if test="count($isPublisher) = 0">
                         <contributor>
                             <namePart>
-                                <xsl:value-of select="$individualName"/>
+                                <xsl:value-of select="$transformedName"/>
                             </namePart>
                         </contributor>
                     </xsl:if>
@@ -748,7 +780,8 @@
                 <xsl:choose>
                     <xsl:when
                         test="contains($transformedName, 'Australian Antarctic Division') or
-                                    contains($transformedName, 'Australian Antarctic Data Centre')">
+                              contains($transformedName, 'Australian Antarctic Data Centre') or
+                              contains($transformedName, 'University of Tasmania')">
                         <xsl:text>group</xsl:text>
                     </xsl:when>
                     <xsl:otherwise>
@@ -756,8 +789,17 @@
                     </xsl:otherwise>
                 </xsl:choose>
             </xsl:variable>
-
+            
+            <xsl:variable name="identifier_sequence" as="xs:string*" select="custom:identifiers($transformedName)"/>
+          
             <party type="{$typeToUse}">
+                
+                <xsl:if test="count($identifier_sequence) = 2">
+                    <identifier type="{$identifier_sequence[1]}">
+                        <xsl:value-of select="$identifier_sequence[2]"/>
+                    </identifier>
+                </xsl:if>
+                
                 <name type="primary">
                     <namePart>
                         <xsl:value-of select="$transformedName"/>
@@ -1044,6 +1086,9 @@
             <xsl:when test="normalize-space($inputString) = 'AAD'">
                 <xsl:text>Australian Antarctic Division</xsl:text>
             </xsl:when>
+            <xsl:when test="normalize-space($inputString) = 'University of Tasmania'">
+                <xsl:text>University of Tasmania, Australia</xsl:text>
+            </xsl:when>
             <xsl:otherwise>
                 <xsl:value-of select="normalize-space($inputString)"/>
             </xsl:otherwise>
@@ -1125,6 +1170,22 @@
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
+    
+    <xsl:function name="custom:identifiers" as="xs:string*">
+        <xsl:param name="transformedName" as="xs:string"/>
+        <xsl:choose>
+            <xsl:when 
+                test="contains($transformedName, 'Australian Antarctic Division')">
+                <xsl:text>AU-ANL:PEAU</xsl:text>
+                <xsl:text>http://nla.gov.au/nla.party-617536</xsl:text>
+            </xsl:when>
+            <xsl:when 
+                test="contains($transformedName, 'University of Tasmania')">
+                <xsl:text>AU-ANL:PEAU</xsl:text>
+                <xsl:text>http://nla.gov.au/nla.party-460913</xsl:text>
+            </xsl:when>
+        </xsl:choose>
+     </xsl:function>
     
     <xsl:function name="custom:accessRightsType" as="xs:string">
         <xsl:param name="text" as="xs:string"/>
