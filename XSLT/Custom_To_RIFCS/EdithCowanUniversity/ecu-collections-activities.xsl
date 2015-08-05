@@ -6,7 +6,7 @@
     <xsl:template match="/">
         <registryObjects xmlns="http://ands.org.au/standards/rif-cs/registryObjects" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd">
             <xsl:apply-templates select="//oai:record" mode="collection"/>
-            <!--<xsl:apply-templates select="//oai:record" mode="activity"/>-->
+            <xsl:apply-templates select="//oai:record" mode="activity"/>
         </registryObjects>
     </xsl:template>
 
@@ -34,7 +34,7 @@
         <xsl:param name="key" select="oai:header/oai:identifier/text()"/>
         <xsl:param name="class" select="'collection'"/>
         <xsl:param name="type" select="'dataset'"/>
-        <xsl:param name="originatingSource" select="'Southern Cross University'"/>
+        <xsl:param name="originatingSource" select="'Edith Cowan University'"/>
 
         <registryObject xmlns="http://ands.org.au/standards/rif-cs/registryObjects">
             <xsl:attribute name="group"><xsl:value-of select="$originatingSource"/></xsl:attribute>
@@ -58,7 +58,11 @@
         <xsl:param name="type" select="'project'"/>
         <xsl:param name="originatingSource" select="'Edith Cowan University'"/>
 
-        <registryObject xmlns="http://ands.org.au/standards/rif-cs/registryObjects">
+                <xsl:choose>
+            <xsl:when test=".//field[@name='research_title']/value">
+                <xsl:choose>
+                    <xsl:when test=".//field[@name='research_description']/value">
+                        <registryObject xmlns="http://ands.org.au/standards/rif-cs/registryObjects">
             <xsl:attribute name="group"><xsl:value-of select="$originatingSource"/></xsl:attribute>
             <key xmlns="http://ands.org.au/standards/rif-cs/registryObjects">
                 <xsl:value-of select="concat($key, ':activity')"/>
@@ -73,6 +77,10 @@
                 </relatedObject>
             </xsl:element>
         </registryObject>
+    </xsl:when>
+                </xsl:choose>
+            </xsl:when>
+        </xsl:choose>
     </xsl:template>
 
 
@@ -88,19 +96,18 @@
 
     <xsl:template match="document" mode="collection">
       <xsl:apply-templates select="title"/>
-      <!--<xsl:apply-templates select="fields/field[@name='doi']/value"/>-->
+      <xsl:apply-templates select="fields/field[@name='doi']/value"/>
       <xsl:apply-templates select="abstract"/>
-      <!--<xsl:apply-templates select="fields/field[@name='addl_info']/value"/>-->
-      <xsl:apply-templates select="fields/field[@name='distribution_license']/value"/>
-      <xsl:apply-templates select="fields/field[@name='coverage_start']/value"/>
-      <xsl:apply-templates select="fields/field[@name='coverage_end']/value"/>
+      <xsl:apply-templates select="fields/field[@name='addl_info']/value"/>
+      <xsl:apply-templates select="fields/field[@name='rights']/value"/>
+      <xsl:apply-templates select="fields/field[@name='coverage']/value"/>
       <xsl:apply-templates select="keywords"/>
-      <!--<xsl:apply-templates select="disciplines"/>-->
-      <!--<xsl:apply-templates select="fields/field[@name='for_code']"/>-->
+      <xsl:apply-templates select="disciplines"/>
+      <xsl:apply-templates select="fields/field[@name='for_code']"/>
       <xsl:apply-templates select="fields/field[@name='longitude']"/>
       <xsl:apply-templates select="fields/field[@name='custom_citation']/value"/>
       <xsl:apply-templates select="fields/field[@name='related_content']"/>
-      <!--<xsl:apply-templates select="fields/field[@name='project_links']"/>-->
+      <xsl:apply-templates select="fields/field[@name='project_links']"/>
       <xsl:apply-templates select="fields/field[@name='contact']"/>
       <xsl:apply-templates select="fields/field[@name='comments']/value"/>
       <xsl:apply-templates select="coverpage-url"/>
@@ -159,9 +166,38 @@
 
     <xsl:template match="field[@name='comments']/value">
 
-        <description type="note" xmlns="http://ands.org.au/standards/rif-cs/registryObjects">
-            <xsl:value-of select="."/>
-        </description>
+        <xsl:for-each select="p/a">
+            <xsl:choose>
+                <xsl:when test="contains(./@href, 'scopus')">
+                    <relatedInfo type="party" xmlns="http://ands.org.au/standards/rif-cs/registryObjects">
+            <identifier type="uri">
+                            <xsl:value-of select="./@href"/>
+        </identifier>
+
+</relatedInfo>                    </xsl:when>
+                <xsl:when test="contains(./@href, 'researcherid')">
+                    <relatedInfo type="party" xmlns="http://ands.org.au/standards/rif-cs/registryObjects">
+                        <identifier type="uri">
+                            <xsl:value-of select="./@href"/>
+                        </identifier>
+                    </relatedInfo>
+                </xsl:when>
+                <xsl:when test="contains(./@href, 'orchid')">
+                    <relatedInfo type="party" xmlns="http://ands.org.au/standards/rif-cs/registryObjects">
+                        <identifier type="orchid">
+                            <xsl:value-of select="./@href"/>
+                        </identifier>
+                    </relatedInfo>
+                </xsl:when>
+                <xsl:when test="contains(./@href, 'nla')">
+                    <relatedInfo type="party" xmlns="http://ands.org.au/standards/rif-cs/registryObjects">
+                        <identifier type="AU-ANL:PEAU">
+                            <xsl:value-of select="./@href"/>
+                        </identifier>
+                    </relatedInfo>
+                </xsl:when>
+            </xsl:choose>
+        </xsl:for-each>
 
     </xsl:template>
 
@@ -233,29 +269,17 @@
         </description>
     </xsl:template>
 
-    <xsl:template match="field[@name='distribution_license']/value">
+    <xsl:template match="field[@name='rights']/value">
         <description type="accessRights" xmlns="http://ands.org.au/standards/rif-cs/registryObjects">
             <xsl:value-of select="."/>
         </description>
     </xsl:template>
 
-    <xsl:template match="field[@name='coverage_start']/value">
+    <xsl:template match="field[@name='coverage']/value">
         <coverage xmlns="http://ands.org.au/standards/rif-cs/registryObjects">
-            <temporal>
-                <date type="dateFrom" dateFormat="W3CDTF">
+            <temporal type="text">
                     <xsl:value-of select="."/>
-                </date>
-            </temporal>
-        </coverage>
-    </xsl:template>
-
-    <xsl:template match="field[@name='coverage_end']/value">
-        <coverage xmlns="http://ands.org.au/standards/rif-cs/registryObjects">
-            <temporal>
-                <date type="dateTo" dateFormat="W3CDTF">
-                    <xsl:value-of select="."/>
-                </date>
-            </temporal>
+                </temporal>
         </coverage>
     </xsl:template>
 
@@ -349,12 +373,12 @@
 
         <xsl:for-each select="value">
             <location xmlns="http://ands.org.au/standards/rif-cs/registryObjects">
-                <address>
-                    <physical type="streetAddress">
-                        <addressPart type="text">
+                <address >
+                    <electronic type="email">
+                        <value>
                             <xsl:value-of select="."/>
-                        </addressPart>
-                    </physical>
+                        </value>
+                    </electronic>
                 </address>
             </location>
         </xsl:for-each>
