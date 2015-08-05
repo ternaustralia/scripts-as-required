@@ -24,24 +24,19 @@
     <xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes"/>
     
     <xsl:template match="/">
+        
+        <xsl:variable name="oai_identifier" select="//oai:record/oai:header/oai:identifier"/>
         <registryObjects xmlns="http://ands.org.au/standards/rif-cs/registryObjects" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd">
-            <xsl:apply-templates select="//oai:record" mode="collection"/>
+            <xsl:apply-templates select="//oai:record/oai_dc:dc" mode="collection">
+                <xsl:with-param name="oai_identifier" select="$oai_identifier"/>
+            </xsl:apply-templates>
+            
+            <xsl:apply-templates select="//oai:record/oai_dc:dc" mode="party"/>
         </registryObjects>
     </xsl:template>
     
-    <xsl:template match="oai:record" mode="collection">
-        <xsl:variable name="key" select="oai:header/oai:identifier"/>
-        
-        <xsl:if test="string-length($key) > 0">
-            <xsl:apply-templates select="oai:metadata/oai_dc:dc" mode="collection">
-                <xsl:with-param name="key" select="$key"/>
-            </xsl:apply-templates>
-            <xsl:apply-templates select="oai:metadata/oai_dc:dc" mode="party"/>
-        </xsl:if>
-    </xsl:template>
-    
     <xsl:template match="oai_dc:dc" mode="collection">
-        <xsl:param name="key"/>
+        <xsl:param name="oai_identifier"/>
         
         <!-- ensuring that the DOI of the package is stored for later use, separated from the other identifiers -->
         <xsl:variable name="doiOfThisPackage">
@@ -58,7 +53,7 @@
         <registryObject>
             <xsl:attribute name="group" select="$global_group"/>
             <key>
-                <xsl:value-of select="$key"/>
+                <xsl:value-of select="$oai_identifier"/>
             </key>
             <originatingSource>
                 <xsl:value-of select="$global_originatingSource"/>
