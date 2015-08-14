@@ -15,6 +15,7 @@
     <xsl:param name="global_baseURI" select="'http://data.aad.gov.au/aadc'"/>
     <xsl:param name="global_group" select="'Australian Antarctic Data Centre'"/>
     <xsl:param name="global_publisherName" select="'Australian Antarctic Data Centre'"/>
+    <xsl:param name="global_contributorName" select="'Australian Antarctic Division'"/>
     <xsl:param name="global_publisherPlace" select="'Canberra'"/>
     <xsl:variable name="anzsrcCodelist" select="document('anzsrc-codelist.xml')"/>
     <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>
@@ -999,7 +1000,7 @@
                 <xsl:value-of select="$transformedIndividualOriginatorName"/>
             </xsl:when>
             <xsl:otherwise>
-                <xsl:value-of select="$global_publisherName"/>
+                <xsl:value-of select="$global_contributorName"/>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:function>
