@@ -122,20 +122,16 @@
                     select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent"
                     mode="collection_coverage_temporal"/>
 
-                <xsl:variable name="organisationOwnerName">
-                    <xsl:apply-templates select="gmd:identificationInfo/gmd:MD_DataIdentification"
-                        mode="variable_owner_name"/>
-                </xsl:variable>
-
-                <xsl:variable name="individualOwnerName">
-                    <xsl:apply-templates select="gmd:identificationInfo/gmd:MD_DataIdentification"
-                        mode="variable_individual_name"/>
-                </xsl:variable>
-
+                <xsl:variable name="organisationOwnerName" select="custom:childValueForRole(gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty, 'owner', 'organisationName')"/>
+                <xsl:variable name="individualOwnerName" select="custom:childValueForRole(gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty, 'owner', 'individualName')"/>
+     
                 <xsl:variable name="publishDate">
-                    <xsl:apply-templates
-                        select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation"
-                        mode="variable_publish_date"/>
+                    <xsl:for-each select="gmd:CI_Citation/gmd:date/gmd:CI_Date">
+                        <xsl:if
+                            test="contains(lower-case(normalize-space(gmd:dateType/gmd:CI_DateTypeCode/@codeListValue)), 'publication')">
+                            <xsl:value-of select="normalize-space(gmd:date/gco:Date)"/>
+                        </xsl:if>
+                    </xsl:for-each>
                 </xsl:variable>
 
                 <xsl:apply-templates
@@ -328,12 +324,8 @@
 
     <!-- Collection - Related Object (Organisation or Individual) Element -->
     <xsl:template match="gmd:CI_ResponsibleParty" mode="collection_related_object">
-        <xsl:variable name="transformedName">
-            <xsl:call-template name="transform">
-                <xsl:with-param name="inputString" select="current-grouping-key()"/>
-            </xsl:call-template>
-        </xsl:variable>
-        
+        <xsl:variable name="transformedName" select="custom:transform(current-grouping-key())"/>
+          
         <xsl:variable name="identifier_sequence" as="xs:string*" select="custom:identifiers($transformedName)"/>
         <xsl:choose>
             <xsl:when test="count($identifier_sequence) = 2">
@@ -389,15 +381,7 @@
             </subject>
         </xsl:for-each>
 
-        <xsl:variable name="subject_sequence" as="xs:string*">
-            <xsl:for-each select="gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword">
-                <xsl:call-template name="splitText_sequence">
-                    <xsl:with-param name="string" select="."/>
-                    <xsl:with-param name="separator" select="'&gt;'"/>
-                </xsl:call-template>
-            </xsl:for-each>
-        </xsl:variable>
-        <xsl:for-each select="distinct-values($subject_sequence)">
+        <xsl:for-each select="gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword">
             <xsl:message select="lower-case(normalize-space(.))"/>
             <xsl:variable name="code"
                 select="(normalize-space($anzsrcCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='ANZSRCCode']/gmx:codeEntry/gmx:CodeDefinition/gml:identifier[lower-case(following-sibling::gml:name) = lower-case(normalize-space(.))]))[1]"/>
@@ -511,33 +495,7 @@
         </coverage>
     </xsl:template>
 
-    <!-- Variable - Owner Name -->
-    <xsl:template match="gmd:MD_DataIdentification" mode="variable_owner_name">
-        <xsl:call-template name="childValueForRole">
-            <xsl:with-param name="roleSubstring" select="'owner'"/>
-            <xsl:with-param name="childElementName" select="'organisationName'"/>
-        </xsl:call-template>
-    </xsl:template>
-
-    <!-- Variable - Individual Name -->
-    <xsl:template match="gmd:MD_DataIdentification" mode="variable_individual_name">
-        <xsl:call-template name="childValueForRole">
-            <xsl:with-param name="roleSubstring" select="'owner'"/>
-            <xsl:with-param name="childElementName" select="'individualName'"/>
-        </xsl:call-template>
-    </xsl:template>
-
-    <!-- Variable - Publish Date -->
-    <xsl:template match="gmd:MD_DataIdentification/gmd:citation" mode="variable_publish_date">
-        <xsl:for-each select="gmd:CI_Citation/gmd:date/gmd:CI_Date">
-            <xsl:if
-                test="contains(lower-case(normalize-space(gmd:dateType/gmd:CI_DateTypeCode/@codeListValue)), 'publication')">
-                <xsl:value-of select="normalize-space(gmd:date/gco:Date)"/>
-            </xsl:if>
-        </xsl:for-each>
-    </xsl:template>
-
-    <!-- Collection - Rights Licence Element -->
+   <!-- Collection - Rights Licence Element -->
     <xsl:template match="gmd:MD_LegalConstraints" mode="collection_rights_licence">
         <xsl:variable name="otherConstraints" select="normalize-space(gmd:otherConstraints)"/>
         <xsl:if test="string-length($otherConstraints) > 0">
@@ -591,12 +549,7 @@
         <xsl:param name="dataSetURI"/>
         <xsl:param name="citation"/>
         <!-- We can only accept one DOI; howerver, first we will find all -->
-        <xsl:variable name="doiIdentifier_sequence" as="xs:string*">
-            <xsl:call-template name="doiFromIdentifiers">
-                <xsl:with-param name="identifier_sequence" as="xs:string*"
-                    select="gmd:identifier/gmd:MD_Identifier/gmd:code"/>
-            </xsl:call-template>
-        </xsl:variable>
+        <xsl:variable name="doiIdentifier_sequence" select="custom:doiFromIdentifiers(gmd:identifier/gmd:MD_Identifier/gmd:code)"/>
         <xsl:variable name="identifierToUse">
             <xsl:choose>
                 <xsl:when
@@ -653,75 +606,78 @@
                 </xsl:for-each>
 
                 <!-- Contributing individuals - note that we are ignoring those individuals where a role has not been specified -->
-                <xsl:for-each-group
-                    select="
-                    gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName)) > 0) and 
-                    (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)) > 0)]"
-                    group-by="gmd:individualName">
-
-                    <xsl:variable name="individualName"
-                        select="normalize-space(current-grouping-key())"/>
-                    
-                    <xsl:variable name="transformedName">
-                        <xsl:call-template name="transform">
-                            <xsl:with-param name="inputString" select="$individualName"/>
-                        </xsl:call-template>
-                    </xsl:variable>
-                    
-                    
-                    <xsl:variable name="isPublisher" as="xs:boolean*">
-                        <xsl:for-each-group select="current-group()/gmd:role"
-                            group-by="gmd:CI_RoleCode/@codeListValue">
-                            <xsl:if test="contains(lower-case(current-grouping-key()), 'publish')">
-                                <xsl:value-of select="true()"/>
-                            </xsl:if>
-                        </xsl:for-each-group>
-                    </xsl:variable>
-                    <xsl:if test="count($isPublisher) = 0">
-                        <contributor>
-                            <namePart>
-                                <xsl:value-of select="$transformedName"/>
-                            </namePart>
-                        </contributor>
-                    </xsl:if>
-                </xsl:for-each-group>
-
-                <!-- Contributing organisations - included only when there is no individual name (in which case the individual has been included above) 
-                        Note again that we are ignoring organisations where a role has not been specified -->
-                <xsl:for-each-group
-                    select="gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[
-                            (string-length(normalize-space(gmd:organisationName)) > 0) and
-                            not(string-length(normalize-space(gmd:individualName)) > 0) and
-                            (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)) > 0)]"
-                    group-by="gmd:organisationName">
-
-                    <xsl:variable name="transformedOrganisationName">
-                        <xsl:call-template name="transform">
-                            <xsl:with-param name="inputString"
-                                select="normalize-space(current-grouping-key())"/>
-                        </xsl:call-template>
-                    </xsl:variable>
-
-                    <xsl:variable name="isPublisher" as="xs:boolean*">
-                        <xsl:for-each-group select="current-group()/gmd:role"
-                            group-by="gmd:CI_RoleCode/@codeListValue">
-                            <xsl:if test="contains(lower-case(current-grouping-key()), 'publish')">
-                                <xsl:value-of select="true()"/>
-                            </xsl:if>
-                        </xsl:for-each-group>
-                    </xsl:variable>
-                    <xsl:if test="count($isPublisher) = 0">
-                        <contributor>
-                            <namePart>
-                                <xsl:value-of select="$transformedOrganisationName"/>
-                            </namePart>
-                        </contributor>
-                    </xsl:if>
-                </xsl:for-each-group>
-
-                <xsl:variable name="publishName">
-                    <xsl:call-template name="publishNameToUse"/>
+                <xsl:variable name="individualContributor_sequence" as="xs:string*">
+                     <xsl:for-each-group
+                         select="
+                         gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName)) > 0) and 
+                         (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)) > 0)]"
+                         group-by="gmd:individualName">
+     
+                         <xsl:variable name="individualName"
+                             select="normalize-space(current-grouping-key())"/>
+                         
+                         <xsl:variable name="transformedName" select="custom:transform($individualName)"/>
+                                                      
+                         <xsl:if test="
+                             (count(custom:isRole(current-group(), 'publish')) = 0) and 
+                             (count(custom:isRole(current-group(), 'originator')) = 0)">
+                            <xsl:value-of select="$transformedName"/>
+                         </xsl:if>
+                     </xsl:for-each-group>
                 </xsl:variable>
+                
+                <xsl:for-each select="distinct-values($individualContributor_sequence)">
+                    <contributor>
+                        <namePart>
+                            <xsl:value-of select="."/>
+                        </namePart>
+                    </contributor>
+                </xsl:for-each>
+                
+                 <!-- Contributing organisations - included only when there is no individual name (in which case the individual has been included above) 
+                        Note again that we are ignoring organisations where a role has not been specified -->
+                <xsl:variable name="organisationContributor_sequence" as="xs:string*">
+                     <xsl:for-each-group
+                         select="gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[
+                                 (string-length(normalize-space(gmd:organisationName)) > 0) and
+                                 not(string-length(normalize-space(gmd:individualName)) > 0) and
+                                 (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)) > 0)]"
+                         group-by="gmd:organisationName">
+     
+                         <xsl:variable name="transformedOrganisationName" select="custom:transform(current-grouping-key())"/>
+     
+                         <xsl:if test="
+                             (count(custom:isRole(current-group(), 'publish')) = 0) and 
+                             (count(custom:isRole(current-group(), 'originator')) = 0)">
+                             <xsl:value-of select="$transformedOrganisationName"/>
+                         </xsl:if>
+                     </xsl:for-each-group>
+                </xsl:variable>
+                
+                <xsl:for-each select="distinct-values($organisationContributor_sequence)">
+                    <contributor>
+                        <namePart>
+                            <xsl:value-of select="."/>
+                        </namePart>
+                    </contributor>
+                </xsl:for-each>
+                
+                <!-- If no contributors other than originator, seek originator and use if one exists -->
+                
+                <xsl:if test="
+                    (count($individualContributor_sequence) = 0) and
+                    (count($organisationContributor_sequence) = 0)">
+                    <xsl:variable name="originator" select="custom:originatorNameToUse(.)"/>
+                    <xsl:if test="string-length($originator) > 0">
+                      <contributor>
+                          <namePart>
+                              <xsl:value-of select="$originator"/>
+                          </namePart>
+                      </contributor> 
+                    </xsl:if>
+                </xsl:if>
+          
+                <xsl:variable name="publishName" select="custom:publishNameToUse(gmd:citedResponsibleParty)"/>
 
                 <xsl:if test="string-length($publishName) > 0">
                     <publisher>
@@ -729,11 +685,7 @@
                     </publisher>
                 </xsl:if>
 
-                <xsl:variable name="publishPlace">
-                    <xsl:call-template name="publishPlaceToUse">
-                        <xsl:with-param name="publishNameToUse" select="$publishName"/>
-                    </xsl:call-template>
-                </xsl:variable>
+                <xsl:variable name="publishPlace" select="custom:publishPlaceToUse(., $publishName)"/>
 
                 <xsl:if test="string-length($publishPlace) > 0">
                     <placePublished>
@@ -756,12 +708,8 @@
         <xsl:param name="type"/>
         <registryObject group="{$global_group}">
 
-            <xsl:variable name="transformedName">
-                <xsl:call-template name="transform">
-                    <xsl:with-param name="inputString" select="current-grouping-key()"/>
-                </xsl:call-template>
-            </xsl:variable>
-
+            <xsl:variable name="transformedName" select="custom:transform(current-grouping-key())"/>
+            
             <key>
                 <xsl:value-of
                     select="concat($global_baseURI, '/', translate(normalize-space($transformedName),' ',''))"
@@ -813,12 +761,7 @@
                 <!-- If we are dealing with an individual...-->
                 <xsl:choose>
                     <xsl:when test="contains($type, 'person')">
-                        <xsl:variable name="transformedOrganisationName">
-                            <xsl:call-template name="transform">
-                                <xsl:with-param name="inputString" select="gmd:organisationName"/>
-                            </xsl:call-template>
-                        </xsl:variable>
-
+                        <xsl:variable name="transformedOrganisationName" select="custom:transform(gmd:organisationName)"/>
 
                         <xsl:choose>
                             <xsl:when
@@ -977,8 +920,8 @@
 
     <!-- Modules -->
 
-    <xsl:template name="doiFromIdentifiers">
-        <xsl:param name="identifier_sequence"/>
+    <xsl:function name="custom:doiFromIdentifiers">
+        <xsl:param name="identifier_sequence" as="xs:string*"/>
         <xsl:for-each select="distinct-values($identifier_sequence)">
             <xsl:variable name="code" select="normalize-space(.)"/>
             <xsl:if test="contains(lower-case($code), 'doi')">
@@ -992,42 +935,29 @@
                 </xsl:choose>
             </xsl:if>
         </xsl:for-each>
-    </xsl:template>
+    </xsl:function>
 
-    <xsl:template name="publishNameToUse">
+    <xsl:function name="custom:publishNameToUse">
+        <xsl:param name="current_node_sequence" as="node()*"/>
         <xsl:message>Module: publishNameToUse</xsl:message>
-        <xsl:variable name="organisationPublisherName">
-            <xsl:call-template name="childValueForRole">
-                <xsl:with-param name="roleSubstring" select="'publish'"/>
-                <xsl:with-param name="childElementName" select="'organisationName'"/>
-            </xsl:call-template>
-        </xsl:variable>
+        
+        <xsl:variable name="organisationPublisherName_sequence" select="custom:childValueForRole($current_node_sequence, 'publish', 'organisationName')"/>
+       
+        <xsl:for-each select="$organisationPublisherName_sequence">
+            <xsl:message select="concat('Organisation publisher name: ', .)"/>
+        </xsl:for-each>
+        
+        <xsl:variable name="transformedOrganisationPublisherName" select="custom:transform($organisationPublisherName_sequence[1])"/>
 
-        <xsl:message>Organisation publisher name: <xsl:value-of select="$organisationPublisherName"
-            /></xsl:message>
+        <xsl:variable name="individualPublisherName_sequence" select="custom:childValueForRole($current_node_sequence, 'publish', 'individualName')"/>
 
-        <xsl:variable name="transformedOrganisationPublisherName">
-            <xsl:call-template name="transform">
-                <xsl:with-param name="inputString" select="$organisationPublisherName"/>
-            </xsl:call-template>
-        </xsl:variable>
-
-        <xsl:variable name="individualPublisherName">
-            <xsl:call-template name="childValueForRole">
-                <xsl:with-param name="roleSubstring" select="'publish'"/>
-                <xsl:with-param name="childElementName" select="'individualName'"/>
-            </xsl:call-template>
-        </xsl:variable>
-
-        <xsl:message>Individual publisher name: <xsl:value-of select="$individualPublisherName"
-            /></xsl:message>
-
-        <xsl:variable name="transformedIndividualPublisherName">
-            <xsl:call-template name="transform">
-                <xsl:with-param name="inputString" select="$individualPublisherName"/>
-            </xsl:call-template>
-        </xsl:variable>
-
+        <xsl:for-each select="$individualPublisherName_sequence">
+            <xsl:message select="concat('Individual publisher name: ', .)"/>
+        </xsl:for-each>
+        
+      
+        <xsl:variable name="transformedIndividualPublisherName" select="custom:transform($individualPublisherName_sequence[1])"/>
+            
         <xsl:choose>
             <xsl:when test="string-length(normalize-space($transformedOrganisationPublisherName)) > 0">
                 <xsl:value-of select="$transformedOrganisationPublisherName"/>
@@ -1039,26 +969,50 @@
                 <xsl:value-of select="$global_publisherName"/>
             </xsl:otherwise>
         </xsl:choose>
-    </xsl:template>
+    </xsl:function>
+    
+    <xsl:function name="custom:originatorNameToUse">
+        <xsl:param name="current_node" as="node()"/>
+        <xsl:message>Module: originatorNameToUse</xsl:message>
+        
+        <xsl:variable name="organisationOriginatorName_sequence" select="custom:childValueForRole($current_node, 'originator', 'organisationName')"/>
+        
+        <xsl:for-each select="$organisationOriginatorName_sequence">
+            <xsl:message select="concat('Organisation originator name: ', .)"/>
+        </xsl:for-each>
+        
+        <xsl:variable name="transformedOrganisationOriginatorName" select="custom:transform($organisationOriginatorName_sequence[1])"/>
+        
+        <xsl:variable name="individualOriginatorName_sequence" select="custom:childValueForRole($current_node, 'originator', 'individualName')"/>
+        
+        <xsl:for-each select="$individualOriginatorName_sequence">
+            <xsl:message select="concat('Individual originator name: ', .)"/>
+        </xsl:for-each>
+        
+        <xsl:variable name="transformedIndividualOriginatorName" select="custom:transform($individualOriginatorName_sequence[1])"/>
+        
+        <xsl:choose>
+            <xsl:when test="string-length(normalize-space($transformedOrganisationOriginatorName)) > 0">
+                <xsl:value-of select="$transformedOrganisationOriginatorName"/>
+            </xsl:when>
+            <xsl:when test="string-length(normalize-space($transformedIndividualOriginatorName)) > 0">
+                <xsl:value-of select="$transformedIndividualOriginatorName"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="$global_publisherName"/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:function>
 
-    <xsl:template name="publishPlaceToUse">
+    <xsl:function name="custom:publishPlaceToUse">
+        <xsl:param name="current_node" as="node()"/>
         <xsl:param name="publishNameToUse"/>
-        <xsl:variable name="publishCity">
-            <xsl:call-template name="childValueForRole">
-                <xsl:with-param name="roleSubstring" select="'publish'"/>
-                <xsl:with-param name="childElementName" select="'city'"/>
-            </xsl:call-template>
-        </xsl:variable>
-
+        <xsl:variable name="publishCity" select="custom:childValueForRole($current_node, 'publish', 'city')"/>
+            
         <xsl:message>Publish City: <xsl:value-of select="$publishCity"/></xsl:message>
 
-        <xsl:variable name="publishCountry">
-            <xsl:call-template name="childValueForRole">
-                <xsl:with-param name="roleSubstring" select="'publish'"/>
-                <xsl:with-param name="childElementName" select="'country'"/>
-            </xsl:call-template>
-        </xsl:variable>
-
+        <xsl:variable name="publishCountry" select="custom:childValueForRole($current_node, 'publish', 'country')"/>
+        
         <xsl:message>Publish Country: <xsl:value-of select="$publishCountry"/></xsl:message>
 
         <xsl:choose>
@@ -1075,9 +1029,9 @@
                 </xsl:if>
             </xsl:otherwise>
         </xsl:choose>
-    </xsl:template>
+    </xsl:function>
 
-    <xsl:template name="transform">
+    <xsl:function name="custom:transform">
         <xsl:param name="inputString"/>
         <xsl:choose>
             <xsl:when test="normalize-space($inputString) = 'AADC'">
@@ -1093,41 +1047,45 @@
                 <xsl:value-of select="normalize-space($inputString)"/>
             </xsl:otherwise>
         </xsl:choose>
-    </xsl:template>
+    </xsl:function>
 
     <!-- Get the values of the child element of the point of contact responsible parties whose role contains this substring provided 
          For example, if you provide roleSubsting as 'publish' and childElementName as 'organisationName',
-            you will receive all organisation names within point of contact.  They will be separated by 'commas', with an 'and' between
-            the last and second last, where applicable -->
-    <xsl:template name="childValueForRole">
+            you will receive all organisation names within child responsible parties that have role 'publish'.  
+            They will be separated by 'commas', with an 'and' between the last and second last, where applicable -->
+    <xsl:function name="custom:childValueForRole" as="xs:string*">
+        <xsl:param name="contextNode_sequence" as="node()*"/>
         <xsl:param name="roleSubstring"/>
         <xsl:param name="childElementName"/>
         <xsl:message>Child element name: <xsl:value-of select="$childElementName"/></xsl:message>
-        <xsl:variable name="nameSequence" as="xs:string*">
-            <xsl:for-each-group
-                select="descendant::gmd:CI_ResponsibleParty[
-                (string-length(normalize-space(descendant::node()[local-name()=$childElementName])) > 0) and 
-                (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)) > 0)]"
-                group-by="descendant::node()[local-name()=$childElementName]">
-                <xsl:choose>
-                    <!-- obtain for two locations so far - we don't want for example we don't want
-                        responsible parties under citation of thesauruses used -->
-                    <xsl:when
-                        test="contains(local-name(..), 'pointOfContact') or 
-                                    contains(local-name(../../..), 'citation')">
-                        <!--xsl:message>Parent: <xsl:value-of select="ancestor::node()"></xsl:value-of></xsl:message-->
-                        <xsl:if
-                            test="contains(lower-case(gmd:role/gmd:CI_RoleCode/@codeListValue), lower-case($roleSubstring))">
-                            <xsl:sequence
-                                select="descendant::node()[local-name()=$childElementName]"/>
-                            <xsl:message>Child value: <xsl:value-of
-                                    select="descendant::node()[local-name()=$childElementName]"
-                                /></xsl:message>
-                        </xsl:if>
-                    </xsl:when>
-                </xsl:choose>
-            </xsl:for-each-group>
-        </xsl:variable>
+         <xsl:variable name="nameSequence" as="xs:string*">
+             <xsl:for-each select="$contextNode_sequence">
+                <xsl:for-each-group
+                    select="./gmd:CI_ResponsibleParty[
+                    (string-length(normalize-space(descendant::node()[local-name()=$childElementName])) > 0) and 
+                    (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)) > 0)]"
+                    group-by="descendant::node()[local-name()=$childElementName]">
+                    <xsl:choose>
+                        <!-- obtain for two locations so far - we don't want for example we don't want
+                            responsible parties under citation of thesauruses used -->
+                        <xsl:when
+                            test="contains(local-name(..), 'pointOfContact') or 
+                                        contains(local-name(../../..), 'citation')">
+                            <!--xsl:message>Parent: <xsl:value-of select="ancestor::node()"></xsl:value-of></xsl:message-->
+                            <xsl:if
+                                test="contains(lower-case(gmd:role/gmd:CI_RoleCode/@codeListValue), lower-case($roleSubstring))">
+                                <xsl:sequence
+                                    select="descendant::node()[local-name()=$childElementName]"/>
+                                <xsl:message>Child value: <xsl:value-of
+                                        select="descendant::node()[local-name()=$childElementName]"
+                                    /></xsl:message>
+                            </xsl:if>
+                        </xsl:when>
+                    </xsl:choose>
+                </xsl:for-each-group>
+             </xsl:for-each>
+         </xsl:variable>
+        
         <xsl:variable name="formattedValues">
             <xsl:for-each select="$nameSequence">
                 <xsl:if test="position() > 1">
@@ -1147,30 +1105,8 @@
             <xsl:message>Formatted values: <xsl:value-of select="$formattedValues"/></xsl:message>
         </xsl:if>
         <xsl:value-of select="$formattedValues"/>
-    </xsl:template>
+    </xsl:function>
 
-    <xsl:template name="splitText_sequence" as="xs:string*">
-        <xsl:param name="string"/>
-        <xsl:param name="separator" select="', '"/>
-        <xsl:choose>
-            <xsl:when test="contains($string, $separator)">
-                <xsl:if test="not(starts-with($string, $separator))">
-                    <xsl:value-of select="normalize-space(substring-before($string, $separator))"/>
-                </xsl:if>
-                <xsl:call-template name="splitText_sequence">
-                    <xsl:with-param name="string"
-                        select="normalize-space(substring-after($string,$separator))"/>
-                    <xsl:with-param name="separator" select="$separator"/>
-                </xsl:call-template>
-            </xsl:when>
-            <xsl:otherwise>
-                <xsl:if test="string-length(normalize-space($string)) > 0">
-                    <xsl:value-of select="normalize-space($string)"/>
-                </xsl:if>
-            </xsl:otherwise>
-        </xsl:choose>
-    </xsl:template>
-    
     <xsl:function name="custom:identifiers" as="xs:string*">
         <xsl:param name="transformedName" as="xs:string"/>
         <xsl:choose>
@@ -1223,6 +1159,16 @@
                 <xsl:text></xsl:text>
             </xsl:otherwise>
         </xsl:choose>
-        
+    </xsl:function>
+    
+    <xsl:function name="custom:isRole" as="xs:boolean*">
+        <xsl:param name="current_group" as="node()*"/>
+        <xsl:param name="role" as="xs:string"/>
+        <xsl:for-each-group select="$current_group/gmd:role"
+            group-by="gmd:CI_RoleCode/@codeListValue">
+            <xsl:if test="contains(lower-case(current-grouping-key()), $role)">
+                <xsl:value-of select="true()"/>
+            </xsl:if>
+        </xsl:for-each-group>
     </xsl:function>
 </xsl:stylesheet>
