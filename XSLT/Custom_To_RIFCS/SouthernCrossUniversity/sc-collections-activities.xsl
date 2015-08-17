@@ -152,7 +152,7 @@
                     <xsl:when test="string-length($doiOfThisPackage) > 0">
                         <location>
                             <address>
-                                <electronic type="doi" target="landingPage">
+                                <electronic type="url" target="landingPage">
                                     <value>
                                         <xsl:value-of select="$doiOfThisPackage"/>
                                     </value>
