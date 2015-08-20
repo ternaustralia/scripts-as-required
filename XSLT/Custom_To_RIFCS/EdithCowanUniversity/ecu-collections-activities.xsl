@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:oai="http://www.openarchives.org/OAI/2.0/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0" exclude-result-prefixes="dc">
+<xsl:stylesheet xmlns:oai="http://www.openarchives.org/OAI/2.0/" 
+    xmlns:dc="http://purl.org/dc/elements/1.1/" 
+    xmlns:custom="http://custom.nowhere.yet"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="3.0" exclude-result-prefixes="dc">
 
   <xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes"/>
 
@@ -31,7 +35,8 @@
 
     <xsl:template match="oai:record" mode="collection">
 
-        <xsl:param name="key" select="oai:header/oai:identifier/text()"/>
+        <xsl:param name="key" select="custom:getKey(., true())"/>
+            
         <xsl:param name="class" select="'collection'"/>
         <xsl:param name="type" select="'dataset'"/>
         <xsl:param name="originatingSource" select="'Edith Cowan University'"/>
@@ -53,7 +58,9 @@
 
     <xsl:template match="oai:record" mode="activity">
 
-        <xsl:param name="key" select="oai:header/oai:identifier/text()"/>
+        <xsl:param name="activityKey" select="concat(custom:getKey(., false()), ':activity')"/>
+        <xsl:param name="collectionKey" select="custom:getKey(., true())"/>
+        
         <xsl:param name="class" select="'activity'"/>
         <xsl:param name="type" select="'project'"/>
         <xsl:param name="originatingSource" select="'Edith Cowan University'"/>
@@ -65,14 +72,14 @@
                         <registryObject xmlns="http://ands.org.au/standards/rif-cs/registryObjects">
             <xsl:attribute name="group"><xsl:value-of select="$originatingSource"/></xsl:attribute>
             <key xmlns="http://ands.org.au/standards/rif-cs/registryObjects">
-                <xsl:value-of select="concat($key, ':activity')"/>
+                <xsl:value-of select="$activityKey"/>
             </key>
             <originatingSource><xsl:value-of select="$originatingSource"/></originatingSource>
             <xsl:element name="{$class}">
                 <xsl:attribute name="type"><xsl:value-of select="$type"/></xsl:attribute>
                 <xsl:apply-templates select="oai:metadata" mode="activity"/>
                 <relatedObject>
-                  <key><xsl:value-of select="$key"/></key>
+                    <key><xsl:value-of select="$collectionKey"/></key>
                   <relation type="hasOutput"/>
                 </relatedObject>
             </xsl:element>
@@ -163,36 +170,40 @@
             <xsl:value-of select="."/>
         </identifier>
     </xsl:template>
-
-    <xsl:template match="field[@name='comments']/value">
-
-        <xsl:for-each select="p/a">
+    
+   <xsl:template match="field[@name='comments']/value" >
+        <xsl:variable name="unescapedContent" as="document-node()">
+            <xsl:copy-of select="parse-xml(concat('&lt;root&gt;', ., '&lt;/root&gt;'))"/>
+        </xsl:variable>
+       
+       <xsl:for-each select="$unescapedContent/root/p/a/@href">
+            
             <xsl:choose>
-                <xsl:when test="contains(./@href, 'scopus')">
+                <xsl:when test="contains(., 'scopus')">
                     <relatedInfo type="party" xmlns="http://ands.org.au/standards/rif-cs/registryObjects">
             <identifier type="uri">
-                            <xsl:value-of select="./@href"/>
+                <xsl:value-of select="."/>
         </identifier>
 
 </relatedInfo>                    </xsl:when>
-                <xsl:when test="contains(./@href, 'researcherid')">
+                <xsl:when test="contains(., 'researcherid')">
                     <relatedInfo type="party" xmlns="http://ands.org.au/standards/rif-cs/registryObjects">
                         <identifier type="uri">
-                            <xsl:value-of select="./@href"/>
+                            <xsl:value-of select="."/>
                         </identifier>
                     </relatedInfo>
                 </xsl:when>
-                <xsl:when test="contains(./@href, 'orchid')">
+                <xsl:when test="contains(., 'orcid')">
                     <relatedInfo type="party" xmlns="http://ands.org.au/standards/rif-cs/registryObjects">
-                        <identifier type="orchid">
-                            <xsl:value-of select="./@href"/>
+                        <identifier type="orcid">
+                            <xsl:value-of select="."/>
                         </identifier>
                     </relatedInfo>
                 </xsl:when>
-                <xsl:when test="contains(./@href, 'nla')">
+                <xsl:when test="contains(., 'nla')">
                     <relatedInfo type="party" xmlns="http://ands.org.au/standards/rif-cs/registryObjects">
                         <identifier type="AU-ANL:PEAU">
-                            <xsl:value-of select="./@href"/>
+                            <xsl:value-of select="."/>
                         </identifier>
                     </relatedInfo>
                 </xsl:when>
@@ -396,6 +407,35 @@
             </address>
         </location>
     </xsl:template>
+    
+    <xsl:function name="custom:getKey">
+        <xsl:param name="node" as="node()"/>
+        <xsl:param name="handleOK" as="xs:boolean"/>
+        
+        <xsl:choose>
+            <xsl:when test="
+                (string-length($node//field[@name='identifier']/value) > 0) and
+                (boolean(not(contains($node//field[@name='identifier']/value, 'handle.net'))) or
+                boolean($handleOK) = true())">
+                <xsl:value-of select="$node//field[@name='identifier']/value"/>
+            </xsl:when>
+            <xsl:when test="string-length($node//articleid) > 0">
+                <xsl:value-of select="concat('ecu/articleid/', $node//articleid)"/>
+            </xsl:when>
+            <xsl:when test="string-length($node//context-key) > 0">
+                <xsl:value-of select="concat('ecu/context-key/', $node//context-key)"/>
+            </xsl:when>
+            <xsl:when test="string-length($node//coverpage-url) > 0">
+                <xsl:value-of select="$node//coverpage-url"/>
+            </xsl:when>
+            <xsl:when test="string-length($node//title) > 0">
+                <xsl:value-of select="translate(normalize-space($node//title), ' ', '')"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="generate-id($node)"/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:function>
 
     <xsl:template match="node() | text() | @*"/>
 
