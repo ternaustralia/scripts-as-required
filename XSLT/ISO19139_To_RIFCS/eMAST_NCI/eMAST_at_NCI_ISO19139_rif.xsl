@@ -18,10 +18,10 @@
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
     <xsl:param name="global_defaultOriginatingSource" select="'external'"/>
-    <xsl:param name="global_acronym" select="'NCI'"/>
-    <xsl:param name="global_originatingSource" select="'National Computational Infrastructure'"/> <!-- Only used as originating source if organisation name cannot be determined from Point Of Contact -->
-    <xsl:param name="global_group" select="'National Computational Infrastructure'"/> 
-    <xsl:param name="global_baseURI" select="'datamgt.nci.org.au:8080'"/>
+    <xsl:param name="global_acronym" select="'eMAST'"/>
+    <xsl:param name="global_originatingSource" select="'eMAST'"/> <!-- Only used as originating source if organisation name cannot be determined from Point Of Contact -->
+    <xsl:param name="global_group" select="'eMAST'"/> 
+    <xsl:param name="global_baseURI" select="'geonetworkrr9.nci.org.au'"/>
     <xsl:param name="global_ActivityKeyNCI" select="'ncris.innovation.gov.au/activity/20'"/>
     <xsl:param name="global_SourceFacilityKey" select="'NCI/EcosystemModellingandScalingInfrastructure(eMAST)Facility'"/>
     <xsl:variable name="anzsrcCodelist" select="document('anzsrc-codelist.xml')"/>
@@ -58,7 +58,8 @@
 
     <xsl:template match="gmd:MD_Metadata">
 
-        <xsl:variable name="metadataURL" select="custom:getMetadataURL(gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions)"/>
+        <xsl:variable name="metadataURL_sequence" select="custom:getURL(gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions, 'metadata-url')" as="xs:string*"/>
+        <xsl:variable name="datasetURL_sequence" select="custom:getURL(gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions, '')" as="xs:string*"/>
         <xsl:variable name="fileIdentifier"><xsl:value-of select="gmd:fileIdentifier"/></xsl:variable>
         
         <xsl:variable name="crsCode">
@@ -70,10 +71,12 @@
         
         <xsl:variable name="dateStamp" select="gmd:dateStamp/gco:Date"/>
         
-        <xsl:variable name="locationURL">
+        <xsl:variable name="locationURL_sequence">
             <xsl:choose>
-                <xsl:when test="string-length($metadataURL) > 0">
-                    <xsl:value-of select="$metadataURL"/>
+                <xsl:when test="count($metadataURL_sequence) > 0">
+                    <xsl:for-each select="distinct-values($metadataURL_sequence)">
+                        <xsl:value-of select="."/>
+                    </xsl:for-each>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:value-of select="concat('http://', $global_baseURI, '/geonetwork/srv/en/metadata.show?uuid=', $fileIdentifier)"/>
@@ -183,7 +186,14 @@
                         <xsl:apply-templates select="gmd:parentIdentifier"
                             mode="registryObject_related_object"/>
     
-                        <xsl:copy-of select="custom:set_registryObject_location_metadata($locationURL, 'landingPage')"/>
+                        <xsl:for-each select="distinct-values($locationURL_sequence)">
+                            <xsl:copy-of select="custom:set_registryObject_location_metadata(., 'landingPage')"/>
+                        </xsl:for-each>
+                        
+                        <xsl:for-each select="distinct-values($datasetURL_sequence)">
+                            <xsl:copy-of select="custom:set_registryObject_location_metadata(., 'directDownload')"/>
+                        </xsl:for-each>
+                        
                         <xsl:copy-of select="custom:set_registryObject_location_metadata($dataSetURI, 'directDownload')"/>
                                                
                         <xsl:for-each-group
@@ -283,7 +293,7 @@
                              <xsl:for-each
                                  select="descendant::gmd:citation/gmd:CI_Citation[ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification]">
                                  <xsl:call-template name="registryObject_citationMetadata_citationInfo">
-                                     <xsl:with-param name="locationURL" select="$locationURL"/>
+                                     <xsl:with-param name="locationURL" select="$locationURL_sequence[1]"/>
                                      <xsl:with-param name="originatingSource" select="$originatingSource"/>
                                      <xsl:with-param name="citation" select="."/>
                                      <xsl:with-param name="contactNode_sequence" select="$contactNode_sequence" as="node()*"/>
@@ -481,7 +491,7 @@
     <xsl:function name="custom:set_registryObject_location_metadata">
         <xsl:param name="uri"/>
         <xsl:param name="target"/>
-        <xsl:if test="string-length(normalize-space($uri)) > 0 and contains($uri, 'http')">
+        <xsl:if test="string-length(normalize-space($uri)) > 0">
             <location>
                 <address>
                     <electronic>
@@ -1076,29 +1086,32 @@
         <xsl:for-each select="$currentNode/gmd:otherConstraints">
             <xsl:variable name="otherConstraints" select="normalize-space(.)"/>
              <xsl:if test="string-length($otherConstraints) > 0">
+                 <xsl:variable name="licenceType">
+                     <xsl:if test="contains($otherConstraints, 'http')">
+                         <xsl:variable name="licenceURI" select="$otherConstraints"/>
+                         <xsl:for-each select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCode']/gmx:codeEntry/gmx:CodeDefinition">
+                             <xsl:message select="concat('remarks: ', gml:remarks)"/>
+                             <xsl:message select="concat('otherConstraints: ', $otherConstraints)"/>
+                             <xsl:if test="string-length(gml:remarks) > 0">
+                                 <xsl:if test="contains($otherConstraints, gml:remarks) or
+                                     contains(replace($otherConstraints, 'https', 'http'), gml:remarks)">
+                                     <xsl:if test="string-length(gml:identifier) > 0">
+                                        <xsl:value-of select="gml:identifier"/>
+                                     </xsl:if>
+                                 </xsl:if>
+                             </xsl:if>
+                         </xsl:for-each>
+                     </xsl:if>
+                 </xsl:variable>
                 <xsl:choose>
-                    <xsl:when test="contains(preceding-sibling::gmd:useConstraints/gmd:MD_RestrictionCode/@codeListValue, 'licence')">
-                        <xsl:if test="contains($otherConstraints, 'http')">
-                            <xsl:variable name="licenceURI" select="$otherConstraints"/>
-                            <xsl:for-each select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCode']/gmx:codeEntry/gmx:CodeDefinition">
-                                <xsl:message select="concat('remarks: ', gml:remarks)"/>
-                                <xsl:message select="concat('otherConstraints: ', $otherConstraints)"/>
-                                <xsl:if test="string-length(gml:remarks) > 0">
-                                    <xsl:if test="contains($otherConstraints, gml:remarks) or
-                                                    contains(replace($otherConstraints, 'https', 'http'), gml:remarks)">
-                                       <rights>
-                                           <licence>
-                                               <xsl:if test="string-length(gml:identifier)">
-                                                   <xsl:attribute name="type">
-                                                       <xsl:value-of select="gml:identifier"/>
-                                                   </xsl:attribute>
-                                               </xsl:if>
-                                           </licence>
-                                       </rights>
-                                    </xsl:if>
-                                </xsl:if>
-                            </xsl:for-each>
-                        </xsl:if>
+                    <xsl:when test="string-length($licenceType) > 0">
+                        <rights>
+                            <licence>
+                               <xsl:attribute name="type">
+                                   <xsl:value-of select="$licenceType"/>
+                               </xsl:attribute>
+                            </licence>
+                        </rights>
                     </xsl:when>
                     <xsl:otherwise>
                         <xsl:if test="contains(lower-case($otherConstraints), 'freely download')">
@@ -1508,10 +1521,18 @@
                                         <!--  Individual has an organisation name, so relate the individual to the organisation, and omit the address 
                                             (the address will be included within the organisation to which this individual is related) -->
                                         <relatedObject>
+                                            
+                                            <xsl:variable name="mappedKey" select="custom:getMappedKey(translate(normalize-space(gmd:organisationName),' ',''))"/>
+                                            
                                             <key>
-                                                <xsl:value-of
-                                                    select="concat($global_acronym,'/', translate(normalize-space(gmd:organisationName),' ',''))"
-                                                />
+                                                <xsl:choose>
+                                                    <xsl:when test="string-length($mappedKey) > 0">
+                                                        <xsl:value-of select="$mappedKey"/>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <xsl:value-of select="concat($global_acronym,'/', translate(normalize-space(gmd:organisationName),' ',''))"/>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
                                             </key>
                                             <relation type="isMemberOf"/>
                                         </relatedObject>
@@ -1926,11 +1947,18 @@
         </xsl:choose>
     </xsl:function>
    
-   <xsl:function name="custom:getMetadataURL">
+   <xsl:function name="custom:getURL" as="xs:string*">
         <xsl:param name="transferOptions"/>
+        <xsl:param name="protocol"/>
+        <xsl:message select="concat('transfer options', $transferOptions)"/>
         <xsl:for-each select="$transferOptions/gmd:onLine/gmd:CI_OnlineResource">
-            <xsl:if test="contains(lower-case(gmd:protocol), 'metadata-url')">
-                <xsl:value-of select="normalize-space(gmd:linkage/gmd:URL)"/>
+            <xsl:message select="concat('sub element', .)"/>
+            <xsl:message select="concat('string-length($protocol)', string-length($protocol))"/>
+            <xsl:if test="(string-length($protocol) = 0) or contains(lower-case(gmd:protocol), $protocol)">
+                <xsl:message select="concat('gmd:linkage/gmd:URL', gmd:linkage/gmd:URL)"/>
+                <xsl:if test="string-length(normalize-space(gmd:linkage/gmd:URL)) > 0">
+                    <xsl:value-of select="normalize-space(gmd:linkage/gmd:URL)"/>
+                </xsl:if>
             </xsl:if>
         </xsl:for-each>
     </xsl:function>
@@ -1998,6 +2026,9 @@
                             contains(lower-case($inputKey), 'nci')">
                 <xsl:value-of select="$global_ActivityKeyNCI"/>
             </xsl:when>
+            <xsl:when test="contains(lower-case($inputKey), 'ecosystemmodellingandscalinginfrastructure')">
+                <xsl:value-of select="$global_SourceFacilityKey"/>
+            </xsl:when>
             <xsl:otherwise>
                 <xsl:value-of select="''"/>
             </xsl:otherwise> 
@@ -2010,7 +2041,7 @@
         <xsl:choose>
             <xsl:when test="
                 (lower-case($inputKey) = 'nationalcomputationalinfrastructure') or
-                (lower-case($inputKey) = 'ecosystemmodellingandscalinginfrastructure(emast)facility') or
+                (lower-case($inputKey) = 'ecosystemmodellingandscalinginfrastructure') or
                 (lower-case($inputKey) = 'nci')">
                 <xsl:value-of select="false()"/>
             </xsl:when>
