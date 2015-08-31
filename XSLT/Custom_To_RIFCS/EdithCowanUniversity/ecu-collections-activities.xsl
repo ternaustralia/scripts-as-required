@@ -172,6 +172,8 @@
     </xsl:template>
     
    <xsl:template match="field[@name='comments']/value" >
+       
+       <!--
         <xsl:variable name="unescapedContent" as="document-node()">
             <xsl:copy-of select="parse-xml(concat('&lt;root&gt;', ., '&lt;/root&gt;'))"/>
         </xsl:variable>
@@ -181,7 +183,7 @@
             <xsl:choose>
                 <xsl:when test="contains(., 'scopus')">
                     <relatedInfo type="party" xmlns="http://ands.org.au/standards/rif-cs/registryObjects">
-            <identifier type="uri">
+            <identifier type="scopus">
                 <xsl:value-of select="."/>
         </identifier>
 
@@ -209,7 +211,7 @@
                 </xsl:when>
             </xsl:choose>
         </xsl:for-each>
-
+-->
     </xsl:template>
 
     <!--
