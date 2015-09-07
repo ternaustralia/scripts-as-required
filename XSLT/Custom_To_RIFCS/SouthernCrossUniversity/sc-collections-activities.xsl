@@ -32,32 +32,23 @@
     </xsl:template>
     
     <xsl:template match="oai:OAI-PMH/*/oai:record">
-         <xsl:variable name="oai_identifier" select="oai:header/oai:identifier"/>
-         <xsl:message select="concat('identifier: ', oai:header/oai:identifier)"/>
-         <xsl:if test="string-length($oai_identifier) > 0">
-             
-             <xsl:if test="count(oai:metadata/oai_dc:dc) > 0">
-                 <xsl:apply-templates select="oai:metadata/oai_dc:dc" mode="collection">
-                     <xsl:with-param name="oai_identifier" select="$oai_identifier"/>
-                 </xsl:apply-templates>
-                 
-                 <xsl:apply-templates select="oai:metadata/oai_dc:dc/dc:funding" mode="funding_party"/>
-                 <xsl:apply-templates select="oai:metadata/oai_dc:dc" mode="party"/>
-                 
-             </xsl:if>
+         <xsl:if test="count(oai:metadata/oai_dc:dc) > 0">
+             <xsl:apply-templates select="oai:metadata/oai_dc:dc" mode="collection"/>
+             <xsl:apply-templates select="oai:metadata/oai_dc:dc/dc:funding" mode="funding_party"/>
+             <xsl:apply-templates select="oai:metadata/oai_dc:dc" mode="party"/>
          </xsl:if>
     </xsl:template>
     
     <xsl:template match="oai_dc:dc" mode="collection">
-        <xsl:param name="oai_identifier"/>
         
         <xsl:variable name="class" select="'collection'"/>
         <xsl:variable name="type" select="dc:type"/>
+        <xsl:variable name="key" select="custom:formatKey(custom:getKey(., true()))"/>
         
         <registryObject>
             <xsl:attribute name="group" select="$global_group"/>
             <key>
-                <xsl:value-of select="$oai_identifier"/>
+                <xsl:value-of select="$key"/>
             </key>
             <originatingSource>
                 <xsl:value-of select="$global_originatingSource"/>
@@ -163,7 +154,7 @@
                     <xsl:if test="string-length(.) > 0">
                         <relatedObject>
                             <key>
-                                <xsl:value-of select="concat($global_baseURI, '/', translate(normalize-space(.), ' ', ''))"/>
+                                <xsl:value-of select="custom:formatKey(.)"/>
                             </key>
                             <relation type="hasCollector"/>
                             
@@ -176,7 +167,7 @@
                     <xsl:if test="string-length(.) > 0">
                         <relatedObject>
                             <key>
-                                <xsl:value-of select="concat($global_baseURI, '/', translate(normalize-space(.), ' ', ''))"/>
+                                <xsl:value-of select="custom:formatKey(.)"/>
                             </key>
                             <relation type="isEnrichedBy"/>
                         </relatedObject>
@@ -187,7 +178,7 @@
                     <xsl:if test="string-length(.) > 0">
                         <relatedObject>
                             <key>
-                                <xsl:value-of select="concat($global_baseURI, '/', translate(normalize-space(.), ' ', ''))"/>
+                                <xsl:value-of select="custom:formatKey(.)"/>
                             </key>
                             <relation type="isOutputOf"/>
                             
@@ -406,39 +397,26 @@
     
     <xsl:template match="oai_dc:dc/dc:funding" mode="funding_party">
         
-        <xsl:if test="string-length(normalize-space(.)) > 0"></xsl:if>
+        <xsl:if test="string-length(normalize-space(.)) > 0">
         
-        <xsl:variable name="key">
-            <xsl:variable name="raw" select="translate(normalize-space(.), ' ', '')"/>
-            <xsl:choose>
-                <xsl:when test="substring($raw, string-length($raw), 1) = '.'">
-                    <xsl:value-of select="substring($raw, 0, string-length($raw))"/>
-                </xsl:when>
-                <xsl:otherwise>
-                    <xsl:value-of select="$raw"/>
-                </xsl:otherwise>
-            </xsl:choose>
-        </xsl:variable>
-        
-        <xsl:if test="string-length($key) > 0">
             <registryObject group="{$global_group}">
                 <key>
-                    <xsl:value-of select="concat($global_baseURI, '/', $key)"/>
+                    <xsl:value-of select="custom:formatKey(.)"/>
                 </key>
                 <originatingSource>
                     <xsl:value-of select="$global_originatingSource"/>
                 </originatingSource>
                 
-                <xsl:element name="activity">
-                    <xsl:attribute name="type" select="grant"/>
+                <activity type="grant">
                     <name type="primary">
                         <namePart>
-                            <xsl:value-of select="."/>
+                            <xsl:value-of select="normalize-space(.)"/>
                         </namePart>
                     </name>
-                </xsl:element>
+                </activity>
             </registryObject>
         </xsl:if>
+        
     </xsl:template>
     
     <xsl:template match="oai_dc:dc" mode="party">
@@ -456,7 +434,7 @@
                     </xsl:if>
                 </xsl:variable>
                     
-                <xsl:message select="concat('htmlFormatted: ', $htmlFormatted)"/>
+                <!--xsl:message select="concat('htmlFormatted: ', $htmlFormatted)"/-->
                 
                 <!-- Retrieve organisations related to this party -->
                 <xsl:variable name="organisation_sequence" select="custom:getOrganisationForName_sequence(normalize-space(.), $htmlFormatted)" as="xs:string*"/>
@@ -464,19 +442,7 @@
                 <!-- Retrieve identifiers for this party -->
                 <xsl:variable name="identifier_sequence" select="custom:getIdentifiersForName_sequence($name, $htmlFormatted)" as="xs:string*"/>
                 
-                 <xsl:variable name="key">
-                     <xsl:variable name="raw" select="translate(normalize-space(.), ' ', '')"/>
-                     <xsl:choose>
-                         <xsl:when test="substring($raw, string-length($raw), 1) = '.'">
-                             <xsl:value-of select="substring($raw, 0, string-length($raw))"/>
-                         </xsl:when>
-                         <xsl:otherwise>
-                             <xsl:value-of select="$raw"/>
-                         </xsl:otherwise>
-                     </xsl:choose>
-                 </xsl:variable>
-                 
-                 <xsl:variable name="objectType_sequence" as="xs:string*">
+                <xsl:variable name="objectType_sequence" as="xs:string*">
                      <xsl:choose>
                          <xsl:when test="contains(., ',')">
                              <xsl:text>party</xsl:text>
@@ -492,10 +458,10 @@
                  <xsl:variable name="object" select="$objectType_sequence[1]"/>
                  <xsl:variable name="type" select="$objectType_sequence[2]"/>
                  
-                 <xsl:if test="string-length($key) > 0">
+                 <xsl:if test="string-length(normalize-space(.)) > 0">
                      <registryObject group="{$global_group}">
                          <key>
-                             <xsl:value-of select="concat($global_baseURI, '/', $key)"/>
+                             <xsl:value-of select="custom:formatKey(.)"/>
                          </key>
                          <originatingSource>
                              <xsl:value-of select="$global_originatingSource"/>
@@ -522,12 +488,12 @@
                              
                              <xsl:for-each select="distinct-values($organisation_sequence)">
                                  <xsl:if test="string-length(normalize-space(.)) > 0">
-                                     <xsl:message select="concat('Organisation for ', $name, ': ', .)"/>
+                                     <!--xsl:message select="concat('Organisation for ', $name, ': ', .)"/-->
                                      <relatedObject>
                                          <key>
-                                             <xsl:value-of select="concat($global_baseURI, '/', translate(., ' ', ''))"/>
-                                             <relation type="isAssociatedWith"/>
+                                             <xsl:value-of select="custom:formatKey(.)"/>
                                          </key>
+                                         <relation type="isAssociatedWith"/>
                                      </relatedObject>
                                  </xsl:if>
                              </xsl:for-each>
@@ -537,11 +503,13 @@
                      <xsl:for-each select="distinct-values($organisation_sequence)">
                          <xsl:variable name="organisationName" select="normalize-space(.)"/>
                          
+                         <xsl:message select="concat('Organisation for ', $name, ': ', $organisationName)"/>
+                         
                          <xsl:if test="string-length($organisationName) > 0">
                              
                              <registryObject group="{$global_group}">
                                  <key>
-                                     <xsl:value-of select="concat($global_baseURI, '/', translate(., ' ', ''))"/>
+                                     <xsl:value-of select="custom:formatKey(.)"/>
                                  </key>
                                  <originatingSource>
                                      <xsl:value-of select="$global_originatingSource"/>
@@ -575,48 +543,48 @@
                 </xsl:try>
             </xsl:variable> 
             <xsl:if test="count($unescapedContent) > 0">
-                <xsl:message select="concat('unescapedContent ', $unescapedContent)"/>
+                <!--xsl:message select="concat('unescapedContent ', $unescapedContent)"/-->
                 
                 <xsl:variable name="namePosition_sequence" as="xs:integer*">
                     <xsl:for-each select="$unescapedContent/root/p">
                         <xsl:variable name="personPosition" select="position()" as="xs:integer"/>
-                        <xsl:for-each select="strong">
-                            <xsl:if test="string-length(.) > 0">
-                                <xsl:value-of select="$personPosition"/>
-                            </xsl:if>
-                        </xsl:for-each>
+                        <xsl:if test="count(strong) > 0">
+                            <xsl:value-of select="$personPosition"/>
+                        </xsl:if>
                     </xsl:for-each>
                 </xsl:variable>
                 
-                <xsl:for-each select="distinct-values($namePosition_sequence)">
-                    <xsl:message select="concat('$namePosition_sequence entry: ', .)"/>
-                </xsl:for-each>
-                
+                <!--xsl:for-each select="$namePosition_sequence">
+                    <xsl:message select="concat('$namePosition_sequence entry: ', ., ' at position: ', position())"/>
+                </xsl:for-each-->
+                   
                 <xsl:variable name="currentPersonPositionRange_sequence" as="xs:integer*">
                      <xsl:for-each select="$unescapedContent/root/p">
                          <xsl:variable name="currentPPosition" select="position()"  as="xs:integer"/>
                          <xsl:variable name="lastPPosition" select="last()"  as="xs:integer"/>
-                         <xsl:variable name="currentName" select="normalize-space(strong)"/>
+                         <xsl:variable name="currentName" select="custom:getName(.)"/>
                          <xsl:if test="string-length($currentName) > 0">
                              <xsl:if test="string-length(.) > 0 and (contains(., ' ') or contains(., ','))">
                                  
                                  <xsl:if test="boolean(custom:nameMatch($soughtName, $currentName)) = true()">
-                                     <xsl:message select="concat('Match!! - ', $soughtName)"/>
+                                     <xsl:message select="concat('Match! - ', $soughtName)"/>
                                          
                                          <!-- Return first index in range -->
                                          <xsl:copy-of select="$currentPPosition"/>
                                          <xsl:for-each select="distinct-values($namePosition_sequence)">
                                              <xsl:variable name="iterPersonPosition" select="." as="xs:integer"/>
                                              <xsl:variable name="posInt" select="position()" as="xs:integer"/>
-                                             <xsl:message select="concat('iterPersonPosition: ', $iterPersonPosition)"/>
-                                             <xsl:message select="concat('$posInt: ', $posInt)"/>
+                                             <!--xsl:message select="concat('iterPersonPosition: ', $iterPersonPosition)"/-->
+                                             <!--xsl:message select="concat('$posInt: ', number($posInt))"/-->
                                              <xsl:if test="number($iterPersonPosition) = number($currentPPosition)">
                                                  <!-- Return last index in range -->
                                                  <xsl:choose>
                                                      <xsl:when test="count($namePosition_sequence) > $posInt">
-                                                         <xsl:copy-of select="$namePosition_sequence[$posInt+1]"/>
+                                                         <!--xsl:message select="concat('Returning $namePosition_sequence[number($posInt)+1]: ', $namePosition_sequence[number($posInt)+1])"/-->
+                                                         <xsl:copy-of select="$namePosition_sequence[number($posInt)+1]"/>
                                                      </xsl:when>
                                                      <xsl:otherwise>
+                                                         <!--xsl:message select="concat('Returning $lastPPosition + 1: ', $lastPPosition + 1)"/-->
                                                          <xsl:copy-of select="$lastPPosition + 1"/>
                                                      </xsl:otherwise>
                                                  </xsl:choose>
@@ -639,9 +607,9 @@
                         <xsl:if test="($currentPersonPositionRange_sequence[2] > $currentPPosition) and
                                       ($currentPPosition > $currentPersonPositionRange_sequence[1])">
                             
-                            <xsl:message select="concat('$currentPPosition: ', $currentPPosition)"/>
+                            <!--xsl:message select="concat('$currentPPosition: ', $currentPPosition)"/-->
                             <xsl:if test="string-length(normalize-space(a/@href)) > 0">
-                                <xsl:message select="concat('a/@href: ', a/@href)"/>
+                                <!--xsl:message select="concat('a/@href: ', a/@href)"/-->
                                 <xsl:value-of select="normalize-space(a/@href)"/>
                             </xsl:if>
                         </xsl:if>
@@ -656,25 +624,26 @@
         <xsl:param name="soughtName" as="xs:string"/>
         <xsl:param name="html" as="node()"/>
         
-        <xsl:variable name="htmlNoBreaks" select="replace(replace($html, '&lt;br /&gt;' , ''), '&lt;br/&gt;' , '')"/>
-        <xsl:message select="concat('htmlNoBreaks: ', $htmlNoBreaks)"/>
+        <!--xsl:message select="concat('html: ', $html)"/-->
         
-        <xsl:if test="string-length($htmlNoBreaks) > 0">
+        <xsl:if test="string-length($html) > 0">
             <xsl:variable name="unescapedContent" as="document-node()*">
-                <xsl:try select="parse-xml(concat('&lt;root&gt;', $htmlNoBreaks, '&lt;/root&gt;'))">
+                <xsl:try select="parse-xml(concat('&lt;root&gt;', $html, '&lt;/root&gt;'))">
                     <xsl:catch>
                         <xsl:message select="'XML failed to parse'"/>
                     </xsl:catch>
                 </xsl:try>
             </xsl:variable> 
             <xsl:if test="count($unescapedContent) > 0">
-                <xsl:message select="concat('unescapedContent ', $unescapedContent)"/>
+                <!--xsl:message select="concat('unescapedContent ', $unescapedContent)"/-->
         
                 <xsl:for-each select="$unescapedContent/root/p">
-                    <xsl:for-each select="strong">
-                        <xsl:if test="string-length(.) > 0 and (contains(., ' ') or contains(., ','))">
-                            <xsl:if test="boolean(custom:nameMatch($soughtName, .)) = true()">
-                                <xsl:variable name="organisation_sequence" select="following-sibling::em" as="xs:string*"/>
+                    <xsl:if test="count(strong) > 0">
+                        <xsl:variable name="currentName" select="custom:getName(.)"/>
+                        <xsl:if test="string-length($currentName) > 0 and (contains($currentName, ' ') or contains($currentName, ','))">
+                            <xsl:if test="boolean(custom:nameMatch($soughtName, $currentName)) = true()">
+                                <xsl:message select="concat('Match $currentName ', $currentName)"/>
+                                <xsl:variable name="organisation_sequence" select="em" as="xs:string*"/>
                                 <xsl:if test="count($organisation_sequence) > 0">
                                     <xsl:if test="count($organisation_sequence) > 0">
                                         <xsl:copy-of select="$organisation_sequence"/>
@@ -682,7 +651,7 @@
                                 </xsl:if>
                             </xsl:if>
                         </xsl:if>
-                    </xsl:for-each>
+                    </xsl:if>
                 </xsl:for-each>
             </xsl:if>
         </xsl:if>
@@ -714,6 +683,82 @@
                  <xsl:copy-of select="false()"/>
              </xsl:otherwise>
          </xsl:choose>
+    </xsl:function>
+    
+    <xsl:function name="custom:formatKey">
+        <xsl:param name="input"/>
+        <xsl:variable name="raw" select="translate(normalize-space($input), ' ', '')"/>
+        <xsl:variable name="temp">
+            <xsl:choose>
+                <xsl:when test="substring($raw, string-length($raw), 1) = '.'">
+                    <xsl:value-of select="substring($raw, 0, string-length($raw))"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="$raw"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        <xsl:value-of select="concat($global_baseURI, '/', $temp)"/>
+    </xsl:function>
+    
+    <xsl:function name="custom:getKey" as="xs:string">
+        <xsl:param name="node" as="node()"/>
+        <xsl:param name="handleOK" as="xs:boolean"/>
+        
+        <xsl:variable name="doi_sequence" as="node()*">
+            <xsl:for-each select="$node/dc:identifier">
+                <xsl:if test="not(contains(., ' ')) and starts-with(., 'http')">
+                    <xsl:if test="contains(., 'doi')">
+                        <xsl:value-of select="."/>
+                    </xsl:if>
+                </xsl:if>
+            </xsl:for-each>
+        </xsl:variable>
+        
+        <xsl:variable name="uri_sequence" as="node()*">
+            <xsl:for-each select="$node/dc:identifier">
+                <xsl:if test="not(contains(., ' ')) and not(contains(., 'doi')) and starts-with(., 'http')">
+                    <xsl:value-of select="."/>
+                </xsl:if>
+            </xsl:for-each>
+        </xsl:variable>
+        
+        <xsl:variable name="buffer" as="xs:string">
+            <xsl:choose>
+                <xsl:when test="count($doi_sequence) > 0">
+                    <xsl:value-of select="fn:string-to-codepoints($doi_sequence[1])"/>
+                </xsl:when>
+                <xsl:when test="count($uri_sequence) > 0">
+                    <xsl:value-of select="fn:string-to-codepoints($uri_sequence[1])"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:choose>
+                        <xsl:when test="string-length(normalize-space($node/dc:title)) > 0">
+                            <xsl:value-of select="fn:string-to-codepoints(translate($node/dc:title, ' ', ''))"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="generate-id($node)"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        
+        <xsl:value-of select="substring($buffer, string-length($buffer)-40+1, 40)"/>
+        
+    </xsl:function>
+    
+    
+    <xsl:function name="custom:getName">
+        <xsl:param name="node" as="node()"/>
+        <xsl:variable name="name_sequence" as="xs:string*">
+            <xsl:for-each select="$node/strong">
+                <xsl:if test="string-length(normalize-space(.)) > 0">
+                    <xsl:value-of select="normalize-space(.)"/>
+                </xsl:if>
+            </xsl:for-each>
+        </xsl:variable>
+        <xsl:value-of select="fn:string-join($name_sequence, ' ')"/>
     </xsl:function>
     
     
