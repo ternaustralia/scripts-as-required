@@ -23,7 +23,7 @@
     <xsl:param name="global_group" select="'eMAST'"/> 
     <xsl:param name="global_baseURI" select="'geonetworkrr9.nci.org.au'"/>
     <xsl:param name="global_ActivityKeyNCI" select="'ncris.innovation.gov.au/activity/20'"/>
-    <xsl:param name="global_SourceFacilityKey" select="'NCI/EcosystemModellingandScalingInfrastructure(eMAST)Facility'"/>
+    <xsl:param name="global_SourceFacilityKey" select="'eMAST@NCI/EcosystemModellingandScalingInfrastructure(eMAST)Facility'"/>
     <xsl:variable name="anzsrcCodelist" select="document('anzsrc-codelist.xml')"/>
     <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>
     <xsl:variable name="gmdCodelists" select="document('codelists.xml')"/>
@@ -590,13 +590,13 @@
             </xsl:for-each>
         </xsl:variable>
         
-        <xsl:for-each select="distinct-values(tokenize($subject_sequence, '\|'))">
+        <!--xsl:for-each select="distinct-values(tokenize($subject_sequence, '\|'))">
             <xsl:if test="string-length(normalize-space(.)) > 0">
                 <subject type="local">
                     <xsl:value-of select="normalize-space(.)"/>
                 </subject>
             </xsl:if>
-        </xsl:for-each>
+        </xsl:for-each-->
         
         
         <xsl:variable name="anzsrcMappedCode_sequence" as="xs:string*">
