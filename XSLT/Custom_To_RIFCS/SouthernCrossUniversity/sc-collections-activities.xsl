@@ -9,7 +9,8 @@
     xmlns:gml="http://www.opengis.net/gml"
     xmlns:custom="http://custom.nowhere.yet"
     xmlns:fn="http://www.w3.org/2005/xpath-functions"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="3.0" exclude-result-prefixes="dc">
+    xmlns:saxon="http://saxon.sf.net/"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0" exclude-result-prefixes="dc">
     
     <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>
     
@@ -535,16 +536,9 @@
         <xsl:param name="html" as="xs:string"/>
         
         <xsl:if test="string-length($html) > 0">
-            <xsl:variable name="unescapedContent" as="document-node()*">
-                <xsl:try select="fn:parse-xml(concat('&lt;root&gt;', $html, '&lt;/root&gt;'))">
-                    <xsl:catch>
-                        <xsl:message select="'XML failed to parse'"/>
-                    </xsl:catch>
-                </xsl:try>
-            </xsl:variable> 
+            <xsl:variable name="unescapedContent" select="saxon:parse(concat('&lt;root&gt;', $html, '&lt;/root&gt;'))" as="document-node()*"/>
             <xsl:if test="count($unescapedContent) > 0">
                 <!--xsl:message select="concat('unescapedContent ', $unescapedContent)"/-->
-                
                 <xsl:variable name="namePosition_sequence" as="xs:integer*">
                     <xsl:for-each select="$unescapedContent/root/p">
                         <xsl:variable name="personPosition" select="position()" as="xs:integer"/>
@@ -627,16 +621,9 @@
         <!--xsl:message select="concat('html: ', $html)"/-->
         
         <xsl:if test="string-length($html) > 0">
-            <xsl:variable name="unescapedContent" as="document-node()*">
-                <xsl:try select="parse-xml(concat('&lt;root&gt;', $html, '&lt;/root&gt;'))">
-                    <xsl:catch>
-                        <xsl:message select="'XML failed to parse'"/>
-                    </xsl:catch>
-                </xsl:try>
-            </xsl:variable> 
+            <xsl:variable name="unescapedContent" select="saxon:parse(concat('&lt;root&gt;', $html, '&lt;/root&gt;'))" as="document-node()*"/>
             <xsl:if test="count($unescapedContent) > 0">
                 <!--xsl:message select="concat('unescapedContent ', $unescapedContent)"/-->
-        
                 <xsl:for-each select="$unescapedContent/root/p">
                     <xsl:if test="count(strong) > 0">
                         <xsl:variable name="currentName" select="custom:getName(.)"/>
@@ -760,7 +747,6 @@
         </xsl:variable>
         <xsl:value-of select="fn:string-join($name_sequence, ' ')"/>
     </xsl:function>
-    
     
    <xsl:template match="node() | text() | @*"/>
 
