@@ -389,7 +389,14 @@
                                 <xsl:if
                                     test="not(contains($url, '?')) or string-length(substring-after($url, '?')) > 0">
                                     <url>
-                                        <xsl:value-of select="$url"/>
+                                        <xsl:choose>
+                                            <xsl:when test="contains($url, '?')">
+                                                <xsl:value-of select="substring-before($url, '?')"/> <!-- before trailing ? -->
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:value-of select="$url"/>
+                                    </xsl:otherwise>
+                                        </xsl:choose>
                                     </url>
                                 </xsl:if>
                             </relation>
@@ -412,7 +419,7 @@
                             </xsl:if>
                         </relatedInfo>
                     </xsl:when>
-                    <xsl:otherwise>
+                                        <xsl:otherwise>
                         <xsl:message select="concat('no service url obtainable from url: ', $url)"/>
                         <xsl:if test="contains(lower-case(webstore_url), 'active')">
                             <relatedInfo type="service">
@@ -845,9 +852,9 @@
             <xsl:variable name="url" select="normalize-space(url)"/>
             <xsl:message select="concat('url: ', $url)"/>
             <xsl:if test="string-length($url)">
-                <xsl:choose>
-                    <xsl:when test="contains($url, '?')">
-                        <!-- Indicates parameters -->
+                <!--xsl:choose-->
+                    <!-- Indicates parameters -->
+                        <!--xsl:when test="contains($url, '?')"> 
                         <xsl:variable name="baseURL" select="substring-before($url, '?')"/>
                         <xsl:choose>
                             <xsl:when test="substring($baseURL, string-length($baseURL), 1) = '/'">
@@ -858,9 +865,9 @@
                                 <xsl:value-of select="$baseURL"/>
                             </xsl:otherwise>
                         </xsl:choose>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:if test="contains(lower-case(normalize-space(resource_type)), 'api')">
+                    </xsl:when-->
+                        <!--xsl:otherwise-->
+                            <xsl:if test="contains(lower-case(normalize-space(resource_type)), 'api')">
                             <xsl:variable name="serviceUrl">
                                 <xsl:choose>
                                     <xsl:when test="contains($url, '?')">
@@ -883,17 +890,15 @@
                                     </xsl:when>
                                     <xsl:otherwise>
                                         <!-- retrieve url before file name and extension if there is one-->
-                                        <xsl:value-of
-                                            select="string-join(tokenize($url,'/')[position()!=last()],'/')"
-                                        />
+                                        <xsl:value-of                                            select="string-join(tokenize($url,'/')[position()!=last()],'/')"/>
                                     </xsl:otherwise>
                                 </xsl:choose>
                             </xsl:variable>
                             <xsl:message select="concat('serviceUrl: ', $serviceUrl)"/>
                             <xsl:value-of select="$serviceUrl"/>
                         </xsl:if>
-                    </xsl:otherwise>
-                </xsl:choose>
+                    <!--/xsl:otherwise-->
+                <!--/xsl:choose-->
             </xsl:if>
         </xsl:for-each>
     </xsl:template>
@@ -940,9 +945,9 @@
         <xsl:param name="resources"/>
         <xsl:variable name="url" select="$resources/url"/>
         <xsl:message select="concat('getServiceUrl url: ', $url)"/>
-        <xsl:choose>
-            <xsl:when test="contains($url, '?')">
-                <!-- Indicates parameters -->
+        <!--xsl:choose-->
+            <!-- Indicates parameters -->
+                <!--xsl:when test="contains($url, '?')">
                 <xsl:variable name="baseURL" select="substring-before($url, '?')"/>
                 <xsl:choose>
                     <xsl:when test="substring($baseURL, string-length($baseURL), 1) = '/'">
@@ -952,9 +957,9 @@
                         <xsl:value-of select="$baseURL"/>
                     </xsl:otherwise>
                 </xsl:choose>
-            </xsl:when>
-            <xsl:otherwise>
-                <xsl:if
+            </xsl:when-->
+                <!--xsl:otherwise-->
+                    <xsl:if
                     test="contains(lower-case(normalize-space($resources/resource_type)), 'api')">
                     <xsl:choose>
                         <xsl:when test="contains($url, '?')">
@@ -980,8 +985,8 @@
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:if>
-            </xsl:otherwise>
-        </xsl:choose>
+            <!--/xsl:otherwise-->
+        <!--/xsl:choose-->
     </xsl:function>
     
     <xsl:function name="custom:sequenceContains">
