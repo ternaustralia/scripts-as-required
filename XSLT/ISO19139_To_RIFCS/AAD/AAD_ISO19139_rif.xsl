@@ -53,12 +53,32 @@
         <xsl:param name="dataSetURI"
             select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine[1]/gmd:CI_OnlineResource/gmd:linkage/gmd:URL"/>
 
+        <xsl:variable name="code_sequence" as="xs:string*">
+            <xsl:for-each select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:identifier">
+                <xsl:if test="string-length(normalize-space(.)) > 0">
+                    <xsl:if test="not(contains(normalize-space(.), 'doi'))">
+                        <xsl:copy-of select="normalize-space(.)"/>
+                    </xsl:if>    
+                </xsl:if>
+            </xsl:for-each>
+        </xsl:variable>
+            
         <registryObject>
             <xsl:attribute name="group">
                 <xsl:value-of select="$global_group"/>
             </xsl:attribute>
-            <xsl:apply-templates select="gmd:fileIdentifier" mode="collection_key"/>
-
+            
+            <key>
+                 <xsl:choose>
+                     <xsl:when test="count($code_sequence) > 0">
+                         <xsl:value-of select="concat($global_baseURI, '/', normalize-space($code_sequence[1]))"/>
+                     </xsl:when>
+                     <xsl:otherwise>
+                        <xsl:value-of select="concat($global_baseURI, '/', normalize-space(gmd:fileIdentifier))"/>
+                     </xsl:otherwise>  
+                 </xsl:choose>
+            </key>
+            
             <originatingSource>
                 <xsl:value-of select="$global_originatingSource"/>
             </originatingSource>
@@ -68,17 +88,15 @@
                 <xsl:apply-templates select="gmd:hierarchyLevel/gmd:MD_ScopeCode/@codeListValue"
                     mode="collection_type_attribute"/>
 
-                <xsl:apply-templates select="gmd:fileIdentifier" mode="collection_identifier"/>
-
-                <xsl:apply-templates
+               <xsl:apply-templates
                     select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:identifier"
                     mode="collection_identifier"/>
                 
                 <xsl:apply-templates
                     select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine[1]/gmd:CI_OnlineResource/gmd:linkage/gmd:URL"
                     mode="collection_identifier"/>
-
-                <xsl:apply-templates
+                
+               <xsl:apply-templates
                     select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:title"
                     mode="collection_name"/>
 
@@ -89,6 +107,12 @@
                 <xsl:apply-templates
                     select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine[1]/gmd:CI_OnlineResource/gmd:linkage/gmd:URL"
                     mode="collection_location"/>
+                
+                <xsl:apply-templates
+                    select="gmd:parentIdentifier"
+                    mode="collection_related_object">
+                </xsl:apply-templates>
+                
              
                 <xsl:for-each-group
                     select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName)) > 0) and 
@@ -122,7 +146,7 @@
                 <xsl:apply-templates
                     select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent"
                     mode="collection_coverage_temporal"/>
-
+                
                 <xsl:variable name="organisationOwnerName" select="custom:childValueForRole(gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty, 'owner', 'organisationName')"/>
                 <xsl:variable name="individualOwnerName" select="custom:childValueForRole(gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty, 'owner', 'individualName')"/>
      
@@ -194,12 +218,7 @@
     <!-- Collection RegistryObject - Child Templates -->
     <!-- =========================================== -->
 
-    <!-- Collection - Key Element  -->
-    <xsl:template match="gmd:fileIdentifier" mode="collection_key">
-        <key>
-            <xsl:value-of select="concat($global_baseURI, '/', normalize-space(.))"/>
-        </key>
-    </xsl:template>
+
 
     <!-- Collection - Type Attribute -->
     <xsl:template match="gmd:hierarchyLevel/gmd:MD_ScopeCode/@codeListValue"
@@ -207,16 +226,6 @@
         <xsl:attribute name="type">
             <xsl:value-of select="."/>
         </xsl:attribute>
-    </xsl:template>
-
-    <!-- Collection - Identifier Element  -->
-    <xsl:template match="gmd:fileIdentifier" mode="collection_identifier">
-        <identifier>
-            <xsl:attribute name="type">
-                <xsl:text>local</xsl:text>
-            </xsl:attribute>
-            <xsl:value-of select="normalize-space(.)"/>
-        </identifier>
     </xsl:template>
 
     <xsl:template match="gmd:identifier" mode="collection_identifier">
@@ -243,20 +252,39 @@
                     <xsl:otherwise>
                         <xsl:value-of select="$code"/>
                     </xsl:otherwise>
-                </xsl:choose>
+               </xsl:choose>
             </identifier>
         </xsl:if>
     </xsl:template>
     
-    <!-- Collection - Address Electronic Element  -->
+    <!-- Collection - Address Identifier Element  -->
     <xsl:template match="gmd:URL" mode="collection_identifier">
         <identifier>
-            <xsl:attribute name="type" select="'uri'"/>
-            <xsl:value-of select="."/>
+            <xsl:attribute name="type">
+                <xsl:choose>
+                    <xsl:when test="contains(lower-case(.), 'doi')">
+                        <xsl:text>doi</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="contains(lower-case(.), 'http')">
+                        <xsl:text>uri</xsl:text>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:text>local</xsl:text>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:attribute>
+            <xsl:choose>
+                <xsl:when test="contains(lower-case(.), 'doi:')">
+                    <xsl:value-of select="substring-after(., 'doi:')"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="."/>
+                </xsl:otherwise>
+            </xsl:choose>
         </identifier>
     </xsl:template>
-
-    <!-- Collection - Name Element  -->
+    
+   <!-- Collection - Name Element  -->
     <xsl:template
         match="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:title"
         mode="collection_name">
@@ -324,7 +352,17 @@
             </dates>
         </xsl:if>
     </xsl:template>
-
+    
+    <!-- Collection - Related Object -->
+    <xsl:template match="gmd:parentIdentifier" mode="collection_related_object">
+        <relatedObject>
+            <key>
+                <xsl:value-of select="concat($global_baseURI, '/', normalize-space(.))"/>
+            </key>
+            <relation type="isPartOf"/>
+        </relatedObject>
+    </xsl:template>
+    
     <xsl:template match="gmd:CI_ResponsibleParty" mode="collection_related_object">
         
         <xsl:variable name="name" select="current-grouping-key()"/>
@@ -407,8 +445,8 @@
             <xsl:value-of select="."/>
         </description>
     </xsl:template>
-
-    <!-- Collection - Coverage Spatial Element -->
+    
+   <!-- Collection - Coverage Spatial Element -->
     <xsl:template match="gmd:EX_TemporalExtent" mode="collection_coverage_temporal">
         <xsl:if
             test="(string-length(normalize-space(gmd:extent/gml:TimePeriod/gml:begin/gml:TimeInstant/gml:timePosition)) > 0) or
