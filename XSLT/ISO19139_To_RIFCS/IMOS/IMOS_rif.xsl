@@ -1978,68 +1978,76 @@
             <xsl:when test="string-length($scopeCode) = 0">
                 <!--xsl:message>Error: empty scope code</xsl:message-->
             </xsl:when>
-            <xsl:when test="contains(lower-case($publishingOrganisation), 'aims')">
-                <xsl:call-template name="getRegistryObjectTypeSubType_AIMS">
-                    <xsl:with-param name="scopeCode" select="$scopeCode"/>
-                </xsl:call-template>
-            </xsl:when>
             <xsl:when test="contains(lower-case($publishingOrganisation), 'imos')">
                 <xsl:call-template name="getRegistryObjectTypeSubType_IMOS">
                     <xsl:with-param name="scopeCode" select="$scopeCode"/>
                 </xsl:call-template>
             </xsl:when>
+            <xsl:when test="contains(lower-case($publishingOrganisation), 'aims')">
+                <xsl:call-template name="getRegistryObjectTypeSubType_AIMS">
+                    <xsl:with-param name="scopeCode" select="$scopeCode"/>
+                </xsl:call-template>
+            </xsl:when>
             <xsl:otherwise>
-                <!--xsl:message>Defaulting to 'collection' due to no specific processing being required for originatingSource<xsl:value-of select="$originatingSource"></xsl:value-of></xsl:message-->
-                <xsl:text>collection</xsl:text>
-                <xsl:text>dataset</xsl:text>
+                <xsl:call-template name="getRegistryObjectTypeSubType_Default">
+                    <xsl:with-param name="scopeCode" select="$scopeCode"/>
+                </xsl:call-template>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
-
+    
     <xsl:template name="getRegistryObjectTypeSubType_AIMS" as="xs:string*">
         <xsl:param name="scopeCode"/>
         <xsl:choose>
             <xsl:when test="string-length($scopeCode) = 0">
                 <!--xsl:message>Error: empty scope code</xsl:message-->
             </xsl:when>
-            <xsl:when test="contains($scopeCode, 'dataset')">
-                <xsl:text>activity</xsl:text>
-                <xsl:text>project</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains($scopeCode, 'nonGeographicDataset')">
-                <xsl:text>activity</xsl:text>
-                <xsl:text>project</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains($scopeCode, 'collectionHardware')">
-                <xsl:text>activity</xsl:text>
-                <xsl:text>project</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains($scopeCode, 'collectionSession')">
-                <xsl:text>activity</xsl:text>
-                <xsl:text>project</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains($scopeCode, 'sensor')">
+            <xsl:when test="contains($scopeCode, 'publication')">
                 <xsl:text>collection</xsl:text>
-                <xsl:text>dataset</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains($scopeCode, 'sensorSeries')">
-                <xsl:text>collection</xsl:text>
-                <xsl:text>collection</xsl:text>
+                <xsl:text>publication</xsl:text>
             </xsl:when>
             <xsl:when test="contains($scopeCode, 'software')">
                 <xsl:text>service</xsl:text>
-                <xsl:text>create</xsl:text>
+                <xsl:text>software</xsl:text>
             </xsl:when>
             <xsl:when test="contains($scopeCode, 'model')">
                 <xsl:text>service</xsl:text>
-                <xsl:text>generate</xsl:text>
+                <xsl:text>software</xsl:text>
             </xsl:when>
             <xsl:when test="contains($scopeCode, 'service')">
                 <xsl:text>service</xsl:text>
-                <xsl:text>report</xsl:text>
+                <xsl:text>software</xsl:text>
             </xsl:when>
             <xsl:otherwise>
-                <!--xsl:message>Defaulting due to unknown scope code <xsl:value-of select="$scopeCode"></xsl:value-of></xsl:message-->
+                <xsl:text>collection</xsl:text>
+                <xsl:text>dataset</xsl:text>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+
+    <xsl:template name="getRegistryObjectTypeSubType_Default" as="xs:string*">
+        <xsl:param name="scopeCode"/>
+        <xsl:choose>
+            <xsl:when test="string-length($scopeCode) = 0">
+                <!--xsl:message>Error: empty scope code</xsl:message-->
+            </xsl:when>
+            <xsl:when test="contains($scopeCode, 'publication')">
+                <xsl:text>collection</xsl:text>
+                <xsl:text>publication</xsl:text>
+            </xsl:when>
+            <xsl:when test="contains($scopeCode, 'software')">
+                <xsl:text>collection</xsl:text>
+                <xsl:text>sourceCode</xsl:text>
+            </xsl:when>
+            <xsl:when test="contains($scopeCode, 'model')">
+                <xsl:text>collection</xsl:text>
+                <xsl:text>sourceCode</xsl:text>
+            </xsl:when>
+            <xsl:when test="contains($scopeCode, 'service')">
+                <xsl:text>service</xsl:text>
+                <xsl:text>software</xsl:text>
+            </xsl:when>
+            <xsl:otherwise>
                 <xsl:text>collection</xsl:text>
                 <xsl:text>dataset</xsl:text>
             </xsl:otherwise>
@@ -2069,8 +2077,8 @@
                 <xsl:text>project</xsl:text>
             </xsl:when>
             <xsl:when test="contains($scopeCode, 'model')">
-                <xsl:text>service</xsl:text>
-                <xsl:text>generate</xsl:text>
+                <xsl:text>collection</xsl:text>
+                <xsl:text>sourceCode</xsl:text>
             </xsl:when>
             <xsl:when test="contains($scopeCode, 'series')">
                 <xsl:text>activity</xsl:text>
@@ -2086,8 +2094,8 @@
             </xsl:when>
             
             <xsl:when test="contains($scopeCode, 'software')">
-                <xsl:text>service</xsl:text>
-                <xsl:text>create</xsl:text>
+                <xsl:text>collection</xsl:text>
+                <xsl:text>sourceCode</xsl:text>
             </xsl:when>
             <xsl:when test="contains($scopeCode, 'service')">
                 <xsl:text>service</xsl:text>
