@@ -2133,6 +2133,34 @@
             <xsl:when test="string-length($scopeCode) = 0">
                 <!--xsl:message>Error: empty scope code</xsl:message-->
             </xsl:when>
+            <xsl:when test="contains($scopeCode, 'publication')">
+                <xsl:text>collection</xsl:text>
+                <xsl:text>publication</xsl:text>
+            </xsl:when>
+            <xsl:when test="contains($scopeCode, 'software')">
+                <xsl:text>service</xsl:text>
+                <xsl:text>software</xsl:text>
+            </xsl:when>
+            <xsl:when test="contains($scopeCode, 'model')">
+                <xsl:text>service</xsl:text>
+                <xsl:text>software</xsl:text>
+            </xsl:when>
+            <xsl:when test="contains($scopeCode, 'service')">
+                <xsl:text>service</xsl:text>
+                <xsl:text>software</xsl:text>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:text>collection</xsl:text>
+                <xsl:text>dataset</xsl:text>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:function>
+    
+    <!--xsl:function name="custom:getRegistryObjectTypeSubType_AIMS" as="xs:string*">
+        <xsl:param name="scopeCode"/>
+        <xsl:choose>
+            <xsl:when test="string-length($scopeCode) = 0">
+            </xsl:when>
             <xsl:when test="contains($scopeCode, 'dataset')">
                 <xsl:text>activity</xsl:text>
                 <xsl:text>project</xsl:text>
@@ -2166,12 +2194,11 @@
                 <xsl:text>report</xsl:text>
             </xsl:when>
             <xsl:otherwise>
-                <!--xsl:message>Defaulting due to unknown scope code <xsl:value-of select="$scopeCode"></xsl:value-of></xsl:message-->
                 <xsl:text>collection</xsl:text>
                 <xsl:text>dataset</xsl:text>
             </xsl:otherwise>
         </xsl:choose>
-    </xsl:function>
+    </xsl:function-->
     
     <xsl:template name="getRelatedInfoTypeRelationship" as="xs:string*">
         <xsl:param name="presentationForm"/>
