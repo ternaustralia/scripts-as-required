@@ -8,6 +8,7 @@
     <xsl:strip-space elements="*"/>
     <xsl:param name="global_originatingSource" select="'http://data.gov.au'"/>
     <xsl:param name="global_baseURI" select="'http://data.gov.au/'"/>
+    <xsl:param name="globalLocalIndicator" select="'upload'"/> <!-- used to determine whether content is local -->
     <xsl:param name="global_group" select="'data.gov.au'"/>
     <xsl:param name="global_contributor" select="'data.gov.au'"/>
     <xsl:param name="global_publisherName" select="'data.gov.au'"/>
@@ -26,29 +27,29 @@
 
     <xsl:template match="datasets">
         
-        <xsl:for-each select="result">
+        <registryObjects>
+            <xsl:attribute name="xsi:schemaLocation">
+                <xsl:text>http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd</xsl:text>
+            </xsl:attribute>
+            
+            <xsl:apply-templates select="result" mode="constructObjects"/>
+            
+        </registryObjects>
         
-            <xsl:if test="
-                (count(harvest_source_id) = 0) or
-                (boolean(custom:proceedWithHarvest(.)) = boolean(true()))">
-               
-                <!--registryObjects>
-                    <xsl:attribute name="xsi:schemaLocation">
-                        <xsl:text>http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd</xsl:text>
-                    </xsl:attribute-->
-                
-                     <xsl:apply-templates select="." mode="collection"/>
-                     <xsl:apply-templates select="." mode="party"/>
-                     <xsl:apply-templates select="." mode="service"/>
-                    
-                <!--/registryObjects-->
-                    
-            </xsl:if>
-        </xsl:for-each>
+    </xsl:template>
+    
+    
+    <xsl:template match="result" mode="constructObjects">
+        
+        <xsl:if test="boolean(custom:proceedWithHarvest(.)) = true()">   
+            <xsl:apply-templates select="." mode="collection"/>
+            <xsl:apply-templates select="." mode="party"/>
+            <xsl:apply-templates select="." mode="service"/>
+        </xsl:if>
     </xsl:template>
 
     <xsl:template match="result" mode="collection">
-
+        
         <xsl:variable name="metadataURL">
             <xsl:variable name="name" select="normalize-space(name)"/>
             <xsl:if test="string-length($name)">
@@ -130,8 +131,7 @@
                  </xsl:call-template>
  
                  <xsl:apply-templates select="." mode="collection_relatedInfo"/>
- 
- 
+  
                  <!--xsl:apply-templates select="" 
                      mode="collection_relatedInfo"/-->
  
@@ -998,58 +998,86 @@
     
     <!-- Total harvest ids so far for data.gov 
         
+        ** exclude **
         378761ca-f076-4821-809a-3bd508354e41	data.nsw
         4c0f8483-b68b-407f-976b-a23242d3b239	find.ga.gov.au
-        5f353b5c-a118-48ac-a2aa-b81a52b2dda4	ESTA Emergency Marker Data
-        62cc632b-caa9-49a8-9904-9156072cf6cc	City of Hobart ArcGIS Harvest
         76d96dc3-4260-48b5-8713-3c0e7ca2cd24	data.sa
-        a3e19b5b-c819-4e83-83d8-68d3b23b8f61	data.act
-        d1cd64d2-286d-42f3-ad04-7c762af19789	City of Launceston ArcGIS Harvest
         d55ac2d7-ef27-49f0-8157-b38596a358b7	AIMS Data Catalogue
         f0a3f260-46b3-4de7-8bde-971cecf727a9	http://webdav.data.aad.gov.au/metadata/iso-anzlic/
-        -->
+        
+        ** include **
+        5f353b5c-a118-48ac-a2aa-b81a52b2dda4	ESTA Emergency Marker Data
+        62cc632b-caa9-49a8-9904-9156072cf6cc	City of Hobart ArcGIS Harvest
+        d1cd64d2-286d-42f3-ad04-7c762af19789	City of Launceston ArcGIS Harvest
+        a3e19b5b-c819-4e83-83d8-68d3b23b8f61	data.act
+    
+    -->
+    
+    <xsl:function name="custom:locallyStored" as="xs:boolean">
+        <xsl:param name="result" as="node()"/>
+        
+        <xsl:variable name="true_sequence" as="xs:boolean*">
+            <xsl:for-each select="$result/resources/url_type">
+                <xsl:if test="contains(., $globalLocalIndicator)">
+                    <xsl:value-of select="true()"/>
+                </xsl:if>
+            </xsl:for-each>
+        </xsl:variable>
+            
+         <xsl:value-of select="boolean(count($true_sequence) > 0)"/>
+    </xsl:function>
     
     <xsl:function name="custom:proceedWithHarvest" as="xs:boolean">
         <xsl:param name="result" as="node()"/>
         
-        <xsl:variable name="false_sequence" as="xs:boolean*">
+        <xsl:message select="concat('size: ', count($result/harvest_source_id))"/>
+        <xsl:choose>
+            <xsl:when test="count($result/harvest_source_id) = 0">
+                <xsl:value-of select="true()"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:variable name="true_sequence" as="xs:boolean*">
+                <xsl:for-each select="$result/harvest_source_id">
+                    <xsl:variable name="harvestId" select='.'/>
+                     <xsl:choose>
+                         <xsl:when test="$harvestId = ''">
+                             <xsl:value-of select="true()"/> <!-- not harvested -->
+                         </xsl:when> 
+                         <xsl:when test="$harvestId = '378761ca-f076-4821-809a-3bd508354e41'">
+                             <!--xsl:value-of select="false()"/--> <!-- data.nsw -->
+                         </xsl:when> 
+                         <xsl:when test="$harvestId = '4c0f8483-b68b-407f-976b-a23242d3b239'">
+                             <!--xsl:value-of select="false()"/--> <!-- find.ga.gov.au -->
+                         </xsl:when>
+                         <xsl:when test="$harvestId = '5f353b5c-a118-48ac-a2aa-b81a52b2dda4'">
+                             <xsl:value-of select="true()"/> <!-- ESTA Emergency Marker Data -->
+                         </xsl:when>
+                         <xsl:when test="$harvestId = '62cc632b-caa9-49a8-9904-9156072cf6cc'">
+                             <xsl:value-of select="true()"/> <!-- City of Hobart ArcGIS Harvest -->
+                         </xsl:when>
+                         <xsl:when test="$harvestId = '76d96dc3-4260-48b5-8713-3c0e7ca2cd24'">
+                             <!--xsl:value-of select="false()"/--> <!-- data.sa -->
+                         </xsl:when>
+                         <xsl:when test="$harvestId = 'a3e19b5b-c819-4e83-83d8-68d3b23b8f61'">
+                             <xsl:value-of select="true()"/> <!-- data.act -->
+                         </xsl:when>
+                         <xsl:when test="$harvestId = 'd1cd64d2-286d-42f3-ad04-7c762af19789'">
+                             <xsl:value-of select="true()"/> <!-- City of Launceston ArcGIS Harvest -->
+                         </xsl:when>
+                         <xsl:when test="$harvestId = 'd55ac2d7-ef27-49f0-8157-b38596a358b7'">
+                             <!--xsl:value-of select="false()"/--> <!-- AIMS Data Catalogue -->
+                         </xsl:when>
+                         <xsl:when test="$harvestId = 'f0a3f260-46b3-4de7-8bde-971cecf727a9'">
+                             <!--xsl:value-of select="false()"/--> <!-- Australian Antarctic Data Centre -->
+                         </xsl:when>
+                     </xsl:choose>
+                </xsl:for-each>
+            </xsl:variable>
             
-            <xsl:for-each select="$result/harvest_source_id">
-                <xsl:variable name="harvestId" select='.'/>
-                 <xsl:choose>
-                     <xsl:when test="$harvestId = '378761ca-f076-4821-809a-3bd508354e41'">
-                         <xsl:value-of select="false()"/> <!-- data.nsw -->
-                     </xsl:when> 
-                     <xsl:when test="$harvestId = '4c0f8483-b68b-407f-976b-a23242d3b239'">
-                         <xsl:value-of select="false()"/> <!-- find.ga.gov.au -->
-                     </xsl:when>
-                     <xsl:when test="$harvestId = '5f353b5c-a118-48ac-a2aa-b81a52b2dda4'">
-                         <!--xsl:value-of select="true()"/--> <!-- ESTA Emergency Marker Data -->
-                     </xsl:when>
-                     <xsl:when test="$harvestId = '62cc632b-caa9-49a8-9904-9156072cf6cc'">
-                         <!--xsl:value-of select="true()"/--> <!-- City of Hobart ArcGIS Harvest -->
-                     </xsl:when>
-                     <xsl:when test="$harvestId = '76d96dc3-4260-48b5-8713-3c0e7ca2cd24'">
-                         <xsl:value-of select="false()"/> <!-- data.sa -->
-                     </xsl:when>
-                     <xsl:when test="$harvestId = 'a3e19b5b-c819-4e83-83d8-68d3b23b8f61'">
-                         <!--xsl:value-of select="true()"/--> <!-- data.act -->
-                     </xsl:when>
-                     <xsl:when test="$harvestId = 'd1cd64d2-286d-42f3-ad04-7c762af19789'">
-                         <!--xsl:value-of select="true()"/--> <!-- City of Launceston ArcGIS Harvest -->
-                     </xsl:when>
-                     <xsl:when test="$harvestId = 'd55ac2d7-ef27-49f0-8157-b38596a358b7'">
-                         <xsl:value-of select="false()"/> <!-- AIMS Data Catalogue -->
-                     </xsl:when>
-                     <xsl:when test="$harvestId = 'f0a3f260-46b3-4de7-8bde-971cecf727a9'">
-                         <xsl:value-of select="false()"/> <!-- Australian Antarctic Data Centre -->
-                     </xsl:when>
-                 </xsl:choose>
-            </xsl:for-each>
-        </xsl:variable>
-        
-        <xsl:value-of select="not(boolean(count($false_sequence) > 0))"/>
-        
+                <xsl:value-of select="boolean(count($true_sequence) > 0)"/>
+            
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:function>
 
 </xsl:stylesheet>
