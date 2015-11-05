@@ -27,11 +27,11 @@
         
         <xsl:variable name="oai_identifier" select="//oai:record/oai:header/oai:identifier"/>
         <registryObjects xmlns="http://ands.org.au/standards/rif-cs/registryObjects" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd">
-            <xsl:apply-templates select="//oai:record/oai_dc:dc" mode="collection">
+            <xsl:apply-templates select="//oai:record/oai:metadata/oai_dc:dc" mode="collection">
                 <xsl:with-param name="oai_identifier" select="$oai_identifier"/>
             </xsl:apply-templates>
             
-            <xsl:apply-templates select="//oai:record/oai_dc:dc" mode="party"/>
+            <xsl:apply-templates select="//oai:record/oai:metadata/oai_dc:dc" mode="party"/>
         </registryObjects>
     </xsl:template>
     
