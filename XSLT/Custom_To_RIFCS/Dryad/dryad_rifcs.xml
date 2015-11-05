@@ -1,0 +1,289 @@
+<registryObjects xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                 xmlns:custom="http://custom.nowhere.yet"
+                 xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
+                 xmlns:mcp="http://schemas.aodn.org.au/mcp-2.0"
+                 xmlns:xlink="http://www.w3.org/1999/xlink"
+                 xmlns:dwc="http://rs.tdwg.org/dwc/terms/"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xsi:schemaLocation="http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd">
+   <registryObject group="University of Tasmania, Australia">
+      <key>UTAS/75fc95bf-e4b4-4d39-9ac3-0433669648de</key>
+      <originatingSource>Tasmanian Aquaculture and Fisheries Institute (TAFI)</originatingSource>
+      <collection type="dataset">
+         <identifier type="uri">http://metadata.imas.utas.edu.au:/geonetwork/srv/en/metadata.show?uuid=75fc95bf-e4b4-4d39-9ac3-0433669648de</identifier>
+         <name type="primary">
+            <namePart>Condition of rocky reef communities around Tasmania: algal surveys</namePart>
+         </name>
+         <dates type="created">
+            <date type="dateFrom" dateFormat="W3CDTF">2015-06-07T12:00:00</date>
+         </dates>
+         <relatedObject>
+            <key>UTAS/39060c33-9246-49fe-8f97-758b67ced4ce</key>
+            <relation type="isPartOf"/>
+         </relatedObject>
+         <location>
+            <address>
+               <electronic type="url" target="landingPage">
+                  <value>http://metadata.imas.utas.edu.au:/geonetwork/srv/en/metadata.show?uuid=75fc95bf-e4b4-4d39-9ac3-0433669648de</value>
+               </electronic>
+            </address>
+         </location>
+         <rights>
+            <accessRights type="open"/>
+         </rights>
+         <relatedObject>
+            <key>UTAS/Barrett,Neville</key>
+            <relation type="principalInvestigator"/>
+         </relatedObject>
+         <relatedObject>
+            <key>UTAS/Edgar,Graham</key>
+            <relation type="principalInvestigator"/>
+         </relatedObject>
+         <relatedObject>
+            <key>UTAS/Stuart-Smith,Rick</key>
+            <relation type="coInvestigator"/>
+         </relatedObject>
+         <relatedObject>
+            <key>UTAS/TasmanianAquacultureandFisheriesInstitute(TAFI)</key>
+            <relation type="hasAssociationWith"/>
+         </relatedObject>
+         <relatedObject>
+            <key>UTAS/InstituteforMarineandAntarcticStudies(IMAS),UniversityofTasmania(UTAS)</key>
+            <relation type="hasAssociationWith"/>
+         </relatedObject>
+         <subject type="local">biota</subject>
+         <subject type="gcmd"
+                  termIdentifier="http://gcmdservices.gsfc.nasa.gov/kms/concept/09a78997-581b-4d1b-ae71-b2b3f96ef719">BENTHIC HABITAT</subject>
+         <subject type="gcmd"
+                  termIdentifier="http://gcmdservices.gsfc.nasa.gov/kms/concept/f42c849c-7113-4c69-a01e-52ebc5e7b44d">COMMUNITY STRUCTURE</subject>
+         <subject type="gcmd"
+                  termIdentifier="http://gcmdservices.gsfc.nasa.gov/kms/concept/e731c2a1-e4b0-42e9-bed9-bd911c9b496c">MACROALGAE (SEAWEEDS)</subject>
+         <subject type="gcmd"
+                  termIdentifier="http://gcmdservices.gsfc.nasa.gov/kms/concept/36e07e20-ce85-4418-83fd-6d718e55f370">BROWN ALGAE</subject>
+         <subject type="local">Temperate Reef</subject>
+         <subject type="anzsrc-for"
+                  termIdentifier="http://purl.org/au-research/vocabulary/anzsrc-for/2008/060205">060205</subject>
+         <subject type="anzsrc-for"
+                  termIdentifier="http://purl.org/au-research/vocabulary/anzsrc-for/2008/060202">060202</subject>
+         <subject type="anzsrc-for"
+                  termIdentifier="http://purl.org/au-research/vocabulary/anzsrc-for/2008/050209">050209</subject>
+         <description type="full">The data is the percent algal cover derived from underwater visual census methods involving transect counts at rocky reef sites around Tasmania. This data forms part of a larger dataset that also surveyed fish and megafaunal invertebrate abundance for the area. The aggregated dataset allows examination of changes in Tasmanian shallow reef floral and faunal communities over a decadal scale - initial surveys were conducted in 1992-1995, and again at the same sites in 2006-2007. There are plans for ongoing surveys. An additional component was added in the latter study - a boat ramp study looking at the proximity of boat ramps and their effects of fishing. We analysed underwater visual census data on fishes and macroinvertebrates (abalone and rock lobsters) at 133 shallow rocky reef sites around Tasmania that ranged from 0.6 - 131 km from the nearest boat ramp. These sites were not all the same as those used for the comparison of 1994 and 2006 reef communities. The subset of 133 sites examined in this component consisted of only those sites that were characterized by the two major algal (kelp) types (laminarian or fucoid dominated). Sites with atypical algal assemblages were omitted from the 196 sites surveyed in 2006. This study aimed to examine reef community data for changes at the community level, changes in species richness and introduced species populations, and changes that may have resulted from ocean warming and fishing. The methods are described in detail in Edgar and Barrett (1997). Primarily the data are derived from transects at 5 m depth and/or 10 m depth at each site surveyed. The underwater visual census (UVC) methodology used to survey rocky reef communities was designed to maximise detection of (i) changes in population numbers and size-structure (ii) cascading ecosystem effects associated with disturbances such as fishing, (iii) long term change and variability in reef assemblages.</description>
+         <coverage>
+            <spatial type="iso19139dcmiBox">northlimit=-39.5; southlimit=-44; westlimit=144.5; eastLimit=148.5</spatial>
+         </coverage>
+         <coverage>
+            <temporal>
+               <date type="dateFrom" dateFormat="W3CDTF">1992-01-01T00:00:00</date>
+               <date type="dateTo" dateFormat="W3CDTF">1995-01-31T00:00:00</date>
+            </temporal>
+         </coverage>
+         <relatedInfo>
+            <identifier type="uri">http://metadata.imas.utas.edu.au/geonetwork/srv/eng/metadata.show?uuid=29c481ab-e1b7-4eab-92df-3cfb20240255</identifier>
+            <title>PARENT RECORD: Condition of rocky reef communities around Tasmania</title>
+         </relatedInfo>
+         <relatedInfo>
+            <identifier type="uri">http://data.imas.utas.edu.au/portal/home?uuid=75fc95bf-e4b4-4d39-9ac3-0433669648de</identifier>
+            <title>View and download this data through the interactive IMAS Data Portal.</title>
+         </relatedInfo>
+         <rights>
+            <licence type="CC-BY" rightsUri="http://creativecommons.org/licenses/by/2.5/au/">Creative Commons Attribution</licence>
+         </rights>
+         <rights>
+            <rightsStatement>Please contact the researchers when accessing the data, and please consult researchers before usage of the data, in reference to authorship.</rightsStatement>
+         </rights>
+         <rights>
+            <rightsStatement>The data described in this record are the intellectual property of the University of Tasmania through the Institute for Marine and Antarctic Studies.</rightsStatement>
+         </rights>
+         <citationInfo>
+            <citationMetadata>
+               <identifier type="uri">http://metadata.imas.utas.edu.au:/geonetwork/srv/en/metadata.show?uuid=75fc95bf-e4b4-4d39-9ac3-0433669648de</identifier>
+               <title>Condition of rocky reef communities around Tasmania: algal surveys</title>
+               <date type="created">2015</date>
+               <contributor>
+                  <namePart>Barrett, Neville, Dr</namePart>
+               </contributor>
+               <contributor>
+                  <namePart>Edgar, Graham, Assoc/Prof</namePart>
+               </contributor>
+               <publisher>Institute for Marine and Antarctic Studies, University of Tasmania</publisher>
+            </citationMetadata>
+         </citationInfo>
+      </collection>
+   </registryObject>
+   <registryObject group="University of Tasmania, Australia">
+      <key>UTAS/Barrett,Neville</key>
+      <originatingSource>Tasmanian Aquaculture and Fisheries Institute (TAFI)</originatingSource>
+      <party type="person">
+         <name type="primary">
+            <namePart>Barrett, Neville, Dr</namePart>
+         </name>
+         <relatedObject>
+            <key>UTAS/TasmanianAquacultureandFisheriesInstitute(TAFI)</key>
+            <relation type="isMemberOf"/>
+         </relatedObject>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="telephoneNumber">61 3 6227 7277</addressPart>
+               </physical>
+            </address>
+         </location>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="telephoneNumber">61 3 6227 7210</addressPart>
+               </physical>
+            </address>
+         </location>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="faxNumber">61 3 6227 8035</addressPart>
+               </physical>
+            </address>
+         </location>
+         <location>
+            <address>
+               <electronic type="email">
+                  <value>Neville.Barrett@utas.edu.au</value>
+               </electronic>
+            </address>
+         </location>
+         <identifier type="orcid">http://orcid.org/0000-0002-6167-1356</identifier>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="addressLine">Barrett, Neville, Dr</addressPart>
+                  <addressPart type="addressLine">Tasmanian Aquaculture and Fisheries Institute, University of Tasmania</addressPart>
+                  <addressPart type="addressLine">Private Bag 49</addressPart>
+                  <addressPart type="suburbOrPlaceLocality">Hobart</addressPart>
+                  <addressPart type="stateOrTerritory">TAS</addressPart>
+                  <addressPart type="postCode">7053</addressPart>
+                  <addressPart type="country">Australia</addressPart>
+               </physical>
+            </address>
+         </location>
+      </party>
+   </registryObject>
+   <registryObject group="University of Tasmania, Australia">
+      <key>UTAS/Edgar,Graham</key>
+      <originatingSource>Tasmanian Aquaculture and Fisheries Institute (TAFI)</originatingSource>
+      <party type="person">
+         <name type="primary">
+            <namePart>Edgar, Graham, Assoc/Prof</namePart>
+         </name>
+         <relatedObject>
+            <key>UTAS/TasmanianAquacultureandFisheriesInstitute(TAFI)</key>
+            <relation type="isMemberOf"/>
+         </relatedObject>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="telephoneNumber">61 3 6227 7277</addressPart>
+               </physical>
+            </address>
+         </location>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="telephoneNumber">61 3 6227 7238</addressPart>
+               </physical>
+            </address>
+         </location>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="faxNumber">61 3 6227 8035</addressPart>
+               </physical>
+            </address>
+         </location>
+         <location>
+            <address>
+               <electronic type="email">
+                  <value>g.edgar@utas.edu.au</value>
+               </electronic>
+            </address>
+         </location>
+         <identifier type="orcid">http://orcid.org/0000-0003-0833-9001</identifier>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="addressLine">Edgar, Graham, Assoc/Prof</addressPart>
+                  <addressPart type="addressLine">Tasmanian Aquaculture and Fisheries Institute, University of Tasmania</addressPart>
+                  <addressPart type="addressLine">Private Bag 49</addressPart>
+                  <addressPart type="suburbOrPlaceLocality">Hobart</addressPart>
+                  <addressPart type="stateOrTerritory">TAS</addressPart>
+                  <addressPart type="postCode">7053</addressPart>
+                  <addressPart type="country">Australia</addressPart>
+               </physical>
+            </address>
+         </location>
+      </party>
+   </registryObject>
+   <registryObject group="University of Tasmania, Australia">
+      <key>UTAS/Stuart-Smith,Rick</key>
+      <originatingSource>Tasmanian Aquaculture and Fisheries Institute (TAFI)</originatingSource>
+      <party type="person">
+         <name type="primary">
+            <namePart>Stuart-Smith, Rick, Dr</namePart>
+         </name>
+         <relatedObject>
+            <key>UTAS/InstituteforMarineandAntarcticStudies(IMAS),UniversityofTasmania(UTAS)</key>
+            <relation type="isMemberOf"/>
+         </relatedObject>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="telephoneNumber">61 3 6227 7214</addressPart>
+               </physical>
+            </address>
+         </location>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="faxNumber">61 3 6227 8035</addressPart>
+               </physical>
+            </address>
+         </location>
+         <location>
+            <address>
+               <electronic type="email">
+                  <value>rick.stuartsmith@utas.edu.au</value>
+               </electronic>
+            </address>
+         </location>
+         <identifier type="orcid">http://orcid.org/0000-0002-8874-0083</identifier>
+         <location>
+            <address>
+               <physical type="streetAddress">
+                  <addressPart type="addressLine">Stuart-Smith, Rick, Dr</addressPart>
+                  <addressPart type="addressLine">IMAS - Taroona</addressPart>
+                  <addressPart type="addressLine">Private Bag 49</addressPart>
+                  <addressPart type="suburbOrPlaceLocality">Hobart</addressPart>
+                  <addressPart type="stateOrTerritory">TAS</addressPart>
+                  <addressPart type="postCode">7001</addressPart>
+                  <addressPart type="country">Australia</addressPart>
+               </physical>
+            </address>
+         </location>
+      </party>
+   </registryObject>
+   <registryObject group="University of Tasmania, Australia">
+      <key>UTAS/TasmanianAquacultureandFisheriesInstitute(TAFI)</key>
+      <originatingSource>Tasmanian Aquaculture and Fisheries Institute (TAFI)</originatingSource>
+      <party type="group">
+         <name type="primary">
+            <namePart>Tasmanian Aquaculture and Fisheries Institute (TAFI)</namePart>
+         </name>
+      </party>
+   </registryObject>
+   <registryObject group="University of Tasmania, Australia">
+      <key>UTAS/InstituteforMarineandAntarcticStudies(IMAS),UniversityofTasmania(UTAS)</key>
+      <originatingSource>Tasmanian Aquaculture and Fisheries Institute (TAFI)</originatingSource>
+      <party type="group">
+         <name type="primary">
+            <namePart>Institute for Marine and Antarctic Studies (IMAS), University of Tasmania (UTAS)</namePart>
+         </name>
+      </party>
+   </registryObject>
+</registryObjects>
