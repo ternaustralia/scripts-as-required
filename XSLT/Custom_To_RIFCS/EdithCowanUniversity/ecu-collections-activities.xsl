@@ -71,10 +71,10 @@
                 <xsl:apply-templates select="fields/field[@name='for_code']"/>
                 <xsl:apply-templates select="fields/field[@name='longitude']"/>
                 <xsl:apply-templates select="fields/field[@name='custom_citation']/value"/>
-                <xsl:apply-templates select="fields/field[@name='related_content']"/>
-                <xsl:apply-templates select="fields/field[@name='project_links']"/>
+                <xsl:apply-templates select="fields/field[@name='related_content']" mode="collection"/>
+                <xsl:apply-templates select="fields/field[@name='project_links']" mode="collection"/>
                 <xsl:apply-templates select="fields/field[@name='contact']"/>
-                <xsl:apply-templates select="fields/field[@name='comments']/value"/>
+                <xsl:apply-templates select="fields/field[@name='comments']/value" mode="collection"/>
                 <xsl:apply-templates select="coverpage-url"/>
 
             </xsl:element>
@@ -106,10 +106,10 @@
                 <xsl:apply-templates select="keywords"/>
                 <xsl:apply-templates select="disciplines"/>
                 <xsl:apply-templates select="fields/field[@name='for_code']"/>
-                <xsl:apply-templates select="fields/field[@name='related_content']"/>
-                <xsl:apply-templates select="fields/field[@name='project_links']"/>
+                <xsl:apply-templates select="fields/field[@name='related_content']" mode="activity"/>
+                <xsl:apply-templates select="fields/field[@name='project_links']" mode="activity"/>
                 <xsl:apply-templates select="fields/field[@name='contact']"/>
-                <xsl:apply-templates select="fields/field[@name='comments']/value"/>
+                <xsl:apply-templates select="fields/field[@name='comments']/value" mode="activity"/>
                 <xsl:apply-templates select="coverpage-url"/>
                 <relatedObject>
                     <key><xsl:value-of select="$collectionKey"/></key>
@@ -172,10 +172,14 @@
                      </xsl:if>
                      <name type="primary">
                          <xsl:if test="string-length($firstName)> 0">
-                             <namePart type="given" select="{$firstName}"/>
+                             <namePart type="given">
+                                 <xsl:value-of select="$firstName"/>
+                             </namePart> 
                          </xsl:if>
                          <xsl:if test="string-length($lastName)> 0">
-                             <namePart type="family" select="{$lastName}"/>
+                             <namePart type="family">
+                                 <xsl:value-of select="$lastName"/>
+                             </namePart> 
                          </xsl:if>
                      </name>
                      
@@ -234,44 +238,83 @@
         </identifier>
     </xsl:template>
     
-   <xsl:template match="field[@name='comments']/value">
+   <xsl:template match="field[@name='comments']/value" mode="collection">
        
         <xsl:variable name="unescapedContent" as="document-node()">
             <xsl:copy-of select="parse-xml(concat('&lt;root&gt;', ., '&lt;/root&gt;'))"/>
         </xsl:variable>
        
        <xsl:for-each select="$unescapedContent/root/p/a/@href">
-            
-            <xsl:choose>
-                <xsl:when test="contains(., 'scopus')">
-                    <relatedInfo type="party">
-            <identifier type="scopus">
-                <xsl:value-of select="."/>
-        </identifier>
-
-</relatedInfo>                    </xsl:when>
-                <xsl:when test="contains(., 'researcherid')">
-                    <relatedInfo type="party">
+           <relatedInfo type="party">
+                <xsl:choose>
+                    <xsl:when test="contains(., 'scopus')">
+                        <identifier type="scopus">
+                            <xsl:value-of select="."/>
+                        </identifier>
+                    </xsl:when>
+                    <xsl:when test="contains(., 'researcherid')">
                         <identifier type="uri">
                             <xsl:value-of select="."/>
                         </identifier>
-                    </relatedInfo>
-                </xsl:when>
-                <xsl:when test="contains(., 'orcid')">
-                    <relatedInfo type="party">
+                    </xsl:when>
+                    <xsl:when test="contains(., 'orcid')">
                         <identifier type="orcid">
                             <xsl:value-of select="."/>
                         </identifier>
-                    </relatedInfo>
-                </xsl:when>
-                <xsl:when test="contains(., 'nla')">
-                    <relatedInfo type="party">
+                    </xsl:when>
+                    <xsl:when test="contains(., 'nla')">
                         <identifier type="AU-ANL:PEAU">
                             <xsl:value-of select="."/>
                         </identifier>
-                    </relatedInfo>
-                </xsl:when>
-            </xsl:choose>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <identifier type="uri">
+                            <xsl:value-of select="."/>
+                        </identifier>
+                    </xsl:otherwise>
+                </xsl:choose>
+               <relation type="hasCollector"/>
+           </relatedInfo>           
+        </xsl:for-each>
+   </xsl:template>
+    
+    <xsl:template match="field[@name='comments']/value" mode="activity">
+        
+        <xsl:variable name="unescapedContent" as="document-node()">
+            <xsl:copy-of select="parse-xml(concat('&lt;root&gt;', ., '&lt;/root&gt;'))"/>
+        </xsl:variable>
+        
+        <xsl:for-each select="$unescapedContent/root/p/a/@href">
+            <relatedInfo type="party">
+                <xsl:choose>
+                    <xsl:when test="contains(., 'scopus')">
+                        <identifier type="scopus">
+                            <xsl:value-of select="."/>
+                        </identifier>
+                    </xsl:when>
+                    <xsl:when test="contains(., 'researcherid')">
+                        <identifier type="uri">
+                            <xsl:value-of select="."/>
+                        </identifier>
+                    </xsl:when>
+                    <xsl:when test="contains(., 'orcid')">
+                        <identifier type="orcid">
+                            <xsl:value-of select="."/>
+                        </identifier>
+                    </xsl:when>
+                    <xsl:when test="contains(., 'nla')">
+                        <identifier type="AU-ANL:PEAU">
+                            <xsl:value-of select="."/>
+                        </identifier>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <identifier type="uri">
+                            <xsl:value-of select="."/>
+                        </identifier>
+                    </xsl:otherwise>
+                </xsl:choose>
+                <relation type="hasAssociationWith"/>
+            </relatedInfo>           
         </xsl:for-each>
     </xsl:template>
 
@@ -288,9 +331,11 @@
     </xsl:template>
 
     <xsl:template match="field[@name='rights']/value">
-        <description type="accessRights">
-            <xsl:value-of select="."/>
-        </description>
+        <rights>
+            <rightsStatement>
+                <xsl:value-of select="."/>
+            </rightsStatement>
+        </rights>
     </xsl:template>
 
     <xsl:template match="field[@name='coverage']/value">
@@ -359,7 +404,7 @@
 
     </xsl:template>
 
-    <xsl:template match="field[@name='related_content']">
+    <xsl:template match="field[@name='related_content']" mode="collection">
 
         <xsl:analyze-string select="value" regex="href=&quot;(http.+?)&quot;">
           <xsl:matching-substring>
@@ -367,24 +412,56 @@
                 <identifier type="uri">
                     <xsl:value-of select="regex-group(1)"/>
                 </identifier>
+                <relation type="isReferencedBy"/>
             </relatedInfo>
           </xsl:matching-substring>
         </xsl:analyze-string>
 
     </xsl:template>
+    
+    <xsl:template match="field[@name='related_content']" mode="activity">
+        
+        <xsl:analyze-string select="value" regex="href=&quot;(http.+?)&quot;">
+            <xsl:matching-substring>
+                <relatedInfo type="publication">
+                    <identifier type="uri">
+                        <xsl:value-of select="regex-group(1)"/>
+                    </identifier>
+                    <relation type="hasOutput"/>
+                </relatedInfo>
+            </xsl:matching-substring>
+        </xsl:analyze-string>
+        
+    </xsl:template>
 
-    <xsl:template match="field[@name='project_links']">
+    <xsl:template match="field[@name='project_links']" mode="activity">
 
         <xsl:analyze-string select="value" regex="href=&quot;(http.+?)&quot;">
           <xsl:matching-substring>
-            <relatedInfo type="activity">
+            <relatedInfo type="website">
                 <identifier type="uri">
                     <xsl:value-of select="regex-group(1)"/>
                 </identifier>
+                <relation type="hasAssociationWith"/>
             </relatedInfo>
           </xsl:matching-substring>
         </xsl:analyze-string>
 
+    </xsl:template>
+    
+    <xsl:template match="field[@name='project_links']" mode="collection">
+        
+        <!--xsl:analyze-string select="value" regex="href=&quot;(http.+?)&quot;">
+            <xsl:matching-substring>
+                <relatedInfo type="website">
+                    <identifier type="uri">
+                        <xsl:value-of select="regex-group(1)"/>
+                    </identifier>
+                    <relation type="hasAssociationWith"/>
+                </relatedInfo>
+            </xsl:matching-substring>
+        </xsl:analyze-string-->
+        
     </xsl:template>
 
     <xsl:template match="field[@name='contact']">
@@ -573,15 +650,17 @@
                 <xsl:variable name="namePosition_sequence" as="xs:integer*">
                     <xsl:for-each select="$unescapedContent/root/p">
                         <xsl:variable name="personPosition" select="position()" as="xs:integer"/>
-                        <xsl:if test="count(strong)> 0">
+                        <!-- logic to follow is an attempt to check that we actually have something like a name -->
+                        <xsl:if test="count(strong)> 0 and (string-length(normalize-space(strong)) > 2) and
+                            (contains(normalize-space(strong), ' ') or contains(normalize-space(strong), ','))">
                             <xsl:value-of select="$personPosition"/>
                         </xsl:if>
                     </xsl:for-each>
                 </xsl:variable>
                 
-                <!--xsl:for-each select="$namePosition_sequence">
+                <xsl:for-each select="$namePosition_sequence">
                     <xsl:message select="concat('$namePosition_sequence entry: ', ., ' at position: ', position())"/>
-                    </xsl:for-each-->
+                    </xsl:for-each>
                 
                 <xsl:variable name="currentPersonPositionRange_sequence" as="xs:integer*">
                     <xsl:for-each select="$unescapedContent/root/p">
@@ -605,7 +684,8 @@
                                         <xsl:if test="number($iterPersonPosition) = number($currentPPosition)">
                                             <!-- Return last index in range -->
                                             <xsl:choose>
-                                                <xsl:when test="$posInt &lt; (count($namePosition_sequence) - 1)">
+                                                <!--xsl:when test="$posInt &lt; (count($namePosition_sequence) - 1)"-->
+                                                <xsl:when test="count($namePosition_sequence) > number($posInt)">
                                                     <xsl:message select="concat('Returning $namePosition_sequence[number($posInt)+1]: ', $namePosition_sequence[number($posInt)+1])"/>
                                                     <xsl:copy-of select="$namePosition_sequence[number($posInt)+1]"/>
                                                 </xsl:when>
@@ -632,9 +712,8 @@
                         <xsl:variable name="currentPPosition" select="position()"  as="xs:integer"/>
                         <xsl:message select="concat('$currentPPosition: ', $currentPPosition)"/>
                         <xsl:if test="($currentPersonPositionRange_sequence[2]> $currentPPosition) and
-                            ($currentPPosition> $currentPersonPositionRange_sequence[1])">
+                            ($currentPPosition >= $currentPersonPositionRange_sequence[1])">
                             
-                           
                             <xsl:if test="string-length(normalize-space(a/@href))> 0">
                                 <xsl:message select="concat('a/@href: ', a/@href)"/>
                                 <xsl:value-of select="normalize-space(a/@href)"/>
@@ -739,10 +818,15 @@
         <xsl:param name="name"/>
         <xsl:param name="match"/>
         
+        <xsl:variable name="fname" select="tokenize(custom:formatName($name), ' ')[1]"/>
+        <xsl:variable name="fnameMatch" select="tokenize(custom:formatName($match), ' ')[1]"/>
+        <xsl:variable name="sname" select="tokenize(custom:formatName($name), ' ')[last()]"/>
+        <xsl:variable name="snameMatch" select="tokenize(custom:formatName($match), ' ')[last()]"/>
+        
         <xsl:choose>
             <xsl:when test="
-                tokenize(custom:formatName($name), ' ')[1] = tokenize(custom:formatName($match), ' ')[1] and
-                tokenize(custom:formatName($name), ' ')[last()] = tokenize(custom:formatName($match), ' ')[last()]">
+                (($fname = $fnameMatch) or contains($fname, $fnameMatch) or contains($fnameMatch, $fname)) and 
+                ($sname = $snameMatch)">
                 <xsl:copy-of select="true()"/>
             </xsl:when>
             <xsl:otherwise>
