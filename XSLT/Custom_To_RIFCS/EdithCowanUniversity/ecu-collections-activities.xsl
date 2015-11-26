@@ -74,9 +74,9 @@
                 <xsl:apply-templates select="fields/field[@name='related_content']" mode="collection"/>
                 <xsl:apply-templates select="fields/field[@name='project_links']" mode="collection"/>
                 <xsl:apply-templates select="fields/field[@name='contact']"/>
-                <xsl:apply-templates select="fields/field[@name='comments']/value" mode="collection"/>
                 <xsl:apply-templates select="coverpage-url"/>
-
+                <xsl:apply-templates select="authors/author" mode="collection"/>
+                <!--xsl:apply-templates select="fields/field[@name='comments']/value" mode="collection"/-->
             </xsl:element>
         </registryObject>
     </xsl:template>
@@ -109,8 +109,9 @@
                 <xsl:apply-templates select="fields/field[@name='related_content']" mode="activity"/>
                 <xsl:apply-templates select="fields/field[@name='project_links']" mode="activity"/>
                 <xsl:apply-templates select="fields/field[@name='contact']"/>
-                <xsl:apply-templates select="fields/field[@name='comments']/value" mode="activity"/>
                 <xsl:apply-templates select="coverpage-url"/>
+                <xsl:apply-templates select="authors/author" mode="activity"/>
+                <!--xsl:apply-templates select="fields/field[@name='comments']/value" mode="activity"/-->
                 <relatedObject>
                     <key><xsl:value-of select="$collectionKey"/></key>
                   <relation type="hasOutput"/>
@@ -238,7 +239,46 @@
         </identifier>
     </xsl:template>
     
-   <xsl:template match="field[@name='comments']/value" mode="collection">
+    <xsl:template match="author" mode="collection">
+            
+        <xsl:variable name="firstName" select="fname"/>
+        <xsl:variable name="lastName" select="lname"/>
+        
+        <xsl:variable name="nameFormatted" select="concat($firstName, ' ', $lastName)"/>
+        
+        <xsl:variable name="key" select="custom:formatKey($nameFormatted)"/>
+        
+        <xsl:if test="string-length($key) > 0">
+            <relatedObject>
+                <key>
+                    <xsl:value-of select="$key"/>
+                </key>
+                <relation type="hasCollector"/>
+            </relatedObject>
+        </xsl:if>
+    </xsl:template>
+    
+    <xsl:template match="author" mode="activity">
+              
+        <xsl:variable name="firstName" select="fname"/>
+        <xsl:variable name="lastName" select="lname"/>
+        
+        <xsl:variable name="nameFormatted" select="concat($firstName, ' ', $lastName)"/>
+        
+        <xsl:variable name="key" select="custom:formatKey($nameFormatted)"/>
+        
+        <xsl:if test="string-length($key) > 0">
+            <relatedObject>
+                <key>
+                    <xsl:value-of select="$key"/>
+                </key>
+                <relation type="hasAssociationWith"/>
+            </relatedObject>
+        </xsl:if>
+        
+    </xsl:template>
+    
+   <!--xsl:template match="field[@name='comments']/value" mode="collection">
        
         <xsl:variable name="unescapedContent" as="document-node()">
             <xsl:copy-of select="parse-xml(concat('&lt;root&gt;', ., '&lt;/root&gt;'))"/>
@@ -276,9 +316,9 @@
                <relation type="hasCollector"/>
            </relatedInfo>           
         </xsl:for-each>
-   </xsl:template>
+   </xsl:template-->
     
-    <xsl:template match="field[@name='comments']/value" mode="activity">
+    <!--xsl:template match="field[@name='comments']/value" mode="activity">
         
         <xsl:variable name="unescapedContent" as="document-node()">
             <xsl:copy-of select="parse-xml(concat('&lt;root&gt;', ., '&lt;/root&gt;'))"/>
@@ -316,7 +356,7 @@
                 <relation type="hasAssociationWith"/>
             </relatedInfo>           
         </xsl:for-each>
-    </xsl:template>
+    </xsl:template-->
 
     <xsl:template match="abstract">
         <description type="full">
