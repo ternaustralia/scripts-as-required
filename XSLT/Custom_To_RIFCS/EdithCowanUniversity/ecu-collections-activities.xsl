@@ -184,6 +184,19 @@
                          </xsl:if>
                      </name>
                      
+                     <xsl:if test="string-length(email)> 0">
+                         <location>
+                             <address>
+                                <electronic type="email">
+                                    <value>
+                                        <xsl:value-of select="email"/>
+                                    </value>
+                                </electronic>
+                                 </address>
+                         </location>
+                     </xsl:if>
+                     
+                     
                      <xsl:if test="string-length(institution) > 0">
                         <xsl:variable name="institutionID_TypeValuePair" select="custom:getId_TypeValuePair(institution)"/>
                         <xsl:if test="count($institutionID_TypeValuePair) = 2">
