@@ -97,8 +97,9 @@
                     <xsl:apply-templates select="gmd:fileIdentifier" 
                          mode="registryObject_identifier"/>
                     
+                    <xsl:variable name="doi" select="gmd:distributionInfo/gmd:MD_Distribution/*:transferOptions/*:MD_DigitalTransferOptions/*:onLine/*:CI_OnlineResource[((contains(lower-case(*:name), 'doi')) and (not(contains(lower-case(*:name), 'associated'))))]/*:linkage/*:URL[contains(text(), 'doi')]"/>
                     <xsl:apply-templates select="gmd:distributionInfo/gmd:MD_Distribution/*:transferOptions/*:MD_DigitalTransferOptions/*:onLine/*:CI_OnlineResource[((contains(lower-case(*:name), 'doi')) and (not(contains(lower-case(*:name), 'associated'))))]/*:linkage/*:URL[contains(text(), 'doi')]"
-                        mode="registryObject_identifier"/>
+                        mode="registryObject_identifier_doi"/>
                             
                     <xsl:apply-templates select="gmd:dataSetURI" 
                         mode="registryObject_identifier"/>
@@ -196,6 +197,7 @@
                            <xsl:call-template name="registryObject_citationMetadata_citationInfo">
                                <xsl:with-param name="dataSetURI" select="$dataSetURI"/>
                                <xsl:with-param name="citation" select="."/>
+                               <xsl:with-param name="doi" select="$doi"/>
                            </xsl:call-template>
                         </xsl:for-each> 
                     </xsl:if>
@@ -271,7 +273,7 @@
     </xsl:template>
     
     <!-- Collection - Identifier Element  -->
-    <xsl:template match="gmd:URL" mode="registryObject_identifier">
+    <xsl:template match="gmd:URL" mode="registryObject_identifier_doi">
         <xsl:if test="string-length(.) > 0">
             <identifier>
                 <xsl:attribute name="type">
@@ -770,6 +772,7 @@
     <xsl:template name="registryObject_citationMetadata_citationInfo">
         <xsl:param name="dataSetURI"/>
         <xsl:param name="citation"/>
+        <xsl:param name="doi"/>
         <!-- We can only accept one DOI; howerver, first we will find all -->
         <xsl:variable name = "doiIdentifier_sequence" as="xs:string*">
             <xsl:call-template name="doiFromIdentifiers">
@@ -778,6 +781,9 @@
         </xsl:variable>
         <xsl:variable name="identifierToUse">
             <xsl:choose>
+                <xsl:when test="string-length($doi) > 0">
+                    <xsl:value-of select="$doi"/>   
+                </xsl:when>
                 <xsl:when test="count($doiIdentifier_sequence) and string-length($doiIdentifier_sequence[1])">
                     <xsl:value-of select="$doiIdentifier_sequence[1]"/>   
                 </xsl:when>
@@ -788,7 +794,7 @@
         </xsl:variable>
         <xsl:variable name="typeToUse">
             <xsl:choose>
-                <xsl:when test="count($doiIdentifier_sequence) and string-length($doiIdentifier_sequence[1])">
+                <xsl:when test="contains(lower-case(normalize-space($identifierToUse)), 'doi')">
                     <xsl:text>doi</xsl:text>
                 </xsl:when>
                 <xsl:otherwise>

@@ -41,7 +41,7 @@
             
             <xsl:apply-templates select="fields/field[@name='uow_key']"/>
             
-            <xsl:apply-templates select=".">
+            <xsl:apply-templates select="fields" mode="originating_source">
                 <xsl:with-param name="default" select="$global_originatingSource"/>
             </xsl:apply-templates>
             
@@ -64,7 +64,7 @@
                 </xsl:choose>
                 
                 
-               <xsl:apply-templates select="title[string-length(.) > 0]"/>
+                <xsl:apply-templates select="title[string-length(.) > 0]"/>
                 
                 <xsl:apply-templates select="keywords/keyword[string-length(.) > 0]"/>
                 
@@ -72,132 +72,21 @@
                 
                 <xsl:apply-templates select="fields/field[(@name='for')]/value[string-length(.) > 0]"/>
                 
-                <!-- description - full -->       
-                <xsl:if test="string-length(dc:description.abstract) > 0">
-                    <description type="full">
-                        <xsl:value-of select="dc:description.abstract"/>
-                    </description>
-                </xsl:if>
+                <xsl:apply-templates select="abstract[string-length(.) > 0]"/>
                 
-                <!-- coverage - temporal -->
-                <xsl:variable name="temporalCoverage_sequence" as="xs:string*">
-                    <xsl:for-each select="dc:coverage.temporal">
-                        <xsl:if test="string-length(.) > 0">
-                            <xsl:value-of select="."/>
-                        </xsl:if>
-                    </xsl:for-each>
-                </xsl:variable>
+                <xsl:apply-templates select="fields/field[(@name='date_range')]/value[string-length(.) > 0]"/>
                 
-                <xsl:if test="count($temporalCoverage_sequence) &gt; 0 and count($temporalCoverage_sequence) &lt; 3">
-                    <coverage>
-                        <temporal>
-                            <xsl:for-each select="distinct-values($temporalCoverage_sequence)">
-                                <xsl:variable name="temporalType">
-                                    <xsl:choose>
-                                        <xsl:when test="position() = 1">
-                                            <xsl:text>dateFrom</xsl:text>
-                                        </xsl:when>
-                                        <xsl:when test="position() = 2">
-                                            <xsl:text>dateTo</xsl:text>
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <!-- assert confirms no otherwise -->      
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </xsl:variable>
-                                <xsl:if test="string-length($temporalType) > 0">
-                                    <date type="{$temporalType}" dateFormat="W3CDTF">
-                                        <xsl:value-of select="."/>
-                                    </date>
-                                </xsl:if>
-                            </xsl:for-each>
-                        </temporal>
-                    </coverage>
-                </xsl:if>
+                <xsl:apply-templates select="fields/field[(@name='geolocate')]/value[string-length(.) > 0]"/>
                 
-                <!-- spatial coverage - text -->
-                <xsl:if test="string-length(dc:coverage.spatial) > 0">
-                    <coverage>
-                        <spatial type="text">
-                            <xsl:value-of select="dc:coverage.spatial"/>
-                        </spatial>
-                    </coverage>
-                </xsl:if>
+                <xsl:apply-templates select="fields/field[(@name='geolocate')]/value[string-length(.) > 0]"/>
                 
+                <xsl:apply-templates select="fields" mode="spatial_coverage"/>
                 
-                <!-- spatial coverage - points -->
-                <xsl:if test="string-length(dc:coverage.spatial.long) > 0 and string-length(dc:coverage.spatial.lat)">
-                     <coverage>
-                        <spatial type="gmlKmlPolyCoords">
-                            <xsl:value-of select="concat(dc:coverage.spatial.long, ',', dc:coverage.spatial.lat)"/>
-                        </spatial>
-                    </coverage>
-                </xsl:if>
+                <xsl:apply-templates select="submission-date[string-length(.) > 0]"/>
                 
-                <!-- dates -->
+                <xsl:apply-templates select="fields/field[(@name='custom_citation')]/value[string-length(.) > 0]"/>
                 
-                <xsl:call-template name="dates">
-                    <xsl:with-param name="currentType" select="'available'"/>
-                </xsl:call-template>  
-                
-                <xsl:call-template name="dates">
-                    <xsl:with-param name="currentType" select="'created'"/>
-                </xsl:call-template>  
-                
-                <xsl:call-template name="dates">
-                    <xsl:with-param name="currentType" select="'dateAccepted'"/>
-                </xsl:call-template>  
-                
-                <xsl:call-template name="dates">
-                    <xsl:with-param name="currentType" select="'dateSubmitted'"/>
-                </xsl:call-template>  
-                
-                <xsl:call-template name="dates">
-                    <xsl:with-param name="currentType" select="'issued'"/>
-                </xsl:call-template>    
-                
-                <xsl:call-template name="dates">
-                    <xsl:with-param name="currentType" select="'valid'"/>
-                </xsl:call-template>    
-                
-                
-                <!-- rights -->
-                <xsl:if test="(count(dc:rights.license) = 1) and string-length(dc:rights.license) > 0">
-                    <xsl:variable name="licenseLink" select="dc:rights.license"/>
-                    <xsl:for-each
-                        select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCode']/gmx:codeEntry/gmx:CodeDefinition">
-                        <xsl:if test="string-length(gml:remarks)">
-                            <xsl:if test="contains($licenseLink, gml:remarks)">
-                                <rights>
-                                    <licence>
-                                        <xsl:attribute name="type" select="gml:identifier"/>
-                                        <xsl:attribute name="rightsUri" select="$licenseLink"/>
-                                        <xsl:if test="string-length(gml:name)">
-                                            <xsl:value-of select="gml:name"/>
-                                        </xsl:if>
-                                    </licence>
-                                </rights>
-                            </xsl:if>
-                        </xsl:if>
-                    </xsl:for-each>
-                </xsl:if>
-                
-                <xsl:if test="(count(dc:rights.accessRights) = 1) and string-length(dc:rights.accessRights) > 0">
-                    <xsl:if test="lower-case(dc:rights.accessRights) = 'open'">
-                          <rights>
-                            <accessRights type="open"/>
-                          </rights>
-                    </xsl:if>
-                </xsl:if>
-                
-               <!-- citationInfo -->
-                <xsl:if test="string-length(dc:identifier.bibliographicCitation)">
-                    <citationInfo>
-                        <fullCitation>
-                            <xsl:value-of select="dc:identifier.bibliographicCitation"/>
-                        </fullCitation>
-                    </citationInfo>
-                </xsl:if>
+                <xsl:apply-templates select="fields/field[(@name='related_content')]/value[string-length(.) > 0]"/>
                 
             </xsl:element>
         </registryObject>
@@ -205,61 +94,6 @@
    
     
    <!-- Templates -->
-    
-    <xsl:template name="dates">
-        <xsl:param name="currentType"/>
-        <xsl:for-each select="*[contains(name(), $currentType)]">
-            <xsl:if test="string-length(.) > 0">
-                <!--xsl:message select="concat('Node name:', name())"/-->
-                <xsl:variable name="type">
-                    <xsl:choose>
-                        <xsl:when test="position() = 1">
-                            <xsl:text>dateFrom</xsl:text>
-                        </xsl:when>
-                        <xsl:when test="position() = 2">
-                            <xsl:text>dateTo</xsl:text>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <!-- assert confirms no otherwise -->      
-                        </xsl:otherwise>
-                    </xsl:choose>
-                </xsl:variable>
-                <xsl:if test="string-length($type) > 0">
-                    <xsl:variable name="dctype" select="substring-after(name(.), 'dc:date.')"/>
-                    <dates type="{$dctype}">
-                        <date type="{$type}" dateFormat="W3CDTF">
-                            <xsl:value-of select="."/>
-                        </date>
-                    </dates>
-                </xsl:if>
-            </xsl:if>
-        </xsl:for-each>
-    </xsl:template>
-    
-    
-    <xsl:template match="document" mode="funding_party">
-        
-        <xsl:if test="string-length(.) > 0">
-        
-            <registryObject group="{$global_group}">
-                <key>
-                    <xsl:value-of select="custom:formatKey(.)"/>
-                </key>
-                <originatingSource>
-                    <xsl:value-of select="$global_originatingSource"/>
-                </originatingSource>
-                
-                <activity type="grant">
-                    <name type="primary">
-                        <namePart>
-                            <xsl:value-of select="."/>
-                        </namePart>
-                    </name>
-                </activity>
-            </registryObject>
-        </xsl:if>
-        
-    </xsl:template>
     
     <xsl:template match="document" mode="party">
         
@@ -346,12 +180,12 @@
         </key>
     </xsl:template>
     
-    <xsl:template match="document">
+    <xsl:template match="fields" mode="originating_source">
         <xsl:param name="default"/>
         <xsl:variable name="value">
             <xsl:choose>
-                <xsl:when test="string-length(fields/field[@name='source_publication']) > 0">
-                    <xsl:value-of select="fields/field[@name='source_publication']"/>
+                <xsl:when test="string-length(field[@name='source_publication']) > 0">
+                    <xsl:value-of select="field[@name='source_publication']"/>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:value-of select="$default"/>
@@ -482,6 +316,72 @@
             </subject>
         </xsl:if>
     </xsl:template>
+    
+    <xsl:template match="abstract">
+        <description type="full">
+            <xsl:value-of select="."/>
+        </description>
+    </xsl:template>
+    
+    <xsl:template match="fields/field[(@name='date_range')]/value[string-length(.) > 0]">
+        <coverage>
+            <temporal type="text">
+                <xsl:value-of select="."/>
+            </temporal>
+        </coverage>
+    </xsl:template>
+    
+    <xsl:template match="fields/field[(@name='geolocate')]/value[string-length(.) > 0]">
+        <coverage>
+            <spatial type="text">
+                <xsl:value-of select="."/>
+            </spatial>
+        </coverage>
+    </xsl:template>
+    
+    <xsl:template match="fields" mode="spatial_coverage">
+       <xsl:if test="
+           (string-length(field[@name='latitude']) > 0) and
+           (string-length(field[@name='longitude']) > 0)">
+           <location>
+               <spatial type="kmlPolyCoords">
+                   <xsl:value-of select="concat(field[@name='longitude'], ',',field[@name='latitude'])"/>
+               </spatial>
+           </location>
+        </xsl:if>
+    </xsl:template>
+    
+    <xsl:template match="submission-date[string-length(.) > 0]">
+        <dates type="submitted">
+            <date type="dateFrom" dateFormat="W3CDTF">
+                <xsl:value-of select="."/>
+            </date>
+        </dates>
+    </xsl:template>
+    
+    <xsl:template match="fields/field[(@name='custom_citation')]/value[string-length(.) > 0]">
+        <citationInfo>
+            <fullCitation>
+                <xsl:value-of select="."/>
+            </fullCitation>
+        </citationInfo>
+    </xsl:template>
+    
+    <xsl:template match="fields/field[(@name='related_content')]/value[string-length(.) > 0]">
+        <xsl:analyze-string select="." regex="href=&quot;(http.+?)&quot;">
+            <xsl:matching-substring>
+                <relatedInfo>
+                     <xsl:variable name="identifierType" select="custom:identifierType(regex-group(1))"/>
+                     <identifier type="{$identifierType}">
+                         <xsl:value-of select="regex-group(1)"/>
+                     </identifier>
+                    <relation type="hasAssociationWith"/>
+                </relatedInfo>
+            </xsl:matching-substring>
+        </xsl:analyze-string>
+    </xsl:template>
+    
+    
     
     <!-- Functions -->
     

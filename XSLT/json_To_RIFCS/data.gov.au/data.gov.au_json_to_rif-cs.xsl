@@ -13,6 +13,7 @@
     <xsl:param name="global_contributor" select="'data.gov.au'"/>
     <xsl:param name="global_publisherName" select="'data.gov.au'"/>
     <xsl:param name="global_publisherPlace" select="'Canberra'"/>
+    <xsl:param name="global_localParentCollectionPostfix" select="'dataset'"/>
 
     <xsl:template match="/">
         <xsl:apply-templates/>
@@ -32,14 +33,14 @@
                 <xsl:text>http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd</xsl:text>
             </xsl:attribute>
             
-            <xsl:apply-templates select="result" mode="constructObjects"/>
+            <xsl:apply-templates select="result/results" mode="constructObjects"/>
             
         </registryObjects>
         
     </xsl:template>
     
     
-    <xsl:template match="result" mode="constructObjects">
+    <xsl:template match="results" mode="constructObjects">
         
         <xsl:if test="boolean(custom:proceedWithHarvest(.)) = true()">   
             <xsl:apply-templates select="." mode="collection"/>
@@ -48,7 +49,7 @@
         </xsl:if>
     </xsl:template>
 
-    <xsl:template match="result" mode="collection">
+    <xsl:template match="results" mode="collection">
         
         <xsl:variable name="metadataURL">
             <xsl:variable name="name" select="normalize-space(name)"/>
@@ -57,13 +58,29 @@
             </xsl:if>
         </xsl:variable>
         
+        <xsl:variable name="harvestSourceID" select="normalize-space(harvest_source_id)"/>
        
 
          <registryObject>
              <xsl:attribute name="group">
                  <xsl:value-of select="$global_group"/>
              </xsl:attribute>
-             <xsl:apply-templates select="id" mode="collection_key"/>
+             
+             <xsl:variable name="key">
+                 <xsl:variable name="guid" select="normalize-space(extras[key = 'guid']/value)"/>
+                 <xsl:choose>
+                     <xsl:when test="string-length($guid) > 0">
+                         <xsl:value-of select="$guid"/>
+                     </xsl:when>
+                     <xsl:otherwise>
+                         <xsl:value-of select="normalize-space(id)"/>
+                     </xsl:otherwise>
+                 </xsl:choose>
+             </xsl:variable>
+             
+             <xsl:call-template name="collection_key">
+                 <xsl:with-param name="key" select="$key"/>
+             </xsl:call-template>
  
              <originatingSource>
                  <xsl:choose>
@@ -101,7 +118,8 @@
                          <xsl:value-of select="normalize-space(metadata_modified)"/>
                      </xsl:attribute>
                  </xsl:if>
- 
+                 
+                 
                  <xsl:apply-templates select="id" mode="collection_identifier"/>
  
                  <xsl:apply-templates select="name" mode="collection_identifier"/>
@@ -113,6 +131,14 @@
                  <xsl:apply-templates select="url" mode="collection_location_url"/>
  
                  <xsl:apply-templates select="organization" mode="collection_related_object"/>
+                 
+                 <xsl:apply-templates select="harvest_source_id" mode="collection_related_object"/>
+                 
+                 <xsl:if test="
+                     string-length($harvestSourceID) = 0 and 
+                     (type = 'dataset')">
+                     <xsl:call-template name="collection_related_object"/>
+                 </xsl:if>
  
                  <xsl:apply-templates select="author" mode="collection_related_object"/>
  
@@ -146,6 +172,7 @@
              </collection>
  
          </registryObject>
+        
   
     </xsl:template>
 
@@ -153,7 +180,7 @@
     <!-- Party RegistryObject Template          -->
     <!-- =========================================== -->
 
-    <xsl:template match="result" mode="party">
+    <xsl:template match="results" mode="party">
 
         <xsl:apply-templates select="organization"/>
 
@@ -170,10 +197,11 @@
     <!-- =========================================== -->
 
     <!-- Collection - Key Element  -->
-    <xsl:template match="id" mode="collection_key">
-        <xsl:if test="string-length(normalize-space(.))">
+    <xsl:template name="collection_key">
+        <xsl:param name="key"/>
+        <xsl:if test="string-length(normalize-space($key))">
             <key>
-                <xsl:value-of select="concat($global_group,'/', lower-case(normalize-space(.)))"/>
+                <xsl:value-of select="$key"/>
             </key>
         </xsl:if>
     </xsl:template>
@@ -269,7 +297,7 @@
                 </key>
                 <relation>
                     <xsl:attribute name="type">
-                        <xsl:text>owner</xsl:text>
+                        <xsl:text>isManagedBy</xsl:text>
                     </xsl:attribute>
                 </relation>
             </relatedObject>
@@ -277,6 +305,47 @@
             <!--xsl:apply-templates select="../." mode="collection_relatedInfo"/-->
         </xsl:if>
     </xsl:template>
+    
+    <!-- Collection - Related Object (Organisation or Individual) Element -->
+    <xsl:template match="harvest_source_id" mode="collection_related_object">
+        <xsl:if test="string-length(normalize-space(.))">
+            <relatedObject>
+                <key>
+                    <xsl:value-of
+                        select="normalize-space(.)"
+                    />
+                </key>
+                <relation>
+                    <xsl:attribute name="type">
+                        <xsl:text>isPartOf</xsl:text>
+                    </xsl:attribute>
+                </relation>
+            </relatedObject>
+            
+            <!--xsl:apply-templates select="../." mode="collection_relatedInfo"/-->
+        </xsl:if>
+    </xsl:template>
+    
+    <!-- Collection - Related Object (Organisation or Individual) Element -->
+    <xsl:template name="collection_related_object">
+        <xsl:if test="string-length(normalize-space(.))">
+            <relatedObject>
+                <key>
+                    <xsl:value-of
+                        select="concat($global_group,'/', $global_localParentCollectionPostfix)"
+                    />
+                </key>
+                <relation>
+                    <xsl:attribute name="type">
+                        <xsl:text>isPartOf</xsl:text>
+                    </xsl:attribute>
+                </relation>
+            </relatedObject>
+            
+            <!--xsl:apply-templates select="../." mode="collection_relatedInfo"/-->
+        </xsl:if>
+    </xsl:template>
+    
 
     <xsl:template match="author" mode="collection_related_object">
         <xsl:if test="string-length(normalize-space(.))">
@@ -288,7 +357,7 @@
                 </key>
                 <relation>
                     <xsl:attribute name="type">
-                        <xsl:text>author</xsl:text>
+                        <xsl:text>hasCollector</xsl:text>
                     </xsl:attribute>
                 </relation>
             </relatedObject>
@@ -369,7 +438,7 @@
     </xsl:template>
 
     <!-- Collection - Related Info Element - Services -->
-    <xsl:template match="result" mode="collection_relatedInfo">
+    <xsl:template match="results" mode="collection_relatedInfo">
         <xsl:variable name="organizationTitle" select="organization/title"/>
         <!-- Related Services -->
         <xsl:for-each select="resources">
@@ -697,7 +766,7 @@
     </xsl:template>
 
     <!-- Party Registry Object (Individuals (person) and Organisations (group)) -->
-    <xsl:template match="datasets/result" mode="party_author">
+    <xsl:template match="results" mode="party_author">
         <xsl:variable name="name" select="author"/>
         <xsl:if test="string-length($name) > 0">
             <registryObject group="{$global_group}">
@@ -742,12 +811,12 @@
                         <relatedObject>
                             <key>
                                 <xsl:value-of
-                                    select="concat($global_group,'/', translate(lower-case($name),' ',''))"
+                                    select="concat($global_group,'/', translate(lower-case($orgName),' ',''))"
                                 />
                             </key>
                             <relation>
                                 <xsl:attribute name="type">
-                                    <xsl:text>isMemberOf</xsl:text>
+                                    <xsl:text>hasAssociationWith</xsl:text>
                                 </xsl:attribute>
                             </relation>
                         </relatedObject>
@@ -762,7 +831,7 @@
     <!-- ====================================== -->
 
     <!-- Service Registry Object -->
-    <xsl:template match="result" mode="service">
+    <xsl:template match="results" mode="service">
         <xsl:variable name="organizationTitle" select="normalize-space(organization/title)"/>
         <xsl:variable name="organizationName" select="normalize-space(organization/name)"/>
         <xsl:variable name="organizationDescription"
@@ -1014,10 +1083,10 @@
     -->
     
     <xsl:function name="custom:locallyStored" as="xs:boolean">
-        <xsl:param name="result" as="node()"/>
+        <xsl:param name="results" as="node()"/>
         
         <xsl:variable name="true_sequence" as="xs:boolean*">
-            <xsl:for-each select="$result/resources/url_type">
+            <xsl:for-each select="$results/resources/url_type">
                 <xsl:if test="contains(., $globalLocalIndicator)">
                     <xsl:value-of select="true()"/>
                 </xsl:if>
@@ -1028,16 +1097,16 @@
     </xsl:function>
     
     <xsl:function name="custom:proceedWithHarvest" as="xs:boolean">
-        <xsl:param name="result" as="node()"/>
+        <xsl:param name="results" as="node()"/>
         
-        <xsl:message select="concat('size: ', count($result/harvest_source_id))"/>
+        <xsl:message select="concat('size: ', count($results/harvest_source_id))"/>
         <xsl:choose>
-            <xsl:when test="count($result/harvest_source_id) = 0">
+            <xsl:when test="count($results/harvest_source_id) = 0">
                 <xsl:value-of select="true()"/>
             </xsl:when>
             <xsl:otherwise>
                 <xsl:variable name="true_sequence" as="xs:boolean*">
-                <xsl:for-each select="$result/harvest_source_id">
+                <xsl:for-each select="$results/harvest_source_id">
                     <xsl:variable name="harvestId" select='.'/>
                      <xsl:choose>
                          <xsl:when test="$harvestId = ''">
@@ -1056,7 +1125,7 @@
                              <xsl:value-of select="true()"/> <!-- City of Hobart ArcGIS Harvest -->
                          </xsl:when>
                          <xsl:when test="$harvestId = '76d96dc3-4260-48b5-8713-3c0e7ca2cd24'">
-                             <!--xsl:value-of select="false()"/--> <!-- data.sa -->
+                             <xsl:value-of select="true()"/> <!-- data.sa -->
                          </xsl:when>
                          <xsl:when test="$harvestId = 'a3e19b5b-c819-4e83-83d8-68d3b23b8f61'">
                              <xsl:value-of select="true()"/> <!-- data.act -->

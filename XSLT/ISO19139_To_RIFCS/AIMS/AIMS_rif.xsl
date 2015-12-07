@@ -378,7 +378,7 @@
     <!-- RegistryObject - Key Element  -->
     <xsl:template match="*:fileIdentifier" mode="registryObject_key">
         <key>
-            <xsl:value-of select="concat($global_acronym,'/', normalize-space(.))"/>
+            <xsl:value-of select="normalize-space(.)"/>
         </key>
     </xsl:template>
 
@@ -396,7 +396,7 @@
                 <xsl:attribute name="type">
                     <xsl:text>global</xsl:text>
                 </xsl:attribute>
-                <xsl:value-of select="concat($global_acronym,'/', $identifier)"/>
+                <xsl:value-of select="$identifier"/>
             </identifier>
         </xsl:if>
     </xsl:template>
@@ -566,7 +566,7 @@
         <xsl:if test="string-length($identifier) > 0">
             <relatedObject>
                 <key>
-                    <xsl:value-of select="concat($global_acronym,'/', $identifier)"/>
+                    <xsl:value-of select="$identifier"/>
                 </key>
                 <relation>
                     <xsl:attribute name="type">
@@ -698,7 +698,7 @@
         <xsl:if test="string-length($identifier) > 0">
             <relatedObject>
                 <key>
-                    <xsl:value-of select="concat($global_acronym,'/', $identifier)"/>
+                    <xsl:value-of select="$identifier"/>
                 </key>
                 <relation>
                     <xsl:attribute name="type">

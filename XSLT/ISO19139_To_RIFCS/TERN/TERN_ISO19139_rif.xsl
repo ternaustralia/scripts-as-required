@@ -20,7 +20,7 @@
     <xsl:param name="global_defaultOriginatingSource" select="'external'"/>
     <xsl:param name="global_acronym" select="'TERN'"/>
     <xsl:param name="global_originatingSource" select="'Terrestrial Ecosystem Research Network'"/> <!-- Only used as originating source if organisation name cannot be determined from Point Of Contact -->
-    <xsl:param name="global_group" select="'Terrestrial Ecosystem Research Network'"/> 
+    <xsl:param name="global_group" select="'Terrestrial Ecosystem Research Network Central'"/> 
     <xsl:param name="global_baseURI" select="'geonetwork-dev.tern.org.au'"/>
     <xsl:param name="global_metadataLandingPageSubPath" select="'/geonetwork/srv/eng/catalog.search#/metadata/'"/>
    <xsl:variable name="anzsrcCodelist" select="document('anzsrc-codelist.xml')"/>

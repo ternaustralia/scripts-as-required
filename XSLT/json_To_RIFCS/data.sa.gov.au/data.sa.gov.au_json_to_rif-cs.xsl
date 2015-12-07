@@ -25,12 +25,14 @@
     <!-- =========================================== -->
 
     <xsl:template match="datasets">
-        <!--registryObjects>
+        <registryObjects>
             <xsl:attribute name="xsi:schemaLocation">
                 <xsl:text>http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd</xsl:text>
-            </xsl:attribute-->
-        <xsl:apply-templates select="result" mode="constructObjects"/>
-        <!--/registryObjects!-->
+            </xsl:attribute>
+        
+            <xsl:apply-templates select="result" mode="constructObjects"/>
+        
+        </registryObjects>
     </xsl:template>
     
     <xsl:template match="result" mode="constructObjects">

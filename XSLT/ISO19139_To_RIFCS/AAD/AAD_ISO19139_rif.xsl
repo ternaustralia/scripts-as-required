@@ -71,10 +71,10 @@
             <key>
                  <xsl:choose>
                      <xsl:when test="count($code_sequence) > 0">
-                         <xsl:value-of select="concat($global_baseURI, '/', normalize-space($code_sequence[1]))"/>
+                         <xsl:value-of select="normalize-space($code_sequence[1])"/>
                      </xsl:when>
                      <xsl:otherwise>
-                        <xsl:value-of select="concat($global_baseURI, '/', normalize-space(gmd:fileIdentifier))"/>
+                        <xsl:value-of select="normalize-space(gmd:fileIdentifier)"/>
                      </xsl:otherwise>  
                  </xsl:choose>
             </key>
@@ -93,7 +93,7 @@
                     mode="collection_identifier"/>
                 
                 <xsl:apply-templates
-                    select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine[1]/gmd:CI_OnlineResource/gmd:linkage/gmd:URL"
+                    select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage/gmd:URL"
                     mode="collection_identifier"/>
                 
                <xsl:apply-templates
@@ -357,7 +357,7 @@
     <xsl:template match="gmd:parentIdentifier" mode="collection_related_object">
         <relatedObject>
             <key>
-                <xsl:value-of select="concat($global_baseURI, '/', normalize-space(.))"/>
+                <xsl:value-of select="normalize-space(.)"/>
             </key>
             <relation type="isPartOf"/>
         </relatedObject>

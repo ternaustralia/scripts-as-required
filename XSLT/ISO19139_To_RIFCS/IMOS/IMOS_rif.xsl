@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-    xmlns:mcp="http://bluenet3.antcrc.utas.edu.au/mcp" xmlns:gmd="http://www.isotc211.org/2005/gmd"
+    xmlns:mcp="http://schemas.aodn.org.au/mcp-2.0" 
+    xmlns:gmd="http://www.isotc211.org/2005/gmd"
     xmlns:srv="http://www.isotc211.org/2005/srv"
+    xmlns:csw="http://www.opengis.net/cat/csw/2.0.2"
+    xmlns:grg="http://www.isotc211.org/2005/grg"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml"
     xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:gts="http://www.isotc211.org/2005/gts"
     xmlns:geonet="http://www.fao.org/geonetwork" xmlns:gmx="http://www.isotc211.org/2005/gmx"
@@ -13,7 +16,7 @@
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
     <xsl:param name="global_defaultContributingOrganisation" select="'external'"/>
-    <xsl:param name="global_baseURI" select="'imosmest.aodn.org.au:80'"/>
+    <xsl:param name="global_baseURI" select="'catalogue-123.aodn.org.au'"/>
     <xsl:param name="global_group" select="'Integrated Marine Observing System'"/>
     <xsl:param name="global_groupAcronym" select="'IMOS'"/>
     <xsl:param name="global_defaultOriginatingSource" select="'external provider'"/>
@@ -37,6 +40,8 @@
     <!-- =========================================== -->
 
     <xsl:template match="/">
+        <xsl:message select="concat('here we are: ', .)"/>
+        <xsl:message select="concat('count(//mcp:MD_Metadata): ', count(//mcp:MD_Metadata))"/>
         <registryObjects>
             <xsl:attribute name="xsi:schemaLocation">
                 <xsl:text>http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd</xsl:text>
@@ -50,9 +55,12 @@
     <!-- =========================================== -->
 
     <xsl:template match="mcp:MD_Metadata">
-
-        <xsl:variable name="metadataTruthURL" select="custom:getMetadataTruthURL(gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions)"/>
+       
+        <xsl:variable name="metadataTruthURL" select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage[contains(lower-case(following-sibling::gmd:protocol), 'metadata-url')]/gmd:URL"/>
         <!--xsl:message select="concat('metadataTruthURL: ', $metadataTruthURL)"/-->
+        
+        <xsl:variable name="dataSetCitationURL" select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage[contains(lower-case(following-sibling::gmd:name), 'data set citation')]/gmd:URL"/>
+        <xsl:message select="concat('dataSetCitationURL: ', $dataSetCitationURL)"/>
         
         <xsl:variable name="dataSetURI" select="gmd:dataSetURI"/>
         <!--xsl:message select="concat('dataSetURI: ', $dataSetURI)"/-->
@@ -306,7 +314,9 @@
         </xsl:variable>
         
         <!--xsl:message select="concat('publishingOrganisation: ', $publishingOrganisation)"/-->
-
+        
+        <xsl:variable name="doiIdentifier_sequence" as="xs:string*" select="custom:doiFromIdentifiers(//gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier/gmd:code)"/>
+        
         <registryObject>
             <xsl:attribute name="group">
                 <xsl:value-of select="$global_group"/>
@@ -356,6 +366,21 @@
                             </xsl:if>
                         </xsl:otherwise>
                     </xsl:choose>
+                    
+                    <xsl:if test="string-length($dataSetCitationURL) > 0">
+                        <xsl:call-template name="set_registryObjectIdentifier">
+                            <xsl:with-param name="identifier" select="$dataSetCitationURL"/>
+                            <xsl:with-param name="type" select="'uri'"/>
+                        </xsl:call-template>
+                    </xsl:if>
+                    
+                    <xsl:for-each select="distinct-values($doiIdentifier_sequence)">
+                        <xsl:call-template name="set_registryObjectIdentifier">
+                            <xsl:with-param name="identifier" select="."/>
+                            <xsl:with-param name="type" select="'doi'"/>
+                        </xsl:call-template>
+                    </xsl:for-each>
+                    
 
                     <xsl:apply-templates
                         select="gmd:identificationInfo/*/gmd:citation/gmd:CI_Citation/gmd:title"
@@ -497,7 +522,8 @@
                                 <xsl:with-param name="publishingOrganisation" select="$publishingOrganisation"/>
                                 <xsl:with-param name="citation" select="."/>
                                 <xsl:with-param name="citationContributorName_sequence" select="$citationContributorName_sequence"/>
-                                <xsl:with-param name="metadataCreationDate" select="$metadataCreationDate"/>
+                                <xsl:with-param name="doiIdentifier_sequence" select="$doiIdentifier_sequence"/>
+                                  <xsl:with-param name="metadataCreationDate" select="$metadataCreationDate"/>
                             </xsl:call-template>
                         </xsl:for-each>
                     </xsl:if>
@@ -544,7 +570,7 @@
     <!-- RegistryObject - Key Element  -->
     <xsl:template match="gmd:fileIdentifier" mode="registryObject_key">
         <key>
-            <xsl:value-of select="concat($global_groupAcronym,'/', normalize-space(.))"/>
+            <xsl:value-of select="normalize-space(.)"/>
         </key>
     </xsl:template>
 
@@ -662,7 +688,7 @@
         <xsl:if test="string-length($identifier) > 0">
             <relatedObject>
                 <key>
-                    <xsl:value-of select="concat($global_groupAcronym,'/', $identifier)"/>
+                    <xsl:value-of select="$identifier"/>
                 </key>
                 <relation>
                     <xsl:attribute name="type">
@@ -741,7 +767,7 @@
         <xsl:if test="string-length($identifier) > 0">
             <relatedObject>
                 <key>
-                    <xsl:value-of select="concat($global_groupAcronym,'/', $identifier)"/>
+                    <xsl:value-of select="$identifier"/>
                 </key>
                 <relation>
                     <xsl:attribute name="type">
@@ -1482,12 +1508,12 @@
         <xsl:param name="publishingOrganisation"/>
         <xsl:param name="citation"/>
         <xsl:param name="citationContributorName_sequence" as="xs:string*"/>
+        <xsl:param name="doiIdentifier_sequence" as="xs:string*"/>
          <xsl:param name="metadataCreationDate"/>
 
 
         <xsl:variable name="CI_Citation" select="." as="node()"/>
 
-              <xsl:variable name="doiIdentifier_sequence" as="xs:string*" select="custom:doiFromIdentifiers(gmd:identifier/gmd:MD_Identifier/gmd:code)"/>
         
         <xsl:variable name="identifierToUse">
             <xsl:choose>
@@ -1920,7 +1946,7 @@
         <xsl:param name="identifier_sequence"/>
         <xsl:for-each select="distinct-values($identifier_sequence)">
             <xsl:if test="contains(lower-case(normalize-space(.)), 'doi')">
-                <xsl:value-of select="normalize-space(.)"/>
+                <xsl:value-of select="substring-after(normalize-space(.), 'doi:')"/>
             </xsl:if>
         </xsl:for-each>
     </xsl:function>
@@ -2314,21 +2340,5 @@
             </xsl:otherwise>
         </xsl:choose>
     </xsl:function>
-
-    <xsl:function name="custom:getMetadataTruthURL">
-        <xsl:param name="transferOptions"/>
-        
-        <xsl:variable name="metadataTruth_sequence" as="xs:string*">
-            <xsl:for-each select="$transferOptions/gmd:onLine/gmd:CI_OnlineResource">
-                <xsl:if test="contains(gmd:protocol, 'http--metadata-URL')">
-                    <xsl:value-of select="normalize-space(gmd:linkage/gmd:URL)"/>
-                </xsl:if>
-            </xsl:for-each>
-        </xsl:variable>
-        
-        <xsl:if test="count($metadataTruth_sequence) > 0">
-            <xsl:copy-of select="$metadataTruth_sequence[1]"/>
-        </xsl:if>
-    </xsl:function>
-    
+   
 </xsl:stylesheet>

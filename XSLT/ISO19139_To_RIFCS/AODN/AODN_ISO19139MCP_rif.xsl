@@ -381,7 +381,7 @@
                          gmd:identificationInfo[1]/*/gmd:pointOfContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName)) > 0) and 
                          (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)) > 0)]"
                         group-by="gmd:individualName">
-                        <xsl:apply-templates select="." mode="registryObject_related_object"/>
+                        <xsl:apply-templates select="." mode="registryObject_related_object_individual"/>
                     </xsl:for-each-group>
 
                     <xsl:for-each-group
@@ -390,7 +390,7 @@
                          gmd:identificationInfo[1]/*/gmd:pointOfContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName)) > 0) and 
                          (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)) > 0)]"
                         group-by="gmd:organisationName">
-                        <xsl:apply-templates select="." mode="registryObject_related_object"/>
+                        <xsl:apply-templates select="." mode="registryObject_related_object_organisation"/>
                     </xsl:for-each-group>
 
                     <xsl:apply-templates select="mcp:children/mcp:childIdentifier"
@@ -516,6 +516,7 @@
             group-by="gmd:individualName">
             <xsl:call-template name="party">
                 <xsl:with-param name="type">person</xsl:with-param>
+                <xsl:with-param name="name" select="custom:formatIndividualName(normalize-space(current-grouping-key()))"/>
                 <xsl:with-param name="originatingSource" select="$originatingSource"/>
             </xsl:call-template>
         </xsl:for-each-group>
@@ -528,6 +529,7 @@
             group-by="gmd:organisationName">
             <xsl:call-template name="party">
                 <xsl:with-param name="type">group</xsl:with-param>
+                <xsl:with-param name="name" select="normalize-space(current-grouping-key())"/>
                 <xsl:with-param name="originatingSource" select="$originatingSource"/>
             </xsl:call-template>
         </xsl:for-each-group>
@@ -543,7 +545,7 @@
     <!-- RegistryObject - Key Element  -->
     <xsl:template match="gmd:fileIdentifier" mode="registryObject_key">
         <key>
-            <xsl:value-of select="concat($global_groupAcronym,'/', normalize-space(.))"/>
+            <xsl:value-of select="normalize-space(.)"/>
         </key>
     </xsl:template>
 
@@ -661,7 +663,7 @@
         <xsl:if test="string-length($identifier) > 0">
             <relatedObject>
                 <key>
-                    <xsl:value-of select="concat($global_groupAcronym,'/', $identifier)"/>
+                    <xsl:value-of select="$identifier"/>
                 </key>
                 <relation>
                     <xsl:attribute name="type">
@@ -711,7 +713,30 @@
     </xsl:template>
 
     <!-- RegistryObject - Related Object (Organisation or Individual) Element -->
-    <xsl:template match="gmd:CI_ResponsibleParty" mode="registryObject_related_object">
+    <xsl:template match="gmd:CI_ResponsibleParty" mode="registryObject_related_object_individual">
+        <xsl:variable name="name" select="normalize-space(custom:formatIndividualName(current-grouping-key()))"/>
+        <relatedObject>
+            <key>
+                <xsl:value-of
+                    select="concat($global_groupAcronym,'/', translate($name,' ',''))"
+                />
+            </key>
+            <xsl:for-each-group select="current-group()/gmd:role"
+                group-by="gmd:CI_RoleCode/@codeListValue">
+                <xsl:variable name="code">
+                    <xsl:value-of select="current-grouping-key()"/>
+                </xsl:variable>
+                <relation>
+                    <xsl:attribute name="type">
+                        <xsl:value-of select="$code"/>
+                    </xsl:attribute>
+                </relation>
+            </xsl:for-each-group>
+        </relatedObject>
+    </xsl:template>
+    
+    <!-- RegistryObject - Related Object (Organisation or Individual) Element -->
+    <xsl:template match="gmd:CI_ResponsibleParty" mode="registryObject_related_object_organisation">
         <xsl:variable name="name" select="normalize-space(current-grouping-key())"/>
         <relatedObject>
             <key>
@@ -740,7 +765,7 @@
         <xsl:if test="string-length($identifier) > 0">
             <relatedObject>
                 <key>
-                    <xsl:value-of select="concat($global_groupAcronym,'/', $identifier)"/>
+                    <xsl:value-of select="$identifier"/>
                 </key>
                 <relation>
                     <xsl:attribute name="type">
@@ -1640,11 +1665,10 @@
     <!-- Party Registry Object (Individuals (person) and Organisations (group)) -->
     <xsl:template name="party">
         <xsl:param name="type"/>
+        <xsl:param name="name"/>
         <xsl:param name="originatingSource"/>
         <registryObject group="{$global_group}">
 
-            <xsl:variable name="name" select="normalize-space(current-grouping-key())"/>
-      
             <key>
                 <xsl:value-of
                     select="concat($global_groupAcronym, '/', translate($name,' ',''))"
@@ -1679,7 +1703,7 @@
             <party type="{$typeToUse}">
                 <name type="primary">
                     <namePart>
-                        <xsl:value-of select="$name"/>
+                         <xsl:value-of select="$name"/>
                     </namePart>
                 </name>
 
@@ -1988,9 +2012,9 @@
                 </xsl:call-template>
             </xsl:when>
             <xsl:otherwise>
-                <!--xsl:message>Defaulting to 'collection' due to no specific processing being required for originatingSource<xsl:value-of select="$originatingSource"></xsl:value-of></xsl:message-->
-                <xsl:text>collection</xsl:text>
-                <xsl:text>dataset</xsl:text>
+                <xsl:call-template name="getRegistryObjectTypeSubType_Default">
+                    <xsl:with-param name="scopeCode" select="$scopeCode"/>
+                </xsl:call-template>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
@@ -2001,44 +2025,52 @@
             <xsl:when test="string-length($scopeCode) = 0">
                 <!--xsl:message>Error: empty scope code</xsl:message-->
             </xsl:when>
-            <xsl:when test="contains($scopeCode, 'dataset')">
-                <xsl:text>activity</xsl:text>
-                <xsl:text>project</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains($scopeCode, 'nonGeographicDataset')">
-                <xsl:text>activity</xsl:text>
-                <xsl:text>project</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains($scopeCode, 'collectionHardware')">
-                <xsl:text>activity</xsl:text>
-                <xsl:text>project</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains($scopeCode, 'collectionSession')">
-                <xsl:text>activity</xsl:text>
-                <xsl:text>project</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains($scopeCode, 'sensor')">
+            <xsl:when test="contains($scopeCode, 'publication')">
                 <xsl:text>collection</xsl:text>
-                <xsl:text>dataset</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains($scopeCode, 'sensorSeries')">
-                <xsl:text>collection</xsl:text>
-                <xsl:text>collection</xsl:text>
+                <xsl:text>publication</xsl:text>
             </xsl:when>
             <xsl:when test="contains($scopeCode, 'software')">
                 <xsl:text>service</xsl:text>
-                <xsl:text>create</xsl:text>
+                <xsl:text>software</xsl:text>
             </xsl:when>
             <xsl:when test="contains($scopeCode, 'model')">
                 <xsl:text>service</xsl:text>
-                <xsl:text>generate</xsl:text>
+                <xsl:text>software</xsl:text>
             </xsl:when>
             <xsl:when test="contains($scopeCode, 'service')">
                 <xsl:text>service</xsl:text>
-                <xsl:text>report</xsl:text>
+                <xsl:text>software</xsl:text>
             </xsl:when>
             <xsl:otherwise>
-                <!--xsl:message>Defaulting due to unknown scope code <xsl:value-of select="$scopeCode"></xsl:value-of></xsl:message-->
+                <xsl:text>collection</xsl:text>
+                <xsl:text>dataset</xsl:text>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+    
+    <xsl:template name="getRegistryObjectTypeSubType_Default" as="xs:string*">
+        <xsl:param name="scopeCode"/>
+        <xsl:choose>
+            <xsl:when test="string-length($scopeCode) = 0">
+                <!--xsl:message>Error: empty scope code</xsl:message-->
+            </xsl:when>
+            <xsl:when test="contains($scopeCode, 'publication')">
+                <xsl:text>collection</xsl:text>
+                <xsl:text>publication</xsl:text>
+            </xsl:when>
+            <xsl:when test="contains($scopeCode, 'software')">
+                <xsl:text>collection</xsl:text>
+                <xsl:text>sourceCode</xsl:text>
+            </xsl:when>
+            <xsl:when test="contains($scopeCode, 'model')">
+                <xsl:text>collection</xsl:text>
+                <xsl:text>sourceCode</xsl:text>
+            </xsl:when>
+            <xsl:when test="contains($scopeCode, 'service')">
+                <xsl:text>service</xsl:text>
+                <xsl:text>software</xsl:text>
+            </xsl:when>
+            <xsl:otherwise>
                 <xsl:text>collection</xsl:text>
                 <xsl:text>dataset</xsl:text>
             </xsl:otherwise>
@@ -2241,7 +2273,7 @@
                                         for role
                                         <xsl:value-of select="$role"/>
                                     </xsl:message-->
-                                    <xsl:value-of select="normalize-space(current-grouping-key())"/>
+                                    <xsl:value-of select="normalize-space(custom:formatIndividualName(current-grouping-key()))"/>
                                 </xsl:if>
                             </xsl:when>
                             <xsl:otherwise>
@@ -2252,7 +2284,7 @@
                                         <xsl:value-of select="normalize-space(current-grouping-key())"/> 
                                         for no role
                                     </xsl:message-->
-                                    <xsl:value-of select="normalize-space(current-grouping-key())"/>
+                                    <xsl:value-of select="normalize-space(custom:formatIndividualName(current-grouping-key()))"/>
                                 </xsl:if>
                             </xsl:otherwise>
                         </xsl:choose>
@@ -2320,6 +2352,31 @@
         <xsl:if test="count($metadataTruth_sequence) > 0">
             <xsl:copy-of select="$metadataTruth_sequence[1]"/>
         </xsl:if>
+    </xsl:function>
+    
+    <xsl:function name="custom:formatIndividualName">
+        <xsl:param name="name"/>
+        <xsl:message select="concat('Name before extract:', $name)"/>
+        <xsl:variable name="temp" select="replace($name, '(Miss|Mr|Mrs|Ms|Dr|PhD|Assoc/Prof|Professor|Prof)', '')"/>
+        <xsl:variable name="nameNoTitle" select="normalize-space(translate($temp, '.', ''))"/>
+        <xsl:choose>
+            <xsl:when test="substring($nameNoTitle, string-length($nameNoTitle), 1) = ','">
+                <xsl:message select="concat('Returning without last comma: ', substring($nameNoTitle, 1, string-length($nameNoTitle)-1))"/>
+                <xsl:value-of select="substring($nameNoTitle, 1, string-length($nameNoTitle)-1)"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:choose>
+                    <xsl:when test="contains($nameNoTitle, ', ')">
+                        <xsl:value-of select="concat(normalize-space(substring-after($nameNoTitle, ',')), ' ', normalize-space(substring-before($nameNoTitle, ',')))"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:message select="concat('Returning nameNoTitle: ', $nameNoTitle)"/>
+                        <xsl:value-of select="$nameNoTitle"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+                
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:function>
     
 </xsl:stylesheet>
