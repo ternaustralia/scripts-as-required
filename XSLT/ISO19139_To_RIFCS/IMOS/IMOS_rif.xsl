@@ -1467,7 +1467,9 @@
                 <xsl:if test="string-length($otherConstraints) > 0">
                     <xsl:for-each select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCode']/gmx:codeEntry/gmx:CodeDefinition">
                         <xsl:if test="string-length(normalize-space(gml:remarks)) > 0">
-                            <xsl:if test="contains($otherConstraints, gml:remarks)">
+                            <xsl:if test="(contains($otherConstraints, gml:remarks) and not(starts-with(substring-after($otherConstraints, gml:remarks), '-')))
+                                or 
+                                (contains($otherConstraints, gml:name) and not(starts-with(substring-after($otherConstraints, gml:name), '-')))">
                                 <!--xsl:message>Identifier <xsl:value-of select='gml:identifier'/></xsl:message-->
                                 <!--xsl:message>Remarks <xsl:value-of select='gml:remarks'/></xsl:message-->
                                 <rights>

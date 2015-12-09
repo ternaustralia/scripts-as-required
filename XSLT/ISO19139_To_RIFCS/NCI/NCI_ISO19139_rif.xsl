@@ -22,6 +22,7 @@
     <xsl:param name="global_originatingSource" select="'National Computational Infrastructure'"/> <!-- Only used as originating source if organisation name cannot be determined from Point Of Contact -->
     <xsl:param name="global_group" select="'National Computational Infrastructure'"/> 
     <xsl:param name="global_baseURI" select="'geonetwork.nci.org.au'"/>
+    <xsl:param name="global_path" select="'/geonetwork/srv/eng/catalog.search#/metadata/'"/>
     <xsl:param name="global_ActivityKeyNCI" select="'ncris.innovation.gov.au/activity/20'"/>
     <xsl:variable name="anzsrcCodelist" select="document('anzsrc-codelist.xml')"/>
     <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>
@@ -75,7 +76,7 @@
                     <xsl:value-of select="$metadataURL"/>
                 </xsl:when>
                 <xsl:otherwise>
-                    <xsl:value-of select="concat('http://', $global_baseURI, '/geonetwork/srv/en/metadata.show?uuid=', $fileIdentifier)"/>
+                    <xsl:value-of select="concat('http://', $global_baseURI, $global_path, $fileIdentifier)"/>
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
@@ -1028,7 +1029,7 @@
             <relatedInfo type="collection">
                 <identifier type="uri">
                     <xsl:value-of
-                        select="concat('http://', $global_baseURI, '/geonetwork/srv/en/metadata.show?uuid=', $identifier)"
+                        select="concat('http://', $global_baseURI, $global_path, $identifier)"
                     />
                 </identifier>
                 <relation>
