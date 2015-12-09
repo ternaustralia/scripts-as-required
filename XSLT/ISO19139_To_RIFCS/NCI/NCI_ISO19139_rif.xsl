@@ -137,6 +137,8 @@
                 </xsl:attribute>
                 
                 <xsl:apply-templates select="gmd:fileIdentifier" mode="registryObject_key"/>
+            
+            
 
                 <originatingSource>
                     <xsl:value-of select="$originatingSource"/>    
@@ -165,13 +167,10 @@
                              </xsl:attribute>
                         </xsl:if>
                        
-                        <xsl:apply-templates select="gmd:fileIdentifier" 
-                            mode="registryObject_identifier"/>
+                        <xsl:copy-of select="custom:set_registryObject_identifier(gmd:fileIdentifier)"/>
+                        <xsl:copy-of select="custom:set_registryObject_identifier(descendant::gmd:citation/gmd:identifier/gmd:MD_Identifier/gmd:code)"/>
+                        <xsl:copy-of select="custom:set_registryObject_identifier($locationURL)"/>
                         
-                        <xsl:apply-templates select="
-                            descendant::gmd:citation/gmd:CI_Citation/gmd:identifier[ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification]" 
-                            mode="registryObject_identifier"/>
-    
                         <xsl:apply-templates
                             select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions"
                             mode="registryObject_identifier"/>
@@ -182,6 +181,8 @@
     
                         <xsl:apply-templates select="gmd:parentIdentifier"
                             mode="registryObject_related_object"/>
+                        
+                        
     
                         <xsl:copy-of select="custom:set_registryObject_location_metadata($locationURL)"/>
                         <xsl:copy-of select="custom:set_registryObject_location_metadata($dataSetURI)"/>
@@ -350,35 +351,17 @@
         </key>
     </xsl:template>
 
-   <!-- RegistryObject - Identifier Element  -->
-    <xsl:template match="gmd:fileIdentifier" mode="registryObject_identifier">
-        <xsl:variable name="identifier" select="normalize-space(.)"/>
+    <xsl:function name="custom:set_registryObject_identifier">
+        <xsl:param name="identifier"/>
+        
         <xsl:if test="string-length($identifier) > 0">
             <identifier>
                 <xsl:attribute name="type">
-                    <xsl:text>local</xsl:text>
-                </xsl:attribute>
-                <xsl:value-of select="$identifier"/>
-            </identifier>
-            <identifier>
-                <xsl:attribute name="type">
-                    <xsl:text>global</xsl:text>
-                </xsl:attribute>
-                <xsl:value-of select="concat($global_acronym,'/', $identifier)"/>
-            </identifier>
-        </xsl:if>
-    </xsl:template>
-    
-    <xsl:template match="gmd:identifier" mode="registryObject_identifier">
-        <xsl:variable name="code" select="normalize-space(gmd:MD_Identifier/gmd:code)"></xsl:variable>
-        <xsl:if test="string-length($code) > 0">
-            <identifier>
-                <xsl:attribute name="type">
                     <xsl:choose>
-                        <xsl:when test="contains(lower-case($code), 'doi')">
+                        <xsl:when test="contains(lower-case($identifier), 'doi')">
                             <xsl:text>doi</xsl:text>
                         </xsl:when>
-                        <xsl:when test="contains(lower-case($code), 'http')">
+                        <xsl:when test="contains(lower-case($identifier), 'http')">
                             <xsl:text>uri</xsl:text>
                         </xsl:when>
                         <xsl:otherwise>
@@ -386,11 +369,12 @@
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:attribute>
-                <xsl:value-of select="$code"/>
+                <xsl:value-of select="$identifier"/>
             </identifier>
         </xsl:if>
-    </xsl:template>
-
+    </xsl:function>
+    
+   
     <!-- RegistryObject - Identifier Element  -->
     <xsl:template match="gmd:MD_DigitalTransferOptions" mode="registryObject_identifier">
         <xsl:for-each select="gmd:onLine/gmd:CI_OnlineResource">
