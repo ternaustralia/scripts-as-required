@@ -17,7 +17,6 @@
     <!-- stylesheet to convert iso19139 in OAI-PMH ListRecords response to RIF-CS -->
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
-    <xsl:param name="global_defaultOriginatingSource" select="'external'"/>
     <xsl:param name="global_acronym" select="'NCI'"/>
     <xsl:param name="global_originatingSource" select="'National Computational Infrastructure'"/> <!-- Only used as originating source if organisation name cannot be determined from Point Of Contact -->
     <xsl:param name="global_group" select="'National Computational Infrastructure'"/> 
@@ -27,7 +26,7 @@
     <xsl:variable name="anzsrcCodelist" select="document('anzsrc-codelist.xml')"/>
     <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>
     <xsl:variable name="gmdCodelists" select="document('codelists.xml')"/>
-     <xsl:template match="oai:responseDate"/>
+    <xsl:template match="oai:responseDate"/>
     <xsl:template match="oai:request"/>
     <xsl:template match="oai:error"/>
     <xsl:template match="oai:GetRecord/oai:record/oai:header/oai:identifier"/>
@@ -58,46 +57,7 @@
 
     <xsl:template match="gmd:MD_Metadata">
 
-        <xsl:variable name="metadataURL" select="custom:getMetadataURL(gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions)"/>
-        <xsl:variable name="fileIdentifier"><xsl:value-of select="gmd:fileIdentifier"/></xsl:variable>
-        
-        <xsl:variable name="crsCode">
-            <xsl:variable name="referenceCodeSpace" select="gmd:referenceSystemInfo/gmd:MD_ReferenceSystem/gmd:referenceSystemIdentifier/gmd:RS_Identifier/gmd:codeSpace"/>
-            <xsl:if test="contains(lower-case($referenceCodeSpace), 'crs')">
-                <xsl:value-of select="gmd:referenceSystemInfo/gmd:MD_ReferenceSystem/gmd:referenceSystemIdentifier/gmd:RS_Identifier/gmd:code"/>
-            </xsl:if>
-        </xsl:variable>
-        
-        <xsl:variable name="dateStamp" select="gmd:dateStamp/gco:Date"/>
-        
-        <xsl:variable name="locationURL">
-            <xsl:choose>
-                <xsl:when test="string-length($metadataURL) > 0">
-                    <xsl:value-of select="$metadataURL"/>
-                </xsl:when>
-                <xsl:otherwise>
-                    <xsl:value-of select="concat('http://', $global_baseURI, $global_path, $fileIdentifier)"/>
-                </xsl:otherwise>
-            </xsl:choose>
-        </xsl:variable>
-        
-        <xsl:variable name="dataSetURI" select="gmd:dataSetURI"/>
-        
-        <xsl:variable name="scopeCode">
-            <xsl:choose>
-                <xsl:when test="string-length(normalize-space(gmd:hierarchyLevel/gmx:MX_ScopeCode/@codeListValue)) > 0">
-                    <xsl:value-of select="normalize-space(gmd:hierarchyLevel/gmx:MX_ScopeCode/@codeListValue)"/>
-                </xsl:when>
-                <xsl:when test="string-length(normalize-space(gmd:hierarchyLevel/gmd:MD_ScopeCode/@codeListValue)) > 0">
-                    <xsl:value-of select="normalize-space(gmd:hierarchyLevel/gmd:MD_ScopeCode/@codeListValue)"/>
-                </xsl:when>
-                <xsl:otherwise>
-                    <xsl:text>dataset</xsl:text>
-                </xsl:otherwise>
-            </xsl:choose>
-        </xsl:variable>
-        
-        <xsl:variable name="pointOfContactNode_sequence" as="node()*">
+       <xsl:variable name="pointOfContactNode_sequence" as="node()*">
             <xsl:copy-of select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:pointOfContact"/>
             <xsl:copy-of select="gmd:identificationInfo/gmd:MD_ServiceIdentification/gmd:pointOfContact"/>
         </xsl:variable>
@@ -106,31 +66,58 @@
         
         <xsl:variable name="distributorContactNode_sequence" as="node()*" select="gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact"/>
         
-        <xsl:variable name="originatingSource">
-            <xsl:variable name="originatingSource_sequence" as="xs:string*">
+        <xsl:variable name="citedResponsibleParty_sequence" as="node()*" select="gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty"/>
+        
+        <xsl:variable name="publisher">
+            
+            <xsl:variable name="publisherName_sequence" as="xs:string*">
                 
-                <xsl:for-each select="$contactNode_sequence">
-                    <xsl:variable name="contact" select="." as="node()"/>
-                    <xsl:copy-of select="custom:getOrganisationNameSequence($contact, null)"/>  
-                </xsl:for-each>
+                <xsl:if test="$citedResponsibleParty_sequence and (count($citedResponsibleParty_sequence) > 0)">
+                    <xsl:for-each select="$citedResponsibleParty_sequence">
+                        <xsl:copy-of  select="custom:getOrganisationNameNoIndividualSequence(., 'publisher')"/>  
+                    </xsl:for-each>
+                </xsl:if>
                 
                 <xsl:for-each select="$pointOfContactNode_sequence">
-                    <xsl:variable name="pointOfContact" select="." as="node()"/>
-                    <xsl:copy-of select="custom:getOrganisationNameSequence($pointOfContact, null)"/>  
+                    <xsl:copy-of select="custom:getOrganisationNameNoIndividualSequence(., 'publisher')"/>
+                </xsl:for-each>
+                
+                <xsl:for-each select="$contactNode_sequence">
+                    <xsl:copy-of select="custom:getOrganisationNameNoIndividualSequence(., 'publisher')"/>
                 </xsl:for-each>
             </xsl:variable>
             
-            <xsl:choose>
-                <xsl:when test="count($originatingSource_sequence) > 0">
-                    <xsl:value-of select="$originatingSource_sequence[1]"/>
-                </xsl:when>
-                <xsl:otherwise>
-                    <xsl:value-of select="$global_originatingSource"/>
-                </xsl:otherwise>
-            </xsl:choose>
+            <xsl:if test="count($publisherName_sequence) > 0">
+                <xsl:value-of select="$publisherName_sequence[1]"/>
+            </xsl:if>
+           
         </xsl:variable>
         
-        
+        <xsl:variable name="owner">
+            
+            <xsl:variable name="ownerName_sequence" as="xs:string*">
+                
+                <xsl:variable name="role_sequence" select="publisher, owner" as="xs:string*"/>
+                <xsl:if test="$citedResponsibleParty_sequence and (count($citedResponsibleParty_sequence) > 0)">
+                    <xsl:for-each select="$citedResponsibleParty_sequence">
+                        <xsl:copy-of  select="custom:getOrganisationNameNoIndividualSequence(., $role_sequence)"/>  
+                    </xsl:for-each>
+                </xsl:if>
+                
+                <xsl:for-each select="$pointOfContactNode_sequence">
+                    <xsl:copy-of select="custom:getOrganisationNameNoIndividualSequence(., $role_sequence)"/>
+                </xsl:for-each>
+                
+                <xsl:for-each select="$contactNode_sequence">
+                    <xsl:copy-of select="custom:getOrganisationNameNoIndividualSequence(., $role_sequence)"/>
+                </xsl:for-each>
+            </xsl:variable>
+            
+            <xsl:if test="count($ownerName_sequence) > 0">
+                <xsl:value-of select="$ownerName_sequence[1]"/>
+            </xsl:if>
+        </xsl:variable>
+      
         <registryObject>
                 <xsl:attribute name="group">
                     <xsl:value-of select="$global_group"/>    
@@ -138,22 +125,20 @@
                 
                 <xsl:apply-templates select="gmd:fileIdentifier" mode="registryObject_key"/>
             
-            
-
-                <originatingSource>
-                    <xsl:value-of select="$originatingSource"/>    
+               <originatingSource>
+                   <xsl:choose>
+                       <xsl:when test="string-length($owner) > 0">
+                           <xsl:value-of select="$owner"/>    
+                       </xsl:when>
+                       <xsl:otherwise>
+                            <xsl:value-of select="$global_originatingSource"/>    
+                       </xsl:otherwise>
+                   </xsl:choose>
                 </originatingSource>
                 
-                <xsl:variable name="metadataCreationDate">
-                    <xsl:if test="string-length(normalize-space(gmd:dateStamp/gco:Date)) > 0">
-                        <xsl:value-of select="normalize-space(gmd:dateStamp/gco:Date)"/>
-                    </xsl:if>
-                    <xsl:if test="string-length(normalize-space(gmd:dateStamp/gco:DateTime)) > 0">
-                        <xsl:value-of select="normalize-space(gmd:dateStamp/gco:DateTime)"/>
-                    </xsl:if>
-                </xsl:variable>
                 
-                <xsl:variable name="registryObjectTypeSubType_sequence" as="xs:string*" select="custom:getRegistryObjectTypeSubType($scopeCode)"/>
+            <xsl:variable name="registryObjectTypeSubType_sequence" as="xs:string*" select="custom:getRegistryObjectTypeSubType(gmd:hierarchyLevel/*[name()[contains(lower-case(.),'scopecode')]]/@codeListValue)"/>
+            
                 <xsl:if test="(count($registryObjectTypeSubType_sequence) = 2)">
                     <xsl:element name="{$registryObjectTypeSubType_sequence[1]}">
     
@@ -162,43 +147,44 @@
                         </xsl:attribute>
                         
                         <xsl:if test="$registryObjectTypeSubType_sequence[1] = 'collection'">
-                             <xsl:attribute name="dateAccessioned">
-                                 <xsl:value-of select="$dateStamp"/>
-                             </xsl:attribute>
+                            <xsl:if test="
+                                (count(gmd:dateStamp/*[name()[contains(lower-case(.),'date')]]) > 0) and 
+                                (string-length(gmd:dateStamp/*[name()[contains(lower-case(.),'date')]][1]) > 0)">
+                                <xsl:attribute name="dateAccessioned">
+                                    <xsl:value-of select="gmd:dateStamp/*[name()[contains(lower-case(.),'date')]][1]"/>
+                                </xsl:attribute>  
+                            </xsl:if>
+                            
                         </xsl:if>
                        
-                        <xsl:copy-of select="custom:set_registryObject_identifier(gmd:fileIdentifier)"/>
-                        <xsl:copy-of select="custom:set_registryObject_identifier(descendant::gmd:citation/gmd:identifier/gmd:MD_Identifier/gmd:code)"/>
-                        <xsl:copy-of select="custom:set_registryObject_identifier($locationURL)"/>
+                        <xsl:apply-templates select="gmd:fileIdentifier" mode="registryObject_identifier"/>
                         
                         <xsl:apply-templates
                             select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions"
                             mode="registryObject_identifier"/>
     
                         <xsl:apply-templates
-                            select="descendant::gmd:citation/gmd:CI_Citation/gmd:title[ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification]"
+                            select="gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]/gmd:citation/gmd:CI_Citation/gmd:title"
                             mode="registryObject_name"/>
     
                         <xsl:apply-templates select="gmd:parentIdentifier"
                             mode="registryObject_related_object"/>
                         
                         
+                        <xsl:apply-templates select="gmd:fileIdentifier" mode="registryObject_location_metadata"/>
     
-                        <xsl:copy-of select="custom:set_registryObject_location_metadata($locationURL)"/>
-                        <xsl:copy-of select="custom:set_registryObject_location_metadata($dataSetURI)"/>
-                                               
                         <xsl:for-each-group
-                            select="descendant::gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification) and (string-length(normalize-space(gmd:individualName))) > 0] |
+                            select="gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) > 0] |
                             gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) > 0] |
-                            descendant::gmd:pointOfContact/gmd:CI_ResponsibleParty[(ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification) and (string-length(normalize-space(gmd:individualName))) > 0]"
+                            gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]/gmd:pointOfContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) > 0]"
                             group-by="gmd:individualName">
                             <xsl:apply-templates select="." mode="registryObject_related_object"/>
                         </xsl:for-each-group>
     
                         <xsl:for-each-group
-                            select="descendant::gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification) and ((string-length(normalize-space(gmd:organisationName))) > 0) and ((string-length(normalize-space(gmd:individualName))) = 0)] |
+                            select="gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[((string-length(normalize-space(gmd:organisationName))) > 0) and ((string-length(normalize-space(gmd:individualName))) = 0)] |
                             gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[((string-length(normalize-space(gmd:organisationName))) > 0) and ((string-length(normalize-space(gmd:individualName))) = 0)] |
-                            descendant::gmd:pointOfContact/gmd:CI_ResponsibleParty[(ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification) and ((string-length(normalize-space(gmd:organisationName))) > 0) and ((string-length(normalize-space(gmd:individualName))) = 0)]"
+                            gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]/gmd:pointOfContact/gmd:CI_ResponsibleParty[((string-length(normalize-space(gmd:organisationName))) > 0) and ((string-length(normalize-space(gmd:individualName))) = 0)]"
                             group-by="gmd:organisationName">
                             <xsl:apply-templates select="." mode="registryObject_related_object"/>
                         </xsl:for-each-group>
@@ -207,11 +193,11 @@
                             mode="registryObject_related_object"/>
     
                         <xsl:apply-templates
-                            select="descendant::gmd:topicCategory/gmd:MD_TopicCategoryCode[ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification]"
+                            select="gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]/gmd:topicCategory/gmd:MD_TopicCategoryCode"
                             mode="registryObject_subject"/>
                         
                         <xsl:apply-templates
-                            select="descendant::gmd:topicCategory/gmd:MD_TopicCategoryCode[ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification]"
+                            select="gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]/gmd:topicCategory/gmd:MD_TopicCategoryCode"
                             mode="registryObject_subject"/>
     
                         <xsl:apply-templates
@@ -223,38 +209,42 @@
                             mode="registryObject_subject"/>
     
                        <xsl:apply-templates
-                            select="descendant::gmd:abstract[ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification]"
+                           select="gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]/gmd:abstract"
                             mode="registryObject_description_brief"/>
     
                         <xsl:apply-templates
-                            select="descendant::gmd:purpose[ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification]"
+                            select="gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]/gmd:purpose"
                             mode="registryObject_description_notes"/>
                         
                         <xsl:apply-templates
-                            select="descendant::gmd:credit[ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification]"
+                            select="gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]/gmd:credit"
                             mode="registryObject_description_notes"/>
-                                                
+                       
                         <xsl:call-template name="set_registryObject_coverage_spatial">
-                            <xsl:with-param name="boundingBox" select="descendant::gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_GeographicBoundingBox[ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification]"/>
-                            <xsl:with-param name="crsCode" select="$crsCode"/>
+                            <xsl:with-param name="boundingBox" select="gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]/gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_GeographicBoundingBox"/>
+                            <xsl:with-param name="crsCode" select="gmd:referenceSystemInfo/gmd:MD_ReferenceSystem/gmd:referenceSystemIdentifier/gmd:RS_Identifier/gmd:code[contains(lower-case(following-sibling::gmd:codeSpace), 'crs')]"/>
                         </xsl:call-template>
                         
                         <xsl:call-template name="set_registryObject_coverage_spatial">
-                            <xsl:with-param name="boundingBox" select="descendant::gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_BoundingPolygon[ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification]"/>
-                            <xsl:with-param name="crsCode" select="$crsCode"/>
+                            <xsl:with-param name="boundingBox" select="gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]/gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_BoundingPolygon"/>
+                            <xsl:with-param name="crsCode" select="gmd:referenceSystemInfo/gmd:MD_ReferenceSystem/gmd:referenceSystemIdentifier/gmd:RS_Identifier/gmd:code[contains(lower-case(following-sibling::gmd:codeSpace), 'crs')]"/>
                         </xsl:call-template>
     
                        <xsl:apply-templates
-                           select="descendant::gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent[ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification]"
+                           select="gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]/gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent"
                             mode="registryObject_coverage_temporal"/>
                         
                         <xsl:apply-templates
-                            select="descendant::gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent[ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification]"
+                            select="gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]/gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent"
                             mode="registryObject_coverage_temporal_period"/>
     
                         <xsl:apply-templates
                             select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions"
                             mode="registryObject_relatedInfo"/>
+                        
+                        <xsl:apply-templates
+                            select="gmd:dataSetURI"
+                            mode="registryObject_relatedInfo_data_via_service"/>
                         
                         <xsl:apply-templates
                             select="gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:source/gmd:LI_Source[string-length(gmd:sourceCitation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier/gmd:code) > 0]"
@@ -264,46 +254,45 @@
                             mode="registryObject_relatedInfo"/>
     
                         <xsl:apply-templates
-                            select="descendant::gmd:resourceConstraints/gmd:MD_CreativeCommons[(ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification) and exists(gmd:licenseLink)]"
+                            select="gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]/gmd:resourceConstraints/gmd:MD_CreativeCommons[exists(gmd:licenseLink)]"
                             mode="registryObject_rights_licence_creative"/>
     
                         <xsl:apply-templates
-                            select="descendant::gmd:resourceConstraints/gmd:MD_CreativeCommons[ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification]"
+                            select="gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]/gmd:resourceConstraints/gmd:MD_CreativeCommons"
                             mode="registryObject_rights_rightsStatement_creative"/>
     
                         <xsl:apply-templates
-                            select="descendant::gmd:resourceConstraints/gmd:MD_Commons[(ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification) and exists(gmd:licenseLink)]"
+                            select="gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]/gmd:resourceConstraints/gmd:MD_Commons[exists(gmd:licenseLink)]"
                             mode="registryObject_rights_licence_creative"/>
                         
                         <xsl:apply-templates
-                            select="descendant::gmd:resourceConstraints/gmd:MD_Commons[ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification]"
+                            select="gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]/gmd:resourceConstraints/gmd:MD_Commons"
                             mode="registryObject_rights_rightsStatement_creative"/>
                         
                         <xsl:apply-templates
-                            select="descendant::gmd:resourceConstraints/gmd:MD_LegalConstraints[ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification]"
+                            select="gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]/gmd:resourceConstraints/gmd:MD_LegalConstraints"
                             mode="registryObject_rights_rights"/>
     
                         <xsl:apply-templates
-                           select="descendant::gmd:resourceConstraints/gmd:MD_Constraints[ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification]"
+                            select="gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]/gmd:resourceConstraints/gmd:MD_Constraints"
                             mode="registryObject_rights_rights"/>
                         
                         <xsl:if test="$registryObjectTypeSubType_sequence[1] = 'collection'">
                           
                             <xsl:apply-templates
-                                select="descendant::gmd:citation/gmd:CI_Citation/gmd:date[ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification]"
+                                select="gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]/gmd:citation/gmd:CI_Citation/gmd:date"
                                  mode="registryObject_dates"/>
                              
+                             
                              <xsl:for-each
-                                 select="descendant::gmd:citation/gmd:CI_Citation[ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification]">
-                                 <xsl:call-template name="registryObject_citationMetadata_citationInfo">
-                                     <xsl:with-param name="locationURL" select="$locationURL"/>
-                                     <xsl:with-param name="originatingSource" select="$originatingSource"/>
-                                     <xsl:with-param name="citation" select="."/>
+                                 select="gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]/gmd:citation/gmd:CI_Citation">
+                                 
+                                <xsl:call-template name="registryObject_citationMetadata_citationInfo">
                                      <xsl:with-param name="contactNode_sequence" select="$contactNode_sequence" as="node()*"/>
                                      <xsl:with-param name="pointOfContactNode_sequence" select="$pointOfContactNode_sequence" as="node()*"/>
                                      <xsl:with-param name="distributorContactNode_sequence" select="$distributorContactNode_sequence" as="node()*"/>
-                                     <xsl:with-param name="metadataCreationDate" select="$metadataCreationDate"/>
-                                 </xsl:call-template>
+                                     <xsl:with-param name="publisher" select="$publisher" as="xs:string"/>
+                                  </xsl:call-template>
                              </xsl:for-each>
                         </xsl:if>
                     </xsl:element>
@@ -315,26 +304,27 @@
             <!-- =========================================== -->
 
             <xsl:for-each-group
-                select="descendant::gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification) and(string-length(normalize-space(gmd:individualName))) > 0] |
+                select="gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) > 0] |
                 gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) > 0] |
                 descendant::gmd:pointOfContact/gmd:CI_ResponsibleParty[(ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification) and (string-length(normalize-space(gmd:individualName))) > 0]"
                 group-by="gmd:individualName">
                 <xsl:call-template name="party">
                     <xsl:with-param name="type">person</xsl:with-param>
-                    <xsl:with-param name="originatingSource" select="$originatingSource"/>
-                </xsl:call-template>
+                    <xsl:with-param name="owner" select="$owner"/>
+                 </xsl:call-template>
             </xsl:for-each-group>
 
             <xsl:for-each-group
-                select="descendant::gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification) and (string-length(normalize-space(gmd:organisationName))) > 0] |
+                select="gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName))) > 0] |
                 gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName))) > 0] |
                 descendant::gmd:pointOfContact/gmd:CI_ResponsibleParty[(ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification) and (string-length(normalize-space(gmd:organisationName))) > 0]"
                 group-by="gmd:organisationName">
                 <xsl:call-template name="party">
                     <xsl:with-param name="type">group</xsl:with-param>
-                    <xsl:with-param name="originatingSource" select="$originatingSource"/>
-                </xsl:call-template>
+                    <xsl:with-param name="owner" select="$owner"/>
+                 </xsl:call-template>
             </xsl:for-each-group>
+        
 
         <!--/xsl:if-->
 
@@ -347,33 +337,20 @@
     <!-- RegistryObject - Key Element  -->
     <xsl:template match="gmd:fileIdentifier" mode="registryObject_key">
         <key>
-            <xsl:value-of select="concat($global_acronym,'/', normalize-space(.))"/>
+            <xsl:value-of select="concat($global_acronym, '/', normalize-space(.))"/>
         </key>
     </xsl:template>
 
-    <xsl:function name="custom:set_registryObject_identifier">
-        <xsl:param name="identifier"/>
-        
-        <xsl:if test="string-length($identifier) > 0">
-            <identifier>
-                <xsl:attribute name="type">
-                    <xsl:choose>
-                        <xsl:when test="contains(lower-case($identifier), 'doi')">
-                            <xsl:text>doi</xsl:text>
-                        </xsl:when>
-                        <xsl:when test="contains(lower-case($identifier), 'http')">
-                            <xsl:text>uri</xsl:text>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <xsl:text>local</xsl:text>
-                        </xsl:otherwise>
-                    </xsl:choose>
-                </xsl:attribute>
-                <xsl:value-of select="$identifier"/>
+    <xsl:template match="gmd:fileIdentifier" mode="registryObject_identifier">
+        <xsl:if test="string-length(normalize-space(.)) > 0">
+            <identifier type="local">
+                <xsl:value-of select="."/>
+            </identifier>
+            <identifier type="uri">
+                <xsl:value-of select="concat('http://', $global_baseURI, $global_path, .)"/>
             </identifier>
         </xsl:if>
-    </xsl:function>
-    
+    </xsl:template>
    
     <!-- RegistryObject - Identifier Element  -->
     <xsl:template match="gmd:MD_DigitalTransferOptions" mode="registryObject_identifier">
@@ -491,6 +468,23 @@
             </location>
         </xsl:if>
     </xsl:function>
+    
+    <xsl:template match="gmd:fileIdentifier" mode="registryObject_location_metadata">
+        <xsl:if test="string-length(normalize-space(.)) > 0">
+            <location>
+                <address>
+                    <electronic>
+                        <xsl:attribute name="type">
+                            <xsl:text>url</xsl:text>
+                        </xsl:attribute>
+                        <value>
+                            <xsl:value-of select="concat('http://', $global_baseURI, $global_path, .)"/>
+                        </value>
+                    </electronic>
+                </address>
+            </location>
+        </xsl:if>
+    </xsl:template>
     
     <!-- RegistryObject - Related Object (Organisation or Individual) Element -->
     <xsl:template match="gmd:CI_ResponsibleParty" mode="registryObject_related_object">
@@ -668,7 +662,7 @@
     <xsl:template name="set_registryObject_coverage_spatial">
         <xsl:param name="boundingBox" as="node()*"/>
         <xsl:param name="crsCode"/>
-        <xsl:for-each select="$boundingBox">
+         <xsl:for-each select="$boundingBox">
             <xsl:if test="string-length(normalize-space(gmd:northBoundLatitude/gco:Decimal)) > 0"/>
             <xsl:if
                  test="
@@ -970,6 +964,23 @@
         </xsl:for-each>
     </xsl:template>
     
+    <xsl:template match="gmd:dataSetURI" mode="registryObject_relatedInfo_data_via_service">
+        <xsl:variable name="dataAccessLink" select="normalize-space(.)"/>
+        <xsl:if test="contains($dataAccessLink, 'thredds/catalog')">
+            <relatedInfo type="service">
+                <identifier type="uri">
+                    <xsl:value-of select="concat(substring-before($dataAccessLink, 'thredds/catalog'), 'thredds/catalog.html')"/>
+                </identifier>
+                <relation type="supports">
+                    <description>Data via the thredds server</description>
+                    <url><xsl:value-of select="$dataAccessLink"/></url>
+                </relation>
+                <title>thredds server</title>
+            </relatedInfo>
+        </xsl:if>
+    </xsl:template>
+    
+    
     <xsl:template match="gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:source/gmd:LI_Source" mode="registryObject_relatedInfo">
         <xsl:variable name="relatedType_sequence" as="xs:string*">
             <xsl:call-template name="getRelatedInfoTypeRelationship">
@@ -1193,19 +1204,14 @@
     </xsl:function>
     <!-- RegistryObject - CitationInfo Element -->
     <xsl:template name="registryObject_citationMetadata_citationInfo">
-        <xsl:param name="locationURL"/>
-        <xsl:param name="originatingSource"/>
-        <xsl:param name="citation"/>
-        <xsl:param name="contactNode_sequence" as="node()*"/>
+       <xsl:param name="contactNode_sequence" as="node()*"/>
         <xsl:param name="pointOfContactNode_sequence" as="node()*"/>
         <xsl:param name="distributorContactNode_sequence" as="node()*"/>
-        <xsl:param name="metadataCreationDate"/>
+        <xsl:param name="publisher" as="xs:string"/>
+         
+         <!-- Attempt to obtain contributor names; only construct citation if we have contributor names -->
         
-        <xsl:variable name="CI_Citation" select="." as="node()"></xsl:variable>
-        <xsl:variable name="citedResponsibleParty_sequence" select="$CI_Citation/gmd:citedResponsibleParty" as="node()*"></xsl:variable>
-        
-        <!-- Attempt to obtain contributor names; only construct citation if we have contributor names -->
-        
+        <xsl:variable name="citedResponsibleParty_sequence" select="gmd:citedResponsibleParty" as="node()*"/>
         <xsl:variable name="principalInvestigatorName_sequence" as="xs:string*">
             <xsl:if test="$citedResponsibleParty_sequence and (count($citedResponsibleParty_sequence) > 0)">
                 <xsl:for-each select="$citedResponsibleParty_sequence">
@@ -1384,7 +1390,7 @@
                     <xsl:value-of select="$doiIdentifier_sequence[1]"/>   
                 </xsl:when>
                 <xsl:otherwise>
-                    <xsl:value-of select="$locationURL"/>
+                    <xsl:value-of select="concat('http://', $global_baseURI, $global_path, ancestor::gmd:MD_Metadata/gmd:fileIdentifier)"/>
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
@@ -1398,7 +1404,6 @@
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
-        
         
         <xsl:if test="count($allContributorName_sequence) > 0">
            <citationInfo>
@@ -1452,7 +1457,7 @@
                         </xsl:if>
                     </xsl:variable>
                     
-                    <xsl:choose>
+                     <xsl:choose>
                         <xsl:when test="(string-length($dateType) > 0) and (string-length($dateValue) > 0)">
                             <date>
                                 <xsl:attribute name="type">
@@ -1461,25 +1466,20 @@
                                 <xsl:value-of select="$dateValue"/>
                             </date>
                         </xsl:when>
-                        <xsl:otherwise>
-                            <xsl:if test="string-length($metadataCreationDate) > 3">
-                                <date>
-                                    <xsl:attribute name="type">
-                                        <xsl:text>publicationDate</xsl:text>
-                                    </xsl:attribute>
-                                    <xsl:value-of select="substring($metadataCreationDate, 1, 4)"/>
-                                </date>
-                            </xsl:if>
-                        </xsl:otherwise>
+                        <xsl:when test="
+                            (count(ancestor::gmd:MD_Metadata/gmd:dateStamp/*[name()[contains(lower-case(.),'date')]]) > 0) and
+                            (string-length(ancestor::gmd:MD_Metadata/gmd:dateStamp/*[name()[contains(lower-case(.),'date')]][1]) > 3)">
+                            <date>
+                                <xsl:attribute name="type">
+                                    <xsl:text>publicationDate</xsl:text>
+                                </xsl:attribute>
+                                <xsl:value-of select="substring(ancestor::gmd:MD_Metadata/gmd:dateStamp/*[name()[contains(lower-case(.),'date')]][1], 1, 4)"/>
+                            </date>
+                        </xsl:when>
+                       
                     </xsl:choose>
                     
-                    <xsl:variable name="publisherToUse">
-                        <xsl:if test="count($publisherName_sequence) > 0">
-                            <xsl:copy-of select="$publisherName_sequence[1]"/>
-                        </xsl:if>
-                    </xsl:variable>
-                    
-                    <!-- If there is more than one contributor, and publisher 
+                  <!-- If there is more than one contributor, and publisher 
                         name is within contributor list, remove it -->
                     
                     <xsl:choose>
@@ -1487,7 +1487,7 @@
                             <xsl:for-each select="distinct-values($allContributorName_sequence)">
                                 <xsl:if test="
                                     (count(distinct-values($allContributorName_sequence)) = 1) or
-                                    ($publisherToUse != .)">
+                                    ($publisher != .)">
                                     <contributor>
                                         <namePart>
                                             <xsl:value-of select="."/>
@@ -1499,37 +1499,9 @@
                     </xsl:choose>
                     
                     
-                    <!-- <xsl:variable name="publisherToUse">
-                        <xsl:choose>
-                            <xsl:when test="count($publisherName_sequence) > 0">
-                                <xsl:copy-of select="$publisherName_sequence[1]"/>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:choose>
-                                    <xsl:when test="count($custodianName_sequence) > 0">
-                                        <xsl:copy-of select="$custodianName_sequence[1]"/>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:choose>
-                                            <xsl:when test="count($resourceProviderName_sequence) > 0">
-                                                <xsl:copy-of select="$resourceProviderName_sequence[1]"/>
-                                            </xsl:when>
-                                            <xsl:otherwise>
-                                                <xsl:if test="count($distributorName_sequence) > 0">
-                                                    <xsl:copy-of select="distributorName_sequence[1]"/>
-                                                </xsl:if>
-                                            </xsl:otherwise>
-                                        </xsl:choose>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                    </xsl:variable>
-                    -->
-                    
-                    <xsl:if test="string-length($publisherToUse) > 0">
+                    <xsl:if test="string-length($publisher) > 0">
                         <publisher>
-                            <xsl:copy-of select="$publisherToUse"/>
+                            <xsl:copy-of select="$publisher"/>
                         </publisher>
                     </xsl:if>
                     
@@ -1547,83 +1519,88 @@
     <!-- Party Registry Object (Individuals (person) and Organisations (group)) -->
     <xsl:template name="party">
         <xsl:param name="type"/>
-        <xsl:param name="originatingSource"/>
-        <xsl:choose>
-            <xsl:when test="boolean(custom:createObject(translate(normalize-space(current-grouping-key()),' ','')))">
+        <xsl:param name="owner"/>
+          
+        <registryObject group="{$global_group}">
+
+        <xsl:message select="concat('Creating key: ', translate(normalize-space(current-grouping-key()),' ',''))"/>
+        <xsl:message select="concat('Individual name: ', gmd:individualName)"/>
+        <xsl:message select="concat('Organisation name: ', gmd:organisationName)"/>
         
-                <registryObject group="{$global_group}">
-     
-                 <key>
-                     <xsl:value-of
-                         select="concat($global_acronym, '/', translate(normalize-space(current-grouping-key()),' ',''))"
-                     />
-                 </key>
-     
-                 <originatingSource>
-                     <xsl:value-of select="$originatingSource"/>
-                 </originatingSource>
-     
-                 <party type="{$type}">
-                     <name type="primary">
-                         <namePart>
-                             <xsl:value-of select="normalize-space(current-grouping-key())"/>
-                         </namePart>
-                     </name>
-     
-                     <!-- If we have are dealing with individual who has an organisation name:
-                         - leave out the address (so that it is on the organisation only); and 
-                         - relate the individual to the organisation -->
-     
-                     <!-- If we are dealing with an individual...-->
+        <key>
+            <xsl:value-of select="concat($global_acronym, '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
+        </key>
+       
+        <originatingSource>
+            <xsl:choose>
+                <xsl:when test="string-length($owner) > 0">
+                    <xsl:value-of select="$owner"/>    
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="$global_originatingSource"/>    
+                </xsl:otherwise>
+            </xsl:choose>
+        </originatingSource>
+
+         <party type="{$type}">
+             <name type="primary">
+                 <namePart>
+                     <xsl:value-of select="normalize-space(current-grouping-key())"/>
+                 </namePart>
+             </name>
+
+             <!-- If we have are dealing with individual who has an organisation name:
+                 - leave out the address (so that it is on the organisation only); and 
+                 - relate the individual to the organisation -->
+
+             <!-- If we are dealing with an individual...-->
+             <xsl:choose>
+                 <xsl:when test="contains(lower-case($type), 'person')">
                      <xsl:choose>
-                         <xsl:when test="contains(lower-case($type), 'person')">
-                             <xsl:choose>
-                                 <xsl:when
-                                     test="string-length(normalize-space(gmd:organisationName)) > 0">
-                                     <!--  Individual has an organisation name, so relate the individual to the organisation, and omit the address 
-                                             (the address will be included within the organisation to which this individual is related) -->
-                                     <relatedObject>
-                                         <key>
-                                             <xsl:value-of
-                                                 select="concat($global_acronym,'/', translate(normalize-space(gmd:organisationName),' ',''))"
-                                             />
-                                         </key>
-                                         <relation type="isMemberOf"/>
-                                     </relatedObject>
-                                 </xsl:when>
-     
-                                 <xsl:otherwise>
-                                     <!-- Individual does not have an organisation name, so physicalAddress must pertain this individual -->
-                                     <xsl:call-template name="physicalAddress"/>
-                                 </xsl:otherwise>
-                             </xsl:choose>
-                             
-                             <!-- Individual - Phone and email on the individual, regardless of whether there's an organisation name -->
-                             <xsl:call-template name="onlineResource"/>
-                             <xsl:call-template name="telephone"/>
-                             <xsl:call-template name="facsimile"/>
-                             <xsl:call-template name="email"/>
-                             
+                         <xsl:when
+                             test="string-length(normalize-space(gmd:organisationName)) > 0">
+                             <!--  Individual has an organisation name, so relate the individual to the organisation, and omit the address 
+                                     (the address will be included within the organisation to which this individual is related) -->
+                             <relatedObject>
+                                 <key>
+                                     <xsl:value-of
+                                         select="concat($global_acronym,'/', translate(normalize-space(gmd:organisationName),' ',''))"
+                                     />
+                                 </key>
+                                 <relation type="isMemberOf"/>
+                             </relatedObject>
                          </xsl:when>
+
                          <xsl:otherwise>
-                             <!-- If we are dealing with an Organisation with no individual name, phone and email must pertain to this organisation -->
-                             <xsl:variable name="individualName" select="normalize-space(gmd:individualName)"/>
-                             <xsl:if test="string-length($individualName) = 0">
-                                 <xsl:call-template name="onlineResource"/>
-                                 <xsl:call-template name="telephone"/>
-                                 <xsl:call-template name="facsimile"/>
-                                 <xsl:call-template name="email"/>
-                             </xsl:if>
-                             
-                             <!-- We are dealing with an organisation, so always include the address -->
+                             <!-- Individual does not have an organisation name, so physicalAddress must pertain this individual -->
                              <xsl:call-template name="physicalAddress"/>
-                             
                          </xsl:otherwise>
                      </xsl:choose>
-                 </party>
-             </registryObject>
-            </xsl:when>
-        </xsl:choose>
+                     
+                     <!-- Individual - Phone and email on the individual, regardless of whether there's an organisation name -->
+                     <xsl:call-template name="onlineResource"/>
+                     <xsl:call-template name="telephone"/>
+                     <xsl:call-template name="facsimile"/>
+                     <xsl:call-template name="email"/>
+                     
+                 </xsl:when>
+                 <xsl:otherwise>
+                     <!-- If we are dealing with an Organisation with no individual name, phone and email must pertain to this organisation -->
+                     <xsl:variable name="individualName" select="normalize-space(gmd:individualName)"/>
+                     <xsl:if test="string-length($individualName) = 0">
+                         <xsl:call-template name="onlineResource"/>
+                         <xsl:call-template name="telephone"/>
+                         <xsl:call-template name="facsimile"/>
+                         <xsl:call-template name="email"/>
+                     </xsl:if>
+                     
+                     <!-- We are dealing with an organisation, so always include the address -->
+                     <xsl:call-template name="physicalAddress"/>
+                     
+                 </xsl:otherwise>
+             </xsl:choose>
+         </party>
+     </registryObject>
     </xsl:template>
     
     <xsl:template name="physicalAddress">
@@ -1783,37 +1760,45 @@
     </xsl:template>
     
    <xsl:function name="custom:getRegistryObjectTypeSubType" as="xs:string*">
-        <xsl:param name="scopeCode"/>
-        <xsl:choose>
-           <xsl:when test="contains(lower-case($scopeCode), 'dataset')">
-                <xsl:text>collection</xsl:text>
-                <xsl:text>dataset</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains(lower-case($scopeCode), 'collectionSession')">
-                <xsl:text>activity</xsl:text>
-                <xsl:text>project</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains(lower-case($scopeCode), 'series')">
-                <xsl:text>activity</xsl:text>
-                <xsl:text>program</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains(lower-case($scopeCode), 'software')">
-                <xsl:text>service</xsl:text>
-                <xsl:text>create</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains(lower-case($scopeCode), 'model')">
-                <xsl:text>service</xsl:text>
-                <xsl:text>create</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains(lower-case($scopeCode), 'service')">
-                <xsl:text>service</xsl:text>
-                <xsl:text>report</xsl:text>
+        <xsl:param name="scopeCode_sequence" as="xs:string*"/>
+       <xsl:choose>
+            <xsl:when test="count($scopeCode_sequence) > 0">
+                <xsl:choose>
+                    <xsl:when test="contains(lower-case($scopeCode_sequence[1]), 'dataset')">
+                        <xsl:text>collection</xsl:text>
+                        <xsl:text>dataset</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="contains(lower-case($scopeCode_sequence[1]), 'collectionSession')">
+                        <xsl:text>activity</xsl:text>
+                        <xsl:text>project</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="contains(lower-case($scopeCode_sequence[1]), 'series')">
+                        <xsl:text>activity</xsl:text>
+                        <xsl:text>program</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="contains(lower-case($scopeCode_sequence[1]), 'software')">
+                        <xsl:text>service</xsl:text>
+                        <xsl:text>create</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="contains(lower-case($scopeCode_sequence[1]), 'model')">
+                        <xsl:text>service</xsl:text>
+                        <xsl:text>create</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="contains(lower-case($scopeCode_sequence[1]), 'service')">
+                        <xsl:text>service</xsl:text>
+                        <xsl:text>report</xsl:text>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:text>collection</xsl:text>
+                        <xsl:text>dataset</xsl:text>
+                    </xsl:otherwise>
+                </xsl:choose>
             </xsl:when>
             <xsl:otherwise>
                 <xsl:text>collection</xsl:text>
                 <xsl:text>dataset</xsl:text>
             </xsl:otherwise>
-        </xsl:choose>
+       </xsl:choose>
     </xsl:function>
     
     <xsl:template name="getRelatedInfoTypeRelationship" as="xs:string*">
@@ -2067,7 +2052,6 @@
     
     <xsl:function name="custom:getMappedKey" as="xs:string">
         <xsl:param name="inputKey" as="xs:string"/>
-        <xsl:message select="concat('custom:getMappedKey(), inputKey: ', lower-case($inputKey))"/>
         <xsl:choose>
             <xsl:when test="contains(lower-case($inputKey), 'nationalcomputationalinfrastructure') or 
                             contains(lower-case($inputKey), 'nci')">
@@ -2079,19 +2063,4 @@
         </xsl:choose>
     </xsl:function>
     
-    <xsl:function name="custom:createObject" as="xs:boolean">
-        <xsl:param name="inputKey" as="xs:string"/>
-        <xsl:message select="concat('custom:createObject(), inputKey: ', lower-case($inputKey))"/>
-        <xsl:choose>
-            <xsl:when test="
-                (lower-case($inputKey) = 'nationalcomputationalinfrastructure') or
-                (lower-case($inputKey) = 'nci')">
-                <xsl:value-of select="false()"/>
-            </xsl:when>
-            <xsl:otherwise>
-                <xsl:value-of select="true()"/>
-            </xsl:otherwise>
-        </xsl:choose>
-    </xsl:function>
-        
 </xsl:stylesheet>
