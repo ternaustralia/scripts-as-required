@@ -1487,7 +1487,7 @@
         <xsl:param name="scopeCode"/>
         <xsl:choose>
             <xsl:when test="substring(lower-case($scopeCode), 0, 8) = 'service'">
-                <xsl:text>service</xsl:text>
+                <xsl:text>collection</xsl:text>
                 <xsl:text>software</xsl:text>
             </xsl:when>
             <xsl:when test="substring(lower-case($scopeCode), 0, 21) = 'nongeographicdataset'">
