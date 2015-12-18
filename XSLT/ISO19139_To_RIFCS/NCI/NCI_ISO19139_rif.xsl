@@ -1240,26 +1240,34 @@
                   <!-- If there is more than one contributor, and publisher 
                   name is within contributor list, remove it -->
                     
-                    <xsl:variable name="publisherOrganisationName_sequence" as="xs:string*">
-                        <xsl:for-each select="$publisher_sequence">
-                            <xsl:if test="string-length(gmd:organisationName) > 0">
-                                <xsl:copy-of select="gmd:organisationName"/>
-                            </xsl:if>
-                        </xsl:for-each>
+                    <xsl:variable name="publisherOrganisationName" as="xs:string">
+                        <xsl:variable name="publisherOrganisationName_sequence" as="xs:string*">
+                            <xsl:for-each select="$publisher_sequence">
+                                <xsl:if test="string-length(gmd:organisationName) > 0">
+                                    <xsl:copy-of select="gmd:organisationName"/>
+                                </xsl:if>
+                            </xsl:for-each>
+                        </xsl:variable>
+                        <xsl:choose>
+                            <xsl:when test="count($publisherOrganisationName_sequence) > 0">
+                                <xsl:value-of select="$publisherOrganisationName_sequence[1]"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:text/>
+                            </xsl:otherwise>
+                        </xsl:choose>
                     </xsl:variable>
                     
                     <xsl:choose>
                         <xsl:when test="count($allContributorName_sequence) > 0">
                             <xsl:for-each select="distinct-values($allContributorName_sequence)">
                                 <xsl:choose>
-                                    <xsl:when test="(count($publisherOrganisationName_sequence) > 0) and ($publisherOrganisationName_sequence[1] = .)">
-                                        <xsl:if test="(count(distinct-values($allContributorName_sequence)) = 1)">
+                                    <xsl:when test="($publisherOrganisationName != .) or ((count($allContributorName_sequence) = 1))">
                                             <contributor>
                                                 <namePart>
                                                     <xsl:value-of select="."/>
                                                 </namePart>
                                             </contributor>
-                                        </xsl:if>
                                     </xsl:when>
                                     <xsl:otherwise>
                                         <contributor>
@@ -1275,8 +1283,8 @@
                     
                     <publisher>
                         <xsl:choose>
-                            <xsl:when test="(count($publisherOrganisationName_sequence) > 0) and string-length($publisherOrganisationName_sequence[1]) > 0">
-                                <xsl:value-of select="$publisherOrganisationName_sequence[1]"/>
+                            <xsl:when test="string-length($publisherOrganisationName) > 0">
+                                <xsl:value-of select="$publisherOrganisationName"/>
                             </xsl:when>
                             <xsl:otherwise>
                                 <xsl:value-of select="$originatingSource"/>
