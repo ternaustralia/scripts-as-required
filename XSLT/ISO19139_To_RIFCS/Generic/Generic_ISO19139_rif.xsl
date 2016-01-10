@@ -1638,26 +1638,4 @@
         </xsl:choose>
     </xsl:function>
     
-    <xsl:function name="custom:isRole" as="xs:boolean">
-        <xsl:param name="parent"/>
-        <xsl:param name="role"/>
-        <xsl:variable name="roleFound_sequence" as="xs:string*">
-            <xsl:for-each-group select="$parent/gmd:role"
-                    group-by="gmd:CI_RoleCode/@codeListValue">
-                    <xsl:if test="(string-length($role) > 0) and contains(lower-case(current-grouping-key()), lower-case($role))">
-                        <xsl:value-of select="current-grouping-key()"/>
-                    </xsl:if>
-            </xsl:for-each-group>
-        </xsl:variable>
-        
-        <xsl:choose>
-            <xsl:when test="count($roleFound_sequence) > 0">
-                <xsl:value-of select="true()"/>
-            </xsl:when>
-            <xsl:otherwise>
-                <xsl:value-of select="false()"/>
-            </xsl:otherwise>
-        </xsl:choose>
-    </xsl:function>
-
 </xsl:stylesheet>
