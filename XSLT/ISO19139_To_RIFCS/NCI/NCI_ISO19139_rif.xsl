@@ -60,33 +60,33 @@
        <xsl:variable name="originatingSource">
            
            <xsl:variable name="originator_sequence" as="node()*" select="
-               gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(gmd:role/gmd:CI_RoleCode/@codeListValue = 'originator')] |
+               gmd:identificationInfo/*[contains(lower-case(name()),'identification')]/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(gmd:role/gmd:CI_RoleCode/@codeListValue = 'originator')] |
                gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'originator'] |
-               gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]/gmd:pointOfContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'originator'] |
+               gmd:identificationInfo/*[contains(lower-case(name()),'identification')]/gmd:pointOfContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'originator'] |
                gmd:contact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'originator']"/>
            
            <xsl:variable name="resourceProvider_sequence" as="node()*" select="
-               gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'resourceProvider'] |
+               gmd:identificationInfo/*[contains(lower-case(name()),'identification')]/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'resourceProvider'] |
                gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'resourceProvider'] |
-               gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]/gmd:pointOfContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'resourceProvider'] |
+               gmd:identificationInfo/*[contains(lower-case(name()),'identification')]/gmd:pointOfContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'resourceProvider'] |
                gmd:contact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'resourceProvider']"/>
            
            <xsl:variable name="owner_sequence" as="node()*" select="
-               gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'owner'] |
+               gmd:identificationInfo/*[contains(lower-case(name()),'identification')]/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'owner'] |
                gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'owner'] |
-               gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]/gmd:pointOfContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'owner'] |
+               gmd:identificationInfo/*[contains(lower-case(name()),'identification')]/gmd:pointOfContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'owner'] |
                gmd:contact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'owner']"/>
            
             <xsl:variable name="custodian_sequence" as="node()*" select="
-               gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'custodian'] |
+               gmd:identificationInfo/*[contains(lower-case(name()),'identification')]/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'custodian'] |
                gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'custodian'] |
-               gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]/gmd:pointOfContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'custodian'] |
+               gmd:identificationInfo/*[contains(lower-case(name()),'identification')]/gmd:pointOfContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'custodian'] |
                gmd:contact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'custodian']"/>
           
            <xsl:variable name="pointOfContact_sequence" as="node()*" select="
-               gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'pointOfContact'] |
+               gmd:identificationInfo/*[contains(lower-case(name()),'identification')]/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'pointOfContact'] |
                gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'pointOfContact'] |
-               gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]/gmd:pointOfContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'pointOfContact'] |
+               gmd:identificationInfo/*[contains(lower-case(name()),'identification')]/gmd:pointOfContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'pointOfContact'] |
                gmd:contact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'pointOfContact']"/>
            
            
@@ -131,16 +131,16 @@
             </originatingSource> 
                 
                 
-            <xsl:element name="{custom:registryObjectClass(gmd:hierarchyLevel/*[name()[contains(lower-case(.),'scopecode')]]/@codeListValue)}">
+            <xsl:element name="{custom:registryObjectClass(gmd:hierarchyLevel/*[contains(lower-case(name()),'scopecode')]/@codeListValue)}">
     
-                <xsl:attribute name="type" select="custom:registryObjectType(gmd:hierarchyLevel/*[name()[contains(lower-case(.),'scopecode')]]/@codeListValue)"/>
+                <xsl:attribute name="type" select="custom:registryObjectType(gmd:hierarchyLevel/*[contains(lower-case(name()),'scopecode')]/@codeListValue)"/>
                         
-                <xsl:if test="custom:registryObjectClass(gmd:hierarchyLevel/*[name()[contains(lower-case(.),'scopecode')]]/@codeListValue) = 'collection'">
+                <xsl:if test="custom:registryObjectClass(gmd:hierarchyLevel/*[contains(lower-case(name()),'scopecode')]/@codeListValue) = 'collection'">
                         <xsl:if test="
-                            (count(gmd:dateStamp/*[name()[contains(lower-case(.),'date')]]) > 0) and 
-                            (string-length(gmd:dateStamp/*[name()[contains(lower-case(.),'date')]][1]) > 0)">
+                            (count(gmd:dateStamp/*[contains(lower-case(name()),'date')]) > 0) and 
+                            (string-length(gmd:dateStamp/*[contains(lower-case(name()),'date')][1]) > 0)">
                             <xsl:attribute name="dateAccessioned">
-                                <xsl:value-of select="gmd:dateStamp/*[name()[contains(lower-case(.),'date')]][1]"/>
+                                <xsl:value-of select="gmd:dateStamp/*[contains(lower-case(name()),'date')][1]"/>
                             </xsl:attribute>  
                         </xsl:if>
                             
@@ -158,11 +158,11 @@
                     <xsl:apply-templates select="gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:source/gmd:LI_Source[string-length(gmd:sourceCitation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier/gmd:code) > 0]"
                          mode="registryObject_relatedInfo"/>
                      
-                    <xsl:apply-templates select="gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]" mode="registryObject">
+                    <xsl:apply-templates select="gmd:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="registryObject">
                              <xsl:with-param name="originatingSource" select="$originatingSource"/>
                     </xsl:apply-templates>
                 
-                <xsl:apply-templates select="gmd:identificationInfo/*[name()[contains(lower-case(.),'identification')]]" mode="relatedRegistryObjects">
+                <xsl:apply-templates select="gmd:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="relatedRegistryObjects">
                     <xsl:with-param name="originatingSource" select="$originatingSource"/>
                 </xsl:apply-templates>
                     
@@ -186,7 +186,7 @@
         
     </xsl:template>
     
-   <xsl:template match="*[name()[contains(lower-case(.),'identification')]]" mode="registryObject">
+   <xsl:template match="*[contains(lower-case(name()),'identification')]" mode="registryObject">
         <xsl:param name="originatingSource"/>
         
         <xsl:apply-templates
@@ -271,7 +271,7 @@
             select="gmd:resourceConstraints/gmd:MD_Constraints"
             mode="registryObject_rights_rights"/>
         
-        <xsl:if test="custom:registryObjectClass(ancestor::gmd:MD_Metadata/gmd:hierarchyLevel/*[name()[contains(lower-case(.),'scopecode')]]/@codeListValue) = 'collection'">
+        <xsl:if test="custom:registryObjectClass(ancestor::gmd:MD_Metadata/gmd:hierarchyLevel/*[contains(lower-case(name()),'scopecode')]/@codeListValue) = 'collection'">
             
             <xsl:apply-templates
                 select="gmd:citation/gmd:CI_Citation/gmd:date"
@@ -291,7 +291,7 @@
     <!-- RegistryObject RegistryObject - Related Party Templates -->
     <!-- =========================================== -->
     
-    <xsl:template match="*[name()[contains(lower-case(.),'identification')]]" mode="relatedRegistryObjects">
+    <xsl:template match="*[contains(lower-case(name()),'identification')]" mode="relatedRegistryObjects">
         <xsl:param name="originatingSource"/>
         <xsl:for-each-group
             select="gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) > 0] |
@@ -1260,13 +1260,13 @@
                             </date>
                         </xsl:when>
                         <xsl:when test="
-                            (count(ancestor::gmd:MD_Metadata/gmd:dateStamp/*[name()[contains(lower-case(.),'date')]]) > 0) and
-                            (string-length(ancestor::gmd:MD_Metadata/gmd:dateStamp/*[name()[contains(lower-case(.),'date')]][1]) > 3)">
+                            (count(ancestor::gmd:MD_Metadata/gmd:dateStamp/*[contains(lower-case(name()),'date')]) > 0) and
+                            (string-length(ancestor::gmd:MD_Metadata/gmd:dateStamp/*[contains(lower-case(name()),'date')][1]) > 3)">
                             <date>
                                 <xsl:attribute name="type">
                                     <xsl:text>publicationDate</xsl:text>
                                 </xsl:attribute>
-                                <xsl:value-of select="substring(ancestor::gmd:MD_Metadata/gmd:dateStamp/*[name()[contains(lower-case(.),'date')]][1], 1, 4)"/>
+                                <xsl:value-of select="substring(ancestor::gmd:MD_Metadata/gmd:dateStamp/*[contains(lower-case(name()),'date')][1], 1, 4)"/>
                             </date>
                         </xsl:when>
                        
