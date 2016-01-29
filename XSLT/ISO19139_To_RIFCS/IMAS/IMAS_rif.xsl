@@ -62,6 +62,9 @@
     <!-- =========================================== -->
 
     <xsl:template match="mcp:MD_Metadata" mode="IMAS">
+        <xsl:param name="source"/>
+        
+        <xsl:message select="concat('source: ', $source)"/>
         
         <xsl:variable name="metadataTruthURL" select="customIMAS:getMetadataTruthURL(gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions)"/>
         <!--xsl:message select="concat('metadataTruthURL: ', $metadataTruthURL)"/-->
@@ -324,7 +327,9 @@
                 <xsl:value-of select="$global_IMAS_group"/>
             </xsl:attribute>
 
-            <xsl:apply-templates select="gmd:fileIdentifier" mode="IMAS_registryObject_key"/>
+            <xsl:apply-templates select="gmd:fileIdentifier" mode="IMAS_registryObject_key">
+                <xsl:with-param name="source" select="$source"/>
+            </xsl:apply-templates>
 
             <originatingSource>
                 <xsl:value-of select="$originatingSource"/>
@@ -380,7 +385,9 @@
                     </xsl:if>
                     
                     <xsl:apply-templates select="gmd:parentIdentifier"
-                        mode="IMAS_registryObject_related_object"/>
+                        mode="IMAS_registryObject_related_object">
+                        <xsl:with-param name="source" select="$source"/>
+                    </xsl:apply-templates>
 
                    <xsl:apply-templates select="gmd:distributionInfo/gmd:MD_Distribution"
                         mode="IMAS_registryObject_location"/>
@@ -395,7 +402,9 @@
                          gmd:identificationInfo/*/gmd:pointOfContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName)) > 0) and 
                          (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)) > 0)]"
                         group-by="gmd:individualName">
-                        <xsl:apply-templates select="." mode="IMAS_registryObject_related_object"/>
+                        <xsl:apply-templates select="." mode="IMAS_registryObject_related_object">
+                            <xsl:with-param name="source" select="$source"/>
+                        </xsl:apply-templates>
                     </xsl:for-each-group>
 
                     <xsl:for-each-group
@@ -404,11 +413,15 @@
                          gmd:identificationInfo/*/gmd:pointOfContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName)) > 0) and 
                          (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)) > 0)]"
                         group-by="gmd:organisationName">
-                        <xsl:apply-templates select="." mode="IMAS_registryObject_related_object"/>
+                        <xsl:apply-templates select="." mode="IMAS_registryObject_related_object">
+                            <xsl:with-param name="source" select="$source"/>
+                        </xsl:apply-templates>
                     </xsl:for-each-group>
 
                     <xsl:apply-templates select="mcp:children/mcp:childIdentifier"
-                        mode="IMAS_registryObject_related_object"/>
+                        mode="IMAS_registryObject_related_object">
+                        <xsl:with-param name="source" select="$source"/>
+                    </xsl:apply-templates>
 
                     <xsl:apply-templates
                         select="gmd:identificationInfo/*/gmd:topicCategory/gmd:MD_TopicCategoryCode"
@@ -532,6 +545,7 @@
             <xsl:call-template name="IMAS_party">
                 <xsl:with-param name="type">person</xsl:with-param>
                 <xsl:with-param name="originatingSource" select="$originatingSource"/>
+                <xsl:with-param name="source" select="$source"/>
             </xsl:call-template>
         </xsl:for-each-group>
 
@@ -544,6 +558,7 @@
             <xsl:call-template name="IMAS_party">
                 <xsl:with-param name="type">group</xsl:with-param>
                 <xsl:with-param name="originatingSource" select="$originatingSource"/>
+                <xsl:with-param name="source" select="$source"/>
             </xsl:call-template>
         </xsl:for-each-group>
 
@@ -557,8 +572,16 @@
 
     <!-- RegistryObject - Key Element  -->
     <xsl:template match="gmd:fileIdentifier" mode="IMAS_registryObject_key">
+        <xsl:param name="source"/>
         <key>
-            <xsl:value-of select="concat($global_IMAS_acronym,'/', normalize-space(.))"/>
+            <xsl:choose>
+                <xsl:when test="string-length($source) > 0">
+                    <xsl:value-of select="concat($source, normalize-space(.))"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="concat($global_IMAS_acronym,'/', normalize-space(.))"/>
+                </xsl:otherwise>
+            </xsl:choose>
         </key>
     </xsl:template>
 
@@ -672,11 +695,19 @@
 
     <!-- RegistryObject - Related Object Element  -->
     <xsl:template match="gmd:parentIdentifier" mode="IMAS_registryObject_related_object">
+        <xsl:param name="source"/>
         <xsl:variable name="identifier" select="normalize-space(.)"/>
         <xsl:if test="string-length($identifier) > 0">
             <relatedObject>
                 <key>
-                    <xsl:value-of select="concat($global_IMAS_acronym,'/', $identifier)"/>
+                    <xsl:choose>
+                        <xsl:when test="string-length($source) > 0">
+                            <xsl:value-of select="concat($source, normalize-space(.))"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="concat($global_IMAS_acronym,'/', normalize-space(.))"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
                 </key>
                 <relation>
                     <xsl:attribute name="type">
@@ -775,12 +806,19 @@
 
     <!-- RegistryObject - Related Object (Organisation or Individual) Element -->
     <xsl:template match="gmd:CI_ResponsibleParty" mode="IMAS_registryObject_related_object">
+        <xsl:param name="source"/>
+        
         <xsl:variable name="name" select="normalize-space(current-grouping-key())"/>
         <relatedObject>
             <key>
-                <xsl:value-of
-                    select="concat($global_IMAS_acronym,'/', translate(customIMAS:nameNoTitle($name),' ',''))"
-                />
+               <xsl:choose>
+                    <xsl:when test="string-length($source) > 0">
+                        <xsl:value-of select="concat($source, translate(customIMAS:nameNoTitle($name),' ',''))"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:value-of select="concat($global_IMAS_acronym,'/', translate(customIMAS:nameNoTitle($name),' ',''))"/>
+                    </xsl:otherwise>
+                </xsl:choose>
             </key>
             <!-- if current grouping key is organisation name and there is an individual name, make relation soft-->
             <xsl:choose>
@@ -806,13 +844,19 @@
 
     <!-- RegistryObject - Related Object Element  -->
     <xsl:template match="mcp:childIdentifier" mode="IMAS_registryObject_related_object">
+        <xsl:param name="source"/>
         <!--xsl:message>mcp:children</xsl:message-->
         <xsl:variable name="identifier" select="normalize-space(.)"/>
         <xsl:if test="string-length($identifier) > 0">
             <relatedObject>
-                <key>
-                    <xsl:value-of select="concat($global_IMAS_acronym,'/', $identifier)"/>
-                </key>
+                <xsl:choose>
+                    <xsl:when test="string-length($source) > 0">
+                        <xsl:value-of select="concat($source, normalize-space(.))"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:value-of select="concat($global_IMAS_acronym,'/', normalize-space(.))"/>
+                    </xsl:otherwise>
+                </xsl:choose>
                 <relation>
                     <xsl:attribute name="type">
                         <xsl:text>hasPart</xsl:text>
@@ -1632,12 +1676,20 @@
     <xsl:template name="IMAS_party">
         <xsl:param name="type"/>
         <xsl:param name="originatingSource"/>
+        <xsl:param name="source"/>
         <registryObject group="{$global_IMAS_group}">
 
             <xsl:variable name="name" select="normalize-space(current-grouping-key())"/>
             <!-- Name is to be 'surname,firstname' or 'surname,i', to attempt to reduce replicated records -->
             <key>
-                <xsl:value-of select="concat($global_IMAS_acronym, '/', translate(customIMAS:nameNoTitle($name),' ',''))"/>
+                <xsl:choose>
+                    <xsl:when test="string-length($source) > 0">
+                        <xsl:value-of select="concat($source, translate(customIMAS:nameNoTitle($name),' ',''))"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:value-of select="concat($global_IMAS_acronym, '/', translate(customIMAS:nameNoTitle($name),' ',''))"/>
+                    </xsl:otherwise>
+                </xsl:choose>
             </key>
 
             <originatingSource>
@@ -1687,9 +1739,14 @@
                                         (the address will be included within the organisation to which this individual is related) -->
                                 <relatedObject>
                                     <key>
-                                        <xsl:value-of
-                                            select="concat($global_IMAS_acronym,'/', translate(normalize-space($organisationName),' ',''))"
-                                        />
+                                        <xsl:choose>
+                                            <xsl:when test="string-length($source) > 0">
+                                                <xsl:value-of select="concat($source, translate(normalize-space($organisationName),' ',''))"/>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:value-of select="concat($global_IMAS_acronym, '/', translate(normalize-space($organisationName),' ',''))"/>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
                                     </key>
                                     <relation type="isMemberOf"/>
                                 </relatedObject>

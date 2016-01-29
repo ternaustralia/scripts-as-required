@@ -55,6 +55,7 @@
     <!-- =========================================== -->
 
     <xsl:template match="*:MD_Metadata" mode="EATLAS">
+        <xsl:param name="source"/>
 
         <xsl:variable name="metadataURL_sequence" select="customEATLAS:getProtocolURL_sequence('metadata-url', *:distributionInfo/*:MD_Distribution/*:transferOptions/*:MD_DigitalTransferOptions)"/>
         <xsl:variable name="downloaddataURL_sequence" select="customEATLAS:getProtocolURL_sequence('downloaddata', *:distributionInfo/*:MD_Distribution/*:transferOptions/*:MD_DigitalTransferOptions)"/>
@@ -160,7 +161,9 @@
                         <xsl:value-of select="$global_EATLAS_group"/>    
                     </xsl:attribute>
                     
-                    <xsl:apply-templates select="*:fileIdentifier" mode="EATLAS_registryObject_key"/>
+                    <xsl:apply-templates select="*:fileIdentifier" mode="EATLAS_registryObject_key">
+                        <xsl:with-param name="source" select="$source"/>
+                    </xsl:apply-templates>
     
                     <originatingSource>
                         <xsl:value-of select="$originatingSource"/>    
@@ -209,7 +212,9 @@
                                 mode="EATLAS_registryObject_name"/>
         
                             <xsl:apply-templates select="*:parentIdentifier"
-                                mode="EATLAS_registryObject_related_object"/>
+                                mode="EATLAS_registryObject_related_object">
+                                <xsl:with-param name="source" select="$source"/>
+                            </xsl:apply-templates>
         
                             <xsl:copy-of select="customEATLAS:set_registryObject_location_metadata($locationURL_sequence)"/>
                             
@@ -221,7 +226,9 @@
                                 *:distributionInfo/*:MD_Distribution/*:distributor/*:MD_Distributor/*:distributorContact/*:CI_ResponsibleParty[(string-length(normalize-space(*:individualName))) > 0] |
                                 *:identificationInfo/*/*:pointOfContact/*:CI_ResponsibleParty[string-length(normalize-space(*:individualName)) > 0]"
                                 group-by="*:individualName">
-                                <xsl:apply-templates select="." mode="EATLAS_registryObject_related_object"/>
+                                <xsl:apply-templates select="." mode="EATLAS_registryObject_related_object">
+                                    <xsl:with-param name="source" select="$source"/>
+                                </xsl:apply-templates>
                             </xsl:for-each-group>
         
                             <!-- organisations with no individual name - use the role provided for relation -->
@@ -230,7 +237,9 @@
                                 *:distributionInfo/*:MD_Distribution/*:distributor/*:MD_Distributor/*:distributorContact/*:CI_ResponsibleParty[((string-length(normalize-space(*:organisationName))) > 0) and ((string-length(normalize-space(*:individualName))) = 0)] |
                                 *:identificationInfo/*/*:pointOfContact/*:CI_ResponsibleParty[((string-length(normalize-space(*:organisationName))) > 0) and ((string-length(normalize-space(*:individualName))) = 0)]"
                                 group-by="*:organisationName">
-                                <xsl:apply-templates select="." mode="EATLAS_registryObject_related_object"/>
+                                <xsl:apply-templates select="." mode="EATLAS_registryObject_related_object">
+                                    <xsl:with-param name="source" select="$source"/>
+                                </xsl:apply-templates>
                             </xsl:for-each-group>
                             
                             <!-- organisations *with* individual name - related indirectly, so use relation 'hasAssociationWith' -->
@@ -239,11 +248,15 @@
                                 *:distributionInfo/*:MD_Distribution/*:distributor/*:MD_Distributor/*:distributorContact/*:CI_ResponsibleParty[((string-length(normalize-space(*:organisationName))) > 0) and ((string-length(normalize-space(*:individualName))) > 0)] |
                                 *:identificationInfo/*/*:pointOfContact/*:CI_ResponsibleParty[((string-length(normalize-space(*:organisationName))) > 0) and ((string-length(normalize-space(*:individualName))) > 0)]"
                                 group-by="*:organisationName">
-                                <xsl:apply-templates select="." mode="EATLAS_registryObject_related_object_associated"/>
+                                <xsl:apply-templates select="." mode="EATLAS_registryObject_related_object_associated">
+                                    <xsl:with-param name="source" select="$source"/>
+                                </xsl:apply-templates>
                             </xsl:for-each-group>
         
                             <xsl:apply-templates select="*:children/*:childIdentifier"
-                                mode="EATLAS_registryObject_related_object"/>
+                                mode="EATLAS_registryObject_related_object">
+                                <xsl:with-param name="source" select="$source"/>
+                            </xsl:apply-templates>
         
                             <xsl:apply-templates
                                 select="*:identificationInfo/*/*:topicCategory/*:MD_TopicCategoryCode"
@@ -359,6 +372,7 @@
                 <xsl:call-template name="EATLAS_party">
                     <xsl:with-param name="type">person</xsl:with-param>
                     <xsl:with-param name="originatingSource" select="$originatingSource"/>
+                    <xsl:with-param name="source" select="$source"/>
                 </xsl:call-template>
             </xsl:for-each-group>
 
@@ -370,6 +384,7 @@
                 <xsl:call-template name="EATLAS_party">
                     <xsl:with-param name="type">group</xsl:with-param>
                     <xsl:with-param name="originatingSource" select="$originatingSource"/>
+                    <xsl:with-param name="source" select="$source"/>
                 </xsl:call-template>
             </xsl:for-each-group>
 
@@ -384,8 +399,9 @@
 
     <!-- RegistryObject - Key Element  -->
     <xsl:template match="*:fileIdentifier" mode="EATLAS_registryObject_key">
+        <xsl:param name="source"/>
         <key>
-            <xsl:value-of select="normalize-space(.)"/>
+            <xsl:value-of select="concat($source, normalize-space(.))"/>
         </key>
     </xsl:template>
 
@@ -563,11 +579,12 @@
     
     <!-- RegistryObject - Related Object Element  -->
     <xsl:template match="*:parentIdentifier" mode="EATLAS_registryObject_related_object">
+        <xsl:param name="source"/>
         <xsl:variable name="identifier" select="normalize-space(.)"/>
         <xsl:if test="string-length($identifier) > 0">
             <relatedObject>
                 <key>
-                    <xsl:value-of select="$identifier"/>
+                    <xsl:value-of select="concat($source, $identifier)"/>
                 </key>
                 <relation>
                     <xsl:attribute name="type">
@@ -632,12 +649,16 @@
     
     <!-- RegistryObject - Related Object (Organisation or Individual) Element -->
     <xsl:template match="*:CI_ResponsibleParty" mode="EATLAS_registryObject_related_object">
+        <xsl:param name="source"/>
          <relatedObject>
             <key>
                 <xsl:variable name="mappedKey" select="customEATLAS:getMappedKey(translate(normalize-space(current-grouping-key()),' ',''))"/>
                 <xsl:choose>
                     <xsl:when test="string-length($mappedKey) > 0">
                         <xsl:value-of select="$mappedKey"/>
+                    </xsl:when>
+                    <xsl:when test="string-length($source) > 0">
+                        <xsl:value-of select="concat($source, translate(normalize-space(current-grouping-key()),' ',''))"/>
                     </xsl:when>
                     <xsl:otherwise>
                         <xsl:value-of select="concat($global_EATLAS_acronym,'/', translate(normalize-space(current-grouping-key()),' ',''))"/>
@@ -672,12 +693,16 @@
     
     <!-- RegistryObject - Organisation which has an Individual name - relate indirectly, by association, only -->
     <xsl:template match="*:CI_ResponsibleParty" mode="EATLAS_registryObject_related_object_associated">
+        <xsl:param name="source"/>
         <relatedObject>
             <key>
                 <xsl:variable name="mappedKey" select="customEATLAS:getMappedKey(translate(normalize-space(current-grouping-key()),' ',''))"/>
                 <xsl:choose>
                     <xsl:when test="string-length($mappedKey) > 0">
                         <xsl:value-of select="$mappedKey"/>
+                    </xsl:when>
+                    <xsl:when test="string-length($source) > 0">
+                        <xsl:value-of select="concat($source, translate(normalize-space(current-grouping-key()),' ',''))"/>
                     </xsl:when>
                     <xsl:otherwise>
                         <xsl:value-of select="concat($global_EATLAS_acronym,'/', translate(normalize-space(current-grouping-key()),' ',''))"/>
@@ -694,11 +719,12 @@
 
     <!-- RegistryObject - Related Object Element  -->
     <xsl:template match="*:childIdentifier" mode="EATLAS_registryObject_related_object">
+        <xsl:param name="source"/>
         <xsl:variable name="identifier" select="normalize-space(.)"/>
         <xsl:if test="string-length($identifier) > 0">
             <relatedObject>
                 <key>
-                    <xsl:value-of select="$identifier"/>
+                    <xsl:value-of select="concat($source, $identifier)"/>
                 </key>
                 <relation>
                     <xsl:attribute name="type">
@@ -1888,15 +1914,21 @@
     <xsl:template name="EATLAS_party">
         <xsl:param name="type"/>
         <xsl:param name="originatingSource"/>
+        <xsl:param name="source"/>
         <xsl:choose>
             <xsl:when test="boolean(customEATLAS:createObject(translate(normalize-space(current-grouping-key()),' ','')))">
         
                 <registryObject group="{$global_EATLAS_group}">
      
                  <key>
-                     <xsl:value-of
-                         select="concat($global_EATLAS_acronym, '/', translate(normalize-space(current-grouping-key()),' ',''))"
-                     />
+                     <xsl:choose>
+                         <xsl:when test="string-length($source) > 0">
+                             <xsl:value-of select="concat($source, translate(normalize-space(current-grouping-key()),' ',''))"/>
+                         </xsl:when>
+                         <xsl:otherwise>
+                             <xsl:value-of select="concat($global_EATLAS_acronym, '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
+                         </xsl:otherwise>
+                     </xsl:choose>
                  </key>
      
                  <originatingSource>
@@ -1924,9 +1956,14 @@
                                              (the address will be included within the organisation to which this individual is related) -->
                                      <relatedObject>
                                          <key>
-                                             <xsl:value-of
-                                                 select="concat($global_EATLAS_acronym,'/', translate(normalize-space(*:organisationName),' ',''))"
-                                             />
+                                             <xsl:choose>
+                                                 <xsl:when test="string-length($source) > 0">
+                                                     <xsl:value-of select="concat($source, translate(normalize-space(*:organisationName),' ',''))"/>
+                                                 </xsl:when>
+                                                 <xsl:otherwise>
+                                                    <xsl:value-of select="concat($global_EATLAS_acronym,'/', translate(normalize-space(*:organisationName),' ',''))"/>
+                                                 </xsl:otherwise>
+                                             </xsl:choose>
                                          </key>
                                          <relation type="isMemberOf"/>
                                      </relatedObject>

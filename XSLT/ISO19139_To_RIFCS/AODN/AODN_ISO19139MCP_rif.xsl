@@ -40,6 +40,9 @@
     <xsl:param name="global_baseURI_IMOS" select="'imosmest.aodn.org.au'"/>
     <xsl:param name="global_baseURI_IMOS_123" select="'catalogue-123.aodn.org.au'"/>
     <xsl:param name="global_baseURI_AAD" select="'data.aad.gov.au'"/>
+    <xsl:param name="global_baseURI_AIMS" select="'data.aims.gov.au'"/>
+    
+    <xsl:param name="global_source" select="'AODN/'"/>
     
     
     <!-- =========================================== -->
@@ -69,18 +72,31 @@
              <xsl:choose>
                  <xsl:when test="
                      contains($metadataTruthURL, $global_baseURI_EATLAS)">
-                     <xsl:apply-templates select="//*:MD_Metadata" mode="EATLAS"/>
+                     <xsl:apply-templates select="//*:MD_Metadata" mode="EATLAS">
+                         <xsl:with-param name="source" select="$global_source"/>
+                     </xsl:apply-templates>
                  </xsl:when>
                  <xsl:when test="
                      contains($metadataTruthURL, $global_baseURI_IMAS) or
                      custom:sequence_contains($contact_sequence, 'imas')">
-                     <xsl:apply-templates select="//*:MD_Metadata" mode="IMAS"/>
+                     <xsl:apply-templates select="//*:MD_Metadata" mode="IMAS">
+                         <xsl:with-param name="source" select="$global_source"/>
+                     </xsl:apply-templates>
                  </xsl:when>
                  <xsl:when test="
                      contains($metadataTruthURL, $global_baseURI_IMOS) or
                      contains($metadataTruthURL, $global_baseURI_IMOS_123) or
                      custom:sequence_contains($contact_sequence, 'imos')">
-                     <xsl:apply-templates select="//*:MD_Metadata" mode="IMOS"/>
+                     <xsl:apply-templates select="//*:MD_Metadata" mode="IMOS">
+                         <xsl:with-param name="source" select="$global_source"/>
+                     </xsl:apply-templates>
+                 </xsl:when>
+                 <xsl:when test="
+                     contains($metadataTruthURL, $global_baseURI_AIMS) or
+                     custom:sequence_contains($contact_sequence, 'aims')">
+                     <xsl:apply-templates select="//*:MD_Metadata" mode="AIMS">
+                         <xsl:with-param name="source" select="$global_source"/>
+                     </xsl:apply-templates>
                  </xsl:when>
                  <!-- Uncomment the following when we have the AAD XSLT working
                      from the same anzlic as is fed to AODN -->
@@ -88,10 +104,14 @@
                      contains($metadataTruthURL, $global_baseURI_AAD) or
                      custom:sequence_contains($contact_sequence, 'australian antarctic division') or
                      custom:sequence_contains($contact_sequence, 'aad')">
-                     <xsl:apply-templates select="//*:MD_Metadata" mode="AAD"/>
+                     <xsl:apply-templates select="//*:MD_Metadata" mode="AAD">
+                     <xsl:with-param name="source" select="$global_source"/>
+                     </xsl:apply-templates>
                  </xsl:when-->
                  <xsl:otherwise>
-                    <xsl:apply-templates select="//*:MD_Metadata" mode="default"/>
+                     <xsl:apply-templates select="//*:MD_Metadata" mode="default">
+                         <xsl:with-param name="source" select="$global_source"/>
+                     </xsl:apply-templates>
                  </xsl:otherwise>
              </xsl:choose>
         

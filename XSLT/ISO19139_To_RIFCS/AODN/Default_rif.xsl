@@ -17,8 +17,7 @@
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
     exclude-result-prefixes="geonet gmx oai xsi gmd srv gml gco gts custom">
     
-    <xsl:param name="global_acronym" select="'AODN'"/>
-    <xsl:param name="global_originatingSource" select="'Australian Ocean Data Network'"/> <!-- Only used as originating source if organisation name cannot be determined from Point Of Contact -->
+     <xsl:param name="global_originatingSource" select="'Australian Ocean Data Network'"/> <!-- Only used as originating source if organisation name cannot be determined from Point Of Contact -->
     <xsl:param name="global_group" select="'Australian Ocean Data Network'"/> 
     <xsl:param name="global_baseURI" select="'catalogue.aodn.org.au'"/>
     <xsl:param name="global_path" select="'/geonetwork/srv/eng/metadata.show?uuid='"/>
@@ -41,8 +40,9 @@
     </xsl:template>
     
     <xsl:template match="*:MD_Metadata" mode="default">
+        <xsl:param name="source"/>
         
-       <xsl:variable name="originatingSource">
+        <xsl:variable name="originatingSource">
            
            <xsl:variable name="originator_sequence" as="node()*" select="
                *:identificationInfo/*[contains(lower-case(name()),'identification')]/*:citation/*:CI_Citation/*:citedResponsibleParty/*:CI_ResponsibleParty[(*:role/*:CI_RoleCode/@codeListValue = 'originator')] |
@@ -109,7 +109,9 @@
                 <xsl:value-of select="$global_group"/>    
             </xsl:attribute>
             
-            <xsl:apply-templates select="*:fileIdentifier" mode="registryObject_key"/>
+            <xsl:apply-templates select="*:fileIdentifier" mode="registryObject_key">
+                <xsl:with-param name="source" select="$source"/>
+            </xsl:apply-templates>
         
             <originatingSource>
                 <xsl:value-of select="$originatingSource"/>
@@ -131,26 +133,40 @@
                             
                 </xsl:if>
                 
-                    <xsl:apply-templates select="*:distributionInfo" mode="registryObject_links"/>
-                    <xsl:apply-templates select="*:fileIdentifier" mode="registryObject_location_metadata"/>
-                    <xsl:apply-templates select="*:parentIdentifier" mode="registryObject_related_object"/>
-                    <xsl:apply-templates select="*:dataSetURI" mode="registryObject_relatedInfo_data_via_service"/>
-                    <xsl:apply-templates select="*:children/*:childIdentifier" mode="registryObject_related_object"/>
+                <xsl:apply-templates select="*:distributionInfo" mode="registryObject_links"/>
+                
+                <xsl:apply-templates select="*:fileIdentifier" mode="registryObject_location_metadata">
+                    <xsl:with-param name="source" select="$source"/>
+                </xsl:apply-templates>
+            
+                <xsl:apply-templates select="*:parentIdentifier" mode="registryObject_related_object">
+                     <xsl:with-param name="source" select="$source"/>
+                </xsl:apply-templates>
+                 
+                <xsl:apply-templates select="*:dataSetURI" mode="registryObject_relatedInfo_data_via_service"/>
+                
+                <xsl:apply-templates select="*:children/*:childIdentifier" mode="registryObject_related_object">
+                    <xsl:with-param name="source" select="$source"/>
+                </xsl:apply-templates>
                  
                    
                 
-                    <xsl:apply-templates select="*:children/*:childIdentifier"
-                        mode="registryObject_related_object"/>
-                     
-                    <xsl:apply-templates select="*:dataQualityInfo/*:DQ_DataQuality/*:lineage/*:LI_Lineage/*:source/*:LI_Source[string-length(*:sourceCitation/*:CI_Citation/*:identifier/*:MD_Identifier/*:code) > 0]"
-                         mode="registryObject_relatedInfo"/>
-                     
-                    <xsl:apply-templates select="*:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="registryObject">
-                             <xsl:with-param name="originatingSource" select="$originatingSource"/>
-                    </xsl:apply-templates>
+                <xsl:apply-templates select="*:children/*:childIdentifier"
+                    mode="registryObject_related_object">
+                    <xsl:with-param name="source" select="$source"/>
+                </xsl:apply-templates>
+                 
+                <xsl:apply-templates select="*:dataQualityInfo/*:DQ_DataQuality/*:lineage/*:LI_Lineage/*:source/*:LI_Source[string-length(*:sourceCitation/*:CI_Citation/*:identifier/*:MD_Identifier/*:code) > 0]"
+                     mode="registryObject_relatedInfo"/>
+                 
+                <xsl:apply-templates select="*:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="registryObject">
+                    <xsl:with-param name="originatingSource" select="$originatingSource"/>
+                    <xsl:with-param name="source" select="$source"/>
+                </xsl:apply-templates>
                 
                 <xsl:apply-templates select="*:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="relatedRegistryObjects">
                     <xsl:with-param name="originatingSource" select="$originatingSource"/>
+                    <xsl:with-param name="source" select="$source"/>
                 </xsl:apply-templates>
                     
                 </xsl:element>
@@ -174,6 +190,7 @@
     
    <xsl:template match="*[contains(lower-case(name()),'identification')]" mode="registryObject">
         <xsl:param name="originatingSource"/>
+        <xsl:param name="source"/>
         
         <xsl:apply-templates
             select="*:citation/*:CI_Citation/*:title"
@@ -185,7 +202,9 @@
             *:pointOfContact/*:CI_ResponsibleParty[(string-length(normalize-space(*:individualName))) > 0] |
             ancestor::*:MD_Metadata/*:contact/*:CI_ResponsibleParty[(string-length(normalize-space(*:individualName))) > 0]"
             group-by="*:individualName">
-            <xsl:apply-templates select="." mode="registryObject_related_object"/>
+            <xsl:apply-templates select="." mode="registryObject_related_object">
+                <xsl:with-param name="source" select="$source"/>
+            </xsl:apply-templates>
         </xsl:for-each-group>
         
         <xsl:for-each-group
@@ -194,7 +213,9 @@
             *:pointOfContact/*:CI_ResponsibleParty[((string-length(normalize-space(*:organisationName))) > 0) and ((string-length(normalize-space(*:individualName))) = 0)] |
             ancestor::*:MD_Metadata/*:contact/*:CI_ResponsibleParty[((string-length(normalize-space(*:organisationName))) > 0) and ((string-length(normalize-space(*:individualName))) = 0)]" 
             group-by="*:organisationName">
-            <xsl:apply-templates select="." mode="registryObject_related_object"/>
+            <xsl:apply-templates select="." mode="registryObject_related_object">
+                <xsl:with-param name="source" select="$source"/>
+            </xsl:apply-templates>
         </xsl:for-each-group>
         
         <xsl:apply-templates
@@ -275,6 +296,7 @@
     
     <xsl:template match="*[contains(lower-case(name()),'identification')]" mode="relatedRegistryObjects">
         <xsl:param name="originatingSource"/>
+        <xsl:param name="source"/>
         <xsl:for-each-group
             select="*:citation/*:CI_Citation/*:citedResponsibleParty/*:CI_ResponsibleParty[(string-length(normalize-space(*:individualName))) > 0] |
             ancestor::*:distributionInfo/*:MD_Distribution/*:distributor/*:MD_Distributor/*:distributorContact/*:CI_ResponsibleParty[(string-length(normalize-space(*:individualName))) > 0] |
@@ -283,6 +305,7 @@
             group-by="*:individualName">
             <xsl:call-template name="partyPersonDefault">
                 <xsl:with-param name="originatingSource" select="$originatingSource"/>
+                <xsl:with-param name="source" select="$source"/>
             </xsl:call-template>
         </xsl:for-each-group>
         
@@ -294,21 +317,21 @@
             group-by="*:organisationName">
             <xsl:call-template name="partyGroupDefault">
                 <xsl:with-param name="originatingSource" select="$originatingSource"/>
+                <xsl:with-param name="source" select="$source"/>
             </xsl:call-template>
         </xsl:for-each-group>
     </xsl:template>
     
     
-    
-
     <!-- =========================================== -->
     <!-- RegistryObject RegistryObject - Child Templates -->
     <!-- =========================================== -->
 
     <!-- RegistryObject - Key Element  -->
     <xsl:template match="*:fileIdentifier" mode="registryObject_key">
+        <xsl:param name="source"/>
         <key>
-            <xsl:value-of select="normalize-space(.)"/>
+            <xsl:value-of select="concat($source, normalize-space(.))"/>
         </key>
     </xsl:template>
 
@@ -397,11 +420,12 @@
     
     <!-- RegistryObject - Related Object Element  -->
     <xsl:template match="*:parentIdentifier" mode="registryObject_related_object">
+        <xsl:param name="source"/>
         <xsl:variable name="identifier" select="normalize-space(.)"/>
         <xsl:if test="string-length($identifier) > 0">
             <relatedObject>
                 <key>
-                    <xsl:value-of select="concat($global_acronym,'/', $identifier)"/>
+                    <xsl:value-of select="concat($source, $identifier)"/>
                 </key>
                 <relation>
                     <xsl:attribute name="type">
@@ -431,9 +455,10 @@
     
     <!-- RegistryObject - Related Object (Organisation or Individual) Element -->
     <xsl:template match="*:CI_ResponsibleParty" mode="registryObject_related_object">
+        <xsl:param name="source"/>
          <relatedObject>
             <key>
-               <xsl:value-of select="concat($global_acronym,'/', translate(normalize-space(current-grouping-key()),' ',''))"/>
+               <xsl:value-of select="concat($source, translate(normalize-space(current-grouping-key()),' ',''))"/>
             </key>
             <xsl:for-each-group select="current-group()/*:role"
                 group-by="*:CI_RoleCode/@codeListValue">
@@ -463,11 +488,12 @@
 
     <!-- RegistryObject - Related Object Element  -->
     <xsl:template match="*:childIdentifier" mode="registryObject_related_object">
+        <xsl:param name="source"/>
         <xsl:variable name="identifier" select="normalize-space(.)"/>
         <xsl:if test="string-length($identifier) > 0">
             <relatedObject>
                 <key>
-                    <xsl:value-of select="concat($global_acronym,'/', $identifier)"/>
+                    <xsl:value-of select="concat($source, $identifier)"/>
                 </key>
                 <relation>
                     <xsl:attribute name="type">
@@ -1286,6 +1312,7 @@
     <!-- Party Registry Object (Individuals (person) and Organisations (group)) -->
     <xsl:template name="partyPersonDefault">
         <xsl:param name="originatingSource"/>
+        <xsl:param name="source"/>
           
         <registryObject group="{$global_group}">
 
@@ -1296,7 +1323,7 @@
         -->
         
         <key>
-            <xsl:value-of select="concat($global_acronym, '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
+            <xsl:value-of select="concat($source, translate(normalize-space(current-grouping-key()),' ',''))"/>
         </key>
        
         <originatingSource>
@@ -1322,7 +1349,7 @@
                      <relatedObject>
                          <key>
                              <xsl:value-of
-                                 select="concat($global_acronym,'/', translate(normalize-space(*:organisationName),' ',''))"
+                                 select="concat($source, translate(normalize-space(*:organisationName),' ',''))"
                              />
                          </key>
                          <relation type="isMemberOf"/>
@@ -1347,6 +1374,7 @@
     <!-- Party Registry Object (Individuals (person) and Organisations (group)) -->
     <xsl:template name="partyGroupDefault">
         <xsl:param name="originatingSource"/>
+        <xsl:param name="source"/>
         
         <registryObject group="{$global_group}">
             
@@ -1356,7 +1384,7 @@
             <xsl:message select="concat('Organisation name: ', *:organisationName)"/>
             -->
             <key>
-                <xsl:value-of select="concat($global_acronym, '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
+                <xsl:value-of select="concat($source, translate(normalize-space(current-grouping-key()),' ',''))"/>
             </key>
             
             <originatingSource>

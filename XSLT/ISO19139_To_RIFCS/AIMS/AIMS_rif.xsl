@@ -56,6 +56,7 @@
     <!-- =========================================== -->
 
     <xsl:template match="*:MD_Metadata" mode="AIMS">
+        <xsl:param name="source"/>
 
         <xsl:variable name="metadataURL_sequence" select="customAIMS:getProtocolURL_sequence('metadata-url', *:distributionInfo/*:MD_Distribution/*:transferOptions/*:MD_DigitalTransferOptions)"/>
         <!--xsl:variable name="downloaddataURL_sequence" select="customAIMS:getProtocolURL_sequence('downloaddata', *:distributionInfo/*:MD_Distribution/*:transferOptions/*:MD_DigitalTransferOptions)"/-->
@@ -64,7 +65,7 @@
         <xsl:variable name="restrictionCode_sequence" select="*:identificationInfo/*/*:resourceConstraints/*/*/*:MD_RestrictionCode/@codeListValue"/>
         <xsl:variable name="otherConstraints_sequence" select="*:identificationInfo/*/*:resourceConstraints/*/*:otherConstraints"/>
         
-        <xsl:variable name="fileIdentifier"><xsl:value-of select="*:fileIdentifier"/></xsl:variable>
+        <xsl:variable name="fileIdentifier" select="*:fileIdentifier"/>
         
         <xsl:for-each select="distinct-values($restrictionCode_sequence)">
             <xsl:message select="concat('restrictionCode :', .)"/>
@@ -155,7 +156,9 @@
                     <xsl:value-of select="$global_AIMS_group"/>    
                 </xsl:attribute>
                 
-                <xsl:apply-templates select="*:fileIdentifier" mode="AIMS_registryObject_key"/>
+                <xsl:apply-templates select="*:fileIdentifier" mode="AIMS_registryObject_key">
+                    <xsl:with-param name="source" select="$source"/>
+                </xsl:apply-templates>
 
                 <originatingSource>
                     <xsl:value-of select="$originatingSource"/>    
@@ -204,7 +207,9 @@
                             mode="AIMS_registryObject_name"/>
     
                         <xsl:apply-templates select="*:parentIdentifier"
-                            mode="AIMS_registryObject_related_object"/>
+                            mode="AIMS_registryObject_related_object">
+                            <xsl:with-param name="source" select="$source"/>
+                        </xsl:apply-templates>
     
                         <xsl:copy-of select="customAIMS:set_registryObject_location_metadata($locationURL_sequence, 'landingPage')"/>
                         <xsl:copy-of select="customAIMS:set_registryObject_location_metadata($downloaddataURL_sequence, 'directDownload')"/>
@@ -217,7 +222,9 @@
                             *:distributionInfo/*:MD_Distribution/*:distributor/*:MD_Distributor/*:distributorContact/*:CI_ResponsibleParty[(string-length(normalize-space(*:individualName))) > 0] |
                             *:identificationInfo/*/*:pointOfContact/*:CI_ResponsibleParty[string-length(normalize-space(*:individualName)) > 0]"
                             group-by="*:individualName">
-                            <xsl:apply-templates select="." mode="AIMS_registryObject_related_object"/>
+                            <xsl:apply-templates select="." mode="AIMS_registryObject_related_object">
+                                <xsl:with-param name="source" select="$source"/>
+                            </xsl:apply-templates>
                         </xsl:for-each-group>
     
                         <!-- organisations with no individual name - use the role provided for relation -->
@@ -226,7 +233,9 @@
                             *:distributionInfo/*:MD_Distribution/*:distributor/*:MD_Distributor/*:distributorContact/*:CI_ResponsibleParty[((string-length(normalize-space(*:organisationName))) > 0) and ((string-length(normalize-space(*:individualName))) = 0)] |
                             *:identificationInfo/*/*:pointOfContact/*:CI_ResponsibleParty[((string-length(normalize-space(*:organisationName))) > 0) and ((string-length(normalize-space(*:individualName))) = 0)]"
                             group-by="*:organisationName">
-                            <xsl:apply-templates select="." mode="AIMS_registryObject_related_object"/>
+                            <xsl:apply-templates select="." mode="AIMS_registryObject_related_object">
+                                <xsl:with-param name="source" select="$source"/>
+                            </xsl:apply-templates>
                         </xsl:for-each-group>
                         
                         <!-- organisations *with* individual name - related indirectly, so use relation 'hasAssociationWith' -->
@@ -235,11 +244,15 @@
                             *:distributionInfo/*:MD_Distribution/*:distributor/*:MD_Distributor/*:distributorContact/*:CI_ResponsibleParty[((string-length(normalize-space(*:organisationName))) > 0) and ((string-length(normalize-space(*:individualName))) > 0)] |
                             *:identificationInfo/*/*:pointOfContact/*:CI_ResponsibleParty[((string-length(normalize-space(*:organisationName))) > 0) and ((string-length(normalize-space(*:individualName))) > 0)]"
                             group-by="*:organisationName">
-                            <xsl:apply-templates select="." mode="AIMS_registryObject_related_object_associated"/>
+                            <xsl:apply-templates select="." mode="AIMS_registryObject_related_object_associated">
+                                <xsl:with-param name="source" select="$source"/>
+                            </xsl:apply-templates>
                         </xsl:for-each-group>
     
                         <xsl:apply-templates select="*:children/*:childIdentifier"
-                            mode="AIMS_registryObject_related_object"/>
+                            mode="AIMS_registryObject_related_object">
+                            <xsl:with-param name="source" select="$source"/>
+                        </xsl:apply-templates>
     
                         <xsl:apply-templates
                             select="*:identificationInfo/*/*:topicCategory/*:MD_TopicCategoryCode"
@@ -377,8 +390,9 @@
 
     <!-- RegistryObject - Key Element  -->
     <xsl:template match="*:fileIdentifier" mode="AIMS_registryObject_key">
+        <xsl:param name="source"/>
         <key>
-            <xsl:value-of select="normalize-space(.)"/>
+            <xsl:value-of select="concat($source, normalize-space(.))"/>
         </key>
     </xsl:template>
 
@@ -562,11 +576,12 @@
     
     <!-- RegistryObject - Related Object Element  -->
     <xsl:template match="*:parentIdentifier" mode="AIMS_registryObject_related_object">
+        <xsl:param name="source"/>
         <xsl:variable name="identifier" select="normalize-space(.)"/>
         <xsl:if test="string-length($identifier) > 0">
             <relatedObject>
                 <key>
-                    <xsl:value-of select="$identifier"/>
+                    <xsl:value-of select="concat($source, $identifier)"/>
                 </key>
                 <relation>
                     <xsl:attribute name="type">
@@ -632,6 +647,7 @@
     
     <!-- RegistryObject - Related Object (Organisation or Individual) Element -->
     <xsl:template match="*:CI_ResponsibleParty" mode="AIMS_registryObject_related_object">
+        <xsl:param name="source"/>
          <relatedObject>
             <key>
                 <xsl:variable name="mappedKey" select="customAIMS:getMappedKey(translate(normalize-space(current-grouping-key()),' ',''))"/>
@@ -639,8 +655,11 @@
                     <xsl:when test="string-length($mappedKey) > 0">
                         <xsl:value-of select="$mappedKey"/>
                     </xsl:when>
+                    <xsl:when test="string-length($source) > 0">
+                        <xsl:value-of select="concat($source, translate(normalize-space(current-grouping-key()),' ',''))"/>
+                    </xsl:when>
                     <xsl:otherwise>
-                        <xsl:value-of select="concat($global_AIMS_acronym,'/', translate(normalize-space(current-grouping-key()),' ',''))"/>
+                         <xsl:value-of select="concat($global_AIMS_acronym,'/', translate(normalize-space(current-grouping-key()),' ',''))"/>
                     </xsl:otherwise>
                 </xsl:choose>
             </key>
@@ -672,12 +691,16 @@
     
     <!-- RegistryObject - Organisation which has an Individual name - relate indirectly, by association, only -->
     <xsl:template match="*:CI_ResponsibleParty" mode="AIMS_registryObject_related_object_associated">
+        <xsl:param name="source"/>
         <relatedObject>
             <key>
                 <xsl:variable name="mappedKey" select="customAIMS:getMappedKey(translate(normalize-space(current-grouping-key()),' ',''))"/>
                 <xsl:choose>
                     <xsl:when test="string-length($mappedKey) > 0">
                         <xsl:value-of select="$mappedKey"/>
+                    </xsl:when>
+                    <xsl:when test="string-length($source) > 0">
+                        <xsl:value-of select="concat($source, translate(normalize-space(current-grouping-key()),' ',''))"/>
                     </xsl:when>
                     <xsl:otherwise>
                         <xsl:value-of select="concat($global_AIMS_acronym,'/', translate(normalize-space(current-grouping-key()),' ',''))"/>
@@ -694,11 +717,12 @@
 
     <!-- RegistryObject - Related Object Element  -->
     <xsl:template match="*:childIdentifier" mode="AIMS_registryObject_related_object">
+        <xsl:param name="source"/>
         <xsl:variable name="identifier" select="normalize-space(.)"/>
         <xsl:if test="string-length($identifier) > 0">
             <relatedObject>
                 <key>
-                    <xsl:value-of select="$identifier"/>
+                    <xsl:value-of select="concat($source, $identifier)"/>
                 </key>
                 <relation>
                     <xsl:attribute name="type">
@@ -1891,17 +1915,23 @@
     <xsl:template name="AIMS_party">
         <xsl:param name="type"/>
         <xsl:param name="originatingSource"/>
+        <xsl:param name="source"/>
         <xsl:choose>
             <xsl:when test="boolean(customAIMS:createObject(translate(normalize-space(current-grouping-key()),' ','')))">
         
                 <registryObject group="{$global_AIMS_group}">
      
                  <key>
-                     <xsl:value-of
-                         select="concat($global_AIMS_acronym, '/', translate(normalize-space(current-grouping-key()),' ',''))"
-                     />
+                     <xsl:choose>
+                         <xsl:when test="string-length($source) > 0">
+                             <xsl:value-of select="concat($source, translate(normalize-space(current-grouping-key()),' ',''))"/>
+                         </xsl:when>
+                         <xsl:otherwise>
+                             <xsl:value-of select="concat($global_AIMS_acronym, '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
+                         </xsl:otherwise>
+                     </xsl:choose>
                  </key>
-     
+                 
                  <originatingSource>
                      <xsl:value-of select="$originatingSource"/>
                  </originatingSource>
@@ -1927,10 +1957,15 @@
                                              (the address will be included within the organisation to which this individual is related) -->
                                      <relatedObject>
                                          <key>
-                                             <xsl:value-of
-                                                 select="concat($global_AIMS_acronym,'/', translate(normalize-space(*:organisationName),' ',''))"
-                                             />
-                                         </key>
+                                             <xsl:choose>
+                                                 <xsl:when test="string-length($source) > 0">
+                                                     <xsl:value-of select="concat($source, translate(normalize-space(*:organisationName),' ',''))"/>
+                                                 </xsl:when>
+                                                 <xsl:otherwise>
+                                                     <xsl:value-of select="concat($global_AIMS_acronym, '/', translate(normalize-space(*:organisationName),' ',''))"/>
+                                                 </xsl:otherwise>
+                                             </xsl:choose>
+                                           </key>
                                          <relation type="isMemberOf"/>
                                      </relatedObject>
                                  </xsl:when>
