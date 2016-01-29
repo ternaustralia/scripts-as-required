@@ -15,20 +15,20 @@
     xmlns:srv="http://www.isotc211.org/2005/srv"
     xmlns:oai="http://www.openarchives.org/OAI/2.0/" 
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
-    xmlns:custom="http://custom.nowhere.yet"
+    xmlns:customIMAS="http://customIMAS.nowhere.yet"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
-    exclude-result-prefixes="geonet gmx oai xsi gmd srv gml gco">
+    exclude-result-prefixes="geonet gmx oai xsi gmd srv gml gco mcp dwc customIMAS">
     <!-- stylesheet to convert iso19139 in OAI-PMH ListRecords response to RIF-CS -->
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
-    <xsl:param name="global_defaultOriginatingSource" select="'external'"/>
-    <xsl:param name="global_acronym" select="'UTAS'"/>
-    <xsl:param name="global_group" select="'University of Tasmania, Australia'"/> 
-    <xsl:param name="global_baseURI" select="'http://metadata.imas.utas.edu.au'"/>
-    <xsl:param name="global_path" select="'/metadataviewer/faces/view.xhtml?uuid='"/>
-    <xsl:param name="global_cannedCitation" select="'The citation in a list of references is: citation author name/s (year metadata published), metadata title. Citation author organisation/s. File identifier and Data accessed at (add http link).'"/>
-    <xsl:param name="global_identifier_open" select="'39060c33-9246-49fe-8f97-758b67ced4ce'"/>
-    <!--xsl:param name="global_ActivityKeyNERP" select="'to be determined'"/-->
+    <xsl:param name="global_IMAS_defaultOriginatingSource" select="'external'"/>
+    <xsl:param name="global_IMAS_acronym" select="'UTAS'"/>
+    <xsl:param name="global_IMAS_group" select="'University of Tasmania, Australia'"/> 
+    <xsl:param name="global_IMAS_baseURI" select="'http://metadata.imas.utas.edu.au'"/>
+    <xsl:param name="global_IMAS_path" select="'/metadataviewer/faces/view.xhtml?uuid='"/>
+    <xsl:param name="global_IMAS_cannedCitation" select="'The citation in a list of references is: citation author name/s (year metadata published), metadata title. Citation author organisation/s. File identifier and Data accessed at (add http link).'"/>
+    <xsl:param name="global_IMAS_identifier_open" select="'39060c33-9246-49fe-8f97-758b67ced4ce'"/>
+    <!--xsl:param name="global_IMAS_ActivityKeyNERP" select="'to be determined'"/-->
     <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>
     <xsl:variable name="gmdCodelists" select="document('codelists.xml')"/>
     <xsl:template match="oai:responseDate"/>
@@ -52,7 +52,7 @@
             <xsl:attribute name="xsi:schemaLocation">
                 <xsl:text>http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd</xsl:text>
             </xsl:attribute>
-            <xsl:apply-templates select="//mcp:MD_Metadata"/>
+            <xsl:apply-templates select="//*:MD_Metadata" mode="IMAS"/>
         </registryObjects>
     </xsl:template>
     
@@ -61,9 +61,9 @@
     <!-- RegistryObject RegistryObject Template          -->
     <!-- =========================================== -->
 
-    <xsl:template match="mcp:MD_Metadata">
+    <xsl:template match="mcp:MD_Metadata" mode="IMAS">
         
-        <xsl:variable name="metadataTruthURL" select="custom:getMetadataTruthURL(gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions)"/>
+        <xsl:variable name="metadataTruthURL" select="customIMAS:getMetadataTruthURL(gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions)"/>
         <!--xsl:message select="concat('metadataTruthURL: ', $metadataTruthURL)"/-->
         
         <xsl:variable name="dataSetURI" select="gmd:dataSetURI"/>
@@ -74,7 +74,7 @@
 
         <xsl:variable name="imasDataCatalogueURL">
             <xsl:if test="string-length($fileIdentifier) > 0">
-                <xsl:copy-of select="concat('http://', $global_baseURI, $global_path, $fileIdentifier)"/>
+                <xsl:copy-of select="concat('http://', $global_IMAS_baseURI, $global_IMAS_path, $fileIdentifier)"/>
             </xsl:if>
         </xsl:variable>
         <!--xsl:message select="concat('imasDataCatalogueURL: ', $imasDataCatalogueURL)"/-->
@@ -111,15 +111,15 @@
         
         <xsl:variable name="pointOfContactNode_sequence" as="node()*">
             <xsl:if test="count(gmd:identificationInfo/mcp:MD_DataIdentification) > 0">
-                <xsl:copy-of select="custom:getPointOfContactSequence(gmd:identificationInfo/mcp:MD_DataIdentification)"/>
+                <xsl:copy-of select="customIMAS:getPointOfContactSequence(gmd:identificationInfo/mcp:MD_DataIdentification)"/>
             </xsl:if>
             
             <xsl:if test="count(gmd:identificationInfo/mcp:MD_ServiceIdentification) > 0">
-                <xsl:copy-of select="custom:getPointOfContactSequence(gmd:identificationInfo/mcp:MD_ServiceIdentification)"/>
+                <xsl:copy-of select="customIMAS:getPointOfContactSequence(gmd:identificationInfo/mcp:MD_ServiceIdentification)"/>
             </xsl:if>
             
             <xsl:if test="count(gmd:identificationInfo/srv:SV_ServiceIdentification) > 0">
-                <xsl:copy-of select="custom:getPointOfContactSequence(gmd:identificationInfo/srv:SV_ServiceIdentification)"/>
+                <xsl:copy-of select="customIMAS:getPointOfContactSequence(gmd:identificationInfo/srv:SV_ServiceIdentification)"/>
             </xsl:if>
             
         </xsl:variable>
@@ -133,7 +133,7 @@
         <xsl:variable name="citationContributorIndividualName_specificRole_sequence" as="xs:string*">
             <!--xsl:message select="concat('count gmd:identificationInfo/*/gmd:citation/gmd:CI_Citation: ', count(gmd:identificationInfo/*/gmd:citation/gmd:CI_Citation))"/-->
             <xsl:if test="count(gmd:identificationInfo/*/gmd:citation/gmd:CI_Citation) > 0">
-                <xsl:copy-of select="custom:getIndividualNameSequence(gmd:identificationInfo/*/gmd:citation/gmd:CI_Citation, 'principalInvestigator,author,coInvestigator')"/> 
+                <xsl:copy-of select="customIMAS:getIndividualNameSequence(gmd:identificationInfo/*/gmd:citation/gmd:CI_Citation, 'principalInvestigator,author,coInvestigator')"/> 
             </xsl:if>
         </xsl:variable>
         <!--xsl:message select="concat('count citationContributorIndividualName_specificRole_sequence: ', count($citationContributorIndividualName_specificRole_sequence))"/-->
@@ -141,7 +141,7 @@
         <!-- Seek an organisation with no individual name, that has role in either:  principal investigator, an author, or a co investigator - in that order -->
         <xsl:variable name="citationContributorOrganisationNameNoIndividualName_specificRole_sequence" as="xs:string*">
             <xsl:if test="count(gmd:identificationInfo/*/gmd:citation/gmd:CI_Citation) > 0">
-                <xsl:copy-of select="custom:getOrganisationNameSequence(gmd:identificationInfo/*/gmd:citation/gmd:CI_Citation, 'principalInvestigator,author,coInvestigator')"/>    
+                <xsl:copy-of select="customIMAS:getOrganisationNameSequence(gmd:identificationInfo/*/gmd:citation/gmd:CI_Citation, 'principalInvestigator,author,coInvestigator')"/>    
             </xsl:if>
         </xsl:variable>
         <!--xsl:message select="concat('count citationContributorOrganisationNameNoIndividualName_specificRole_sequence: ', count($citationContributorOrganisationNameNoIndividualName_specificRole_sequence))"/-->
@@ -150,7 +150,7 @@
         <xsl:variable name="citationContributorIndividualName_anyRole_sequence" as="xs:string*">
             <!--xsl:message select="concat('count gmd:identificationInfo/*/gmd:citation/gmd:CI_Citation: ', count(gmd:identificationInfo/*/gmd:citation/gmd:CI_Citation))"/-->
             <xsl:if test="count(gmd:identificationInfo/*/gmd:citation/gmd:CI_Citation) > 0">
-                <xsl:copy-of select="custom:getIndividualNameSequence(gmd:identificationInfo/*/gmd:citation/gmd:CI_Citation, ',')"/> 
+                <xsl:copy-of select="customIMAS:getIndividualNameSequence(gmd:identificationInfo/*/gmd:citation/gmd:CI_Citation, ',')"/> 
             </xsl:if>
         </xsl:variable>
         <!--xsl:message select="concat('count citationContributorIndividualName_anyRole_sequence: ', count($citationContributorIndividualName_anyRole_sequence))"/-->
@@ -158,7 +158,7 @@
         <!-- Seek an organisation, regardless of whether there is an individual name, that has any role -->
         <xsl:variable name="citationContributorAllOrganisation_anyRole_sequence" as="xs:string*">
             <xsl:if test="count(gmd:identificationInfo/*/gmd:citation/gmd:CI_Citation) > 0">
-                <xsl:copy-of select="custom:getAllOrganisationNameSequence(gmd:identificationInfo/*/gmd:citation/gmd:CI_Citation, ',')"/>
+                <xsl:copy-of select="customIMAS:getAllOrganisationNameSequence(gmd:identificationInfo/*/gmd:citation/gmd:CI_Citation, ',')"/>
             </xsl:if>
         </xsl:variable>
         <!--xsl:message select="concat('count citationContributorAllOrganisation_anyRole_sequence: ', count($citationContributorAllOrganisation_anyRole_sequence))"/-->
@@ -166,14 +166,14 @@
         <xsl:variable name="pointOfContactOrganisationName_specificRole_sequence" as="xs:string*">
             <!-- Seek an organisation point of contact, regardless of whether there is an individual name, that has role in either:  principal investigator, an author, or a co investigator -->
             <xsl:for-each select="$pointOfContactNode_sequence">
-                <xsl:copy-of select="custom:getAllOrganisationNameSequence(., 'principalInvestigator,author,coInvestigator')"/>  
+                <xsl:copy-of select="customIMAS:getAllOrganisationNameSequence(., 'principalInvestigator,author,coInvestigator')"/>  
             </xsl:for-each>
         </xsl:variable>
         
         <xsl:variable name="pointOfContactOrganisationName_anyRole_sequence" as="xs:string*">
             <!-- Seek an organisation point of contact, regardless of whether there is an individual name, of any role -->
             <xsl:for-each select="$pointOfContactNode_sequence">
-                <xsl:copy-of select="custom:getAllOrganisationNameSequence(., ',')"/>  
+                <xsl:copy-of select="customIMAS:getAllOrganisationNameSequence(., ',')"/>  
             </xsl:for-each>
         </xsl:variable>
         
@@ -262,10 +262,10 @@
         <xsl:variable name="originatingSource">
             <xsl:choose>
                 <xsl:when test="count($originatingSource_sequence) > 0">
-                    <xsl:value-of select="custom:getTransformedOriginatingSource($originatingSource_sequence[1])"/>  
+                    <xsl:value-of select="customIMAS:getTransformedOriginatingSource($originatingSource_sequence[1])"/>  
                 </xsl:when>
                 <xsl:otherwise>
-                    <xsl:value-of select="$global_defaultOriginatingSource"/>
+                    <xsl:value-of select="$global_IMAS_defaultOriginatingSource"/>
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
@@ -277,11 +277,11 @@
                     <xsl:choose>
                         <xsl:when test="string-length($metadataTruthURL) > 0">
                             <!--xsl:message select="concat('metadataTruthURL: ', $metadataTruthURL)"/-->
-                            <xsl:copy-of select="custom:getBaseURI($metadataTruthURL)"/>
+                            <xsl:copy-of select="customIMAS:getBaseURI($metadataTruthURL)"/>
                         </xsl:when>
                         <xsl:when test="string-length($dataSetURI) > 0">
                             <!--xsl:message select="concat('dataSetURI: ', $dataSetURI)"/-->
-                            <xsl:copy-of select="custom:getBaseURI($dataSetURI)"/> 
+                            <xsl:copy-of select="customIMAS:getBaseURI($dataSetURI)"/> 
                         </xsl:when>
                     </xsl:choose>
                 </xsl:variable>
@@ -290,7 +290,7 @@
                 
                 <xsl:variable name="orgNameFromURI">
                     <xsl:if test="string-length($baseURI) > 0">
-                        <xsl:copy-of select="custom:getOrgNameFromBaseURI($baseURI)"/>
+                        <xsl:copy-of select="customIMAS:getOrgNameFromBaseURI($baseURI)"/>
                     </xsl:if>
                 </xsl:variable>
                 
@@ -313,7 +313,7 @@
                 </xsl:choose>
             </xsl:variable>
             
-            <xsl:value-of select="custom:getTransformedPublisher($publishingOrganisationNotTransformed)"/>      
+            <xsl:value-of select="customIMAS:getTransformedPublisher($publishingOrganisationNotTransformed)"/>      
         
         </xsl:variable>
         
@@ -321,10 +321,10 @@
 
         <registryObject>
             <xsl:attribute name="group">
-                <xsl:value-of select="$global_group"/>
+                <xsl:value-of select="$global_IMAS_group"/>
             </xsl:attribute>
 
-            <xsl:apply-templates select="gmd:fileIdentifier" mode="registryObject_key"/>
+            <xsl:apply-templates select="gmd:fileIdentifier" mode="IMAS_registryObject_key"/>
 
             <originatingSource>
                 <xsl:value-of select="$originatingSource"/>
@@ -340,7 +340,7 @@
             </xsl:variable>
 
             <xsl:variable name="registryObjectTypeSubType_sequence" as="xs:string*">
-                <xsl:call-template name="getRegistryObjectTypeSubType">
+                <xsl:call-template name="IMAS_getRegistryObjectTypeSubType">
                     <xsl:with-param name="scopeCode" select="$scopeCode"/>
                     <xsl:with-param name="publishingOrganisation" select="$publishingOrganisation"/>
                 </xsl:call-template>
@@ -354,14 +354,14 @@
 
                     <xsl:choose>
                         <xsl:when test="string-length($metadataTruthURL) > 0">
-                            <xsl:call-template name="set_registryObjectIdentifier">
+                            <xsl:call-template name="IMAS_set_registryObjectIdentifier">
                                 <xsl:with-param name="identifier" select="$metadataTruthURL"/>
                                 <xsl:with-param name="type" select="'uri'"/>
                             </xsl:call-template>
                         </xsl:when>
                         <xsl:otherwise>
                             <xsl:if test="string-length($imasDataCatalogueURL) > 0">
-                                <xsl:call-template name="set_registryObjectIdentifier">
+                                <xsl:call-template name="IMAS_set_registryObjectIdentifier">
                                     <xsl:with-param name="identifier" select="$imasDataCatalogueURL"/>
                                     <xsl:with-param name="type" select="'uri'"/>
                                 </xsl:call-template>
@@ -371,22 +371,22 @@
 
                     <xsl:apply-templates
                         select="gmd:identificationInfo/*/gmd:citation/gmd:CI_Citation/gmd:title"
-                        mode="registryObject_name"/>
+                        mode="IMAS_registryObject_name"/>
                     
                     <xsl:if test="$registryObjectTypeSubType_sequence[1] = 'collection'">
                         <xsl:apply-templates
                             select="gmd:identificationInfo/*:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:date"
-                            mode="registryObject_dates"/>
+                            mode="IMAS_registryObject_dates"/>
                     </xsl:if>
                     
                     <xsl:apply-templates select="gmd:parentIdentifier"
-                        mode="registryObject_related_object"/>
+                        mode="IMAS_registryObject_related_object"/>
 
                    <xsl:apply-templates select="gmd:distributionInfo/gmd:MD_Distribution"
-                        mode="registryObject_location"/>
+                        mode="IMAS_registryObject_location"/>
                     
                     <xsl:apply-templates select="gmd:distributionInfo/gmd:MD_Distribution"
-                        mode="registryObject_accessRights_type"/>
+                        mode="IMAS_registryObject_accessRights_type"/>
                     
                     
                     <xsl:for-each-group
@@ -395,7 +395,7 @@
                          gmd:identificationInfo/*/gmd:pointOfContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName)) > 0) and 
                          (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)) > 0)]"
                         group-by="gmd:individualName">
-                        <xsl:apply-templates select="." mode="registryObject_related_object"/>
+                        <xsl:apply-templates select="." mode="IMAS_registryObject_related_object"/>
                     </xsl:for-each-group>
 
                     <xsl:for-each-group
@@ -404,107 +404,107 @@
                          gmd:identificationInfo/*/gmd:pointOfContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName)) > 0) and 
                          (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)) > 0)]"
                         group-by="gmd:organisationName">
-                        <xsl:apply-templates select="." mode="registryObject_related_object"/>
+                        <xsl:apply-templates select="." mode="IMAS_registryObject_related_object"/>
                     </xsl:for-each-group>
 
                     <xsl:apply-templates select="mcp:children/mcp:childIdentifier"
-                        mode="registryObject_related_object"/>
+                        mode="IMAS_registryObject_related_object"/>
 
                     <xsl:apply-templates
                         select="gmd:identificationInfo/*/gmd:topicCategory/gmd:MD_TopicCategoryCode"
-                        mode="registryObject_subject"/>
+                        mode="IMAS_registryObject_subject"/>
 
                     <xsl:apply-templates select="gmd:identificationInfo/mcp:MD_DataIdentification"
-                        mode="registryObject_subject"/>
+                        mode="IMAS_registryObject_subject"/>
 
                     <xsl:apply-templates select="gmd:identificationInfo/srv:ServiceIdentification"
-                        mode="registryObject_subject"/>
+                        mode="IMAS_registryObject_subject"/>
 
                     <xsl:apply-templates
                         select="gmd:identificationInfo/mcp:MD_ServiceIdentification"
-                        mode="registryObject_subject"/>
+                        mode="IMAS_registryObject_subject"/>
 
                     <xsl:apply-templates select="gmd:identificationInfo/*/gmd:abstract"
-                        mode="registryObject_description"/>
+                        mode="IMAS_registryObject_description"/>
 
                     <xsl:apply-templates
                         select="gmd:identificationInfo/*/gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_GeographicBoundingBox"
-                        mode="registryObject_coverage_spatial">
+                        mode="IMAS_registryObject_coverage_spatial">
                         <xsl:with-param name="code" select="$projectionCode"/>
                     </xsl:apply-templates>
 
                     <xsl:apply-templates
                         select="gmd:identificationInfo/*/gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_BoundingPolygon"
-                        mode="registryObject_coverage_spatial"/>
+                        mode="IMAS_registryObject_coverage_spatial"/>
 
                     <xsl:apply-templates
                         select="gmd:identificationInfo/*/gmd:extent/gmd:EX_Extent/gmd:temporalElement/*:EX_TemporalExtent/gmd:extent"
-                        mode="registryObject_coverage_temporal"/>
+                        mode="IMAS_registryObject_coverage_temporal"/>
                     
                     <xsl:if test="($registryObjectTypeSubType_sequence[1] = 'activity') or ($registryObjectTypeSubType_sequence[1] = 'party')">
                         <xsl:apply-templates
                             select="gmd:identificationInfo/*/gmd:extent/gmd:EX_Extent/gmd:temporalElement/*:EX_TemporalExtent/gmd:extent"
-                            mode="registryObject_existence_dates"/>
+                            mode="IMAS_registryObject_existence_dates"/>
                     </xsl:if>
                     
                     <xsl:apply-templates
                         select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions"
-                        mode="registryObject_relatedInfo"/>
+                        mode="IMAS_registryObject_relatedInfo"/>
 
                     <xsl:apply-templates select="mcp:children/mcp:childIdentifier"
-                        mode="registryObject_relatedInfo"/>
+                        mode="IMAS_registryObject_relatedInfo"/>
 
                     <xsl:apply-templates
                         select="gmd:identificationInfo/srv:SV_ServiceIdentification/srv:operatesOn"
-                        mode="registryObject_relatedInfo"/>
+                        mode="IMAS_registryObject_relatedInfo"/>
 
                     <xsl:apply-templates
                         select="gmd:identificationInfo/*/gmd:resourceConstraints/mcp:MD_CreativeCommons[
                             exists(mcp:licenseLink)]"
-                        mode="registryObject_rights_licence_creative"/>
+                        mode="IMAS_registryObject_rights_licence_creative"/>
 
                     <xsl:apply-templates
                         select="gmd:identificationInfo/*/gmd:resourceConstraints/mcp:MD_CreativeCommons"
-                        mode="registryObject_rights_rightsStatement_creative"/>
+                        mode="IMAS_registryObject_rights_rightsStatement_creative"/>
 
                     <xsl:apply-templates
                         select="gmd:identificationInfo/*/gmd:resourceConstraints/mcp:MD_Commons[
                             exists(mcp:licenseLink)]"
-                        mode="registryObject_rights_licence_creative"/>
+                        mode="IMAS_registryObject_rights_licence_creative"/>
 
                     <xsl:apply-templates
                         select="gmd:identificationInfo/*/gmd:resourceConstraints/mcp:MD_Commons"
-                        mode="registryObject_rights_rightsStatement_creative"/>
+                        mode="IMAS_registryObject_rights_rightsStatement_creative"/>
 
                     <xsl:apply-templates
                         select="gmd:identificationInfo/*/gmd:resourceConstraints/gmd:MD_LegalConstraints"
-                        mode="registryObject_rights_rightsStatement"/>
+                        mode="IMAS_registryObject_rights_rightsStatement"/>
 
                     <xsl:apply-templates
                         select="gmd:identificationInfo/*/gmd:resourceConstraints/gmd:MD_LegalConstraints[
                             exists(gmd:accessConstraints)]"
-                        mode="registryObject_rights_accessRights"/>
+                        mode="IMAS_registryObject_rights_accessRights"/>
 
                     <xsl:apply-templates
                         select="gmd:identificationInfo/*/gmd:resourceConstraints/gmd:MD_Constraints"
-                        mode="registryObject_rights_rightsStatement"/>
+                        mode="IMAS_registryObject_rights_rightsStatement"/>
 
 
                     <xsl:apply-templates
                         select="gmd:identificationInfo/*/gmd:resourceConstraints/gmd:MD_Constraints"
-                        mode="registryObject_rights_accessRights"/>
+                        mode="IMAS_registryObject_rights_accessRights"/>
 
                     <xsl:if test="$registryObjectTypeSubType_sequence[1] = 'collection'">
 
                         <!--xsl:variable name="distributorContactNode_sequence" as="node()*">
-                            <xsl:call-template name="getDistributorContactSequence">
+                            <xsl:call-template name="IMAS_getDistributorContactSequence">
                                 <xsl:with-param name="parent"
                                     select="gmd:distributionInfo/gmd:MD_Distribution"/>
                             </xsl:call-template>
                         </xsl:variable-->
 
                        <xsl:for-each select="gmd:identificationInfo/*/gmd:citation/gmd:CI_Citation">
-                            <xsl:call-template name="registryObject_citationMetadata_citationInfo">
+                            <xsl:call-template name="IMAS_registryObject_citationMetadata_citationInfo">
                                 <xsl:with-param name="metadataTruthURL" select="$metadataTruthURL"/>
                                 <xsl:with-param name="imasDataCatalogueURL" select="$imasDataCatalogueURL"/>
                                 <xsl:with-param name="originatingSource" select="$originatingSource"/>
@@ -529,7 +529,7 @@
              gmd:identificationInfo/*/gmd:pointOfContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName)) > 0) and 
              (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)) > 0)]"
             group-by="gmd:individualName">
-            <xsl:call-template name="party">
+            <xsl:call-template name="IMAS_party">
                 <xsl:with-param name="type">person</xsl:with-param>
                 <xsl:with-param name="originatingSource" select="$originatingSource"/>
             </xsl:call-template>
@@ -541,7 +541,7 @@
              gmd:identificationInfo/*/gmd:pointOfContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName)) > 0) and 
              (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)) > 0)]"
             group-by="gmd:organisationName">
-            <xsl:call-template name="party">
+            <xsl:call-template name="IMAS_party">
                 <xsl:with-param name="type">group</xsl:with-param>
                 <xsl:with-param name="originatingSource" select="$originatingSource"/>
             </xsl:call-template>
@@ -556,14 +556,14 @@
     <!-- =========================================== -->
 
     <!-- RegistryObject - Key Element  -->
-    <xsl:template match="gmd:fileIdentifier" mode="registryObject_key">
+    <xsl:template match="gmd:fileIdentifier" mode="IMAS_registryObject_key">
         <key>
-            <xsl:value-of select="concat($global_acronym,'/', normalize-space(.))"/>
+            <xsl:value-of select="concat($global_IMAS_acronym,'/', normalize-space(.))"/>
         </key>
     </xsl:template>
 
     <!-- RegistryObject - Identifier Element  -->
-    <xsl:template match="gmd:fileIdentifier" mode="registryObject_identifier">
+    <xsl:template match="gmd:fileIdentifier" mode="IMAS_registryObject_identifier">
         <xsl:variable name="identifier" select="normalize-space(.)"/>
         <xsl:if test="string-length($identifier) > 0">
             <identifier>
@@ -576,12 +576,12 @@
                 <xsl:attribute name="type">
                     <xsl:text>global</xsl:text>
                 </xsl:attribute>
-                <xsl:value-of select="concat($global_acronym,'/', $identifier)"/>
+                <xsl:value-of select="concat($global_IMAS_acronym,'/', $identifier)"/>
             </identifier>
         </xsl:if>
     </xsl:template>
 
-    <xsl:template name="set_registryObjectIdentifier">
+    <xsl:template name="IMAS_set_registryObjectIdentifier">
         <xsl:param name="identifier"/>
         <xsl:param name="type"/>
         <xsl:if test="string-length($identifier) > 0">
@@ -596,7 +596,7 @@
 
     <!-- RegistryObject - Name Element  -->
     <xsl:template match="gmd:identificationInfo/*/gmd:citation/gmd:CI_Citation/gmd:title"
-        mode="registryObject_name">
+        mode="IMAS_registryObject_name">
         <xsl:if test="string-length(normalize-space(.)) > 0">
             <name>
                 <xsl:attribute name="type">
@@ -611,14 +611,14 @@
 
     <!-- RegistryObject - Point of Contact Sequence  -->
 
-    <xsl:function name="custom:getPointOfContactSequence" as="node()*">
+    <xsl:function name="customIMAS:getPointOfContactSequence" as="node()*">
         <xsl:param name="parent" as="node()"/>
         <xsl:for-each select="$parent/descendant::gmd:pointOfContact">
             <xsl:copy-of select="."/>
         </xsl:for-each>
     </xsl:function>
 
-    <xsl:function name="custom:getDistributorContactSequence" as="node()*">
+    <xsl:function name="customIMAS:getDistributorContactSequence" as="node()*">
         <xsl:param name="parent"/>
         <xsl:for-each select="$parent/descendant::gmd:distributorContact">
             <xsl:copy-of select="."/>
@@ -627,7 +627,7 @@
 
     <!-- RegistryObject - Dates Element  -->
     <xsl:template match="gmd:identificationInfo/*/gmd:citation/gmd:CI_Citation/gmd:date"
-        mode="registryObject_dates">
+        mode="IMAS_registryObject_dates">
         <xsl:variable name="dateValue">
             <xsl:if test="string-length(normalize-space(gmd:CI_Date/gmd:date/gco:Date)) > 0">
                 <xsl:value-of select="normalize-space(gmd:CI_Date/gmd:date/gco:Date)"/>
@@ -671,12 +671,12 @@
     </xsl:template>
 
     <!-- RegistryObject - Related Object Element  -->
-    <xsl:template match="gmd:parentIdentifier" mode="registryObject_related_object">
+    <xsl:template match="gmd:parentIdentifier" mode="IMAS_registryObject_related_object">
         <xsl:variable name="identifier" select="normalize-space(.)"/>
         <xsl:if test="string-length($identifier) > 0">
             <relatedObject>
                 <key>
-                    <xsl:value-of select="concat($global_acronym,'/', $identifier)"/>
+                    <xsl:value-of select="concat($global_IMAS_acronym,'/', $identifier)"/>
                 </key>
                 <relation>
                     <xsl:attribute name="type">
@@ -687,7 +687,7 @@
         </xsl:if>
     </xsl:template>
     
-    <xsl:template match="gmd:MD_Distribution" mode="registryObject_accessRights_type">
+    <xsl:template match="gmd:MD_Distribution" mode="IMAS_registryObject_accessRights_type">
         <xsl:variable name="open_sequence" as="xs:boolean*">
             <xsl:for-each select="gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource">
                 <xsl:choose>
@@ -705,7 +705,7 @@
         </xsl:if>
     </xsl:template>
     
-    <xsl:template match="gmd:MD_Distribution" mode="registryObject_location">
+    <xsl:template match="gmd:MD_Distribution" mode="IMAS_registryObject_location">
         <xsl:for-each select="gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource">
             <xsl:choose>
                 <!--xsl:when test="contains(lower-case(gmd:protocol), 'downloaddata')">
@@ -774,12 +774,12 @@
     </xsl:template>
 
     <!-- RegistryObject - Related Object (Organisation or Individual) Element -->
-    <xsl:template match="gmd:CI_ResponsibleParty" mode="registryObject_related_object">
+    <xsl:template match="gmd:CI_ResponsibleParty" mode="IMAS_registryObject_related_object">
         <xsl:variable name="name" select="normalize-space(current-grouping-key())"/>
         <relatedObject>
             <key>
                 <xsl:value-of
-                    select="concat($global_acronym,'/', translate(custom:nameNoTitle($name),' ',''))"
+                    select="concat($global_IMAS_acronym,'/', translate(customIMAS:nameNoTitle($name),' ',''))"
                 />
             </key>
             <!-- if current grouping key is organisation name and there is an individual name, make relation soft-->
@@ -805,13 +805,13 @@
     </xsl:template>
 
     <!-- RegistryObject - Related Object Element  -->
-    <xsl:template match="mcp:childIdentifier" mode="registryObject_related_object">
+    <xsl:template match="mcp:childIdentifier" mode="IMAS_registryObject_related_object">
         <!--xsl:message>mcp:children</xsl:message-->
         <xsl:variable name="identifier" select="normalize-space(.)"/>
         <xsl:if test="string-length($identifier) > 0">
             <relatedObject>
                 <key>
-                    <xsl:value-of select="concat($global_acronym,'/', $identifier)"/>
+                    <xsl:value-of select="concat($global_IMAS_acronym,'/', $identifier)"/>
                 </key>
                 <relation>
                     <xsl:attribute name="type">
@@ -823,25 +823,25 @@
     </xsl:template>
 
     <!-- RegistryObject - Subject Element -->
-    <xsl:template match="mcp:MD_DataIdentification" mode="registryObject_subject">
-        <xsl:call-template name="populateSubjects">
+    <xsl:template match="mcp:MD_DataIdentification" mode="IMAS_registryObject_subject">
+        <xsl:call-template name="IMAS_populateSubjects">
             <xsl:with-param name="parent" select="."/>
         </xsl:call-template>
     </xsl:template>
 
-    <xsl:template match="srv:ServiceIdentification" mode="registryObject_subject">
-        <xsl:call-template name="populateSubjects">
+    <xsl:template match="srv:ServiceIdentification" mode="IMAS_registryObject_subject">
+        <xsl:call-template name="IMAS_populateSubjects">
             <xsl:with-param name="parent" select="."/>
         </xsl:call-template>
     </xsl:template>
 
-    <xsl:template match="mcp:MD_ServiceIdentification" mode="registryObject_subject">
-        <xsl:call-template name="populateSubjects">
+    <xsl:template match="mcp:MD_ServiceIdentification" mode="IMAS_registryObject_subject">
+        <xsl:call-template name="IMAS_populateSubjects">
             <xsl:with-param name="parent" select="."/>
         </xsl:call-template>
     </xsl:template>
 
-    <xsl:template name="populateSubjects">
+    <xsl:template name="IMAS_populateSubjects">
         <xsl:param name="parent"/>
         <xsl:for-each select="$parent/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword">
             <xsl:variable name="idType">
@@ -895,7 +895,7 @@
         </xsl:for-each>
     </xsl:template>
 
-    <xsl:template match="gmd:MD_TopicCategoryCode" mode="registryObject_subject">
+    <xsl:template match="gmd:MD_TopicCategoryCode" mode="IMAS_registryObject_subject">
         <xsl:if test="string-length(normalize-space(.)) > 0">
             <subject type="local">
                 <xsl:value-of select="."/>
@@ -904,7 +904,7 @@
     </xsl:template>
 
     <!-- RegistryObject - Decription Element -->
-    <xsl:template match="gmd:abstract" mode="registryObject_description">
+    <xsl:template match="gmd:abstract" mode="IMAS_registryObject_description">
         <xsl:if test="string-length(normalize-space(.)) > 0">
             <description type="full">
                 <xsl:value-of select="normalize-space(.)"/>
@@ -913,7 +913,7 @@
     </xsl:template>
 
     <!-- RegistryObject - Coverage Spatial Element -->
-    <xsl:template match="gmd:EX_GeographicBoundingBox" mode="registryObject_coverage_spatial">
+    <xsl:template match="gmd:EX_GeographicBoundingBox" mode="IMAS_registryObject_coverage_spatial">
         <xsl:param name="code"/>
         <xsl:if
             test="
@@ -956,7 +956,7 @@
 
 
     <!-- RegistryObject - Coverage Spatial Element -->
-    <xsl:template match="gmd:EX_BoundingPolygon" mode="registryObject_coverage_spatial">
+    <xsl:template match="gmd:EX_BoundingPolygon" mode="IMAS_registryObject_coverage_spatial">
         <xsl:if
             test="string-length(normalize-space(gmd:polygon/gml:Polygon/gml:exterior/gml:LinearRing/gml:coordinates))  > 0">
             <coverage>
@@ -973,7 +973,7 @@
     </xsl:template>
 
     <!-- RegistryObject - Coverage Temporal Element -->
-    <xsl:template match="gmd:extent" mode="registryObject_coverage_temporal">
+    <xsl:template match="gmd:extent" mode="IMAS_registryObject_coverage_temporal">
         <xsl:if
             test="string-length(normalize-space(gml:TimePeriod/gml:begin/gml:TimeInstant/gml:timePosition)) > 0 or
                       string-length(normalize-space(gml:TimePeriod/gml:end/gml:TimeInstant/gml:timePosition)) > 0">
@@ -1050,7 +1050,7 @@
     </xsl:template>
     
     <!-- RegistryObject - Coverage Temporal Element -->
-    <xsl:template match="gmd:extent" mode="registryObject_existence_dates">
+    <xsl:template match="gmd:extent" mode="IMAS_registryObject_existence_dates">
         <xsl:if
             test="string-length(normalize-space(gml:TimePeriod/gml:begin/gml:TimeInstant/gml:timePosition)) > 0 or
             string-length(normalize-space(gml:TimePeriod/gml:end/gml:TimeInstant/gml:timePosition)) > 0">
@@ -1111,7 +1111,7 @@
     </xsl:template>
 
     <!-- RegistryObject - RelatedInfo Element  -->
-    <xsl:template match="gmd:MD_DigitalTransferOptions" mode="registryObject_relatedInfo">
+    <xsl:template match="gmd:MD_DigitalTransferOptions" mode="IMAS_registryObject_relatedInfo">
         <xsl:for-each select="gmd:onLine/gmd:CI_OnlineResource">
 
             <xsl:variable name="protocol" select="normalize-space(gmd:protocol)"/>
@@ -1171,13 +1171,13 @@
     </xsl:template>
 
     <!-- RegistryObject - RelatedInfo Element  -->
-    <xsl:template match="mcp:childIdentifier" mode="registryObject_relatedInfo">
+    <xsl:template match="mcp:childIdentifier" mode="IMAS_registryObject_relatedInfo">
         <xsl:variable name="identifier" select="normalize-space(.)"/>
         <xsl:if test="string-length($identifier) > 0">
             <relatedInfo type="collection">
                 <identifier type="uri">
                     <xsl:value-of
-                        select="concat('http://', $global_baseURI, $global_path, $identifier)"/>
+                        select="concat('http://', $global_IMAS_baseURI, $global_IMAS_path, $identifier)"/>
                 </identifier>
                 <relation>
                     <xsl:attribute name="type">
@@ -1192,7 +1192,7 @@
         </xsl:if>
     </xsl:template>
 
-    <xsl:template match="srv:operatesOn" mode="registryObject_relatedInfo">
+    <xsl:template match="srv:operatesOn" mode="IMAS_registryObject_relatedInfo">
         <xsl:variable name="abstract"
             select="normalize-space(gmd:MD_DataIdentification/gmd:abstract)"/>
 
@@ -1228,10 +1228,10 @@
 
                 <xsl:if test="(string-length($uuid) > 0)">
                     <!--identifier type="global">
-                        <xsl:value-of select="concat($global_groupAcronym,'/', $uuid)"/>
+                        <xsl:value-of select="concat($global_IMAS_groupAcronym,'/', $uuid)"/>
                     </identifier-->
                     <xsl:variable name="constructedUri"
-                        select="concat('http://', $global_baseURI, $global_path, $uuid)"/>
+                        select="concat('http://', $global_IMAS_baseURI, $global_IMAS_path, $uuid)"/>
 
                     <xsl:if test="$constructedUri != $uri">
                         <identifier type="uri">
@@ -1257,7 +1257,7 @@
     </xsl:template>
 
     <!-- RegistryObject - Rights Licence - From CreativeCommons -->
-    <xsl:template match="mcp:MD_CreativeCommons" mode="registryObject_rights_licence_creative">
+    <xsl:template match="mcp:MD_CreativeCommons" mode="IMAS_registryObject_rights_licence_creative">
         <xsl:variable name="licenseLink" select="normalize-space(mcp:licenseLink/gmd:URL)"/>
         <xsl:for-each
             select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCode']/gmx:codeEntry/gmx:CodeDefinition">
@@ -1289,7 +1289,7 @@
 
     <!-- RegistryObject - Rights RightsStatement - From CreativeCommons -->
     <xsl:template match="mcp:MD_CreativeCommons"
-        mode="registryObject_rights_rightsStatement_creative">
+        mode="IMAS_registryObject_rights_rightsStatement_creative">
         <xsl:for-each select="mcp:attributionConstraints">
             <!-- If there is text in other contraints, use this; otherwise, do nothing -->
             <xsl:if test="string-length(normalize-space(.)) > 0">
@@ -1303,7 +1303,7 @@
     </xsl:template>
 
     <!-- RegistryObject - Rights Licence - From CreativeCommons -->
-    <xsl:template match="mcp:MD_Commons" mode="registryObject_rights_licence_creative">
+    <xsl:template match="mcp:MD_Commons" mode="IMAS_registryObject_rights_licence_creative">
         <xsl:variable name="licenseLink" select="normalize-space(mcp:licenseLink/gmd:URL)"/>
         <xsl:for-each
             select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCode']/gmx:codeEntry/gmx:CodeDefinition">
@@ -1334,7 +1334,7 @@
     </xsl:template>
 
     <!-- RegistryObject - Rights RightsStatement - From CreativeCommons -->
-    <xsl:template match="mcp:MD_Commons" mode="registryObject_rights_rightsStatement_creative">
+    <xsl:template match="mcp:MD_Commons" mode="IMAS_registryObject_rights_rightsStatement_creative">
         <xsl:for-each select="gmd:useLimitation">
             <xsl:if test="(string-length(normalize-space(.)) > 0)">
             <rights>
@@ -1356,7 +1356,7 @@
         <xsl:for-each select="mcp:attributionConstraints">
             <!-- If there is text in other contraints, use this; otherwise, do nothing -->
             <xsl:if test="(string-length(normalize-space(.)) > 0) and
-                    not(contains(., global_cannedCitation))">
+                    not(contains(., global_IMAS_cannedCitation))">
                 <rights>
                     <rightsStatement>
                         <xsl:value-of select="normalize-space(.)"/>
@@ -1367,7 +1367,7 @@
     </xsl:template>
 
     <!-- RegistryObject - RightsStatement -->
-    <xsl:template match="gmd:MD_Constraints" mode="registryObject_rights_rightsStatement">
+    <xsl:template match="gmd:MD_Constraints" mode="IMAS_registryObject_rights_rightsStatement">
         <xsl:variable name="useLimitation_sequence" as="xs:string*">
             <xsl:for-each select="gmd:useLimitation">
                 <xsl:value-of select="normalize-space(.)"/>
@@ -1401,7 +1401,7 @@
     </xsl:template>
     
     <!-- RegistryObject - Rights AccessRights Element -->
-    <xsl:template match="gmd:MD_Constraints" mode="registryObject_rights_accessRights">
+    <xsl:template match="gmd:MD_Constraints" mode="IMAS_registryObject_rights_accessRights">
         <xsl:for-each select="gmd:otherConstraints">
             <xsl:if test="string-length(normalize-space(.)) > 0">
                 <rights>
@@ -1414,7 +1414,7 @@
     </xsl:template>
 
     <!-- RegistryObject - RightsStatement -->
-    <xsl:template match="gmd:MD_LegalConstraints" mode="registryObject_rights_rightsStatement">
+    <xsl:template match="gmd:MD_LegalConstraints" mode="IMAS_registryObject_rights_rightsStatement">
         <xsl:for-each select="gmd:useLimitation">
             <xsl:variable name="useLimitation" select="normalize-space(.)"/>
             <!-- If there is text in other contraints, use this; otherwise, do nothing -->
@@ -1453,7 +1453,7 @@
     </xsl:template>
 
     <!-- RegistryObject - Rights AccessRights Element -->
-    <xsl:template match="gmd:MD_LegalConstraints" mode="registryObject_rights_accessRights">
+    <xsl:template match="gmd:MD_LegalConstraints" mode="IMAS_registryObject_rights_accessRights">
         <xsl:for-each select="gmd:otherConstraints">
             <xsl:if test="string-length(normalize-space(.)) > 0">
                 <rights>
@@ -1466,7 +1466,7 @@
     </xsl:template>
 
     <!-- RegistryObject - CitationInfo Element -->
-    <xsl:template name="registryObject_citationMetadata_citationInfo">
+    <xsl:template name="IMAS_registryObject_citationMetadata_citationInfo">
         <xsl:param name="metadataTruthURL"/>
         <xsl:param name="imasDataCatalogueURL"/>
         <xsl:param name="dataSetURI"/>
@@ -1479,7 +1479,7 @@
 
         <xsl:variable name="CI_Citation" select="." as="node()"/>
 
-              <xsl:variable name="doiIdentifier_sequence" as="xs:string*" select="custom:doiFromIdentifiers(gmd:identifier/gmd:MD_Identifier/gmd:code)"/>
+              <xsl:variable name="doiIdentifier_sequence" as="xs:string*" select="customIMAS:doiFromIdentifiers(gmd:identifier/gmd:MD_Identifier/gmd:code)"/>
         
         <xsl:variable name="identifierToUse">
             <xsl:choose>
@@ -1629,15 +1629,15 @@
     <!-- ====================================== -->
 
     <!-- Party Registry Object (Individuals (person) and Organisations (group)) -->
-    <xsl:template name="party">
+    <xsl:template name="IMAS_party">
         <xsl:param name="type"/>
         <xsl:param name="originatingSource"/>
-        <registryObject group="{$global_group}">
+        <registryObject group="{$global_IMAS_group}">
 
             <xsl:variable name="name" select="normalize-space(current-grouping-key())"/>
             <!-- Name is to be 'surname,firstname' or 'surname,i', to attempt to reduce replicated records -->
             <key>
-                <xsl:value-of select="concat($global_acronym, '/', translate(custom:nameNoTitle($name),' ',''))"/>
+                <xsl:value-of select="concat($global_IMAS_acronym, '/', translate(customIMAS:nameNoTitle($name),' ',''))"/>
             </key>
 
             <originatingSource>
@@ -1650,7 +1650,7 @@
 
             <xsl:variable name="typeToUse">
                <xsl:choose>
-                   <xsl:when test="boolean(custom:isKnownOrganisation($name)) = true()">
+                   <xsl:when test="boolean(customIMAS:isKnownOrganisation($name)) = true()">
                         <!--xsl:message select="concat('Is known organisation ', $transformedName)"/-->
                         <xsl:text>group</xsl:text>
                     </xsl:when>
@@ -1688,7 +1688,7 @@
                                 <relatedObject>
                                     <key>
                                         <xsl:value-of
-                                            select="concat($global_acronym,'/', translate(normalize-space($organisationName),' ',''))"
+                                            select="concat($global_IMAS_acronym,'/', translate(normalize-space($organisationName),' ',''))"
                                         />
                                     </key>
                                     <relation type="isMemberOf"/>
@@ -1698,11 +1698,11 @@
                          </xsl:choose>
 
                         <!-- Individual - Phone and email on the individual, regardless of whether there's an organisation name -->
-                        <xsl:call-template name="telephone"/>
-                        <xsl:call-template name="facsimile"/>
-                        <xsl:call-template name="email"/>
-                        <xsl:call-template name="onlineResource"/>
-                        <xsl:call-template name="physicalAddress"/>
+                        <xsl:call-template name="IMAS_telephone"/>
+                        <xsl:call-template name="IMAS_facsimile"/>
+                        <xsl:call-template name="IMAS_email"/>
+                        <xsl:call-template name="IMAS_onlineResource"/>
+                        <xsl:call-template name="IMAS_physicalAddress"/>
 
                     </xsl:when>
                     <xsl:otherwise>
@@ -1710,11 +1710,11 @@
                         <xsl:variable name="individualName"
                             select="normalize-space(gmd:individualName)"/>
                         <xsl:if test="string-length($individualName) = 0">
-                            <xsl:call-template name="telephone"/>
-                            <xsl:call-template name="facsimile"/>
-                            <xsl:call-template name="email"/>
-                            <xsl:call-template name="onlineResource"/>
-                            <xsl:call-template name="physicalAddress"/>
+                            <xsl:call-template name="IMAS_telephone"/>
+                            <xsl:call-template name="IMAS_facsimile"/>
+                            <xsl:call-template name="IMAS_email"/>
+                            <xsl:call-template name="IMAS_onlineResource"/>
+                            <xsl:call-template name="IMAS_physicalAddress"/>
                         </xsl:if>
                     </xsl:otherwise>
                 </xsl:choose>
@@ -1722,7 +1722,7 @@
         </registryObject>
     </xsl:template>
 
-    <xsl:template name="physicalAddress">
+    <xsl:template name="IMAS_physicalAddress">
         <xsl:for-each select="current-group()">
             <xsl:sort
                 select="count(gmd:contactInfo/gmd:CI_Contact/gmd:address/gmd:CI_Address/child::*)"
@@ -1777,7 +1777,7 @@
     </xsl:template>
 
 
-    <xsl:template name="telephone">
+    <xsl:template name="IMAS_telephone">
         <xsl:variable name="phone_sequence" as="xs:string*">
             <xsl:for-each select="current-group()">
                 <xsl:for-each
@@ -1801,7 +1801,7 @@
         </xsl:for-each>
     </xsl:template>
 
-    <xsl:template name="facsimile">
+    <xsl:template name="IMAS_facsimile">
         <xsl:variable name="facsimile_sequence" as="xs:string*">
             <xsl:for-each select="current-group()">
                 <xsl:for-each
@@ -1825,7 +1825,7 @@
         </xsl:for-each>
     </xsl:template>
 
-    <xsl:template name="email">
+    <xsl:template name="IMAS_email">
         <xsl:variable name="email_sequence" as="xs:string*">
             <xsl:for-each select="current-group()">
                 <xsl:for-each
@@ -1849,7 +1849,7 @@
         </xsl:for-each>
     </xsl:template>
 
-    <xsl:template name="onlineResource">
+    <xsl:template name="IMAS_onlineResource">
         <xsl:variable name="url_sequence" as="xs:string*">
             <xsl:for-each select="current-group()">
                 <xsl:for-each
@@ -1885,7 +1885,7 @@
 
     <!-- Modules -->
 
-    <xsl:function name="custom:isKnownOrganisation">
+    <xsl:function name="customIMAS:isKnownOrganisation">
         <xsl:param name="name"/>
         <xsl:choose>
             <xsl:when
@@ -1907,7 +1907,7 @@
         </xsl:choose>
     </xsl:function>
 
-   <xsl:function name="custom:doiFromIdentifiers">
+   <xsl:function name="customIMAS:doiFromIdentifiers">
         <xsl:param name="identifier_sequence"/>
         <xsl:for-each select="distinct-values($identifier_sequence)">
             <xsl:if test="contains(lower-case(normalize-space(.)), 'doi')">
@@ -1917,7 +1917,7 @@
     </xsl:function>
     
 
-   <xsl:function name="custom:getOrgNameFromBaseURI" as="xs:string">
+   <xsl:function name="customIMAS:getOrgNameFromBaseURI" as="xs:string">
         <xsl:param name="inputString"/>
         <xsl:choose>
             <xsl:when test="contains(lower-case($inputString), 'imas')">
@@ -1941,7 +1941,7 @@
         </xsl:choose>
     </xsl:function>
 
-    <xsl:function name="custom:getBaseURI">
+    <xsl:function name="customIMAS:getBaseURI">
         <xsl:param name="inputString"/>
         <!-- Match will match the uri up to the third forward slash, e.g. it will match "http(s)://data.aims.gov.au/"
             from examples like the following:  http(s)://http://data.aims.gov.au// http(s)://http://data.aims.gov.au//morethings http(s)://http://data.aims.gov.au/more/stuff/-->
@@ -1965,7 +1965,7 @@
         </xsl:choose>
     </xsl:function>
 
-    <xsl:template name="getRegistryObjectTypeSubType" as="xs:string*">
+    <xsl:template name="IMAS_getRegistryObjectTypeSubType" as="xs:string*">
         <xsl:param name="scopeCode"/>
         <xsl:param name="publishingOrganisation"/>
         <xsl:choose>
@@ -1973,12 +1973,12 @@
                 <!--xsl:message>Error: empty scope code</xsl:message-->
             </xsl:when>
             <xsl:when test="contains(lower-case($publishingOrganisation), 'aims')">
-                <xsl:call-template name="getRegistryObjectTypeSubType_AIMS">
+                <xsl:call-template name="IMAS_getRegistryObjectTypeSubType_AIMS">
                     <xsl:with-param name="scopeCode" select="$scopeCode"/>
                 </xsl:call-template>
             </xsl:when>
             <xsl:when test="contains(lower-case($publishingOrganisation), 'imas')">
-                <xsl:call-template name="getRegistryObjectTypeSubType_IMAS">
+                <xsl:call-template name="IMAS_getRegistryObjectTypeSubType_IMAS">
                     <xsl:with-param name="scopeCode" select="$scopeCode"/>
                 </xsl:call-template>
             </xsl:when>
@@ -1990,7 +1990,7 @@
         </xsl:choose>
     </xsl:template>
 
-    <xsl:template name="getRegistryObjectTypeSubType_AIMS" as="xs:string*">
+    <xsl:template name="IMAS_getRegistryObjectTypeSubType_AIMS" as="xs:string*">
         <xsl:param name="scopeCode"/>
         <xsl:choose>
             <xsl:when test="string-length($scopeCode) = 0">
@@ -2040,7 +2040,7 @@
         </xsl:choose>
     </xsl:template>
 
-    <xsl:template name="getRegistryObjectTypeSubType_IMAS" as="xs:string*">
+    <xsl:template name="IMAS_getRegistryObjectTypeSubType_IMAS" as="xs:string*">
         <xsl:param name="scopeCode"/>
         <!--xsl:choose>
             <xsl:when test="contains($scopeCode, 'dataset')">
@@ -2094,7 +2094,7 @@
     </xsl:template>
 
 
-    <xsl:function name="custom:currentHasRole" as="xs:boolean*">
+    <xsl:function name="customIMAS:currentHasRole" as="xs:boolean*">
         <xsl:param name="current"/>
         <xsl:param name="role"/>
         <xsl:for-each-group select="$current/gmd:role"
@@ -2106,7 +2106,7 @@
     </xsl:function>
 
     <!-- Finds name of organisation with particular role - ignores organisations that don't have an individual name -->
-    <xsl:function name="custom:getOrganisationNameSequence">
+    <xsl:function name="customIMAS:getOrganisationNameSequence">
         <xsl:param name="parent" as="node()"/>
         <xsl:param name="role_sequence" as="xs:string*"/>
         <!--xsl:message>getOrganisationNameSequence - Parent: <xsl:value-of select="name($parent)"/>, Num roles: <xsl:value-of select="count($role_sequence)"/></xsl:message-->
@@ -2128,7 +2128,7 @@
                         
                         <xsl:choose>
                             <xsl:when test="string-length($role) > 0">
-                                <xsl:variable name="userHasRole_sequence" as="xs:boolean*" select="custom:currentHasRole(current-group(), $role)"/>
+                                <xsl:variable name="userHasRole_sequence" as="xs:boolean*" select="customIMAS:currentHasRole(current-group(), $role)"/>
                                 <xsl:if test="count($userHasRole_sequence)">
                                     <!--xsl:message>getOrganisationNameSequence - Returning 
                                         <xsl:value-of select="$organisationName"/> 
@@ -2157,7 +2157,7 @@
     </xsl:function>
 
     <!-- Finds name of organisation for an individual of a particular role - whether or not there in an individual name -->
-    <xsl:function name="custom:getAllOrganisationNameSequence">
+    <xsl:function name="customIMAS:getAllOrganisationNameSequence">
         <xsl:param name="parent" as="node()"/>
         <xsl:param name="role_sequence" as="xs:string*"/>
         <!--xsl:message>getAllOrganisationNameSequence - Parent: <xsl:value-of select="name($parent)"/>, Num roles: <xsl:value-of select="count($role_sequence)"/></xsl:message-->
@@ -2181,7 +2181,7 @@
                     
                         <xsl:choose>
                             <xsl:when test="string-length($role) > 0">
-                                <xsl:variable name="userHasRole_sequence" as="xs:boolean*" select="custom:currentHasRole(current-group(), $role)"/>
+                                <xsl:variable name="userHasRole_sequence" as="xs:boolean*" select="customIMAS:currentHasRole(current-group(), $role)"/>
                                 <xsl:if test="count($userHasRole_sequence)">
                                     <!--xsl:message>getAllOrganisationNameSequence - Returning 
                                         <xsl:value-of select="$organisationName"/> 
@@ -2208,7 +2208,7 @@
         </xsl:choose>
     </xsl:function>
 
-    <xsl:function name="custom:getIndividualNameSequence" as="xs:string*">
+    <xsl:function name="customIMAS:getIndividualNameSequence" as="xs:string*">
         <xsl:param name="parent" as="node()"/>
         <xsl:param name="role_sequence" as="xs:string"/>
         <!--xsl:message>getIndividualNameSequence - Parent: <xsl:value-of select="name($parent)"/>, Num roles: <xsl:value-of select="count($role_sequence)"/></xsl:message-->
@@ -2227,7 +2227,7 @@
 
                         <xsl:choose>
                             <xsl:when test="string-length($role) > 0">
-                                <xsl:variable name="userHasRole_sequence" as="xs:boolean*" select="custom:currentHasRole(current-group(), $role)"/>
+                                <xsl:variable name="userHasRole_sequence" as="xs:boolean*" select="customIMAS:currentHasRole(current-group(), $role)"/>
                                 <xsl:if test="count($userHasRole_sequence)">
                                     <!--xsl:message>getIndividualNameSequence - Returning 
                                         <xsl:value-of select="normalize-space(current-grouping-key())"/> 
@@ -2255,7 +2255,7 @@
         </xsl:choose>
     </xsl:function>
     
-    <xsl:function name="custom:getTransformedOriginatingSource">
+    <xsl:function name="customIMAS:getTransformedOriginatingSource">
         <xsl:param name="inputString"/>
         <xsl:choose>
             <xsl:when test="contains(lower-case($inputString), 'imas')">
@@ -2280,7 +2280,7 @@
         </xsl:choose>
     </xsl:function>
     
-    <xsl:function name="custom:getTransformedPublisher">
+    <xsl:function name="customIMAS:getTransformedPublisher">
         <xsl:param name="inputString"/>
         <xsl:choose>
             <xsl:when test="contains(lower-case($inputString), 'imas')">
@@ -2305,9 +2305,9 @@
         </xsl:choose>
     </xsl:function>
     
-   <!--xsl:function name="custom:nameNoTitle">
+   <!--xsl:function name="customIMAS:nameNoTitle">
         <xsl:param name="name"/>
-        <xsl:variable name="extractedTitle_sequence" select="custom:extractTitle($name)"/>
+        <xsl:variable name="extractedTitle_sequence" select="customIMAS:extractTitle($name)"/>
         <xsl:choose>
             <xsl:when test="count($extractedTitle_sequence) > 0">
                 <xsl:message select="concat('Name before extract:', $name)"/>
@@ -2334,7 +2334,7 @@
         </xsl:choose>
    </xsl:function-->
     
-    <xsl:function name="custom:nameNoTitle">
+    <xsl:function name="customIMAS:nameNoTitle">
         <xsl:param name="name"/>
         <xsl:message select="concat('Name before extract:', $name)"/>
         <xsl:variable name="temp" select="replace($name, '(Miss|Mr|Mrs|Ms|Dr|PhD|Assoc/Prof|Professor|Prof)', '')"/>
@@ -2351,7 +2351,7 @@
         </xsl:choose>
     </xsl:function>
     
-    <xsl:function name="custom:extractTitle" as="xs:string*">
+    <xsl:function name="customIMAS:extractTitle" as="xs:string*">
         <xsl:param name="name"/>
        <xsl:analyze-string select="$name"
             regex="(Miss|Mr|Mrs|Ms|Dr|PhD|Assoc/Prof|Professor|Prof)">
@@ -2361,7 +2361,7 @@
         </xsl:analyze-string>
     </xsl:function>
     
-   <xsl:function name="custom:getMetadataTruthURL">
+   <xsl:function name="customIMAS:getMetadataTruthURL">
         <xsl:param name="transferOptions"/>
         
         <xsl:variable name="metadataTruth_sequence" as="xs:string*">

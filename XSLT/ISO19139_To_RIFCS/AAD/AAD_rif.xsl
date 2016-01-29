@@ -6,48 +6,49 @@
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
-    xmlns:custom="http://custom.nowhere.yet"
-    xmlns="http://ands.org.au/standards/rif-cs/registryObjects">
+    xmlns:customAAD="http://customAAD.nowhere.yet"
+    xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
+    exclude-result-prefixes="geonet gmx xsi gmd srv gml gco gts customAAD">
     <!-- stylesheet to convert iso19139 in OAI-PMH ListRecords response to RIF-CS -->
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
-    <xsl:param name="global_originatingSource" select="'http://data.aad.gov.au/aadc'"/>
-    <xsl:param name="global_baseURI" select="'http://data.aad.gov.au/aadc'"/>
-    <xsl:param name="global_group" select="'Australian Antarctic Data Centre'"/>
-    <xsl:param name="global_publisherName" select="'Australian Antarctic Data Centre'"/>
-    <xsl:param name="global_contributorName" select="'Australian Antarctic Division'"/>
-    <xsl:param name="global_publisherPlace" select="'Hobart'"/>
+    <xsl:param name="global_AAD_originatingSource" select="'http://data.aad.gov.au/aadc'"/>
+    <xsl:param name="global_AAD_baseURI" select="'http://data.aad.gov.au/aadc'"/>
+    <xsl:param name="global_AAD_group" select="'Australian Antarctic Data Centre'"/>
+    <xsl:param name="global_AAD_publisherName" select="'Australian Antarctic Data Centre'"/>
+    <xsl:param name="global_AAD_contributorName" select="'Australian Antarctic Division'"/>
+    <xsl:param name="global_AAD_publisherPlace" select="'Hobart'"/>
     <xsl:variable name="anzsrcCodelist" select="document('anzsrc-codelist.xml')"/>
     <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>
     <xsl:variable name="gmdCodelists" select="document('codelists.xml')"/>
-    <xsl:template match="/">
-        <xsl:apply-templates/>
-    </xsl:template>
-    <xsl:template match="root">
-        <xsl:apply-templates/>
-    </xsl:template>
-
+   
     <!-- =========================================== -->
     <!-- RegistryObjects (root) Template             -->
     <!-- =========================================== -->
 
-    <xsl:template match="gmd:MD_Metadata">
+    <xsl:template match="/">
         <!--registryObjects-->
         <!--xsl:attribute name="xsi:schemaLocation">
                 <xsl:text>http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd</xsl:text>
             </xsl:attribute-->
-        <xsl:apply-templates select="." mode="collection"/>
-        <xsl:apply-templates select="." mode="party"/>
+        <xsl:apply-templates select="//*:MD_Metadata" mode="AAD"/>
         <!--/registryObjects-->
     </xsl:template>
 
-    <xsl:template match="node()"/>
+    
+    <xsl:template match="*:MD_Metadata" mode="AAD">
+        <xsl:message select="concat('calling: ', 'aad')"/>
+        
+        <xsl:apply-templates select="." mode="AAD_collection"/>
+        <xsl:apply-templates select="." mode="AAD_party"/>
+    </xsl:template>
+    
 
     <!-- =========================================== -->
     <!-- Collection RegistryObject Template          -->
     <!-- =========================================== -->
 
-    <xsl:template match="gmd:MD_Metadata" mode="collection">
+    <xsl:template match="*:MD_Metadata" mode="AAD_collection">
 
         <!-- construct parameters for values that are required in more than one place in the output xml-->
         <xsl:param name="dataSetURI"
@@ -65,52 +66,52 @@
             
         <registryObject>
             <xsl:attribute name="group">
-                <xsl:value-of select="$global_group"/>
+                <xsl:value-of select="$global_AAD_group"/>
             </xsl:attribute>
             
             <key>
                  <xsl:choose>
+                     <xsl:when test="string-length(gmd:fileIdentifier) > 0">
+                         <xsl:value-of select="normalize-space(gmd:fileIdentifier)"/>
+                     </xsl:when>
                      <xsl:when test="count($code_sequence) > 0">
                          <xsl:value-of select="normalize-space($code_sequence[1])"/>
                      </xsl:when>
-                     <xsl:otherwise>
-                        <xsl:value-of select="normalize-space(gmd:fileIdentifier)"/>
-                     </xsl:otherwise>  
                  </xsl:choose>
             </key>
             
             <originatingSource>
-                <xsl:value-of select="$global_originatingSource"/>
+                <xsl:value-of select="$global_AAD_originatingSource"/>
             </originatingSource>
 
             <collection>
 
                 <xsl:apply-templates select="gmd:hierarchyLevel/gmd:MD_ScopeCode/@codeListValue"
-                    mode="collection_type_attribute"/>
+                    mode="AAD_collection_type_attribute"/>
 
                <xsl:apply-templates
                     select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:identifier"
-                    mode="collection_identifier"/>
+                    mode="AAD_collection_identifier"/>
                 
                 <xsl:apply-templates
                     select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage/gmd:URL"
-                    mode="collection_identifier"/>
+                    mode="AAD_collection_identifier"/>
                 
                <xsl:apply-templates
                     select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:title"
-                    mode="collection_name"/>
+                    mode="AAD_collection_name"/>
 
                 <xsl:apply-templates
                     select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:date"
-                    mode="collection_dates"/>
+                    mode="AAD_collection_dates"/>
 
                 <xsl:apply-templates
                     select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine[1]/gmd:CI_OnlineResource/gmd:linkage/gmd:URL"
-                    mode="collection_location"/>
+                    mode="AAD_collection_location"/>
                 
                 <xsl:apply-templates
                     select="gmd:parentIdentifier"
-                    mode="collection_related_object">
+                    mode="AAD_collection_related_object">
                 </xsl:apply-templates>
                 
              
@@ -118,37 +119,37 @@
                     select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName)) > 0) and 
                     (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)) > 0)]"
                     group-by="gmd:individualName">
-                    <xsl:apply-templates select="." mode="collection_related_object"/>
+                    <xsl:apply-templates select="." mode="AAD_collection_related_object"/>
                 </xsl:for-each-group>
 
                 <xsl:for-each-group
                     select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[((string-length(normalize-space(gmd:organisationName)) > 0) and not(string-length(normalize-space(gmd:individualName)) > 0)) and 
                     (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)) > 0)]"
                     group-by="gmd:organisationName">
-                    <xsl:apply-templates select="." mode="collection_related_object"/>
+                    <xsl:apply-templates select="." mode="AAD_collection_related_object"/>
                 </xsl:for-each-group>
 
                 <xsl:apply-templates
                     select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:topicCategory/gmd:MD_TopicCategoryCode"
-                    mode="collection_subject"/>
+                    mode="AAD_collection_subject"/>
 
                 <xsl:apply-templates select="gmd:identificationInfo/gmd:MD_DataIdentification"
-                    mode="collection_subject"/>
+                    mode="AAD_collection_subject"/>
 
                 <xsl:apply-templates
                     select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:abstract"
-                    mode="collection_description"/>
+                    mode="AAD_collection_description"/>
 
                 <xsl:apply-templates
                     select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_GeographicBoundingBox"
-                    mode="collection_coverage_spatial"/>
+                    mode="AAD_collection_coverage_spatial"/>
 
                 <xsl:apply-templates
                     select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent"
-                    mode="collection_coverage_temporal"/>
+                    mode="AAD_collection_coverage_temporal"/>
                 
-                <xsl:variable name="organisationOwnerName" select="custom:childValueForRole(gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty, 'owner', 'organisationName')"/>
-                <xsl:variable name="individualOwnerName" select="custom:childValueForRole(gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty, 'owner', 'individualName')"/>
+                <xsl:variable name="organisationOwnerName" select="customAAD:childValueForRole(gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty, 'owner', 'organisationName')"/>
+                <xsl:variable name="individualOwnerName" select="customAAD:childValueForRole(gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty, 'owner', 'individualName')"/>
      
                 <xsl:variable name="publishDate">
                     <xsl:for-each select="gmd:CI_Citation/gmd:date/gmd:CI_Date">
@@ -162,21 +163,21 @@
                 <xsl:apply-templates
                     select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:resourceConstraints/gmd:MD_LegalConstraints[
                     exists(gmd:otherConstraints)]"
-                    mode="collection_rights_licence"/>
+                    mode="AAD_collection_rights_licence"/>
 
                 <xsl:apply-templates
                     select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:resourceConstraints/gmd:MD_LegalConstraints[
                     exists(gmd:useConstraints) and exists(gmd:otherConstraints)]"
-                    mode="collection_rights_rightsStatement"/>
+                    mode="AAD_collection_rights_rightsStatement"/>
 
                 <xsl:apply-templates
                     select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:resourceConstraints/gmd:MD_LegalConstraints[
                     exists(gmd:accessConstraints) and exists(gmd:otherConstraints)]"
-                    mode="collection_rights_accessRights"/>
+                    mode="AAD_collection_rights_accessRights"/>
 
                 <xsl:for-each
                     select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation">
-                    <xsl:call-template name="collection_citationMetadata_citationInfo">
+                    <xsl:call-template name="AAD_collection_citationMetadata_citationInfo">
                         <xsl:with-param name="dataSetURI" select="$dataSetURI"/>
                         <xsl:with-param name="citation" select="."/>
                     </xsl:call-template>
@@ -190,13 +191,13 @@
     <!-- Party RegistryObject Template          -->
     <!-- =========================================== -->
 
-    <xsl:template match="gmd:MD_Metadata" mode="party">
+    <xsl:template match="*:MD_Metadata" mode="AAD_party">
 
         <xsl:for-each-group
             select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName)) > 0) and 
             (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)) > 0)]"
             group-by="gmd:individualName">
-            <xsl:call-template name="party">
+            <xsl:call-template name="AAD_party">
                 <xsl:with-param name="type" select="'person'"/>
                 <xsl:with-param name="role" select="gmd:role/gmd:CI_RoleCode/@codeListValue"/>
             </xsl:call-template>
@@ -206,7 +207,7 @@
             select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName)) > 0) and 
             (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)) > 0)]"
             group-by="gmd:organisationName">
-            <xsl:call-template name="party">
+            <xsl:call-template name="AAD_party">
                 <xsl:with-param name="type" select="'group'"/>
                 <xsl:with-param name="role" select="gmd:role/gmd:CI_RoleCode/@codeListValue"/>
             </xsl:call-template>
@@ -222,13 +223,13 @@
 
     <!-- Collection - Type Attribute -->
     <xsl:template match="gmd:hierarchyLevel/gmd:MD_ScopeCode/@codeListValue"
-        mode="collection_type_attribute">
+        mode="AAD_collection_type_attribute">
         <xsl:attribute name="type">
             <xsl:value-of select="."/>
         </xsl:attribute>
     </xsl:template>
 
-    <xsl:template match="gmd:identifier" mode="collection_identifier">
+    <xsl:template match="gmd:identifier" mode="AAD_collection_identifier">
         <xsl:variable name="code" select="normalize-space(gmd:MD_Identifier/gmd:code)"/>
         <xsl:if test="string-length($code) > 0">
             <identifier>
@@ -258,7 +259,7 @@
     </xsl:template>
     
     <!-- Collection - Address Identifier Element  -->
-    <xsl:template match="gmd:URL" mode="collection_identifier">
+    <xsl:template match="gmd:URL" mode="AAD_collection_identifier">
         <identifier>
             <xsl:attribute name="type">
                 <xsl:choose>
@@ -287,7 +288,7 @@
    <!-- Collection - Name Element  -->
     <xsl:template
         match="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:title"
-        mode="collection_name">
+        mode="AAD_collection_name">
         <name>
             <xsl:attribute name="type">
                 <xsl:text>primary</xsl:text>
@@ -299,7 +300,7 @@
     </xsl:template>
 
     <!-- Collection - Address Electronic Element  -->
-    <xsl:template match="gmd:URL" mode="collection_location">
+    <xsl:template match="gmd:URL" mode="AAD_collection_location">
         <location>
             <address>
                 <electronic>
@@ -317,7 +318,7 @@
     <!-- Collection - Dates Element  -->
     <xsl:template
         match="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:date"
-        mode="collection_dates">
+        mode="AAD_collection_dates">
         <xsl:variable name="dateTime" select="normalize-space(gmd:CI_Date/gmd:date/gco:Date)"/>
         <xsl:variable name="dateCode"
             select="normalize-space(gmd:CI_Date/gmd:dateType/gmd:CI_DateTypeCode/@codeListValue)"/>
@@ -354,7 +355,7 @@
     </xsl:template>
     
     <!-- Collection - Related Object -->
-    <xsl:template match="gmd:parentIdentifier" mode="collection_related_object">
+    <xsl:template match="gmd:parentIdentifier" mode="AAD_collection_related_object">
         <relatedObject>
             <key>
                 <xsl:value-of select="normalize-space(.)"/>
@@ -363,7 +364,7 @@
         </relatedObject>
     </xsl:template>
     
-    <xsl:template match="gmd:CI_ResponsibleParty" mode="collection_related_object">
+    <xsl:template match="gmd:CI_ResponsibleParty" mode="AAD_collection_related_object">
         
         <xsl:variable name="name" select="current-grouping-key()"/>
         <xsl:for-each-group select="current-group()/gmd:role"
@@ -372,8 +373,8 @@
                 <xsl:value-of select="current-grouping-key()"/>
             </xsl:variable>
             
-            <xsl:variable name="transformedName" select="custom:transformPerRole($name, $code)"/>
-            <xsl:variable name="identifier_sequence" as="xs:string*" select="custom:identifiers($transformedName)"/>
+            <xsl:variable name="transformedName" select="customAAD:transformPerRole($name, $code)"/>
+            <xsl:variable name="identifier_sequence" as="xs:string*" select="customAAD:identifiers($transformedName)"/>
             
             <xsl:choose>
                 <xsl:when test="count($identifier_sequence) = 2">
@@ -391,7 +392,7 @@
                 <xsl:otherwise>
                     <relatedObject>
                         <key>
-                            <xsl:value-of select="concat($global_baseURI,'/', translate(normalize-space($transformedName),' ',''))"/>
+                            <xsl:value-of select="concat($global_AAD_baseURI,'/', translate(normalize-space($transformedName),' ',''))"/>
                         </key>
                         <relation>
                             <xsl:attribute name="type">
@@ -407,7 +408,7 @@
 
     <!-- Collection - Subject Element -->
 
-    <xsl:template match="gmd:MD_DataIdentification" mode="collection_subject">
+    <xsl:template match="gmd:MD_DataIdentification" mode="AAD_collection_subject">
         <xsl:message>gmd:MD_Keywords</xsl:message>
 
         <xsl:for-each select="gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword">
@@ -431,7 +432,7 @@
         </xsl:for-each>
     </xsl:template>
 
-    <xsl:template match="gmd:MD_TopicCategoryCode" mode="collection_subject">
+    <xsl:template match="gmd:MD_TopicCategoryCode" mode="AAD_collection_subject">
         <xsl:if test="string-length(normalize-space(.)) > 0">
             <subject type="local">
                 <xsl:value-of select="."/>
@@ -440,14 +441,14 @@
     </xsl:template>
 
     <!-- Collection - Decription Element -->
-    <xsl:template match="gmd:abstract" mode="collection_description">
+    <xsl:template match="gmd:abstract" mode="AAD_collection_description">
         <description type="brief">
             <xsl:value-of select="."/>
         </description>
     </xsl:template>
     
    <!-- Collection - Coverage Spatial Element -->
-    <xsl:template match="gmd:EX_TemporalExtent" mode="collection_coverage_temporal">
+    <xsl:template match="gmd:EX_TemporalExtent" mode="AAD_collection_coverage_temporal">
         <xsl:if
             test="(string-length(normalize-space(gmd:extent/gml:TimePeriod/gml:begin/gml:TimeInstant/gml:timePosition)) > 0) or
                   (string-length(normalize-space(gmd:extent/gml:TimePeriod/gml:end/gml:TimeInstant/gml:timePosition)) > 0)">
@@ -487,7 +488,7 @@
     </xsl:template>
 
     <!-- Collection - Coverage Spatial Element -->
-    <xsl:template match="gmd:EX_GeographicBoundingBox" mode="collection_coverage_spatial">
+    <xsl:template match="gmd:EX_GeographicBoundingBox" mode="AAD_collection_coverage_spatial">
 
         <xsl:variable name="spatialString">
             <xsl:variable name="horizontal">
@@ -531,7 +532,7 @@
     </xsl:template>
 
    <!-- Collection - Rights Licence Element -->
-    <xsl:template match="gmd:MD_LegalConstraints" mode="collection_rights_licence">
+    <xsl:template match="gmd:MD_LegalConstraints" mode="AAD_collection_rights_licence">
         <xsl:variable name="otherConstraints" select="normalize-space(gmd:otherConstraints)"/>
         <xsl:if test="string-length($otherConstraints) > 0">
             <xsl:if test="contains(lower-case($otherConstraints), 'picccby')">
@@ -545,7 +546,7 @@
     </xsl:template>
 
     <!-- Collection - RightsStatement -->
-    <xsl:template match="gmd:MD_LegalConstraints" mode="collection_rights_rightsStatement">
+    <xsl:template match="gmd:MD_LegalConstraints" mode="AAD_collection_rights_rightsStatement">
         <xsl:for-each select="gmd:otherConstraints">
             <!-- If there is text in other contraints, use this; otherwise, do nothing -->
             <xsl:if test="string-length(normalize-space(.)) > 0">
@@ -559,11 +560,11 @@
     </xsl:template>
 
     <!-- Collection - Rights AccessRights Element -->
-    <xsl:template match="gmd:MD_LegalConstraints" mode="collection_rights_accessRights">
+    <xsl:template match="gmd:MD_LegalConstraints" mode="AAD_collection_rights_accessRights">
         <xsl:for-each select="gmd:otherConstraints">
             <!-- If there is text in other contraints, use this; otherwise, do nothing -->
             <xsl:if test="string-length(normalize-space(.)) > 0">
-                <xsl:variable name="accessRightsType" select="custom:accessRightsType(normalize-space(.))"/>
+                <xsl:variable name="accessRightsType" select="customAAD:accessRightsType(normalize-space(.))"/>
                 <rights>
                     <accessRights>
                         <xsl:if test="string-length($accessRightsType) > 0">
@@ -580,11 +581,11 @@
 
 
     <!-- Collection - CitationInfo Element -->
-    <xsl:template name="collection_citationMetadata_citationInfo">
+    <xsl:template name="AAD_collection_citationMetadata_citationInfo">
         <xsl:param name="dataSetURI"/>
         <xsl:param name="citation"/>
         <!-- We can only accept one DOI; howerver, first we will find all -->
-        <xsl:variable name="doiIdentifier_sequence" select="custom:doiFromIdentifiers(gmd:identifier/gmd:MD_Identifier/gmd:code)"/>
+        <xsl:variable name="doiIdentifier_sequence" select="customAAD:doiFromIdentifiers(gmd:identifier/gmd:MD_Identifier/gmd:code)"/>
         <xsl:variable name="identifierToUse">
             <xsl:choose>
                 <xsl:when
@@ -651,11 +652,11 @@
                          <xsl:variable name="individualName"
                              select="normalize-space(current-grouping-key())"/>
                          
-                         <xsl:variable name="transformedName" select="custom:transformPerRole($individualName, gmd:role/gmd:CI_RoleCode/@codeListValue)"/>
+                         <xsl:variable name="transformedName" select="customAAD:transformPerRole($individualName, gmd:role/gmd:CI_RoleCode/@codeListValue)"/>
                                                       
                          <xsl:if test="
-                             (count(custom:isRole(current-group(), 'publish')) = 0) and 
-                             (count(custom:isRole(current-group(), 'originator')) = 0)">
+                             (count(customAAD:isRole(current-group(), 'publish')) = 0) and 
+                             (count(customAAD:isRole(current-group(), 'originator')) = 0)">
                             <xsl:value-of select="$transformedName"/>
                          </xsl:if>
                      </xsl:for-each-group>
@@ -671,11 +672,11 @@
                                  (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)) > 0)]"
                          group-by="gmd:organisationName">
      
-                         <xsl:variable name="transformedOrganisationName" select="custom:transformPerRole(current-grouping-key(), gmd:role/gmd:CI_RoleCode/@codeListValue)"/>
+                         <xsl:variable name="transformedOrganisationName" select="customAAD:transformPerRole(current-grouping-key(), gmd:role/gmd:CI_RoleCode/@codeListValue)"/>
      
                          <xsl:if test="
-                             (count(custom:isRole(current-group(), 'publish')) = 0) and 
-                             (count(custom:isRole(current-group(), 'originator')) = 0)">
+                             (count(customAAD:isRole(current-group(), 'publish')) = 0) and 
+                             (count(customAAD:isRole(current-group(), 'originator')) = 0)">
                              <xsl:value-of select="$transformedOrganisationName"/>
                          </xsl:if>
                      </xsl:for-each-group>
@@ -702,7 +703,7 @@
                     </contributor>
                 </xsl:for-each>
                 
-                <xsl:variable name="publishName" select="custom:publishNameToUse(gmd:citedResponsibleParty)"/>
+                <xsl:variable name="publishName" select="customAAD:publishNameToUse(gmd:citedResponsibleParty)"/>
                 
                 <!-- If no contributors other than originator, seek originator and use if one exists 
                      If no contributors at all, default to publisher (if publisher is Australian Antarctic Data Centre,
@@ -711,7 +712,7 @@
                 <xsl:if test="
                     (count($individualContributor_sequence) = 0) and
                     (count($organisationContributor_sequence) = 0)">
-                    <xsl:variable name="originator" select="custom:originatorNameToUse(.)"/>
+                    <xsl:variable name="originator" select="customAAD:originatorNameToUse(.)"/>
                     <xsl:choose>
                         <xsl:when test="string-length($originator) > 0">
                           <contributor>
@@ -721,10 +722,10 @@
                           </contributor> 
                         </xsl:when>
                         <xsl:when test="string-length($publishName) > 0">
-                            <xsl:if test="contains($publishName, $global_publisherName)">
+                            <xsl:if test="contains($publishName, $global_AAD_publisherName)">
                                 <contributor>
                                     <namePart>
-                                        <xsl:value-of select="$global_contributorName"/>
+                                        <xsl:value-of select="$global_AAD_contributorName"/>
                                     </namePart>
                                 </contributor> 
                             </xsl:if>
@@ -743,7 +744,7 @@
                     </publisher>
                 </xsl:if>
 
-                <xsl:variable name="publishPlace" select="custom:publishPlaceToUse(., $publishName)"/>
+                <xsl:variable name="publishPlace" select="customAAD:publishPlaceToUse(., $publishName)"/>
 
                 <xsl:if test="string-length($publishPlace) > 0">
                     <placePublished>
@@ -762,21 +763,21 @@
     <!-- ====================================== -->
 
     <!-- Party Registry Object (Individuals (person) and Organisations (group)) -->
-    <xsl:template name="party">
+    <xsl:template name="AAD_party">
         <xsl:param name="type"/>
         <xsl:param name="role"/>
-        <registryObject group="{$global_group}">
+        <registryObject group="{$global_AAD_group}">
 
-            <xsl:variable name="transformedName" select="custom:transformPerRole(current-grouping-key(), $role)"/>
+            <xsl:variable name="transformedName" select="customAAD:transformPerRole(current-grouping-key(), $role)"/>
             
             <key>
                 <xsl:value-of
-                    select="concat($global_baseURI, '/', translate(normalize-space($transformedName),' ',''))"
+                    select="concat($global_AAD_baseURI, '/', translate(normalize-space($transformedName),' ',''))"
                 />
             </key>
 
             <originatingSource>
-                <xsl:value-of select="$global_originatingSource"/>
+                <xsl:value-of select="$global_AAD_originatingSource"/>
             </originatingSource>
 
             <!-- Use the party type provided, except for exception:
@@ -797,7 +798,7 @@
                 </xsl:choose>
             </xsl:variable>
             
-            <xsl:variable name="identifier_sequence" as="xs:string*" select="custom:identifiers($transformedName)"/>
+            <xsl:variable name="identifier_sequence" as="xs:string*" select="customAAD:identifiers($transformedName)"/>
           
             <party type="{$typeToUse}">
                 
@@ -820,7 +821,7 @@
                 <!-- If we are dealing with an individual...-->
                 <xsl:choose>
                     <xsl:when test="contains($type, 'person')">
-                        <xsl:variable name="transformedOrganisationName" select="custom:transformPerRole(gmd:organisationName, $role)"/>
+                        <xsl:variable name="transformedOrganisationName" select="customAAD:transformPerRole(gmd:organisationName, $role)"/>
 
                         <xsl:choose>
                             <xsl:when
@@ -830,7 +831,7 @@
                                 <relatedObject>
                                     <key>
                                         <xsl:value-of
-                                            select="concat($global_baseURI,'/', $transformedOrganisationName)"
+                                            select="concat($global_AAD_baseURI,'/', $transformedOrganisationName)"
                                         />
                                     </key>
                                     <relation type="isMemberOf"/>
@@ -839,24 +840,24 @@
 
                             <xsl:otherwise>
                                 <!-- Individual does not have an organisation name, so include the address here -->
-                                <xsl:call-template name="physicalAddress"/>
-                                <xsl:call-template name="phone"/>
-                                <xsl:call-template name="electronic"/>
+                                <xsl:call-template name="AAD_physicalAddress"/>
+                                <xsl:call-template name="AAD_phone"/>
+                                <xsl:call-template name="AAD_electronic"/>
                             </xsl:otherwise>
                         </xsl:choose>
                     </xsl:when>
                     <xsl:otherwise>
                         <!-- We are dealing with an organisation, so always include the address -->
-                        <xsl:call-template name="physicalAddress"/>
-                        <xsl:call-template name="phone"/>
-                        <xsl:call-template name="electronic"/>
+                        <xsl:call-template name="AAD_physicalAddress"/>
+                        <xsl:call-template name="AAD_phone"/>
+                        <xsl:call-template name="AAD_electronic"/>
                     </xsl:otherwise>
                 </xsl:choose>
             </party>
         </registryObject>
     </xsl:template>
 
-    <xsl:template name="physicalAddress">
+    <xsl:template name="AAD_physicalAddress">
         <xsl:for-each select="current-group()">
             <xsl:sort
                 select="count(gmd:contactInfo/gmd:CI_Contact/gmd:address/gmd:CI_Address/child::*)"
@@ -911,7 +912,7 @@
     </xsl:template>
 
 
-    <xsl:template name="phone">
+    <xsl:template name="AAD_phone">
 
         <xsl:for-each select="current-group()">
             <xsl:sort
@@ -950,7 +951,7 @@
         </xsl:for-each>
     </xsl:template>
 
-    <xsl:template name="electronic">
+    <xsl:template name="AAD_electronic">
 
         <xsl:for-each select="current-group()">
             <xsl:sort
@@ -979,7 +980,7 @@
 
     <!-- Modules -->
 
-    <xsl:function name="custom:doiFromIdentifiers">
+    <xsl:function name="customAAD:doiFromIdentifiers">
         <xsl:param name="identifier_sequence" as="xs:string*"/>
         <xsl:for-each select="distinct-values($identifier_sequence)">
             <xsl:variable name="code" select="normalize-space(.)"/>
@@ -996,26 +997,26 @@
         </xsl:for-each>
     </xsl:function>
 
-    <xsl:function name="custom:publishNameToUse">
+    <xsl:function name="customAAD:publishNameToUse">
         <xsl:param name="current_node_sequence" as="node()*"/>
         <xsl:message>Module: publishNameToUse</xsl:message>
         
-        <xsl:variable name="organisationPublisherName_sequence" select="custom:childValueForRole($current_node_sequence, 'publish', 'organisationName')"/>
+        <xsl:variable name="organisationPublisherName_sequence" select="customAAD:childValueForRole($current_node_sequence, 'publish', 'organisationName')"/>
        
         <xsl:for-each select="$organisationPublisherName_sequence">
             <xsl:message select="concat('Organisation publisher name: ', .)"/>
         </xsl:for-each>
         
-        <xsl:variable name="transformedOrganisationPublisherName" select="custom:transformPerRole($organisationPublisherName_sequence[1], 'publish')"/>
+        <xsl:variable name="transformedOrganisationPublisherName" select="customAAD:transformPerRole($organisationPublisherName_sequence[1], 'publish')"/>
 
-        <xsl:variable name="individualPublisherName_sequence" select="custom:childValueForRole($current_node_sequence, 'publish', 'individualName')"/>
+        <xsl:variable name="individualPublisherName_sequence" select="customAAD:childValueForRole($current_node_sequence, 'publish', 'individualName')"/>
 
         <xsl:for-each select="$individualPublisherName_sequence">
             <xsl:message select="concat('Individual publisher name: ', .)"/>
         </xsl:for-each>
         
       
-        <xsl:variable name="transformedIndividualPublisherName" select="custom:transformPerRole($individualPublisherName_sequence[1], 'publish')"/>
+        <xsl:variable name="transformedIndividualPublisherName" select="customAAD:transformPerRole($individualPublisherName_sequence[1], 'publish')"/>
             
         <xsl:choose>
             <xsl:when test="string-length(normalize-space($transformedOrganisationPublisherName)) > 0">
@@ -1025,30 +1026,30 @@
                 <xsl:value-of select="$transformedIndividualPublisherName"/>
             </xsl:when>
             <xsl:otherwise>
-                <xsl:value-of select="$global_publisherName"/>
+                <xsl:value-of select="$global_AAD_publisherName"/>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:function>
     
-    <xsl:function name="custom:originatorNameToUse">
+    <xsl:function name="customAAD:originatorNameToUse">
         <xsl:param name="current_node" as="node()"/>
         <xsl:message>Module: originatorNameToUse</xsl:message>
         
-        <xsl:variable name="organisationOriginatorName_sequence" select="custom:childValueForRole($current_node, 'originator', 'organisationName')"/>
+        <xsl:variable name="organisationOriginatorName_sequence" select="customAAD:childValueForRole($current_node, 'originator', 'organisationName')"/>
         
         <xsl:for-each select="$organisationOriginatorName_sequence">
             <xsl:message select="concat('Organisation originator name: ', .)"/>
         </xsl:for-each>
         
-        <xsl:variable name="transformedOrganisationOriginatorName" select="custom:transformPerRole($organisationOriginatorName_sequence[1], 'originator')"/>
+        <xsl:variable name="transformedOrganisationOriginatorName" select="customAAD:transformPerRole($organisationOriginatorName_sequence[1], 'originator')"/>
         
-        <xsl:variable name="individualOriginatorName_sequence" select="custom:childValueForRole($current_node, 'originator', 'individualName')"/>
+        <xsl:variable name="individualOriginatorName_sequence" select="customAAD:childValueForRole($current_node, 'originator', 'individualName')"/>
         
         <xsl:for-each select="$individualOriginatorName_sequence">
             <xsl:message select="concat('Individual originator name: ', .)"/>
         </xsl:for-each>
         
-        <xsl:variable name="transformedIndividualOriginatorName" select="custom:transformPerRole($individualOriginatorName_sequence[1], 'originator')"/>
+        <xsl:variable name="transformedIndividualOriginatorName" select="customAAD:transformPerRole($individualOriginatorName_sequence[1], 'originator')"/>
         
         <xsl:choose>
             <xsl:when test="string-length(normalize-space($transformedOrganisationOriginatorName)) > 0">
@@ -1060,14 +1061,14 @@
         </xsl:choose>
     </xsl:function>
 
-    <xsl:function name="custom:publishPlaceToUse">
+    <xsl:function name="customAAD:publishPlaceToUse">
         <xsl:param name="current_node" as="node()"/>
         <xsl:param name="publishNameToUse"/>
-        <xsl:variable name="publishCity" select="custom:childValueForRole($current_node, 'publish', 'city')"/>
+        <xsl:variable name="publishCity" select="customAAD:childValueForRole($current_node, 'publish', 'city')"/>
             
         <xsl:message>Publish City: <xsl:value-of select="$publishCity"/></xsl:message>
 
-        <xsl:variable name="publishCountry" select="custom:childValueForRole($current_node, 'publish', 'country')"/>
+        <xsl:variable name="publishCountry" select="customAAD:childValueForRole($current_node, 'publish', 'country')"/>
         
         <xsl:message>Publish Country: <xsl:value-of select="$publishCountry"/></xsl:message>
 
@@ -1080,14 +1081,14 @@
             </xsl:when>
             <xsl:otherwise>
                 <!-- Only default publisher place if publisher name is equal to the global value (whether it was set or retrieved) -->
-                <xsl:if test="$publishNameToUse = $global_publisherName">
-                    <xsl:value-of select="$global_publisherPlace"/>
+                <xsl:if test="$publishNameToUse = $global_AAD_publisherName">
+                    <xsl:value-of select="$global_AAD_publisherPlace"/>
                 </xsl:if>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:function>
 
-    <xsl:function name="custom:transformPerRole">
+    <xsl:function name="customAAD:transformPerRole">
         <xsl:param name="inputString"/>
         <xsl:param name="role"/>
         
@@ -1149,7 +1150,7 @@
          For example, if you provide roleSubsting as 'publish' and childElementName as 'organisationName',
             you will receive all organisation names within child responsible parties that have role 'publish'.  
             They will be separated by 'commas', with an 'and' between the last and second last, where applicable -->
-    <xsl:function name="custom:childValueForRole" as="xs:string*">
+    <xsl:function name="customAAD:childValueForRole" as="xs:string*">
         <xsl:param name="contextNode_sequence" as="node()*"/>
         <xsl:param name="roleSubstring"/>
         <xsl:param name="childElementName"/>
@@ -1203,7 +1204,7 @@
         <xsl:value-of select="$formattedValues"/>
     </xsl:function>
 
-    <xsl:function name="custom:identifiers" as="xs:string*">
+    <xsl:function name="customAAD:identifiers" as="xs:string*">
         <xsl:param name="transformedName" as="xs:string"/>
         <xsl:choose>
             <xsl:when 
@@ -1219,7 +1220,7 @@
         </xsl:choose>
      </xsl:function>
     
-    <xsl:function name="custom:accessRightsType" as="xs:string">
+    <xsl:function name="customAAD:accessRightsType" as="xs:string">
         <xsl:param name="text" as="xs:string"/>
         <xsl:choose>
             <xsl:when test="
@@ -1257,7 +1258,7 @@
         </xsl:choose>
     </xsl:function>
     
-    <xsl:function name="custom:isRole" as="xs:boolean*">
+    <xsl:function name="customAAD:isRole" as="xs:boolean*">
         <xsl:param name="current_group" as="node()*"/>
         <xsl:param name="role" as="xs:string"/>
         <xsl:for-each-group select="$current_group/gmd:role"
