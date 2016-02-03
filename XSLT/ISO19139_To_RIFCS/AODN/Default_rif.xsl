@@ -17,8 +17,7 @@
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
     exclude-result-prefixes="geonet gmx oai xsi gmd srv gml gco gts custom">
     
-     <xsl:param name="global_originatingSource" select="'Australian Ocean Data Network'"/> <!-- Only used as originating source if organisation name cannot be determined from Point Of Contact -->
-    <xsl:param name="global_group" select="'Australian Ocean Data Network'"/> 
+    <xsl:param name="global_originatingSource" select="'Australian Ocean Data Network'"/> <!-- Only used as originating source if organisation name cannot be determined from Point Of Contact -->
     <xsl:param name="global_baseURI" select="'catalogue.aodn.org.au'"/>
     <xsl:param name="global_path" select="'/geonetwork/srv/eng/metadata.show?uuid='"/>
     <xsl:variable name="anzsrcCodelist" select="document('anzsrc-codelist.xml')"/>
@@ -106,7 +105,7 @@
         </xsl:variable>
         <registryObject>
             <xsl:attribute name="group">
-                <xsl:value-of select="$global_group"/>    
+                <xsl:value-of select="$source"/>    
             </xsl:attribute>
             
             <xsl:apply-templates select="*:fileIdentifier" mode="registryObject_key">
@@ -331,7 +330,7 @@
     <xsl:template match="*:fileIdentifier" mode="registryObject_key">
         <xsl:param name="source"/>
         <key>
-            <xsl:value-of select="concat($source, normalize-space(.))"/>
+            <xsl:value-of select="concat($source, '/', normalize-space(.))"/>
         </key>
     </xsl:template>
 
@@ -425,7 +424,7 @@
         <xsl:if test="string-length($identifier) > 0">
             <relatedObject>
                 <key>
-                    <xsl:value-of select="concat($source, $identifier)"/>
+                    <xsl:value-of select="concat($source, '/', $identifier)"/>
                 </key>
                 <relation>
                     <xsl:attribute name="type">
@@ -458,7 +457,7 @@
         <xsl:param name="source"/>
          <relatedObject>
             <key>
-               <xsl:value-of select="concat($source, translate(normalize-space(current-grouping-key()),' ',''))"/>
+               <xsl:value-of select="concat($source, '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
             </key>
             <xsl:for-each-group select="current-group()/*:role"
                 group-by="*:CI_RoleCode/@codeListValue">
@@ -493,7 +492,7 @@
         <xsl:if test="string-length($identifier) > 0">
             <relatedObject>
                 <key>
-                    <xsl:value-of select="concat($source, $identifier)"/>
+                    <xsl:value-of select="concat($source, '/', $identifier)"/>
                 </key>
                 <relation>
                     <xsl:attribute name="type">
@@ -1314,7 +1313,7 @@
         <xsl:param name="originatingSource"/>
         <xsl:param name="source"/>
           
-        <registryObject group="{$global_group}">
+        <registryObject group="{$source}">
 
         <!--
         <xsl:message select="concat('Creating key: ', translate(normalize-space(current-grouping-key()),' ',''))"/>
@@ -1323,7 +1322,7 @@
         -->
         
         <key>
-            <xsl:value-of select="concat($source, translate(normalize-space(current-grouping-key()),' ',''))"/>
+            <xsl:value-of select="concat($source, '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
         </key>
        
         <originatingSource>
@@ -1349,7 +1348,7 @@
                      <relatedObject>
                          <key>
                              <xsl:value-of
-                                 select="concat($source, translate(normalize-space(*:organisationName),' ',''))"
+                                 select="concat($source, '/', translate(normalize-space(*:organisationName),' ',''))"
                              />
                          </key>
                          <relation type="isMemberOf"/>
@@ -1376,7 +1375,7 @@
         <xsl:param name="originatingSource"/>
         <xsl:param name="source"/>
         
-        <registryObject group="{$global_group}">
+        <registryObject group="{$source}">
             
             <!--
             <xsl:message select="concat('Creating key: ', translate(normalize-space(current-grouping-key()),' ',''))"/>
@@ -1384,7 +1383,7 @@
             <xsl:message select="concat('Organisation name: ', *:organisationName)"/>
             -->
             <key>
-                <xsl:value-of select="concat($source, translate(normalize-space(current-grouping-key()),' ',''))"/>
+                <xsl:value-of select="concat($source, '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
             </key>
             
             <originatingSource>

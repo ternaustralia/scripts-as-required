@@ -324,7 +324,14 @@
 
         <registryObject>
             <xsl:attribute name="group">
-                <xsl:value-of select="$global_IMAS_group"/>
+                <xsl:choose>
+                    <xsl:when test="string-length($source) > 0">
+                        <xsl:value-of select="$source"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:value-of select="$global_IMAS_group"/>
+                    </xsl:otherwise>
+                </xsl:choose>
             </xsl:attribute>
 
             <xsl:apply-templates select="gmd:fileIdentifier" mode="IMAS_registryObject_key">
@@ -576,7 +583,7 @@
         <key>
             <xsl:choose>
                 <xsl:when test="string-length($source) > 0">
-                    <xsl:value-of select="concat($source, normalize-space(.))"/>
+                    <xsl:value-of select="concat($source, '/', normalize-space(.))"/>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:value-of select="concat($global_IMAS_acronym,'/', normalize-space(.))"/>
@@ -702,7 +709,7 @@
                 <key>
                     <xsl:choose>
                         <xsl:when test="string-length($source) > 0">
-                            <xsl:value-of select="concat($source, normalize-space(.))"/>
+                            <xsl:value-of select="concat($source, '/', normalize-space(.))"/>
                         </xsl:when>
                         <xsl:otherwise>
                             <xsl:value-of select="concat($global_IMAS_acronym,'/', normalize-space(.))"/>
@@ -813,7 +820,7 @@
             <key>
                <xsl:choose>
                     <xsl:when test="string-length($source) > 0">
-                        <xsl:value-of select="concat($source, translate(customIMAS:nameNoTitle($name),' ',''))"/>
+                        <xsl:value-of select="concat($source, '/', translate(customIMAS:nameNoTitle($name),' ',''))"/>
                     </xsl:when>
                     <xsl:otherwise>
                         <xsl:value-of select="concat($global_IMAS_acronym,'/', translate(customIMAS:nameNoTitle($name),' ',''))"/>
@@ -851,7 +858,7 @@
             <relatedObject>
                 <xsl:choose>
                     <xsl:when test="string-length($source) > 0">
-                        <xsl:value-of select="concat($source, normalize-space(.))"/>
+                        <xsl:value-of select="concat($source, '/', normalize-space(.))"/>
                     </xsl:when>
                     <xsl:otherwise>
                         <xsl:value-of select="concat($global_IMAS_acronym,'/', normalize-space(.))"/>
@@ -1677,14 +1684,24 @@
         <xsl:param name="type"/>
         <xsl:param name="originatingSource"/>
         <xsl:param name="source"/>
-        <registryObject group="{$global_IMAS_group}">
+        <registryObject>
+            <xsl:attribute name="group">
+                <xsl:choose>
+                    <xsl:when test="string-length($source) > 0">
+                        <xsl:value-of select="$source"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:value-of select="$global_IMAS_group"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:attribute>
 
             <xsl:variable name="name" select="normalize-space(current-grouping-key())"/>
             <!-- Name is to be 'surname,firstname' or 'surname,i', to attempt to reduce replicated records -->
             <key>
                 <xsl:choose>
                     <xsl:when test="string-length($source) > 0">
-                        <xsl:value-of select="concat($source, translate(customIMAS:nameNoTitle($name),' ',''))"/>
+                        <xsl:value-of select="concat($source, '/', translate(customIMAS:nameNoTitle($name),' ',''))"/>
                     </xsl:when>
                     <xsl:otherwise>
                         <xsl:value-of select="concat($global_IMAS_acronym, '/', translate(customIMAS:nameNoTitle($name),' ',''))"/>
@@ -1741,7 +1758,7 @@
                                     <key>
                                         <xsl:choose>
                                             <xsl:when test="string-length($source) > 0">
-                                                <xsl:value-of select="concat($source, translate(normalize-space($organisationName),' ',''))"/>
+                                                <xsl:value-of select="concat($source, '/', translate(normalize-space($organisationName),' ',''))"/>
                                             </xsl:when>
                                             <xsl:otherwise>
                                                 <xsl:value-of select="concat($global_IMAS_acronym, '/', translate(normalize-space($organisationName),' ',''))"/>

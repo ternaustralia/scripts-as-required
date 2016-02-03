@@ -13,15 +13,20 @@
     xmlns:customIMOS="http://customIMOS.nowhere.yet"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
     exclude-result-prefixes="geonet gmx oai xsi gmd srv gml gco gts csw grg mcp customIMOS">
+    <xsl:import href="AIMS_rif.xsl"/>
+    <xsl:import href="EATLAS_rif.xsl"/>
+    
     <!-- stylesheet to convert iso19139 in OAI-PMH ListRecords response to RIF-CS -->
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
+    
     <xsl:param name="global_IMOS_defaultContributingOrganisation" select="'external'"/>
     <xsl:param name="global_IMOS_baseURI" select="'catalogue-123.aodn.org.au'"/>
     <xsl:param name="global_IMOS_group" select="'Integrated Marine Observing System'"/>
-    <xsl:param name="global_IMOS_groupAcronym" select="'IMOS'"/>
+    <xsl:param name="global_IMOS_acronym" select="'IMOS'"/>
     <xsl:param name="global_IMOS_defaultOriginatingSource" select="'external provider'"/>
     <xsl:param name="global_IMOS_path" select="'/geonetwork/srv/en/metadata.show?uuid='"/>
+    
     <xsl:variable name="anzsrcCodelist" select="document('anzsrc-codelist.xml')"/>
     <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>
     <xsl:variable name="gmdCodelists" select="document('codelists.xml')"/>
@@ -33,6 +38,8 @@
     <xsl:template match="oai:GetRecord/oai:record/oai:header/oai:identifier"/>
     <xsl:template match="oai:GetRecord/oai:record/oai:header/oai:datestamp"/>
     <xsl:template match="oai:GetRecord/oai:record/oai:header/oai:setSpec"/>
+    
+    <xsl:param name="global_AIMS_baseURI" select="'data.aims.gov.au'"/>
 
     <!--xsl:template match="node()"/-->
 
@@ -45,7 +52,22 @@
             <xsl:attribute name="xsi:schemaLocation">
                 <xsl:text>http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd</xsl:text>
             </xsl:attribute>
-            <xsl:apply-templates select="//*:MD_Metadata" mode="IMOS"/>
+            
+            <xsl:variable name="metadataTruthURL" select="//*:MD_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage[contains(lower-case(following-sibling::gmd:protocol), 'metadata-url')]/gmd:URL"/>
+            <xsl:message select="concat('metadataTruthURL: ', $metadataTruthURL)"/>
+         
+            <xsl:choose>
+                <xsl:when test="
+                    contains($metadataTruthURL, $global_AIMS_baseURI)">
+                    <xsl:apply-templates select="//*:MD_Metadata" mode="AIMS">
+                        <xsl:with-param name="source" select="$global_IMOS_group"/>
+                    </xsl:apply-templates>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:apply-templates select="//*:MD_Metadata" mode="IMOS"/>
+                </xsl:otherwise>
+            </xsl:choose>
+            
         </registryObjects>
     </xsl:template>
 
@@ -319,7 +341,14 @@
         
         <registryObject>
             <xsl:attribute name="group">
-                <xsl:value-of select="$global_IMOS_group"/>
+                <xsl:choose>
+                    <xsl:when test="string-length($source) > 0">
+                        <xsl:value-of select="$source"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:value-of select="$global_IMOS_group"/>
+                    </xsl:otherwise>
+                </xsl:choose>
             </xsl:attribute>
 
             <xsl:apply-templates select="gmd:fileIdentifier" mode="IMOS_registryObject_key">
@@ -583,7 +612,14 @@
     <xsl:template match="gmd:fileIdentifier" mode="IMOS_registryObject_key">
         <xsl:param name="source"/>
         <key>
-            <xsl:value-of select="concat($source, normalize-space(.))"/>
+            <xsl:choose>
+                <xsl:when test="string-length($source) > 0">
+                    <xsl:value-of select="concat($source, '/', normalize-space(.))"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="concat($global_IMOS_acronym, '/', normalize-space(.))"/>
+                </xsl:otherwise>
+            </xsl:choose>
         </key>
     </xsl:template>
 
@@ -601,7 +637,7 @@
                 <xsl:attribute name="type">
                     <xsl:text>global</xsl:text>
                 </xsl:attribute>
-                <xsl:value-of select="concat($global_IMOS_groupAcronym,'/', $identifier)"/>
+                <xsl:value-of select="concat($global_IMOS_acronym,'/', $identifier)"/>
             </identifier>
         </xsl:if>
     </xsl:template>
@@ -702,7 +738,14 @@
         <xsl:if test="string-length($identifier) > 0">
             <relatedObject>
                 <key>
-                    <xsl:value-of select="concat($source, $identifier)"/>
+                    <xsl:choose>
+                        <xsl:when test="string-length($source) > 0">
+                            <xsl:value-of select="concat($source, '/', $identifier)"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="concat($global_IMOS_acronym, '/', $identifier)"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
                 </key>
                 <relation>
                     <xsl:attribute name="type">
@@ -759,10 +802,10 @@
             <key>
                 <xsl:choose>
                      <xsl:when test="string-length($source) > 0">
-                        <xsl:value-of select="concat($source, translate($name,' ',''))"/>
+                        <xsl:value-of select="concat($source, '/', translate($name,' ',''))"/>
                      </xsl:when>
                      <xsl:otherwise>
-                         <xsl:value-of select="concat($global_IMOS_groupAcronym,'/', translate($name,' ',''))"/>
+                         <xsl:value-of select="concat($global_IMOS_acronym,'/', translate($name,' ',''))"/>
                      </xsl:otherwise>
                 </xsl:choose>
             </key>
@@ -788,7 +831,14 @@
         <xsl:if test="string-length($identifier) > 0">
             <relatedObject>
                 <key>
-                    <xsl:value-of select="concat($source, $identifier)"/>
+                    <xsl:choose>
+                        <xsl:when test="string-length($source) > 0">
+                            <xsl:value-of select="concat($source, '/', $identifier)"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="concat($global_IMOS_acronym, '/', $identifier)"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
                 </key>
                 <relation>
                     <xsl:attribute name="type">
@@ -1300,7 +1350,7 @@
 
                 <xsl:if test="(string-length($uuid) > 0)">
                     <!--identifier type="global">
-                        <xsl:value-of select="concat($global_IMOS_groupAcronym,'/', $uuid)"/>
+                        <xsl:value-of select="concat($global_IMOS_acronym,'/', $uuid)"/>
                     </identifier-->
                     <xsl:variable name="constructedUri"
                         select="concat('http://', $global_IMOS_baseURI, $global_IMOS_path, $uuid)"/>
@@ -1690,17 +1740,26 @@
         <xsl:param name="type"/>
         <xsl:param name="originatingSource"/>
         <xsl:param name="source"/>
-        <registryObject group="{$global_IMOS_group}">
-
+        <registryObject>
+            <xsl:attribute name="group">
+                <xsl:choose>
+                    <xsl:when test="string-length($source) > 0">
+                        <xsl:value-of select="$source"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:value-of select="$global_IMOS_group"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:attribute>
             <xsl:variable name="name" select="normalize-space(current-grouping-key())"/>
       
             <key>
                 <xsl:choose>
                     <xsl:when test="string-length($source) > 0">
-                        <xsl:value-of select="concat($source, translate($name,' ',''))"/>
+                        <xsl:value-of select="concat($source, '/', translate($name,' ',''))"/>
                     </xsl:when>
                     <xsl:otherwise>
-                        <xsl:value-of select="concat($global_IMOS_groupAcronym, '/', translate($name,' ',''))"/>
+                        <xsl:value-of select="concat($global_IMOS_acronym, '/', translate($name,' ',''))"/>
                     </xsl:otherwise>
                 </xsl:choose>
             </key>
@@ -1755,10 +1814,10 @@
                                     <key>
                                         <xsl:choose>
                                             <xsl:when test="string-length($source) > 0">
-                                                <xsl:value-of select="concat($source, translate(normalize-space($organisationName),' ',''))"/>
+                                                <xsl:value-of select="concat($source, '/', translate(normalize-space($organisationName),' ',''))"/>
                                             </xsl:when>
                                             <xsl:otherwise>
-                                                <xsl:value-of select="concat($global_IMOS_groupAcronym,'/', translate(normalize-space($organisationName),' ',''))"/>
+                                                <xsl:value-of select="concat($global_IMOS_acronym,'/', translate(normalize-space($organisationName),' ',''))"/>
                                             </xsl:otherwise>
                                         </xsl:choose>
                                     </key>

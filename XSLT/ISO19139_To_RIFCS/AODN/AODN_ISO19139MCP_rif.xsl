@@ -15,16 +15,27 @@
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xmlns:custom="http://custom.nowhere.yet"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
-    exclude-result-prefixes="geonet gmx oai xsi gmd srv gml gco gts">
+    exclude-result-prefixes="geonet gmx oai xsi gmd srv gml gco gts custom">
     <xsl:import href="Default_rif.xsl"/>
     <xsl:import href="EATLAS_rif.xsl"/>
     <xsl:import href="IMAS_rif.xsl"/>
     <xsl:import href="IMOS_rif.xsl"/>
     <xsl:import href="AAD_rif.xsl"/>
-
-    <!-- stylesheet to convert iso19139 in OAI-PMH ListRecords response to RIF-CS -->
+    <xsl:import href="AIMS_rif.xsl"/>
+    
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
+    
+    <xsl:param name="global_EATLAS_baseURI" select="'eatlas.org.au'"/>
+    <xsl:param name="global_IMAS_baseURI" select="'imas.utas.edu.au'"/>
+    <xsl:param name="global_IMOS_baseURI" select="'imosmest.aodn.org.au'"/>
+    <xsl:param name="global_IMOS_baseURI_123" select="'catalogue-123.aodn.org.au'"/>
+    <xsl:param name="global_AAD_baseURI" select="'data.aad.gov.au'"/>
+    <xsl:param name="global_AIMS_baseURI" select="'data.aims.gov.au'"/>
+    
+    <xsl:param name="global_group" select="'AODN'"/>
+
+    <!-- stylesheet to convert iso19139 in OAI-PMH ListRecords response to RIF-CS -->
     <xsl:template match="oai:responseDate"/>
     <xsl:template match="oai:request"/>
     <xsl:template match="oai:error"/>
@@ -34,16 +45,6 @@
     <xsl:template match="oai:ListRecords/oai:record/oai:header/oai:identifier"/>
     <xsl:template match="oai:ListRecords/oai:record/oai:header/oai:datestamp"/>
     <xsl:template match="oai:ListRecords/oai:record/oai:header/oai:setSpec"/>
-    
-    <xsl:param name="global_baseURI_EATLAS" select="'eatlas.org.au'"/>
-    <xsl:param name="global_baseURI_IMAS" select="'imas.utas.edu.au'"/>
-    <xsl:param name="global_baseURI_IMOS" select="'imosmest.aodn.org.au'"/>
-    <xsl:param name="global_baseURI_IMOS_123" select="'catalogue-123.aodn.org.au'"/>
-    <xsl:param name="global_baseURI_AAD" select="'data.aad.gov.au'"/>
-    <xsl:param name="global_baseURI_AIMS" select="'data.aims.gov.au'"/>
-    
-    <xsl:param name="global_source" select="'AODN/'"/>
-    
     
     <!-- =========================================== -->
     <!-- RegistryObjects (root) Template             -->
@@ -71,46 +72,46 @@
         
              <xsl:choose>
                  <xsl:when test="
-                     contains($metadataTruthURL, $global_baseURI_EATLAS)">
+                     contains($metadataTruthURL, $global_EATLAS_baseURI)">
                      <xsl:apply-templates select="//*:MD_Metadata" mode="EATLAS">
-                         <xsl:with-param name="source" select="$global_source"/>
+                         <xsl:with-param name="source" select="$global_group"/>
                      </xsl:apply-templates>
                  </xsl:when>
                  <xsl:when test="
-                     contains($metadataTruthURL, $global_baseURI_IMAS) or
+                     contains($metadataTruthURL, $global_IMAS_baseURI) or
                      custom:sequence_contains($contact_sequence, 'imas')">
                      <xsl:apply-templates select="//*:MD_Metadata" mode="IMAS">
-                         <xsl:with-param name="source" select="$global_source"/>
+                         <xsl:with-param name="source" select="$global_group"/>
                      </xsl:apply-templates>
                  </xsl:when>
                  <xsl:when test="
-                     contains($metadataTruthURL, $global_baseURI_IMOS) or
-                     contains($metadataTruthURL, $global_baseURI_IMOS_123) or
+                     contains($metadataTruthURL, $global_IMOS_baseURI) or
+                     contains($metadataTruthURL, $global_IMOS_baseURI_123) or
                      custom:sequence_contains($contact_sequence, 'imos')">
                      <xsl:apply-templates select="//*:MD_Metadata" mode="IMOS">
-                         <xsl:with-param name="source" select="$global_source"/>
+                         <xsl:with-param name="source" select="$global_group"/>
                      </xsl:apply-templates>
                  </xsl:when>
                  <xsl:when test="
-                     contains($metadataTruthURL, $global_baseURI_AIMS) or
+                     contains($metadataTruthURL, $global_AIMS_baseURI) or
                      custom:sequence_contains($contact_sequence, 'aims')">
                      <xsl:apply-templates select="//*:MD_Metadata" mode="AIMS">
-                         <xsl:with-param name="source" select="$global_source"/>
+                         <xsl:with-param name="source" select="$global_group"/>
                      </xsl:apply-templates>
                  </xsl:when>
                  <!-- Uncomment the following when we have the AAD XSLT working
                      from the same anzlic as is fed to AODN -->
                  <!--xsl:when test="
-                     contains($metadataTruthURL, $global_baseURI_AAD) or
+                     contains($metadataTruthURL, $global_AAD_baseURI) or
                      custom:sequence_contains($contact_sequence, 'australian antarctic division') or
                      custom:sequence_contains($contact_sequence, 'aad')">
                      <xsl:apply-templates select="//*:MD_Metadata" mode="AAD">
-                     <xsl:with-param name="source" select="$global_source"/>
+                     <xsl:with-param name="source" select="$global_group"/>
                      </xsl:apply-templates>
                  </xsl:when-->
                  <xsl:otherwise>
                      <xsl:apply-templates select="//*:MD_Metadata" mode="default">
-                         <xsl:with-param name="source" select="$global_source"/>
+                         <xsl:with-param name="source" select="$global_group"/>
                      </xsl:apply-templates>
                  </xsl:otherwise>
              </xsl:choose>

@@ -12,8 +12,8 @@
     <!-- stylesheet to convert iso19139 in OAI-PMH ListRecords response to RIF-CS -->
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
+    <xsl:param name="global_AAD_acronym" select="'AADC'"/>
     <xsl:param name="global_AAD_originatingSource" select="'http://data.aad.gov.au/aadc'"/>
-    <xsl:param name="global_AAD_baseURI" select="'http://data.aad.gov.au/aadc'"/>
     <xsl:param name="global_AAD_group" select="'Australian Antarctic Data Centre'"/>
     <xsl:param name="global_AAD_publisherName" select="'Australian Antarctic Data Centre'"/>
     <xsl:param name="global_AAD_contributorName" select="'Australian Antarctic Division'"/>
@@ -72,10 +72,10 @@
             <key>
                  <xsl:choose>
                      <xsl:when test="string-length(gmd:fileIdentifier) > 0">
-                         <xsl:value-of select="normalize-space(gmd:fileIdentifier)"/>
+                         <xsl:value-of select="concat($global_AAD_acronym, '/', normalize-space(gmd:fileIdentifier))"/>
                      </xsl:when>
                      <xsl:when test="count($code_sequence) > 0">
-                         <xsl:value-of select="normalize-space($code_sequence[1])"/>
+                         <xsl:value-of select="concat($global_AAD_acronym, '/', normalize-space($code_sequence[1]))"/>
                      </xsl:when>
                  </xsl:choose>
             </key>
@@ -358,7 +358,7 @@
     <xsl:template match="gmd:parentIdentifier" mode="AAD_collection_related_object">
         <relatedObject>
             <key>
-                <xsl:value-of select="normalize-space(.)"/>
+                <xsl:value-of select="concat($global_AAD_acronym, '/', normalize-space(.))"/>
             </key>
             <relation type="isPartOf"/>
         </relatedObject>
@@ -392,7 +392,7 @@
                 <xsl:otherwise>
                     <relatedObject>
                         <key>
-                            <xsl:value-of select="concat($global_AAD_baseURI,'/', translate(normalize-space($transformedName),' ',''))"/>
+                            <xsl:value-of select="concat($global_AAD_acronym,'/', translate(normalize-space($transformedName),' ',''))"/>
                         </key>
                         <relation>
                             <xsl:attribute name="type">
@@ -772,7 +772,7 @@
             
             <key>
                 <xsl:value-of
-                    select="concat($global_AAD_baseURI, '/', translate(normalize-space($transformedName),' ',''))"
+                    select="concat($global_AAD_acronym, '/', translate(normalize-space($transformedName),' ',''))"
                 />
             </key>
 
@@ -831,7 +831,7 @@
                                 <relatedObject>
                                     <key>
                                         <xsl:value-of
-                                            select="concat($global_AAD_baseURI,'/', $transformedOrganisationName)"
+                                            select="concat($global_AAD_acronym,'/', $transformedOrganisationName)"
                                         />
                                     </key>
                                     <relation type="isMemberOf"/>
