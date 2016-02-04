@@ -13,8 +13,6 @@
     xmlns:customIMOS="http://customIMOS.nowhere.yet"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
     exclude-result-prefixes="geonet gmx oai xsi gmd srv gml gco gts csw grg mcp customIMOS">
-    <xsl:import href="AIMS_rif.xsl"/>
-    <xsl:import href="EATLAS_rif.xsl"/>
     
     <!-- stylesheet to convert iso19139 in OAI-PMH ListRecords response to RIF-CS -->
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
