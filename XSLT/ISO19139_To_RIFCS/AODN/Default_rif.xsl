@@ -105,7 +105,7 @@
         </xsl:variable>
         <registryObject>
             <xsl:attribute name="group">
-                <xsl:value-of select="$source"/>    
+                <xsl:value-of select="substring-after($source, ':')"/>    
             </xsl:attribute>
             
             <xsl:apply-templates select="*:fileIdentifier" mode="registryObject_key">
@@ -330,7 +330,7 @@
     <xsl:template match="*:fileIdentifier" mode="registryObject_key">
         <xsl:param name="source"/>
         <key>
-            <xsl:value-of select="concat($source, '/', normalize-space(.))"/>
+            <xsl:value-of select="concat(substring-before($source, ':'), '/', normalize-space(.))"/>
         </key>
     </xsl:template>
 
@@ -424,7 +424,7 @@
         <xsl:if test="string-length($identifier) > 0">
             <relatedObject>
                 <key>
-                    <xsl:value-of select="concat($source, '/', $identifier)"/>
+                    <xsl:value-of select="concat(substring-before($source, ':'), '/', $identifier)"/>
                 </key>
                 <relation>
                     <xsl:attribute name="type">
@@ -457,7 +457,7 @@
         <xsl:param name="source"/>
          <relatedObject>
             <key>
-               <xsl:value-of select="concat($source, '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
+                <xsl:value-of select="concat(substring-before($source, ':'), '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
             </key>
             <xsl:for-each-group select="current-group()/*:role"
                 group-by="*:CI_RoleCode/@codeListValue">
@@ -492,7 +492,7 @@
         <xsl:if test="string-length($identifier) > 0">
             <relatedObject>
                 <key>
-                    <xsl:value-of select="concat($source, '/', $identifier)"/>
+                    <xsl:value-of select="concat(substring-before($source, ':'), '/', $identifier)"/>
                 </key>
                 <relation>
                     <xsl:attribute name="type">
@@ -1313,7 +1313,7 @@
         <xsl:param name="originatingSource"/>
         <xsl:param name="source"/>
           
-        <registryObject group="{$source}">
+        <registryObject group="{substring-after($source, ':')}">
 
         <!--
         <xsl:message select="concat('Creating key: ', translate(normalize-space(current-grouping-key()),' ',''))"/>
@@ -1322,7 +1322,7 @@
         -->
         
         <key>
-            <xsl:value-of select="concat($source, '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
+            <xsl:value-of select="concat(substring-before($source, ':'), '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
         </key>
        
         <originatingSource>
@@ -1348,7 +1348,7 @@
                      <relatedObject>
                          <key>
                              <xsl:value-of
-                                 select="concat($source, '/', translate(normalize-space(*:organisationName),' ',''))"
+                                 select="concat(substring-before($source, ':'), '/', translate(normalize-space(*:organisationName),' ',''))"
                              />
                          </key>
                          <relation type="isMemberOf"/>
@@ -1375,7 +1375,7 @@
         <xsl:param name="originatingSource"/>
         <xsl:param name="source"/>
         
-        <registryObject group="{$source}">
+        <registryObject group="{substring-after($source, ':')}">
             
             <!--
             <xsl:message select="concat('Creating key: ', translate(normalize-space(current-grouping-key()),' ',''))"/>
@@ -1383,7 +1383,7 @@
             <xsl:message select="concat('Organisation name: ', *:organisationName)"/>
             -->
             <key>
-                <xsl:value-of select="concat($source, '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
+                <xsl:value-of select="concat(substring-before($source, ':'), '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
             </key>
             
             <originatingSource>

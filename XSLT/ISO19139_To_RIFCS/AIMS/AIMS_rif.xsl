@@ -56,17 +56,7 @@
             <xsl:variable name="metadataTruthURL" select="//*:MD_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage[contains(lower-case(following-sibling::gmd:protocol), 'metadata-url')]/gmd:URL"/>
             <xsl:message select="concat('metadataTruthURL: ', $metadataTruthURL)"/>
             
-            <xsl:choose>
-                <xsl:when test="
-                    contains($metadataTruthURL, $global_EATLAS_baseURI)">
-                    <xsl:apply-templates select="//*:MD_Metadata" mode="EATLAS">
-                        <xsl:with-param name="source" select="$global_AIMS_group"/>
-                    </xsl:apply-templates>
-                </xsl:when>
-                <xsl:otherwise>
-                    <xsl:apply-templates select="//*:MD_Metadata" mode="AIMS"/>
-                </xsl:otherwise>
-                 </xsl:choose>
+           <xsl:apply-templates select="//*:MD_Metadata" mode="AIMS"/>
             
         </registryObjects>
     </xsl:template>
@@ -174,8 +164,8 @@
          <registryObject>
              <xsl:attribute name="group">
                  <xsl:choose>
-                     <xsl:when test="string-length($source) > 0">
-                         <xsl:value-of select="$source"/>
+                     <xsl:when test="string-length(substring-after($source, ':')) > 0">
+                         <xsl:value-of select="substring-after($source, ':')"/>
                      </xsl:when>
                      <xsl:otherwise>
                          <xsl:value-of select="$global_AIMS_group"/>
@@ -420,8 +410,8 @@
         <xsl:param name="source"/>
         <key>
             <xsl:choose>
-                <xsl:when test="string-length($source) > 0">
-                    <xsl:value-of select="concat($source, '/', normalize-space(.))"/>
+                <xsl:when test="string-length(substring-before($source, ':')) > 0">
+                    <xsl:value-of select="concat(substring-before($source, ':'), '/', normalize-space(.))"/>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:value-of select="concat($global_AIMS_acronym, '/', normalize-space(.))"/>
@@ -616,8 +606,8 @@
             <relatedObject>
                 <key>
                     <xsl:choose>
-                        <xsl:when test="string-length($source) > 0">
-                            <xsl:value-of select="concat($source, '/', $identifier)"/>
+                        <xsl:when test="string-length(substring-before($source, ':')) > 0">
+                            <xsl:value-of select="concat(substring-before($source, ':'), '/', $identifier)"/>
                         </xsl:when>
                         <xsl:otherwise>
                             <xsl:value-of select="concat($global_AIMS_acronym, '/', $identifier)"/>
@@ -696,8 +686,8 @@
                     <xsl:when test="string-length($mappedKey) > 0">
                         <xsl:value-of select="$mappedKey"/>
                     </xsl:when>
-                    <xsl:when test="string-length($source) > 0">
-                        <xsl:value-of select="concat($source, '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
+                    <xsl:when test="string-length(substring-before($source, ':')) > 0">
+                        <xsl:value-of select="concat(substring-before($source, ':'), '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
                     </xsl:when>
                     <xsl:otherwise>
                          <xsl:value-of select="concat($global_AIMS_acronym,'/', translate(normalize-space(current-grouping-key()),' ',''))"/>
@@ -740,8 +730,8 @@
                     <xsl:when test="string-length($mappedKey) > 0">
                         <xsl:value-of select="$mappedKey"/>
                     </xsl:when>
-                    <xsl:when test="string-length($source) > 0">
-                        <xsl:value-of select="concat($source, '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
+                    <xsl:when test="string-length(substring-before($source, ':')) > 0">
+                        <xsl:value-of select="concat(substring-before($source, ':'), '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
                     </xsl:when>
                     <xsl:otherwise>
                         <xsl:value-of select="concat($global_AIMS_acronym,'/', translate(normalize-space(current-grouping-key()),' ',''))"/>
@@ -764,8 +754,8 @@
             <relatedObject>
                 <key>
                     <xsl:choose>
-                        <xsl:when test="string-length($source) > 0">
-                            <xsl:value-of select="concat($source, '/', $identifier)"/>
+                        <xsl:when test="string-length(substring-before($source, ':')) > 0">
+                            <xsl:value-of select="concat(substring-before($source, ':'), '/', $identifier)"/>
                         </xsl:when>
                         <xsl:otherwise>
                             <xsl:value-of select="concat($global_AIMS_acronym, '/', $identifier)"/>
@@ -1970,8 +1960,8 @@
                 <registryObject>
                     <xsl:attribute name="group">
                         <xsl:choose>
-                            <xsl:when test="string-length($source) > 0">
-                                <xsl:value-of select="$source"/>
+                            <xsl:when test="string-length(substring-after($source, ':')) > 0">
+                                <xsl:value-of select="substring-after($source, ':')"/>
                             </xsl:when>
                             <xsl:otherwise>
                                 <xsl:value-of select="$global_AIMS_group"/>
@@ -1981,8 +1971,8 @@
      
                  <key>
                      <xsl:choose>
-                         <xsl:when test="string-length($source) > 0">
-                             <xsl:value-of select="concat($source, '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
+                         <xsl:when test="string-length(substring-before($source, ':')) > 0">
+                             <xsl:value-of select="concat(substring-before($source, ':'), '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
                          </xsl:when>
                          <xsl:otherwise>
                              <xsl:value-of select="concat($global_AIMS_acronym, '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
@@ -2016,8 +2006,8 @@
                                      <relatedObject>
                                          <key>
                                              <xsl:choose>
-                                                 <xsl:when test="string-length($source) > 0">
-                                                     <xsl:value-of select="concat($source, '/', translate(normalize-space(*:organisationName),' ',''))"/>
+                                                 <xsl:when test="string-length(substring-before($source, ':')) > 0">
+                                                     <xsl:value-of select="concat(substring-before($source, ':'), '/', translate(normalize-space(*:organisationName),' ',''))"/>
                                                  </xsl:when>
                                                  <xsl:otherwise>
                                                      <xsl:value-of select="concat($global_AIMS_acronym, '/', translate(normalize-space(*:organisationName),' ',''))"/>

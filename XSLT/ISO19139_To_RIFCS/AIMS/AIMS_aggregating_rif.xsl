@@ -26,10 +26,12 @@
     <xsl:param name="global_EATLAS_baseURI" select="'eatlas.org.au'"/>
     <xsl:param name="global_IMOS_baseURI" select="'imosmest.aodn.org.au'"/>
     <xsl:param name="global_IMOS_baseURI_123" select="'catalogue-123.aodn.org.au'"/>
+    <xsl:param name="global_IMOS_baseURI_top" select="'catalogue-imos.aodn.org.au'"/>
+    
     <xsl:param name="global_AAD_baseURI" select="'data.aad.gov.au'"/>
     <xsl:param name="global_AIMS_baseURI" select="'data.aims.gov.au'"/>
         
-    <xsl:param name="global_group" select="'AIMS'"/>
+    <xsl:param name="global_group" select="'AIMS:Australian Institute of Marine Science'"/>
 
     <!-- stylesheet to convert iso19139 in OAI-PMH ListRecords response to RIF-CS -->
     <xsl:template match="oai:responseDate"/>
@@ -48,47 +50,52 @@
     
     <xsl:template match="/">
        
-        <xsl:variable name="metadataTruthURL" select="//*:MD_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage[contains(lower-case(following-sibling::gmd:protocol), 'metadata-url')]/gmd:URL"/>
-        <xsl:message select="concat('metadataTruthURL: ', $metadataTruthURL)"/>
-       
-        <xsl:variable name="fileIdentifier" select="//*:MD_Metadata/gmd:fileIdentifier"/>
-        <xsl:message select="concat('fileIdentifier: ', $fileIdentifier)"/>
-        
-        <xsl:variable name="contact_sequence" as="node()*" select="//*:MD_Metadata/gmd:contact"/>
-        
-        <xsl:for-each select="distinct-values($contact_sequence)">
-            <xsl:message select="concat('contact: ', .)"/>
-        </xsl:for-each>
-        
         <registryObjects>
             <xsl:attribute name="xsi:schemaLocation">
                 <xsl:text>http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd</xsl:text>
             </xsl:attribute>
-        
-             <xsl:choose>
-                 <xsl:when test="
-                     contains($metadataTruthURL, $global_EATLAS_baseURI)">
-                     <xsl:apply-templates select="//*:MD_Metadata" mode="EATLAS">
-                         <xsl:with-param name="source" select="$global_group"/>
-                     </xsl:apply-templates>
-                 </xsl:when>
-                 <xsl:when test="
-                     contains($metadataTruthURL, $global_IMOS_baseURI) or
-                     contains($metadataTruthURL, $global_IMOS_baseURI_123)">
-                     <xsl:apply-templates select="//*:MD_Metadata" mode="IMOS">
-                         <xsl:with-param name="source" select="$global_group"/>
-                     </xsl:apply-templates>
-                 </xsl:when>
-                      <xsl:otherwise>
-                     <xsl:apply-templates select="//*:MD_Metadata" mode="AIMS">
-                         <xsl:with-param name="source" select="$global_group"/>
-                     </xsl:apply-templates>
-                 </xsl:otherwise>
-             </xsl:choose>
-        
+            
+            <xsl:apply-templates select="//*:MD_Metadata" mode="AIMS_aggregating"/>
         </registryObjects>
         
     </xsl:template>
     
+    
+    <xsl:template match="*:MD_Metadata" mode="AIMS_aggregating">
+        
+         <xsl:variable name="metadataTruthURL" select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage[contains(lower-case(following-sibling::gmd:protocol), 'metadata-url')]/gmd:URL"/>
+         <xsl:message select="concat('metadataTruthURL: ', $metadataTruthURL)"/>
+         
+         <xsl:variable name="fileIdentifier" select="gmd:fileIdentifier"/>
+         <xsl:message select="concat('fileIdentifier: ', $fileIdentifier)"/>
+         
+         <xsl:variable name="contact_sequence" as="node()*" select="gmd:contact"/>
+         
+         <xsl:for-each select="distinct-values($contact_sequence)">
+             <xsl:message select="concat('contact: ', .)"/>
+         </xsl:for-each>
+         <xsl:choose>
+             <xsl:when test="
+                 contains($metadataTruthURL, $global_EATLAS_baseURI)">
+                 <xsl:apply-templates select="." mode="EATLAS">
+                     <xsl:with-param name="source" select="$global_group"/>
+                 </xsl:apply-templates>
+             </xsl:when>
+             <xsl:when test="
+                 contains($metadataTruthURL, $global_IMOS_baseURI) or
+                 contains($metadataTruthURL, $global_IMOS_baseURI_top) or
+                 contains($metadataTruthURL, $global_IMOS_baseURI_123)">
+                 <xsl:apply-templates select="." mode="IMOS">
+                     <xsl:with-param name="source" select="$global_group"/>
+                 </xsl:apply-templates>
+             </xsl:when>
+             <xsl:otherwise>
+                 <xsl:apply-templates select="." mode="AIMS">
+                     <xsl:with-param name="source" select="$global_group"/>
+                 </xsl:apply-templates>
+             </xsl:otherwise>
+         </xsl:choose>
+    </xsl:template>
+         
    
 </xsl:stylesheet>

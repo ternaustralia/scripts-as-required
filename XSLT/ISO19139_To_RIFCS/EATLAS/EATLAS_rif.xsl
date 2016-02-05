@@ -159,8 +159,8 @@
             <registryObject>
                 <xsl:attribute name="group">
                     <xsl:choose>
-                        <xsl:when test="string-length($source) > 0">
-                            <xsl:value-of select="$source"/>
+                        <xsl:when test="string-length(substring-after($source, ':')) > 0">
+                            <xsl:value-of select="substring-after($source, ':')"/>
                         </xsl:when>
                         <xsl:otherwise>
                             <xsl:value-of select="$global_EATLAS_group"/>
@@ -409,8 +409,8 @@
         <xsl:param name="source"/>
         <key>
             <xsl:choose>
-                <xsl:when test="string-length($source) > 0">
-                    <xsl:value-of select="concat($source, '/', normalize-space(.))"/>
+                <xsl:when test="string-length(substring-before($source, ':')) > 0">
+                    <xsl:value-of select="concat(substring-before($source, ':'), '/', normalize-space(.))"/>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:value-of select="concat($global_EATLAS_acronym, '/', normalize-space(.))"/>
@@ -599,8 +599,8 @@
             <relatedObject>
                 <key>
                     <xsl:choose>
-                        <xsl:when test="string-length($source) > 0">
-                            <xsl:value-of select="concat($source, '/', $identifier)"/>
+                        <xsl:when test="string-length(substring-before($source, ':')) > 0">
+                            <xsl:value-of select="concat(substring-before($source, ':'), '/', $identifier)"/>
                         </xsl:when>
                         <xsl:otherwise>
                             <xsl:value-of select="concat($global_EATLAS_acronym, '/', $identifier)"/>
@@ -678,8 +678,8 @@
                     <xsl:when test="string-length($mappedKey) > 0">
                         <xsl:value-of select="$mappedKey"/>
                     </xsl:when>
-                    <xsl:when test="string-length($source) > 0">
-                        <xsl:value-of select="concat($source, '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
+                    <xsl:when test="string-length(substring-before($source, ':')) > 0">
+                        <xsl:value-of select="concat(substring-before($source, ':'), '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
                     </xsl:when>
                     <xsl:otherwise>
                         <xsl:value-of select="concat($global_EATLAS_acronym,'/', translate(normalize-space(current-grouping-key()),' ',''))"/>
@@ -722,8 +722,8 @@
                     <xsl:when test="string-length($mappedKey) > 0">
                         <xsl:value-of select="$mappedKey"/>
                     </xsl:when>
-                    <xsl:when test="string-length($source) > 0">
-                        <xsl:value-of select="concat($source, '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
+                    <xsl:when test="string-length(substring-before($source, ':')) > 0">
+                        <xsl:value-of select="concat(substring-before($source, ':'), '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
                     </xsl:when>
                     <xsl:otherwise>
                         <xsl:value-of select="concat($global_EATLAS_acronym,'/', translate(normalize-space(current-grouping-key()),' ',''))"/>
@@ -746,8 +746,8 @@
             <relatedObject>
                 <key>
                     <xsl:choose>
-                        <xsl:when test="string-length($source) > 0">
-                            <xsl:value-of select="concat($source, '/', $identifier)"/>
+                        <xsl:when test="string-length(substring-before($source, ':')) > 0">
+                            <xsl:value-of select="concat(substring-before($source, ':'), '/', $identifier)"/>
                         </xsl:when>
                         <xsl:otherwise>
                             <xsl:value-of select="concat($global_EATLAS_acronym, '/', $identifier)"/>
@@ -1949,8 +1949,8 @@
                 <registryObject>
                     <xsl:attribute name="group">
                         <xsl:choose>
-                            <xsl:when test="string-length($source) > 0">
-                                <xsl:value-of select="$source"/>
+                            <xsl:when test="string-length(substring-after($source, ':')) > 0">
+                                <xsl:value-of select="substring-after($source, ':')"/>
                             </xsl:when>
                             <xsl:otherwise>
                                 <xsl:value-of select="$global_EATLAS_group"/>
@@ -1960,8 +1960,8 @@
      
                  <key>
                      <xsl:choose>
-                         <xsl:when test="string-length($source) > 0">
-                             <xsl:value-of select="concat($source, '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
+                         <xsl:when test="string-length(substring-before($source, ':')) > 0">
+                             <xsl:value-of select="concat(substring-before($source, ':'), '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
                          </xsl:when>
                          <xsl:otherwise>
                              <xsl:value-of select="concat($global_EATLAS_acronym, '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
@@ -1995,8 +1995,8 @@
                                      <relatedObject>
                                          <key>
                                              <xsl:choose>
-                                                 <xsl:when test="string-length($source) > 0">
-                                                     <xsl:value-of select="concat($source, '/', translate(normalize-space(*:organisationName),' ',''))"/>
+                                                 <xsl:when test="string-length(substring-before($source, ':')) > 0">
+                                                     <xsl:value-of select="concat(substring-before($source, ':'), '/', translate(normalize-space(*:organisationName),' ',''))"/>
                                                  </xsl:when>
                                                  <xsl:otherwise>
                                                     <xsl:value-of select="concat($global_EATLAS_acronym,'/', translate(normalize-space(*:organisationName),' ',''))"/>
