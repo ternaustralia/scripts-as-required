@@ -119,11 +119,14 @@
             </xsl:choose>
         </xsl:variable>
         
+        <xsl:variable name="metadataPointOfTruth" select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage[contains(lower-case(following-sibling::gmd:protocol/gco:CharacterString), 'metadata-url')]/gmd:URL"/>
+        
         <xsl:message select="concat('$originatingSource: ', $originatingSource)"/>
+        <xsl:message select="concat('$metadataPointOfTruth: ', $metadataPointOfTruth)"/>
         
-        
-         <xsl:choose>
-             <xsl:when test="
+        <xsl:choose>
+            <xsl:when test="
+                contains(lower-case($metadataPointOfTruth), 'eatlas') or
                  contains(lower-case($originatingSource), 'eatlas') or
                  contains(lower-case($originatingSource), 'e-atlas')">
                  <xsl:apply-templates select="." mode="EATLAS">
@@ -133,7 +136,7 @@
              <xsl:when test="
                  contains(lower-case($originatingSource), 'imas') or
                  contains(lower-case($originatingSource), 'utas') or
-                 contains(lower-case($originatingSource), 'institute of marine studies') or
+                 contains(lower-case($originatingSource), 'institute for marine and antarctic studies') or
                  contains(lower-case($originatingSource), 'university of tasmania')">
                  <xsl:apply-templates select="." mode="IMAS">
                      <xsl:with-param name="source" select="$global_group"/>

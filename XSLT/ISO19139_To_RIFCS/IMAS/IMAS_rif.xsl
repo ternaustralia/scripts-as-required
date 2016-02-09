@@ -17,7 +17,7 @@
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xmlns:customIMAS="http://customIMAS.nowhere.yet"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
-    exclude-result-prefixes="geonet gmx oai xsi gmd srv gml gco mcp dwc customIMAS">
+    exclude-result-prefixes="xlink geonet gmx oai xsi gmd srv gml gco mcp dwc customIMAS">
     <!-- stylesheet to convert iso19139 in OAI-PMH ListRecords response to RIF-CS -->
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
@@ -73,7 +73,7 @@
         <!--xsl:message select="concat('dataSetURI: ', $dataSetURI)"/-->
         
         <xsl:variable name="fileIdentifier" select="gmd:fileIdentifier"/>
-        <!--xsl:message select="concat('fileIdentifier: ', $fileIdentifier)"/-->
+        <xsl:message select="concat('fileIdentifier: ', $fileIdentifier)"/>
 
         <xsl:variable name="imasDataCatalogueURL">
             <xsl:if test="string-length($fileIdentifier) > 0">
@@ -83,11 +83,7 @@
         <!--xsl:message select="concat('imasDataCatalogueURL: ', $imasDataCatalogueURL)"/-->
         
         <xsl:variable name="projectionCode">
-            <xsl:variable name="projectionCode_sequence" as="xs:string*">
-                <xsl:if test="string-length(gmd:referenceSystemInfo/gmd:MD_ReferenceSystem/gmd:referenceSystemIdentifier/gmd:RS_Identifier/gmd:code) > 0">
-                    <xsl:value-of select="gmd:referenceSystemInfo/gmd:MD_ReferenceSystem/gmd:referenceSystemIdentifier/gmd:RS_Identifier/gmd:code"/>
-                </xsl:if>
-            </xsl:variable>
+            <xsl:variable name="projectionCode_sequence" as="xs:string*" select="gmd:referenceSystemInfo/gmd:MD_ReferenceSystem/gmd:referenceSystemIdentifier/gmd:RS_Identifier/gmd:code"/>
             <!--xsl:message select="concat('total projectionCodes: ', count($projectionCode_sequence))"/-->
             <xsl:if test="count($projectionCode_sequence) > 0">
                 <xsl:value-of select="$projectionCode_sequence[1]"/>
@@ -363,7 +359,12 @@
                     <xsl:attribute name="type">
                         <xsl:value-of select="$registryObjectTypeSubType_sequence[2]"/>
                     </xsl:attribute>
-
+                    
+                    <xsl:call-template name="IMAS_set_registryObjectIdentifier">
+                        <xsl:with-param name="identifier" select="gmd:fileIdentifier"/>
+                        <xsl:with-param name="type" select="'global'"/>
+                    </xsl:call-template>
+                    
                     <xsl:choose>
                         <xsl:when test="string-length($metadataTruthURL) > 0">
                             <xsl:call-template name="IMAS_set_registryObjectIdentifier">

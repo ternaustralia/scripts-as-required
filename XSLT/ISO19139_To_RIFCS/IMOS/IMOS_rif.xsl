@@ -101,33 +101,35 @@
                             
                 </xsl:if>
                        
+                <xsl:apply-templates select="gmd:fileIdentifier" mode="IMOS_registryObject_identifier"/>
+                
                 <xsl:apply-templates select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage[contains(lower-case(following-sibling::gmd:protocol), 'metadata-url')]/gmd:URL" mode="IMOS_registryObject_identifier"/>
-                    
-                    <xsl:apply-templates select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage[contains(lower-case(following-sibling::gmd:protocol), 'metadata-url')]/gmd:URL" mode="IMOS_registryObject_location_metadata"/>
-                    
-                    <xsl:apply-templates select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions" mode="IMOS_registryObject_relatedInfo"/>
                 
-                    <xsl:apply-templates select="gmd:parentIdentifier" mode="IMOS_registryObject_related_object">
-                        <xsl:with-param name="source" select="$source"/>  
-                    </xsl:apply-templates>
-                    
-                    <!--xsl:apply-templates select="gmd:dataSetURI" mode="IMOS_registryObject_relatedInfo_data_via_service"/-->
-                    
-                    <xsl:apply-templates select="gmd:children/gmd:childIdentifier" mode="IMOS_registryObject_related_object">
-                        <xsl:with-param name="source" select="$source"/>  
-                    </xsl:apply-templates>
+                <xsl:apply-templates select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage[contains(lower-case(following-sibling::gmd:protocol), 'metadata-url')]/gmd:URL" mode="IMOS_registryObject_location_metadata"/>
+                
+                <xsl:apply-templates select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions" mode="IMOS_registryObject_relatedInfo"/>
+            
+                <xsl:apply-templates select="gmd:parentIdentifier" mode="IMOS_registryObject_related_object">
+                    <xsl:with-param name="source" select="$source"/>  
+                </xsl:apply-templates>
+                
+                <!--xsl:apply-templates select="gmd:dataSetURI" mode="IMOS_registryObject_relatedInfo_data_via_service"/-->
+                
+                <xsl:apply-templates select="gmd:children/gmd:childIdentifier" mode="IMOS_registryObject_related_object">
+                    <xsl:with-param name="source" select="$source"/>  
+                </xsl:apply-templates>
+             
+                <xsl:apply-templates
+                    select="gmd:distributionInfo"/>
                  
-                    <xsl:apply-templates
-                        select="gmd:distributionInfo"/>
-                     
-                    <!--xsl:apply-templates select="gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:source/gmd:LI_Source[string-length(gmd:sourceCitation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier/gmd:code) > 0]"
-                         mode="IMOS_registryObject_relatedInfo"/-->
-                     
-                    <xsl:apply-templates select="gmd:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="IMOS_registryObject">
-                             <xsl:with-param name="originatingSource" select="$originatingSource"/>
-                        <xsl:with-param name="source" select="$source"/>
-                    </xsl:apply-templates>
-                
+                <!--xsl:apply-templates select="gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:source/gmd:LI_Source[string-length(gmd:sourceCitation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier/gmd:code) > 0]"
+                     mode="IMOS_registryObject_relatedInfo"/-->
+                 
+                <xsl:apply-templates select="gmd:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="IMOS_registryObject">
+                         <xsl:with-param name="originatingSource" select="$originatingSource"/>
+                    <xsl:with-param name="source" select="$source"/>
+                </xsl:apply-templates>
+            
                 <xsl:apply-templates select="gmd:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="IMOS_relatedRegistryObjects">
                     <xsl:with-param name="originatingSource" select="$originatingSource"/>
                     <xsl:with-param name="source" select="$source"/>
@@ -306,6 +308,19 @@
                 </xsl:otherwise>
             </xsl:choose>
         </key>
+    </xsl:template>
+    
+    <!-- RegistryObject - Identifier Element  -->
+    <xsl:template match="gmd:fileIdentifier" mode="IMOS_registryObject_identifier">
+        <xsl:variable name="identifier" select="normalize-space(.)"/>
+        <xsl:if test="string-length($identifier) > 0">
+            <identifier>
+                <xsl:attribute name="type">
+                    <xsl:text>global</xsl:text>
+                </xsl:attribute>
+                <xsl:value-of select="$identifier"/>
+            </identifier>
+        </xsl:if>
     </xsl:template>
 
     <!-- RegistryObject - Identifier Element  -->

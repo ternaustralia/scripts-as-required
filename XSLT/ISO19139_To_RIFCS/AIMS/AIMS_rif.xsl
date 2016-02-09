@@ -23,7 +23,7 @@
     <xsl:param name="global_AIMS_defaultOriginatingSource" select="'external'"/>
     <xsl:param name="global_AIMS_acronym" select="'AIMS'"/>
     <xsl:param name="global_AIMS_defaultPublisher" select="'Australian Institute of Marine Science'"/>
-    <xsl:param name="global_AIMS_group" select="'AIMS'"/> 
+    <xsl:param name="global_AIMS_group" select="'Australian Institute of Marine Science'"/> 
     <xsl:param name="global_AIMS_baseURI" select="'data.aims.gov.au'"/>
     <xsl:param name="global_AIMS_path" select="'/metadataviewer/faces/view.xhtml?uuid='"/>
     
@@ -385,6 +385,7 @@
             <xsl:call-template name="AIMS_party">
                 <xsl:with-param name="type">person</xsl:with-param>
                 <xsl:with-param name="originatingSource" select="$originatingSource"/>
+                <xsl:with-param name="source" select="$source"/>
             </xsl:call-template>
         </xsl:for-each-group>
 
@@ -395,7 +396,7 @@
             group-by="*:organisationName">
             <xsl:call-template name="AIMS_party">
                 <xsl:with-param name="type">group</xsl:with-param>
-                <xsl:with-param name="originatingSource" select="$originatingSource"/>
+                <xsl:with-param name="source" select="$source"/>
             </xsl:call-template>
         </xsl:for-each-group>
 

@@ -13,7 +13,7 @@
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
     <xsl:param name="global_AAD_acronym" select="'AADC'"/>
-    <xsl:param name="global_AAD_originatingSource" select="'http://data.aad.gov.au/aadc'"/>
+    <xsl:param name="global_AAD_originatingSource" select="'Australian Antarctic Data Centre'"/>
     <xsl:param name="global_AAD_group" select="'Australian Antarctic Data Centre'"/>
     <xsl:param name="global_AAD_publisherName" select="'Australian Antarctic Data Centre'"/>
     <xsl:param name="global_AAD_contributorName" select="'Australian Antarctic Division'"/>
@@ -89,7 +89,10 @@
                 <xsl:apply-templates select="gmd:hierarchyLevel/gmd:MD_ScopeCode/@codeListValue"
                     mode="AAD_collection_type_attribute"/>
 
-               <xsl:apply-templates
+                <xsl:apply-templates select="gmd:fileIdentifier" 
+                    mode="AAD_collection_identifier"/>
+                
+                <xsl:apply-templates
                     select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:identifier"
                     mode="AAD_collection_identifier"/>
                 
@@ -97,7 +100,7 @@
                     select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage/gmd:URL"
                     mode="AAD_collection_identifier"/>
                 
-               <xsl:apply-templates
+                <xsl:apply-templates
                     select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:title"
                     mode="AAD_collection_name"/>
 
@@ -227,6 +230,19 @@
         <xsl:attribute name="type">
             <xsl:value-of select="."/>
         </xsl:attribute>
+    </xsl:template>
+    
+    <!-- Collection - Identifier Element  -->
+    <xsl:template match="gmd:fileIdentifier" mode="AAD_collection_identifier">
+        <xsl:variable name="identifier" select="normalize-space(.)"/>
+        <xsl:if test="string-length($identifier) > 0">
+            <identifier>
+                <xsl:attribute name="type">
+                    <xsl:text>global</xsl:text>
+                </xsl:attribute>
+                <xsl:value-of select="$identifier"/>
+            </identifier>
+        </xsl:if>
     </xsl:template>
 
     <xsl:template match="gmd:identifier" mode="AAD_collection_identifier">

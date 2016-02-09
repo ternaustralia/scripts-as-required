@@ -16,9 +16,9 @@
     xmlns:custom="http://custom.nowhere.yet"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
     exclude-result-prefixes="geonet gmx oai xsi gmd srv gml gco gts custom">
-    <xsl:import href="EATLAS_rif.xsl"/>
     <xsl:import href="AIMS_rif.xsl"/>
     <xsl:import href="IMOS_rif.xsl"/>
+    <xsl:import href="EATLAS_rif.xsl"/>
     
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
@@ -63,39 +63,107 @@
     
     <xsl:template match="*:MD_Metadata" mode="AIMS_aggregating">
         
-         <xsl:variable name="metadataTruthURL" select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage[contains(lower-case(following-sibling::gmd:protocol), 'metadata-url')]/gmd:URL"/>
-         <xsl:message select="concat('metadataTruthURL: ', $metadataTruthURL)"/>
-         
-         <xsl:variable name="fileIdentifier" select="gmd:fileIdentifier"/>
-         <xsl:message select="concat('fileIdentifier: ', $fileIdentifier)"/>
-         
-         <xsl:variable name="contact_sequence" as="node()*" select="gmd:contact"/>
-         
-         <xsl:for-each select="distinct-values($contact_sequence)">
-             <xsl:message select="concat('contact: ', .)"/>
-         </xsl:for-each>
-         <xsl:choose>
-             <xsl:when test="
-                 contains($metadataTruthURL, $global_EATLAS_baseURI)">
-                 <xsl:apply-templates select="." mode="EATLAS">
-                     <xsl:with-param name="source" select="$global_group"/>
-                 </xsl:apply-templates>
-             </xsl:when>
-             <xsl:when test="
-                 contains($metadataTruthURL, $global_IMOS_baseURI) or
-                 contains($metadataTruthURL, $global_IMOS_baseURI_top) or
-                 contains($metadataTruthURL, $global_IMOS_baseURI_123)">
-                 <xsl:apply-templates select="." mode="IMOS">
-                     <xsl:with-param name="source" select="$global_group"/>
-                 </xsl:apply-templates>
-             </xsl:when>
-             <xsl:otherwise>
-                 <xsl:apply-templates select="." mode="AIMS">
-                     <xsl:with-param name="source" select="$global_group"/>
-                 </xsl:apply-templates>
-             </xsl:otherwise>
-         </xsl:choose>
+        <xsl:variable name="originatingSource">
+            
+            <xsl:variable name="originator_sequence" as="node()*" select="
+                gmd:identificationInfo/*[contains(lower-case(name()),'identification')]/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(gmd:role/gmd:CI_RoleCode/@codeListValue = 'originator')] |
+                gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'originator'] |
+                gmd:identificationInfo/*[contains(lower-case(name()),'identification')]/gmd:pointOfContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'originator'] |
+                gmd:contact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'originator']"/>
+            
+            <xsl:variable name="resourceProvider_sequence" as="node()*" select="
+                gmd:identificationInfo/*[contains(lower-case(name()),'identification')]/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'resourceProvider'] |
+                gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'resourceProvider'] |
+                gmd:identificationInfo/*[contains(lower-case(name()),'identification')]/gmd:pointOfContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'resourceProvider'] |
+                gmd:contact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'resourceProvider']"/>
+            
+            <xsl:variable name="owner_sequence" as="node()*" select="
+                gmd:identificationInfo/*[contains(lower-case(name()),'identification')]/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'owner'] |
+                gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'owner'] |
+                gmd:identificationInfo/*[contains(lower-case(name()),'identification')]/gmd:pointOfContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'owner'] |
+                gmd:contact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'owner']"/>
+            
+            <xsl:variable name="custodian_sequence" as="node()*" select="
+                gmd:identificationInfo/*[contains(lower-case(name()),'identification')]/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'custodian'] |
+                gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'custodian'] |
+                gmd:identificationInfo/*[contains(lower-case(name()),'identification')]/gmd:pointOfContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'custodian'] |
+                gmd:contact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'custodian']"/>
+            
+            <xsl:variable name="pointOfContact_sequence" as="node()*" select="
+                gmd:identificationInfo/*[contains(lower-case(name()),'identification')]/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'pointOfContact'] |
+                gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'pointOfContact'] |
+                gmd:identificationInfo/*[contains(lower-case(name()),'identification')]/gmd:pointOfContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'pointOfContact'] |
+                gmd:contact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'pointOfContact']"/>
+            
+            
+            <xsl:variable name="contact_sequence" as="node()*" select="
+                gmd:contact/gmd:CI_ResponsibleParty"/>
+            
+            <xsl:choose>
+                <xsl:when test="(count($originator_sequence) > 0) and string-length($originator_sequence[1]/gmd:organisationName) > 0">
+                    <xsl:value-of select="$originator_sequence[1]/gmd:organisationName"/>
+                </xsl:when>
+                <xsl:when test="(count($resourceProvider_sequence) > 0) and string-length($resourceProvider_sequence[1]/gmd:organisationName) > 0">
+                    <xsl:value-of select="$resourceProvider_sequence[1]/gmd:organisationName"/>
+                </xsl:when>
+                <xsl:when test="(count($owner_sequence) > 0) and string-length($owner_sequence[1]/gmd:organisationName) > 0">
+                    <xsl:value-of select="$owner_sequence[1]/gmd:organisationName"/>
+                </xsl:when>
+                <xsl:when test="(count($custodian_sequence) > 0) and string-length($custodian_sequence[1]/gmd:organisationName) > 0">
+                    <xsl:value-of select="$custodian_sequence[1]/gmd:organisationName"/>
+                </xsl:when>
+                <xsl:when test="(count($pointOfContact_sequence) > 0) and string-length($pointOfContact_sequence[1]/gmd:organisationName) > 0">
+                    <xsl:value-of select="$pointOfContact_sequence[1]/gmd:organisationName"/>
+                </xsl:when>
+                <xsl:when test="(count($contact_sequence) > 0) and string-length($contact_sequence[1]/gmd:organisationName) > 0">
+                    <xsl:value-of select="$contact_sequence[1]/gmd:organisationName"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="$global_IMOS_defaultOriginatingSource"/>    
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        
+        <xsl:variable name="metadataPointOfTruth" select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage[contains(lower-case(following-sibling::gmd:protocol/gco:CharacterString), 'metadata-url')]/gmd:URL"/>
+        
+        <xsl:message select="concat('$originatingSource: ', $originatingSource)"/>
+        <xsl:message select="concat('$metadataPointOfTruth: ', $metadataPointOfTruth)"/>
+        
+        
+        
+        <xsl:choose>
+            <xsl:when test="
+                contains(lower-case($metadataPointOfTruth), 'eatlas') or
+                contains(lower-case($originatingSource), 'eatlas') or
+                contains(lower-case($originatingSource), 'e-atlas')">
+                <xsl:apply-templates select="." mode="EATLAS">
+                    <xsl:with-param name="source" select="$global_group"/>
+                </xsl:apply-templates>
+            </xsl:when>
+            <xsl:when test="
+                contains(lower-case($originatingSource), 'imos') or
+                contains(lower-case($originatingSource), 'integrated marine observing system')">
+                <xsl:apply-templates select="." mode="IMOS">
+                    <xsl:with-param name="source" select="$global_group"/>
+                </xsl:apply-templates>
+            </xsl:when>
+            <xsl:when test="
+                contains(lower-case($originatingSource), 'aims') or
+                contains(lower-case($originatingSource), 'australian institute of marine science')">
+                <xsl:apply-templates select="." mode="AIMS">
+                    <xsl:with-param name="source" select="$global_group"/>
+                </xsl:apply-templates>
+            </xsl:when>
+   
+            <xsl:otherwise>
+                <xsl:apply-templates select="." mode="AIMS">
+                    <xsl:with-param name="source" select="$global_group"/>
+                    <xsl:with-param name="originatingSource" select="$originatingSource"/>
+                </xsl:apply-templates>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:template>
+    
          
    
 </xsl:stylesheet>
