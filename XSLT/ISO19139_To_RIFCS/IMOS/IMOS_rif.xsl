@@ -11,9 +11,10 @@
     xmlns:geonet="http://www.fao.org/geonetwork" xmlns:gmx="http://www.isotc211.org/2005/gmx"
     xmlns:oai="http://www.openarchives.org/OAI/2.0/" xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xmlns:customIMOS="http://customIMOS.nowhere.yet"
+    xmlns:custom="http://custom.nowhere.yet"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
-    exclude-result-prefixes="geonet gmx oai xsi gmd srv gml gco gts csw grg mcp customIMOS">
-    
+    exclude-result-prefixes="geonet gmx oai xsi gmd srv gml gco gts csw grg mcp customIMOS custom">
+    <xsl:import href="CustomFunctions.xsl"/>
     <!-- stylesheet to convert iso19139 in OAI-PMH ListRecords response to RIF-CS -->
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
@@ -62,10 +63,20 @@
 
     <xsl:template match="*:MD_Metadata" mode="IMOS">
        <xsl:param name="source"/>
-        <xsl:param name="originatingSource"/>
         
+        <xsl:variable name="originatingSource">
+            <xsl:choose>
+                <xsl:when test="string-length(custom:originatingSource(.)) > 0">
+                    <xsl:value-of select="custom:originatingSource(.)"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="$global_IMOS_defaultOriginatingSource"/>
+                </xsl:otherwise>
+            </xsl:choose>
+            
+        </xsl:variable>
        
-        <registryObject>
+       <registryObject>
             <xsl:attribute name="group">
                 <xsl:choose>
                     <xsl:when test="string-length(substring-after($source, ':')) > 0">
@@ -129,14 +140,16 @@
                          <xsl:with-param name="originatingSource" select="$originatingSource"/>
                     <xsl:with-param name="source" select="$source"/>
                 </xsl:apply-templates>
+                
+            </xsl:element>
+        </registryObject>
             
-                <xsl:apply-templates select="gmd:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="IMOS_relatedRegistryObjects">
-                    <xsl:with-param name="originatingSource" select="$originatingSource"/>
-                    <xsl:with-param name="source" select="$source"/>
-                </xsl:apply-templates>
+        <xsl:apply-templates select="gmd:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="IMOS_relatedRegistryObjects">
+            <xsl:with-param name="originatingSource" select="$originatingSource"/>
+            <xsl:with-param name="source" select="$source"/>
+        </xsl:apply-templates>
                     
-                </xsl:element>
-            </registryObject>
+               
 
     </xsl:template>
     
@@ -162,7 +175,7 @@
             select="gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) > 0] |
             ancestor::gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) > 0] |
             gmd:pointOfContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) > 0] |
-            ancestor::gmd:MD_Metadata/gmd:contact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) > 0]"
+            ancestor::*:MD_Metadata/gmd:contact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) > 0]"
             group-by="gmd:individualName">
             <xsl:apply-templates select="." mode="IMOS_registryObject_related_object">
                 <xsl:with-param name="source" select="$source"/>
@@ -173,7 +186,7 @@
             select="gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[((string-length(normalize-space(gmd:organisationName))) > 0) and ((string-length(normalize-space(gmd:individualName))) = 0)] |
             ancestor::gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[((string-length(normalize-space(gmd:organisationName))) > 0) and ((string-length(normalize-space(gmd:individualName))) = 0)] |
             gmd:pointOfContact/gmd:CI_ResponsibleParty[((string-length(normalize-space(gmd:organisationName))) > 0) and ((string-length(normalize-space(gmd:individualName))) = 0)] |
-            ancestor::gmd:MD_Metadata/gmd:contact/gmd:CI_ResponsibleParty[((string-length(normalize-space(gmd:organisationName))) > 0) and ((string-length(normalize-space(gmd:individualName))) = 0)]" 
+            ancestor::*:MD_Metadata/gmd:contact/gmd:CI_ResponsibleParty[((string-length(normalize-space(gmd:organisationName))) > 0) and ((string-length(normalize-space(gmd:individualName))) = 0)]" 
             group-by="gmd:organisationName">
             <xsl:apply-templates select="." mode="IMOS_registryObject_related_object">
                 <xsl:with-param name="source" select="$source"/>
@@ -240,7 +253,7 @@
             select="gmd:resourceConstraints/gmd:MD_Constraints"
             mode="IMOS_registryObject_rights_rights"/>
         
-        <xsl:if test="customIMOS:registryObjectClass(ancestor::gmd:MD_Metadata/gmd:hierarchyLevel/*[contains(lower-case(name()),'scopecode')]/@codeListValue) = 'collection'">
+       <xsl:if test="customIMOS:registryObjectClass(ancestor::*:MD_Metadata/gmd:hierarchyLevel/*[contains(lower-case(name()),'scopecode')]/@codeListValue) = 'collection'">
             
             <xsl:apply-templates
                 select="gmd:citation/gmd:CI_Citation/gmd:date"
@@ -267,7 +280,7 @@
             select="gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) > 0] |
             ancestor::gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) > 0] |
             gmd:pointOfContact/gmd:CI_ResponsibleParty[string-length(normalize-space(gmd:individualName)) > 0] |
-            ancestor::gmd:MD_Metadata/gmd:contact/gmd:CI_ResponsibleParty[string-length(normalize-space(gmd:individualName)) > 0]"
+            ancestor::*:MD_Metadata/gmd:contact/gmd:CI_ResponsibleParty[string-length(normalize-space(gmd:individualName)) > 0]"
             group-by="gmd:individualName">
             <xsl:call-template name="IMOS_partyPerson">
                 <xsl:with-param name="originatingSource" select="$originatingSource"/>
@@ -279,7 +292,7 @@
             select="gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName))) > 0] |
             ancestor::gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName))) > 0] |
             gmd:pointOfContact/gmd:CI_ResponsibleParty[string-length(normalize-space(gmd:organisationName)) > 0] |
-            ancestor::gmd:MD_Metadata/gmd:contact/gmd:CI_ResponsibleParty[string-length(normalize-space(gmd:organisationName)) > 0]"
+            ancestor::*:MD_Metadata/gmd:contact/gmd:CI_ResponsibleParty[string-length(normalize-space(gmd:organisationName)) > 0]"
             group-by="gmd:organisationName">
             <xsl:call-template name="IMOS_partyGroup">
                 <xsl:with-param name="originatingSource" select="$originatingSource"/>
@@ -749,7 +762,7 @@
     <!-- RegistryObject - Coverage Spatial Element -->
     <xsl:template match="gmd:EX_GeographicBoundingBox" mode="IMOS_registryObject_coverage_spatial">
         
-        <xsl:variable name="crsCode" select="ancestor::gmd:MD_Metadata/gmd:referenceSystemInfo/gmd:MD_ReferenceSystem/gmd:referenceSystemIdentifier/gmd:RS_Identifier/gmd:code[contains(lower-case(following-sibling::gmd:codeSpace), 'crs')]"/>
+        <xsl:variable name="crsCode" select="ancestor::*:MD_Metadata/gmd:referenceSystemInfo/gmd:MD_ReferenceSystem/gmd:referenceSystemIdentifier/gmd:RS_Identifier/gmd:code[contains(lower-case(following-sibling::gmd:codeSpace), 'crs')]"/>
         <xsl:if test="string-length(normalize-space(gmd:northBoundLatitude/gco:Decimal)) > 0"/>
         <xsl:if
              test="
@@ -1328,7 +1341,7 @@
                     <xsl:value-of select="$doiIdentifier_sequence[1]"/>   
                 </xsl:when>
                 <xsl:otherwise>
-                    <xsl:value-of select="concat('http://', $global_IMOS_baseURI, $global_IMOS_path, ancestor::gmd:MD_Metadata/gmd:fileIdentifier)"/>
+                    <xsl:value-of select="concat('http://', $global_IMOS_baseURI, $global_IMOS_path, ancestor::*:MD_Metadata/gmd:fileIdentifier)"/>
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
@@ -1405,13 +1418,13 @@
                             </date>
                         </xsl:when>
                         <xsl:when test="
-                            (count(ancestor::gmd:MD_Metadata/gmd:dateStamp/*[contains(lower-case(name()),'date')]) > 0) and
-                            (string-length(ancestor::gmd:MD_Metadata/gmd:dateStamp/*[contains(lower-case(name()),'date')][1]) > 3)">
+                            (count(ancestor::*:MD_Metadata/gmd:dateStamp/*[contains(lower-case(name()),'date')]) > 0) and
+                            (string-length(ancestor::*:MD_Metadata/gmd:dateStamp/*[contains(lower-case(name()),'date')][1]) > 3)">
                             <date>
                                 <xsl:attribute name="type">
                                     <xsl:text>publicationDate</xsl:text>
                                 </xsl:attribute>
-                                <xsl:value-of select="substring(ancestor::gmd:MD_Metadata/gmd:dateStamp/*[contains(lower-case(name()),'date')][1], 1, 4)"/>
+                                <xsl:value-of select="substring(ancestor::*:MD_Metadata/gmd:dateStamp/*[contains(lower-case(name()),'date')][1], 1, 4)"/>
                             </date>
                         </xsl:when>
                        

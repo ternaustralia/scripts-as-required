@@ -16,7 +16,7 @@
     xmlns:custom="http://custom.nowhere.yet"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
     exclude-result-prefixes="geonet gmx oai xsi gmd srv gml gco gts custom">
-    
+    <xsl:include href="CustomFunctions.xsl"/>
     <xsl:param name="global_originatingSource" select="'Australian Ocean Data Network'"/> <!-- Only used as originating source if organisation name cannot be determined from Point Of Contact -->
     <xsl:param name="global_baseURI" select="'catalogue.aodn.org.au'"/>
     <xsl:param name="global_path" select="'/geonetwork/srv/eng/metadata.show?uuid='"/>
@@ -42,67 +42,16 @@
         <xsl:param name="source"/>
         
         <xsl:variable name="originatingSource">
-           
-           <xsl:variable name="originator_sequence" as="node()*" select="
-               *:identificationInfo/*[contains(lower-case(name()),'identification')]/*:citation/*:CI_Citation/*:citedResponsibleParty/*:CI_ResponsibleParty[(*:role/*:CI_RoleCode/@codeListValue = 'originator')] |
-               *:distributionInfo/*:MD_Distribution/*:distributor/*:MD_Distributor/*:distributorContact/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'originator'] |
-               *:identificationInfo/*[contains(lower-case(name()),'identification')]/*:pointOfContact/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'originator'] |
-               *:contact/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'originator']"/>
-           
-           <xsl:variable name="resourceProvider_sequence" as="node()*" select="
-               *:identificationInfo/*[contains(lower-case(name()),'identification')]/*:citation/*:CI_Citation/*:citedResponsibleParty/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'resourceProvider'] |
-               *:distributionInfo/*:MD_Distribution/*:distributor/*:MD_Distributor/*:distributorContact/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'resourceProvider'] |
-               *:identificationInfo/*[contains(lower-case(name()),'identification')]/*:pointOfContact/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'resourceProvider'] |
-               *:contact/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'resourceProvider']"/>
-           
-           <xsl:variable name="owner_sequence" as="node()*" select="
-               *:identificationInfo/*[contains(lower-case(name()),'identification')]/*:citation/*:CI_Citation/*:citedResponsibleParty/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'owner'] |
-               *:distributionInfo/*:MD_Distribution/*:distributor/*:MD_Distributor/*:distributorContact/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'owner'] |
-               *:identificationInfo/*[contains(lower-case(name()),'identification')]/*:pointOfContact/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'owner'] |
-               *:contact/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'owner']"/>
-           
-            <xsl:variable name="custodian_sequence" as="node()*" select="
-               *:identificationInfo/*[contains(lower-case(name()),'identification')]/*:citation/*:CI_Citation/*:citedResponsibleParty/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'custodian'] |
-               *:distributionInfo/*:MD_Distribution/*:distributor/*:MD_Distributor/*:distributorContact/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'custodian'] |
-               *:identificationInfo/*[contains(lower-case(name()),'identification')]/*:pointOfContact/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'custodian'] |
-               *:contact/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'custodian']"/>
-          
-           <xsl:variable name="pointOfContact_sequence" as="node()*" select="
-               *:identificationInfo/*[contains(lower-case(name()),'identification')]/*:citation/*:CI_Citation/*:citedResponsibleParty/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'pointOfContact'] |
-               *:distributionInfo/*:MD_Distribution/*:distributor/*:MD_Distributor/*:distributorContact/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'pointOfContact'] |
-               *:identificationInfo/*[contains(lower-case(name()),'identification')]/*:pointOfContact/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'pointOfContact'] |
-               *:contact/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'pointOfContact']"/>
-           
-           
-           <xsl:variable name="contact_sequence" as="node()*" select="
-              *:contact/*:CI_ResponsibleParty"/>
-           
-            
-           
             <xsl:choose>
-                <xsl:when test="(count($originator_sequence) > 0) and string-length($originator_sequence[1]/*:organisationName) > 0">
-                     <xsl:value-of select="$originator_sequence[1]/*:organisationName"/>
-                </xsl:when>
-                <xsl:when test="(count($resourceProvider_sequence) > 0) and string-length($resourceProvider_sequence[1]/*:organisationName) > 0">
-                    <xsl:value-of select="$resourceProvider_sequence[1]/*:organisationName"/>
-                </xsl:when>
-                <xsl:when test="(count($owner_sequence) > 0) and string-length($owner_sequence[1]/*:organisationName) > 0">
-                     <xsl:value-of select="$owner_sequence[1]/*:organisationName"/>
-                </xsl:when>
-                <xsl:when test="(count($custodian_sequence) > 0) and string-length($custodian_sequence[1]/*:organisationName) > 0">
-                    <xsl:value-of select="$custodian_sequence[1]/*:organisationName"/>
-                </xsl:when>
-                <xsl:when test="(count($pointOfContact_sequence) > 0) and string-length($pointOfContact_sequence[1]/*:organisationName) > 0">
-                    <xsl:value-of select="$pointOfContact_sequence[1]/*:organisationName"/>
-                </xsl:when>
-                <xsl:when test="(count($contact_sequence) > 0) and string-length($contact_sequence[1]/*:organisationName) > 0">
-                     <xsl:value-of select="$contact_sequence[1]/*:organisationName"/>
+                <xsl:when test="string-length(custom:originatingSource(.)) > 0">
+                    <xsl:value-of select="custom:originatingSource(.)"/>
                 </xsl:when>
                 <xsl:otherwise>
-                    <xsl:value-of select="$global_originatingSource"/>    
+                    <xsl:value-of select="$global_originatingSource"/>
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
+        
         <registryObject>
             <xsl:attribute name="group">
                 <xsl:value-of select="substring-after($source, ':')"/>    
@@ -238,7 +187,7 @@
             mode="registryObject_description_notes"/>
         
        <xsl:apply-templates select="*:extent/*:EX_Extent/*:geographicElement/*:EX_GeographicBoundingBox" mode="registryObject_coverage_spatial"/>
-       <xsl:apply-templates select="*:extent/*:EX_Extent/*:geographicElement/*:EX_BoundingPolygon" mode="registryObject_coverage_spatial"/>
+       <xsl:apply-templates select="*:extent/*:EX_Extent/*:geographicElement/*:EX_BoundingPolygon/*:polygon" mode="registryObject_coverage_spatial"/>
        
         <xsl:apply-templates
             select="*:extent/*:EX_Extent/*:temporalElement/*:EX_TemporalExtent"
@@ -636,16 +585,16 @@
 
 
     <!-- RegistryObject - Coverage Spatial Element -->
-    <xsl:template match="*:EX_BoundingPolygon" mode="registryObject_coverage_spatial">
+    <xsl:template match="*:polygon" mode="registryObject_coverage_spatial">
         <xsl:if
-            test="string-length(normalize-space(*:polygon/gml:Polygon/gml:exterior/gml:LinearRing/gml:coordinates)) > 0">
+            test="string-length(normalize-space(gml:Polygon/gml:exterior/gml:LinearRing/gml:coordinates)) > 0">
             <coverage>
                 <spatial>
                     <xsl:attribute name="type">
                         <xsl:text>gmlKmlPolyCoords</xsl:text>
                     </xsl:attribute>
                     <xsl:value-of
-                        select="replace(normalize-space(*:polygon/gml:Polygon/gml:exterior/gml:LinearRing/gml:coordinates), ',0', '')"
+                        select="replace(normalize-space(gml:Polygon/gml:exterior/gml:LinearRing/gml:coordinates), ',0', '')"
                     />
                 </spatial>
             </coverage>

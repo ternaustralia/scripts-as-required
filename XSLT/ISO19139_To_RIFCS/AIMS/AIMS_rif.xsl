@@ -13,9 +13,10 @@
     xmlns:oai="http://www.openarchives.org/OAI/2.0/" 
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xmlns:customAIMS="http://customAIMS.nowhere.yet"
+    xmlns:custom="http://custom.nowhere.yet"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
-    exclude-result-prefixes="geonet gmx oai xsi gmd srv gml gco gts customAIMS">
-    
+    exclude-result-prefixes="geonet gmx oai xsi gmd srv gml gco gts customAIMS custom">
+    <xsl:import href="CustomFunctions.xsl"/>
     <!-- stylesheet to convert iso19139 in OAI-PMH ListRecords response to RIF-CS -->
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
@@ -138,27 +139,15 @@
         <xsl:variable name="distributorContactNode_sequence" as="node()*" select="*:distributionInfo/*:MD_Distribution/*:distributor/*:MD_Distributor/*:distributorContact"/>
         
         <xsl:variable name="originatingSource">
-            <xsl:variable name="originatingSource_sequence" as="xs:string*">
-                
-                <xsl:for-each select="$contactNode_sequence">
-                    <xsl:variable name="contact" select="." as="node()"/>
-                    <xsl:copy-of select="customAIMS:getOrganisationNameSequence($contact, null)"/>  
-                </xsl:for-each>
-                
-                <xsl:for-each select="$pointOfContactNode_sequence">
-                    <xsl:variable name="pointOfContact" select="." as="node()"/>
-                    <xsl:copy-of select="customAIMS:getOrganisationNameSequence($pointOfContact, null)"/>  
-                </xsl:for-each>
-            </xsl:variable>
-            
             <xsl:choose>
-                <xsl:when test="count($originatingSource_sequence) > 0">
-                    <xsl:value-of select="$originatingSource_sequence[1]"/>
+                <xsl:when test="string-length(custom:originatingSource(.)) > 0">
+                    <xsl:value-of select="custom:originatingSource(.)"/>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:value-of select="$global_AIMS_defaultOriginatingSource"/>
                 </xsl:otherwise>
             </xsl:choose>
+            
         </xsl:variable>
         
          <registryObject>
