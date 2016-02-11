@@ -86,6 +86,8 @@
                 
                 <xsl:apply-templates select="fields/field[(@name='custom_citation')]/value[string-length(.) > 0]"/>
                 
+                <xsl:apply-templates select="fields/field[@name='grant_purl']/value[string-length(text()) > 0]"/>
+                
                 <xsl:apply-templates select="fields/field[(@name='related_content')]/value[string-length(.) > 0]"/>
                 
             </xsl:element>
@@ -152,7 +154,7 @@
                                         <xsl:value-of select="email"/>
                                     </value>
                                 </electronic>
-                                 </address>
+                            </address>
                         </location>
                     </xsl:if>
                     
@@ -231,7 +233,9 @@
                 <location>
                     <address>
                         <electronic type='doi'>
-                            <xsl:value-of select="concat('http://doi.org/', .)"/>
+                            <value>
+                                <xsl:value-of select="concat('http://doi.org/', .)"/>
+                             </value>
                         </electronic>
                     </address>
                 </location> 
@@ -240,7 +244,9 @@
                 <location>
                     <address>
                         <electronic type='doi'>
-                            <xsl:value-of select="."/>
+                            <value>
+                                <xsl:value-of select="."/>
+                            </value>
                         </electronic>
                     </address>
                 </location> 
@@ -260,7 +266,9 @@
                         <location>
                             <address>
                                 <electronic type='doi'>
-                                    <xsl:value-of select="regex-group(1)"/>
+                                    <value>
+                                        <xsl:value-of select="regex-group(1)"/>
+                                    </value>
                                 </electronic>
                             </address>
                         </location>
@@ -269,7 +277,9 @@
                         <location>
                             <address>
                                 <electronic type='handle'>
-                                    <xsl:value-of select="regex-group(1)"/>
+                                    <value>
+                                        <xsl:value-of select="regex-group(1)"/>
+                                     </value>
                                 </electronic>
                             </address>
                         </location>
@@ -278,7 +288,9 @@
                         <location>
                             <address>
                                 <electronic type='uri'>
-                                    <xsl:value-of select="regex-group(1)"/>
+                                    <value>
+                                        <xsl:value-of select="regex-group(1)"/>
+                                    </value>
                                 </electronic>
                             </address>
                         </location>
@@ -325,8 +337,10 @@
     
     <xsl:template match="fields/field[(@name='date_range')]/value[string-length(.) > 0]">
         <coverage>
-            <temporal type="text">
-                <xsl:value-of select="."/>
+            <temporal>
+                <text>
+                    <xsl:value-of select="."/>
+                </text>
             </temporal>
         </coverage>
     </xsl:template>
@@ -367,6 +381,20 @@
         </citationInfo>
     </xsl:template>
     
+    <xsl:template match="fields/field[(@name='grant_purl')]/value[string-length(.) > 0]">
+        <xsl:analyze-string select="." regex="href=&quot;(http.+?)&quot;">
+            <xsl:matching-substring>
+                <relatedInfo type="activity">
+                    <xsl:variable name="identifierType" select="custom:identifierType(regex-group(1))"/>
+                    <identifier type="{$identifierType}">
+                        <xsl:value-of select="regex-group(1)"/>
+                    </identifier>
+                    <relation type="isOutputOf"/>
+                </relatedInfo>
+            </xsl:matching-substring>
+        </xsl:analyze-string>
+    </xsl:template>
+    
     <xsl:template match="fields/field[(@name='related_content')]/value[string-length(.) > 0]">
         <xsl:analyze-string select="." regex="href=&quot;(http.+?)&quot;">
             <xsl:matching-substring>
@@ -396,6 +424,9 @@
             </xsl:when>
             <xsl:when test="contains(lower-case($identifier), 'doi')">
                 <xsl:text>doi</xsl:text>
+            </xsl:when>
+            <xsl:when test="contains(lower-case($identifier), 'purl.org')">
+                <xsl:text>purl</xsl:text>
             </xsl:when>
             <xsl:otherwise>
                 <xsl:text>uri</xsl:text>
