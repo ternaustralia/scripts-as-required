@@ -250,7 +250,7 @@
                         </xsl:call-template>
                         
                         <xsl:call-template name="set_registryObject_coverage_spatial">
-                            <xsl:with-param name="boundingBox" select="descendant::gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_BoundingPolygon[ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification]"/>
+                            <xsl:with-param name="boundingBox" select="descendant::gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_BoundingPolygon/gmd:polygon[ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification]"/>
                             <xsl:with-param name="crsCode" select="$crsCode"/>
                         </xsl:call-template>
     
@@ -731,16 +731,16 @@
 
 
     <!-- RegistryObject - Coverage Spatial Element -->
-    <xsl:template match="gmd:EX_BoundingPolygon" mode="registryObject_coverage_spatial">
+    <xsl:template match="gmd:polygon" mode="registryObject_coverage_spatial">
         <xsl:if
-            test="string-length(normalize-space(gmd:polygon/gml:Polygon/gml:exterior/gml:LinearRing/gml:coordinates)) > 0">
+            test="string-length(normalize-space(gml:Polygon/gml:exterior/gml:LinearRing/gml:coordinates)) > 0">
             <coverage>
                 <spatial>
                     <xsl:attribute name="type">
                         <xsl:text>gmlKmlPolyCoords</xsl:text>
                     </xsl:attribute>
                     <xsl:value-of
-                        select="replace(normalize-space(gmd:polygon/gml:Polygon/gml:exterior/gml:LinearRing/gml:coordinates), ',0', '')"
+                        select="replace(normalize-space(gml:Polygon/gml:exterior/gml:LinearRing/gml:coordinates), ',0', '')"
                     />
                 </spatial>
             </coverage>
