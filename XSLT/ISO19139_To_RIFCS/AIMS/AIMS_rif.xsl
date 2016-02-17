@@ -385,6 +385,7 @@
             group-by="*:organisationName">
             <xsl:call-template name="AIMS_party">
                 <xsl:with-param name="type">group</xsl:with-param>
+                <xsl:with-param name="originatingSource" select="$originatingSource"/>
                 <xsl:with-param name="source" select="$source"/>
             </xsl:call-template>
         </xsl:for-each-group>
