@@ -62,6 +62,7 @@
                 <xsl:message select="concat('name: ', name(.))"/>
                 <xsl:apply-templates select="title"/>
                 <xsl:apply-templates select="fields/field[@name='doi']/value"/>
+                <xsl:apply-templates select="fields/field[@name='data_url']/value"/>
                 <xsl:apply-templates select="abstract"/>
                 <xsl:apply-templates select="fields/field[@name='addl_info']/value"/>
                 <xsl:apply-templates select="fields/field[@name='rights']/value"/>
@@ -250,6 +251,27 @@
         <identifier type="doi">
             <xsl:value-of select="."/>
         </identifier>
+    </xsl:template>
+    
+    <xsl:template match="field[@name='data_url']/value">
+        <xsl:message select="concat('data_url: ', .)"/>
+        <xsl:analyze-string select="." regex="href=&quot;(http.+?)&quot;">
+            <xsl:matching-substring>
+             <identifier>
+                 <xsl:attribute name="type">
+                     <xsl:choose>
+                         <xsl:when test="contains(lower-case(.), 'doi')">
+                             <xsl:text>doi</xsl:text>
+                         </xsl:when>
+                         <xsl:otherwise>
+                             <xsl:text>uri</xsl:text>
+                         </xsl:otherwise>
+                     </xsl:choose>
+                 </xsl:attribute>
+                 <xsl:value-of select="regex-group(1)"/>
+             </identifier>
+            </xsl:matching-substring>
+        </xsl:analyze-string>
     </xsl:template>
     
     <xsl:template match="author" mode="collection">
@@ -703,9 +725,25 @@
                 <xsl:variable name="namePosition_sequence" as="xs:integer*">
                     <xsl:for-each select="$unescapedContent/root/p">
                         <xsl:variable name="personPosition" select="position()" as="xs:integer"/>
+                        <xsl:for-each select="distinct-values(strong)">
+                            <xsl:message select="concat('strong: ', ., ' at pos ', position())"/>
+                        </xsl:for-each>
                         <!-- logic to follow is an attempt to check that we actually have something like a name -->
-                        <xsl:if test="count(strong)> 0 and (string-length(normalize-space(strong)) > 2) and
-                            (contains(normalize-space(strong), ' ') or contains(normalize-space(strong), ','))">
+                        
+                        <xsl:variable name="personName">
+                            <xsl:choose>
+                                <xsl:when test="count(strong) > 1">
+                                    <xsl:value-of select="fn:string-join(strong, ' ')"/>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:value-of select="strong"/>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        </xsl:variable>
+                        
+                        <xsl:message select="concat('personName: ', $personName)"/>
+                        <xsl:if test="(string-length(normalize-space($personName)) > 2) and
+                            (contains(normalize-space($personName), ' ') or contains(normalize-space($personName), ','))">
                             <xsl:value-of select="$personPosition"/>
                         </xsl:if>
                     </xsl:for-each>
