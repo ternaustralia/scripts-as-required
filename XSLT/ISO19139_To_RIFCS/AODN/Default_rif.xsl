@@ -81,6 +81,8 @@
                             
                 </xsl:if>
                 
+                <xsl:apply-templates select="*:fileIdentifier" mode="registryObject_identifier"/>
+                
                 <xsl:apply-templates select="*:distributionInfo" mode="registryObject_links"/>
                 
                 <xsl:apply-templates select="*:fileIdentifier" mode="registryObject_location_metadata">
@@ -111,17 +113,14 @@
                     <xsl:with-param name="originatingSource" select="$originatingSource"/>
                     <xsl:with-param name="source" select="$source"/>
                 </xsl:apply-templates>
-                
-                <xsl:apply-templates select="*:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="relatedRegistryObjects">
-                    <xsl:with-param name="originatingSource" select="$originatingSource"/>
-                    <xsl:with-param name="source" select="$source"/>
-                </xsl:apply-templates>
-                    
-                </xsl:element>
-            </registryObject>
+           
+            </xsl:element>
+        </registryObject>
 
-            <xsl:apply-templates></xsl:apply-templates>
-
+        <xsl:apply-templates select="*:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="relatedRegistryObjects">
+            <xsl:with-param name="originatingSource" select="$originatingSource"/>
+            <xsl:with-param name="source" select="$source"/>
+        </xsl:apply-templates>
             
     </xsl:template>
     
@@ -281,6 +280,15 @@
         <key>
             <xsl:value-of select="concat(substring-before($source, ':'), '/', normalize-space(.))"/>
         </key>
+    </xsl:template>
+    
+    <xsl:template match="*:fileIdentifier" mode="registryObject_identifier">
+        <identifier>
+            <xsl:attribute name="type">
+                <xsl:text>global</xsl:text>
+            </xsl:attribute>
+            <xsl:value-of select="normalize-space(.)"/>
+        </identifier>
     </xsl:template>
 
     <!-- RegistryObject - Identifier Element  -->
