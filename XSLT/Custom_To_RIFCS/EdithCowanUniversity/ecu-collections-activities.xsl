@@ -73,6 +73,7 @@
                 <xsl:apply-templates select="fields/field[@name='longitude']"/>
                 <xsl:apply-templates select="fields/field[@name='custom_citation']/value"/>
                 <xsl:apply-templates select="fields/field[@name='related_content']" mode="collection"/>
+                <xsl:apply-templates select="fields/field[@name='grant_num']" mode="collection"/>
                 <xsl:apply-templates select="fields/field[@name='project_links']" mode="collection"/>
                 <xsl:apply-templates select="fields/field[@name='contact']"/>
                 <xsl:apply-templates select="coverpage-url"/>
@@ -108,6 +109,7 @@
                 <xsl:apply-templates select="disciplines"/>
                 <xsl:apply-templates select="fields/field[@name='for_code']"/>
                 <xsl:apply-templates select="fields/field[@name='related_content']" mode="activity"/>
+                <xsl:apply-templates select="fields/field[@name='grant_num']" mode="activity"/>
                 <xsl:apply-templates select="fields/field[@name='project_links']" mode="activity"/>
                 <xsl:apply-templates select="fields/field[@name='contact']"/>
                 <xsl:apply-templates select="coverpage-url"/>
@@ -117,6 +119,13 @@
                     <key><xsl:value-of select="$collectionKey"/></key>
                   <relation type="hasOutput"/>
                 </relatedObject>
+                <relatedInfo type="party">
+                    <identifier type="AU-ANL:PEAU">
+                        <xsl:text>http://nla.gov.au/nla.party-578358</xsl:text>
+                    </identifier>
+                    <relation type="isManagedBy"/>
+                    <title>Edith Cowan University</title>
+                </relatedInfo>
             </xsl:element>
         </registryObject>
     </xsl:when>
@@ -494,6 +503,40 @@
 
     </xsl:template>
     
+    <xsl:template match="field[@name='grant_num']" mode="collection">
+       <xsl:variable name="funder">
+           <xsl:analyze-string select="../field[@name='funding']" regex="(&gt;)(.*)(&lt;)">
+                <xsl:matching-substring>
+                    <xsl:value-of select="regex-group(2)"/>
+                </xsl:matching-substring>
+            </xsl:analyze-string>
+       </xsl:variable>
+        
+       <xsl:choose>
+            <xsl:when test="
+                (lower-case($funder) = 'australian research council') or
+                (lower-case($funder) = 'arc')">
+                <relatedInfo type="activity">
+                    <identifier type="purl">
+                        <xsl:value-of select="concat('http://purl.org/au-research/grants/arc/', normalize-space(.))"/>
+                    </identifier>
+                    <relation type="isOutputOf"/>
+                </relatedInfo>
+                
+            </xsl:when>
+            <xsl:when test="
+                (lower-case($funder) = 'National Health and Medical Research Council ') or
+                (lower-case($funder) = 'nhmrc')">
+                <relatedInfo type="activity">
+                    <identifier type="purl">
+                        <xsl:value-of select="concat('http://purl.org/au-research/grants/nhmrc/', normalize-space(.))"/>
+                    </identifier>
+                    <relation type="isOutputOf"/>
+                </relatedInfo>
+            </xsl:when>
+        </xsl:choose>
+    </xsl:template>
+    
     <xsl:template match="field[@name='related_content']" mode="activity">
         
         <xsl:analyze-string select="value" regex="href=&quot;(http.+?)&quot;">
@@ -508,6 +551,35 @@
         </xsl:analyze-string>
         
     </xsl:template>
+    
+    <xsl:template match="field[@name='grant_num']" mode="activity">
+        <xsl:variable name="funder">
+            <xsl:analyze-string select="../field[@name='funding']" regex="(&gt;)(.*)(&lt;)">
+                <xsl:matching-substring>
+                    <xsl:value-of select="regex-group(2)"/>
+                </xsl:matching-substring>
+            </xsl:analyze-string>
+        </xsl:variable>
+        
+        <xsl:choose>
+            <xsl:when test="
+                (lower-case($funder) = 'australian research council') or
+                (lower-case($funder) = 'arc')">
+                <identifier type="purl">
+                    <xsl:value-of select="concat('http://purl.org/au-research/grants/arc/', normalize-space(.))"/>
+                </identifier>
+                
+            </xsl:when>
+            <xsl:when test="
+                (lower-case($funder) = 'National Health and Medical Research Council ') or
+                (lower-case($funder) = 'nhmrc')">
+                <identifier type="purl">
+                    <xsl:value-of select="concat('http://purl.org/au-research/grants/nhmrc/', normalize-space(.))"/>
+                </identifier>
+            </xsl:when>
+        </xsl:choose>
+    </xsl:template>
+    
 
     <xsl:template match="field[@name='project_links']" mode="activity">
 
