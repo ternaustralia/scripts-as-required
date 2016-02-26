@@ -85,10 +85,14 @@
                 
                 <xsl:apply-templates select="*:distributionInfo" mode="registryObject_links"/>
                 
-                <xsl:apply-templates select="*:fileIdentifier" mode="registryObject_location_metadata">
-                    <xsl:with-param name="source" select="$source"/>
-                </xsl:apply-templates>
-            
+                <xsl:apply-templates select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage[contains(lower-case(following-sibling::gmd:protocol/gco:CharacterString), 'metadata-url')]/gmd:URL" mode="registryObject_location_metadata"/>
+              
+                <xsl:if test="count(gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage[contains(lower-case(following-sibling::gmd:protocol/gco:CharacterString), 'metadata-url')]/gmd:URL) = 0">
+                    <xsl:apply-templates select="*:fileIdentifier" mode="registryObject_location_metadata">
+                        <xsl:with-param name="source" select="$source"/>
+                    </xsl:apply-templates>
+                </xsl:if>
+                
                 <xsl:apply-templates select="*:parentIdentifier" mode="registryObject_related_object">
                      <xsl:with-param name="source" select="$source"/>
                 </xsl:apply-templates>
@@ -402,6 +406,23 @@
                         </xsl:attribute>
                         <value>
                             <xsl:value-of select="concat('http://', $global_baseURI, $global_path, .)"/>
+                        </value>
+                    </electronic>
+                </address>
+            </location>
+        </xsl:if>
+   </xsl:template>
+    
+    <xsl:template match="*:URL" mode="registryObject_location_metadata">
+        <xsl:if test="string-length(normalize-space(.)) > 0">
+            <location>
+                <address>
+                    <electronic>
+                        <xsl:attribute name="type">
+                            <xsl:text>url</xsl:text>
+                        </xsl:attribute>
+                        <value>
+                            <xsl:value-of select="normalize-space(.)"/>
                         </value>
                     </electronic>
                 </address>
@@ -1251,7 +1272,7 @@
                     </xsl:choose>
                     
                     <publisher>
-                        <xsl:value-of select="$publisherOrganisationName"/>
+                        <xsl:value-of select="normalize-space($publisherOrganisationName)"/>
                     </publisher>
                     
                </citationMetadata>
@@ -1283,7 +1304,7 @@
         </key>
        
         <originatingSource>
-            <xsl:value-of select="$originatingSource"/>
+            <xsl:value-of select="normalize-space($originatingSource)"/>
         </originatingSource> 
          
         <party type="person">
@@ -1344,7 +1365,7 @@
             </key>
             
             <originatingSource>
-                <xsl:value-of select="$originatingSource"/>
+                <xsl:value-of select="normalize-space($originatingSource)"/>
             </originatingSource> 
             
             <party type="group">
