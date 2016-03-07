@@ -65,6 +65,7 @@
                 <xsl:apply-templates select="fields/field[@name='data_url']/value"/>
                 <xsl:apply-templates select="abstract"/>
                 <xsl:apply-templates select="fields/field[@name='addl_info']/value"/>
+                <xsl:apply-templates select="fields/field[@name='distribution_license']/value"/>
                 <xsl:apply-templates select="fields/field[@name='rights']/value"/>
                 <xsl:apply-templates select="fields/field[@name='coverage']/value"/>
                 <xsl:apply-templates select="keywords"/>
@@ -96,39 +97,39 @@
                 <xsl:choose>
                     <xsl:when test=".//field[@name='research_description']/value">
                         <registryObject>
-            <xsl:attribute name="group"><xsl:value-of select="$global_group"/></xsl:attribute>
-            <key>
-                <xsl:value-of select="$activityKey"/>
-            </key>
-            <originatingSource><xsl:value-of select="$global_originatingSource"/></originatingSource>
-            <xsl:element name="{$class}">
-                <xsl:attribute name="type" select="$type"/>
-                <xsl:apply-templates select="fields/field[@name='research_title']/value"/>
-                <xsl:apply-templates select="fields/field[@name='research_description']/value"/>
-                <xsl:apply-templates select="keywords"/>
-                <xsl:apply-templates select="disciplines"/>
-                <xsl:apply-templates select="fields/field[@name='for_code']"/>
-                <xsl:apply-templates select="fields/field[@name='related_content']" mode="activity"/>
-                <xsl:apply-templates select="fields/field[@name='grant_num']" mode="activity"/>
-                <xsl:apply-templates select="fields/field[@name='project_links']" mode="activity"/>
-                <xsl:apply-templates select="fields/field[@name='contact']"/>
-                <xsl:apply-templates select="coverpage-url"/>
-                <xsl:apply-templates select="authors/author" mode="activity"/>
-                <!--xsl:apply-templates select="fields/field[@name='comments']/value" mode="activity"/-->
-                <relatedObject>
-                    <key><xsl:value-of select="$collectionKey"/></key>
-                  <relation type="hasOutput"/>
-                </relatedObject>
-                <relatedInfo type="party">
-                    <identifier type="AU-ANL:PEAU">
-                        <xsl:text>http://nla.gov.au/nla.party-578358</xsl:text>
-                    </identifier>
-                    <relation type="isManagedBy"/>
-                    <title>Edith Cowan University</title>
-                </relatedInfo>
-            </xsl:element>
-        </registryObject>
-    </xsl:when>
+                        <xsl:attribute name="group"><xsl:value-of select="$global_group"/></xsl:attribute>
+                        <key>
+                            <xsl:value-of select="$activityKey"/>
+                        </key>
+                        <originatingSource><xsl:value-of select="$global_originatingSource"/></originatingSource>
+                        <xsl:element name="{$class}">
+                            <xsl:attribute name="type" select="$type"/>
+                            <xsl:apply-templates select="fields/field[@name='research_title']/value"/>
+                            <xsl:apply-templates select="fields/field[@name='research_description']/value"/>
+                            <xsl:apply-templates select="keywords"/>
+                            <xsl:apply-templates select="disciplines"/>
+                            <xsl:apply-templates select="fields/field[@name='for_code']"/>
+                            <xsl:apply-templates select="fields/field[@name='related_content']" mode="activity"/>
+                            <xsl:apply-templates select="fields/field[@name='grant_num']" mode="activity"/>
+                            <xsl:apply-templates select="fields/field[@name='project_links']" mode="activity"/>
+                            <xsl:apply-templates select="fields/field[@name='contact']"/>
+                            <xsl:apply-templates select="coverpage-url"/>
+                            <xsl:apply-templates select="authors/author" mode="activity"/>
+                            <!--xsl:apply-templates select="fields/field[@name='comments']/value" mode="activity"/-->
+                            <relatedObject>
+                                <key><xsl:value-of select="$collectionKey"/></key>
+                              <relation type="hasOutput"/>
+                            </relatedObject>
+                            <relatedInfo type="party">
+                                <identifier type="AU-ANL:PEAU">
+                                    <xsl:text>http://nla.gov.au/nla.party-578358</xsl:text>
+                                </identifier>
+                                <relation type="isManagedBy"/>
+                                <title>Edith Cowan University</title>
+                            </relatedInfo>
+                        </xsl:element>
+                        </registryObject>
+                    </xsl:when>
                 </xsl:choose>
             </xsl:when>
         </xsl:choose>
@@ -419,6 +420,33 @@
             <rightsStatement>
                 <xsl:value-of select="."/>
             </rightsStatement>
+        </rights>
+    </xsl:template>
+    
+    <xsl:template match="field[@name='distribution_license']/value">
+        
+        <rights>
+            <licence>
+                <xsl:choose>
+                    <xsl:when test="contains(., 'http')">
+                        <xsl:attribute name="rightsUri">
+                            <xsl:value-of select="."/>
+                        </xsl:attribute>
+                        <xsl:if test="contains(., 'creativecommons')">
+                            <xsl:message select="concat('creativecommons: ', .)"/>
+                            <xsl:analyze-string select="." regex="(http://creativecommons.org/licenses/)(.*)(/\d)">
+                                <xsl:matching-substring>
+                                    <xsl:if test="string-length(regex-group(2)) > 0">
+                                        <xsl:attribute name="type">
+                                            <xsl:value-of select="upper-case(concat('cc-', regex-group(2)))"/>
+                                        </xsl:attribute>
+                                    </xsl:if>
+                                </xsl:matching-substring>
+                            </xsl:analyze-string>
+                        </xsl:if>
+                    </xsl:when>
+                </xsl:choose>
+            </licence>
         </rights>
     </xsl:template>
 
