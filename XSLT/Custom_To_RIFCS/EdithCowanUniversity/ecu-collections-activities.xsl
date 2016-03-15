@@ -72,6 +72,7 @@
                 <xsl:apply-templates select="disciplines"/>
                 <xsl:apply-templates select="fields/field[@name='for_code']"/>
                 <xsl:apply-templates select="fields/field[@name='longitude']"/>
+                <xsl:apply-templates select="native-url"/>
                 <xsl:apply-templates select="fields/field[@name='custom_citation']/value"/>
                 <xsl:apply-templates select="fields/field[@name='related_content']" mode="collection"/>
                 <xsl:apply-templates select="fields/field[@name='grant_num']" mode="collection"/>
@@ -515,6 +516,24 @@
         </citationInfo>
 
     </xsl:template>
+    
+    <xsl:template match="native-url">
+        <xsl:if test="contains(., 'viewcontent')">
+            <!--location>
+                <address>
+                <electronic type="url" target="directDownload">
+                    <value>
+                        <xsl:value-of select="."/>
+                    </value>
+                </electronic>
+            </address>
+            </location-->
+            <rights>
+                <accessRights type="open"/>
+            </rights>
+        </xsl:if>
+    </xsl:template>
+    
 
     <xsl:template match="field[@name='related_content']" mode="collection">
 
