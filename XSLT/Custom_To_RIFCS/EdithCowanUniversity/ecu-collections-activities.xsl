@@ -968,6 +968,9 @@
     <xsl:function name="custom:identifierType" as="xs:string">
         <xsl:param name="identifier" as="xs:string"/>
         <xsl:choose>
+            <xsl:when test="contains(lower-case($identifier), 'nla.party')">
+                <xsl:text>AU-ANL:PEAU</xsl:text>
+            </xsl:when>
             <xsl:when test="contains(lower-case($identifier), 'scopus')">
                 <xsl:text>scopus</xsl:text>
             </xsl:when>

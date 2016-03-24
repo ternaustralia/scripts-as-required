@@ -17,7 +17,7 @@
     <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>
     
     <xsl:param name="global_originatingSource" select="'University of Wollongong'"/>
-    <xsl:param name="global_baseURI" select="'ro.uow.edu.au'"/>
+    <xsl:param name="global_baseURI" select="'uow.edu.au'"/>
     <xsl:param name="global_group" select="'University of Wollongong'"/>
     <xsl:param name="global_publisherName" select="'University of Wollongong'"/>
 
@@ -26,7 +26,6 @@
     <xsl:template match="/">
         <registryObjects xmlns="http://ands.org.au/standards/rif-cs/registryObjects" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd">
             <xsl:apply-templates select="//oai:record/oai:metadata/*:document-export/*:documents/*:document" mode="collection"/>
-            <xsl:apply-templates select="//oai:record/oai:metadata/*:document-export/*:documents/*:document" mode="activity"/>
             <xsl:apply-templates select="//oai:record/oai:metadata/*:document-export/*:documents/*:document" mode="party"/>
         </registryObjects>
     </xsl:template>
@@ -39,7 +38,10 @@
         <registryObject>
             <xsl:attribute name="group" select="$global_group"/>
             
-            <xsl:apply-templates select="fields/field[@name='uow_key']"/>
+            
+            <key>
+                <xsl:value-of select="custom:datasetKey(.)"/>
+            </key>
             
             <xsl:apply-templates select="fields" mode="originating_source">
                 <xsl:with-param name="default" select="$global_originatingSource"/>
@@ -50,17 +52,20 @@
                 
                 <xsl:attribute name="type" select="$type"/>
                 
-                <xsl:apply-templates select="fields/field[@name='persistent_identifier']/value[string-length(text()) > 0]" mode="identifier"/>
+                <xsl:apply-templates select="fields/field[@name='persistent_identifier' and (string-length(.) > 0)]" mode="identifier"/>
                
-                <xsl:apply-templates select="fields/field[@name='doi']/value[string-length(text()) > 0]" mode="identifier"/>
+                <xsl:apply-templates select="fields/field[@name='doi' and (string-length(.) > 0)]" mode="identifier"/>
                 
                 <xsl:choose>
                     <xsl:when test="fields/field[@name='doi']/value[string-length(text()) > 0]">
-                        <xsl:apply-templates select="fields/field[@name='doi']/value[string-length(text()) > 0]" mode="location"/>
+                        <xsl:apply-templates select="fields/field[@name='doi']" mode="location"/>
                     </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:apply-templates select="fields/field[@name='persistent_identifier']/value[string-length(text()) > 0]" mode="location"/>
-                    </xsl:otherwise>
+                    <xsl:when test="fields/field[@name='persistent_identifier' and (string-length(.) > 0)]">
+                        <xsl:apply-templates select="fields/field[@name='persistent_identifier']" mode="location"/>
+                    </xsl:when>
+                    <xsl:when test="string-length(coverpage-url) > 0">
+                        <xsl:apply-templates select="coverpage-url" mode="location"/>
+                    </xsl:when>
                 </xsl:choose>
                 
                 
@@ -70,25 +75,33 @@
                 
                 <xsl:apply-templates select="disciplines/discipline[string-length(.) > 0]"/>
                 
-                <xsl:apply-templates select="fields/field[(@name='for')]/value[string-length(.) > 0]"/>
+                <xsl:apply-templates select="fields/field[(@name='for') and (string-length(.) > 0)]"/>
                 
                 <xsl:apply-templates select="abstract[string-length(.) > 0]"/>
                 
-                <xsl:apply-templates select="fields/field[(@name='date_range')]/value[string-length(.) > 0]"/>
+                <xsl:apply-templates select="fields/field[(@name='date_range') and (string-length(.) > 0)]"/>
                 
-                <xsl:apply-templates select="fields/field[(@name='geolocate')]/value[string-length(.) > 0]"/>
+                <xsl:apply-templates select="fields/field[(@name='geolocate') and (string-length(.) > 0)]"/>
                 
-                <xsl:apply-templates select="fields/field[(@name='geolocate')]/value[string-length(.) > 0]"/>
+                <xsl:apply-templates select="fields/field[(@name='geolocate') and (string-length(.) > 0)]"/>
                 
                 <xsl:apply-templates select="fields" mode="spatial_coverage"/>
                 
                 <xsl:apply-templates select="submission-date[string-length(.) > 0]"/>
                 
-                <xsl:apply-templates select="fields/field[(@name='custom_citation')]/value[string-length(.) > 0]"/>
+                <xsl:apply-templates select="fields/field[(@name='custom_citation') and (string-length(.) > 0)]"/>
                 
-                <xsl:apply-templates select="fields/field[@name='grant_purl']/value[string-length(text()) > 0]"/>
+                <xsl:apply-templates select="fields/field[@name='grant_purl' and (string-length(.) > 0)]"/>
                 
-                <xsl:apply-templates select="fields/field[(@name='related_content')]/value[string-length(.) > 0]"/>
+                <xsl:apply-templates select="native-url[string-length(.) > 0]"/>
+                
+                <xsl:apply-templates select="fields/field[(@name='distribution_license') and (string-length(.) > 0)]"/>
+                
+                <xsl:apply-templates select="fields/field[(@name='rights') and (string-length(.) > 0)]"/>
+                
+                <xsl:apply-templates select="fulltext-url[string-length(.) > 0]"/>
+                
+                <xsl:apply-templates select="fields/field[(@name='related_content') and (string-length(.) > 0)]"/>
                 
             </xsl:element>
         </registryObject>
@@ -159,30 +172,50 @@
                     </xsl:if>
                     
                     <xsl:if test="string-length(institution) > 0">
-                        <xsl:variable name="institutionID_TypeValuePair" select="custom:getId_TypeValuePair(institution)"/>
-                        <xsl:if test="count($institutionID_TypeValuePair) = 2">
+                        <xsl:variable name="institutionID" select="custom:partyID(institution)"/>
+                        <xsl:if test="string-length($institutionID) > 0">
                             <relatedInfo type="party">
-                                <title><xsl:value-of select="institution"/></title>
-                                <identifier type="{$institutionID_TypeValuePair[1]}">
-                                    <xsl:value-of select="$institutionID_TypeValuePair[2]"/>
+                                <title>
+                                    <xsl:value-of select="institution"/>
+                                </title> 
+                                <identifier type="{custom:identifierType($institutionID)}">
+                                    <xsl:value-of select="$institutionID"/>
                                 </identifier>
                                 <relation type="isMemberOf"/>
                             </relatedInfo>
                         </xsl:if>
                     </xsl:if>
+                    
+                    <xsl:if test="string-length(custom:datasetKey(../..)) > 0">
+                        <relatedObject>
+                            <key>
+                                <xsl:value-of select="custom:datasetKey(../..)"/>
+                            </key>
+                            <relation type="isCollectorOf"/>
+                        </relatedObject>
+                    </xsl:if>
+                    
+                    <xsl:if test="../../fields/field[(@name='grant_purl') and (string-length(.) > 0)]">
+                        <xsl:analyze-string select="../../fields/field[@name='grant_purl']" regex="href=&quot;(http.+?)&quot;">
+                            <xsl:matching-substring>
+                                <relatedInfo type="activity">
+                                    <xsl:variable name="identifierType" select="custom:identifierType(regex-group(1))"/>
+                                    <identifier type="{$identifierType}">
+                                        <xsl:value-of select="regex-group(1)"/>
+                                    </identifier>
+                                    <relation type="isParticipantIn"/>
+                                </relatedInfo>
+                            </xsl:matching-substring>
+                        </xsl:analyze-string>
+                    </xsl:if>
+                    
                 </xsl:element>
             </registryObject>
         </xsl:for-each>
         
     </xsl:template>
     
-    <xsl:template match="fields/field[@name='uow_key']">
-        <key>
-            <xsl:value-of select="."/>
-        </key>
-    </xsl:template>
-    
-    <xsl:template match="fields" mode="originating_source">
+   <xsl:template match="fields" mode="originating_source">
         <xsl:param name="default"/>
         <xsl:variable name="value">
             <xsl:choose>
@@ -200,7 +233,7 @@
         </originatingSource>
     </xsl:template>
     
-    <xsl:template match="fields/field[@name='doi']/value[string-length(text()) > 0]" mode="identifier">
+    <xsl:template match="fields/field[@name='doi']" mode="identifier">
         <xsl:choose>
             <xsl:when test="not(contains(lower-case(.), 'doi')) and (substring(., 1) castable as xs:integer)">
                 <identifier type="doi">
@@ -215,7 +248,7 @@
         </xsl:choose>
     </xsl:template>
     
-    <xsl:template match="fields/field[@name='persistent_identifier']/value[string-length(text()) > 0]" mode="identifier">
+    <xsl:template match="fields/field[@name='persistent_identifier']" mode="identifier">
         <xsl:analyze-string select="." regex="href=&quot;(http.+?)&quot;">
             <xsl:matching-substring>
                 <xsl:variable name="identifierType" select="custom:identifierType(regex-group(1))"/>
@@ -226,13 +259,29 @@
         </xsl:analyze-string>
     </xsl:template>
     
-    <xsl:template match="fields/field[@name='doi']/value[string-length(text()) > 0]" mode="location">
+    <xsl:template match="coverpage-url" mode="location">
+        <xsl:if test="contains(., 'http')">
+            <location>
+                <address>
+                    <electronic type="url" target="landingPage">
+                        <value>
+                            <xsl:value-of select="."/>
+                        </value>
+                    </electronic>
+                </address>
+            </location>
+        </xsl:if>
+    </xsl:template>
+    
+    
+    <xsl:template match="fields/field[@name='doi']" mode="location">
         <xsl:message select="concat('current doi: ', .)"/>
         <xsl:choose>
-            <xsl:when test="not(contains(lower-case(.), 'doi')) and (substring(., 1) castable as xs:integer)">
+            <!--xsl:when test="not(contains(lower-case(.), 'doi')) and (substring(., 1) castable as xs:integer)"-->
+            <xsl:when test="not(contains(lower-case(.), 'doi.org'))">
                 <location>
                     <address>
-                        <electronic type='doi'>
+                        <electronic type="url" target="landingPage">
                             <value>
                                 <xsl:value-of select="concat('http://doi.org/', .)"/>
                              </value>
@@ -243,7 +292,7 @@
             <xsl:otherwise>
                 <location>
                     <address>
-                        <electronic type='doi'>
+                        <electronic type="url" target="landingPage">
                             <value>
                                 <xsl:value-of select="."/>
                             </value>
@@ -255,47 +304,21 @@
     </xsl:template>
     
     
-    <xsl:template match="fields/field[@name='persistent_identifier']/value[string-length(text()) > 0]" mode="location">
-        <xsl:variable name="doi" select="../../field[@name='doi']/value[string-length(text()) > 0]"/>
+    <xsl:template match="fields/field[@name='persistent_identifier']" mode="location">
+        <xsl:variable name="doi" select="../../field[@name='doi' and (string-length(.) > 0)]"/>
        
         <xsl:message select="concat('current pid: ', .)"/>
         <xsl:analyze-string select="." regex="href=&quot;(http.+?)&quot;">
             <xsl:matching-substring>
-                <xsl:choose>
-                    <xsl:when test="contains(regex-group(1), 'doi')">
-                        <location>
-                            <address>
-                                <electronic type='doi'>
-                                    <value>
-                                        <xsl:value-of select="regex-group(1)"/>
-                                    </value>
-                                </electronic>
-                            </address>
-                        </location>
-                    </xsl:when>
-                    <xsl:when test="contains(regex-group(1), 'handle.net')">
-                        <location>
-                            <address>
-                                <electronic type='handle'>
-                                    <value>
-                                        <xsl:value-of select="regex-group(1)"/>
-                                     </value>
-                                </electronic>
-                            </address>
-                        </location>
-                    </xsl:when>
-                    <xsl:when test="contains(regex-group(1), 'http')">
-                        <location>
-                            <address>
-                                <electronic type='uri'>
-                                    <value>
-                                        <xsl:value-of select="regex-group(1)"/>
-                                    </value>
-                                </electronic>
-                            </address>
-                        </location>
-                    </xsl:when>
-                </xsl:choose>
+                <location>
+                    <address>
+                        <electronic type="url" target="landingPage">
+                            <value>
+                                <xsl:value-of select="regex-group(1)"/>
+                            </value>
+                        </electronic>
+                    </address>
+                </location>
             </xsl:matching-substring>
         </xsl:analyze-string>
     </xsl:template>
@@ -320,7 +343,7 @@
         </subject>
     </xsl:template>
     
-    <xsl:template match="fields/field[(@name='for')]/value[string-length(.) > 0]">
+    <xsl:template match="fields/field[(@name='for')]">
         <xsl:variable name="forCode" select="tokenize(., ' ')[1]"/>
         <xsl:if test="(string-length($forCode) > 0) and ($forCode castable as xs:integer)">
             <subject type="anzsrc-for">
@@ -335,7 +358,7 @@
         </description>
     </xsl:template>
     
-    <xsl:template match="fields/field[(@name='date_range')]/value[string-length(.) > 0]">
+    <xsl:template match="fields/field[@name='date_range']">
         <coverage>
             <temporal>
                 <text>
@@ -345,7 +368,7 @@
         </coverage>
     </xsl:template>
     
-    <xsl:template match="fields/field[(@name='geolocate')]/value[string-length(.) > 0]">
+    <xsl:template match="fields/field[@name='geolocate']">
         <coverage>
             <spatial type="text">
                 <xsl:value-of select="."/>
@@ -365,7 +388,7 @@
         </xsl:if>
     </xsl:template>
     
-    <xsl:template match="submission-date[string-length(.) > 0]">
+    <xsl:template match="submission-date">
         <dates type="submitted">
             <date type="dateFrom" dateFormat="W3CDTF">
                 <xsl:value-of select="."/>
@@ -373,7 +396,7 @@
         </dates>
     </xsl:template>
     
-    <xsl:template match="fields/field[(@name='custom_citation')]/value[string-length(.) > 0]">
+    <xsl:template match="fields/field[@name='custom_citation']">
         <citationInfo>
             <fullCitation>
                 <xsl:value-of select="."/>
@@ -381,7 +404,7 @@
         </citationInfo>
     </xsl:template>
     
-    <xsl:template match="fields/field[(@name='grant_purl')]/value[string-length(.) > 0]">
+    <xsl:template match="fields/field[@name='grant_purl']">
         <xsl:analyze-string select="." regex="href=&quot;(http.+?)&quot;">
             <xsl:matching-substring>
                 <relatedInfo type="activity">
@@ -395,7 +418,59 @@
         </xsl:analyze-string>
     </xsl:template>
     
-    <xsl:template match="fields/field[(@name='related_content')]/value[string-length(.) > 0]">
+    <xsl:template match="native-url">
+        <xsl:if test="contains(., 'viewcontent')">
+            <rights>
+                <accessRights type="open"/>
+            </rights>
+        </xsl:if>
+    </xsl:template>
+    
+    <xsl:template match="field[@name='rights']">
+        <rights>
+            <rightsStatement>
+                <xsl:value-of select="."/>
+            </rightsStatement>
+        </rights>
+    </xsl:template>
+    
+    <xsl:template match="field[@name='distribution_license']">
+        
+        <rights>
+            <licence>
+                <xsl:choose>
+                    <xsl:when test="contains(., 'http')">
+                        <xsl:attribute name="rightsUri">
+                            <xsl:value-of select="."/>
+                        </xsl:attribute>
+                        <xsl:if test="contains(., 'creativecommons')">
+                            <xsl:message select="concat('creativecommons: ', .)"/>
+                            <xsl:analyze-string select="." regex="(http://creativecommons.org/licenses/)(.*)(/\d)">
+                                <xsl:matching-substring>
+                                    <xsl:if test="string-length(regex-group(2)) > 0">
+                                        <xsl:attribute name="type">
+                                            <xsl:value-of select="upper-case(concat('cc-', regex-group(2)))"/>
+                                        </xsl:attribute>
+                                    </xsl:if>
+                                </xsl:matching-substring>
+                            </xsl:analyze-string>
+                        </xsl:if>
+                    </xsl:when>
+                </xsl:choose>
+            </licence>
+        </rights>
+    </xsl:template>
+    
+    
+    <xsl:template match="fulltext-url">
+        <xsl:if test="contains(., 'viewcontent')">
+            <rights>
+                <accessRights type="open"/>
+            </rights>
+        </xsl:if>
+    </xsl:template>
+    
+    <xsl:template match="fields/field[@name='related_content']">
         <xsl:analyze-string select="." regex="href=&quot;(http.+?)&quot;">
             <xsl:matching-substring>
                 <relatedInfo>
@@ -413,9 +488,30 @@
     
     <!-- Functions -->
     
+    <xsl:function name="custom:datasetKey" as="xs:string">
+        <xsl:param name="document" as="node()"/>
+        <xsl:choose>
+            <xsl:when test="$document/fields/field[(@name='uow_key') and (string-length(.) > 0)]">
+                <xsl:value-of select="$document/fields/field[@name='uow_key']"/>
+            </xsl:when>
+            <xsl:when test="$document/submission-path[string-length(.) > 0]">
+                <xsl:value-of select="custom:formatKey($document/submission-path)"/>
+            </xsl:when>
+            <xsl:when test="$document/articleid[string-length(.) > 0]">
+                <xsl:value-of select="custom:formatKey($document/articleid)"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:text/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:function>
+    
     <xsl:function name="custom:identifierType" as="xs:string">
         <xsl:param name="identifier" as="xs:string"/>
         <xsl:choose>
+            <xsl:when test="contains(lower-case($identifier), 'nla.party')">
+                <xsl:text>AU-ANL:PEAU</xsl:text>
+            </xsl:when>
             <xsl:when test="contains(lower-case($identifier), 'scopus')">
                 <xsl:text>scopus</xsl:text>
             </xsl:when>
@@ -425,9 +521,6 @@
             <xsl:when test="contains(lower-case($identifier), 'doi')">
                 <xsl:text>doi</xsl:text>
             </xsl:when>
-            <xsl:when test="contains(lower-case($identifier), 'purl.org')">
-                <xsl:text>purl</xsl:text>
-            </xsl:when>
             <xsl:otherwise>
                 <xsl:text>uri</xsl:text>
             </xsl:otherwise>
@@ -436,144 +529,6 @@
     
     
     
-    <!--xsl:function name="custom:getIdentifiersForName_sequence" as="xs:string*">
-        <xsl:param name="soughtName" as="xs:string"/>
-        <xsl:param name="html" as="xs:string"/>
-        
-        <xsl:if test="string-length($html) > 0">
-            <xsl:variable name="unescapedContent" select="saxon:parse(concat('&lt;root&gt;', $html, '&lt;/root&gt;'))" as="document-node()*"/>
-            <xsl:if test="count($unescapedContent) > 0">
-                <xsl:message select="concat('unescapedContent ', $unescapedContent)"/>
-                <xsl:variable name="namePosition_sequence" as="xs:integer*">
-                    <xsl:for-each select="$unescapedContent/root/p">
-                        <xsl:variable name="personPosition" select="position()" as="xs:integer"/>
-                        <xsl:if test="count(strong) > 0">
-                            <xsl:value-of select="$personPosition"/>
-                        </xsl:if>
-                    </xsl:for-each>
-                </xsl:variable>
-                
-                <xsl:for-each select="$namePosition_sequence">
-                    <xsl:message select="concat('$namePosition_sequence entry: ', ., ' at position: ', position())"/>
-                </xsl:for-each>
-                   
-                <xsl:variable name="currentPersonPositionRange_sequence" as="xs:integer*">
-                     <xsl:for-each select="$unescapedContent/root/p">
-                         <xsl:variable name="currentPPosition" select="position()"  as="xs:integer"/>
-                         <xsl:variable name="lastPPosition" select="last()"  as="xs:integer"/>
-                         <xsl:variable name="currentName" select="custom:getName(.)"/>
-                         <xsl:if test="string-length($currentName) > 0">
-                             <xsl:if test="string-length(.) > 0 and (contains(., ' ') or contains(., ','))">
-                                 
-                                 <xsl:if test="boolean(custom:nameMatch($soughtName, $currentName)) = true()">
-                                     <xsl:message select="concat('Match! - ', $soughtName)"/>
-                                         
-                                         <xsl:copy-of select="$currentPPosition"/>
-                                         <xsl:for-each select="distinct-values($namePosition_sequence)">
-                                             <xsl:variable name="iterPersonPosition" select="." as="xs:integer"/>
-                                             <xsl:variable name="posInt" select="position()" as="xs:integer"/>
-                                             <xsl:message select="concat('iterPersonPosition: ', $iterPersonPosition)"/>
-                                             <xsl:message select="concat('$posInt: ', number($posInt))"/>
-                                             <xsl:if test="number($iterPersonPosition) = number($currentPPosition)">
-                                                 <xsl:choose>
-                                                     <xsl:when test="count($namePosition_sequence) > $posInt">
-                                                         <xsl:message select="concat('Returning $namePosition_sequence[number($posInt)+1]: ', $namePosition_sequence[number($posInt)+1])"/>
-                                                         <xsl:copy-of select="$namePosition_sequence[number($posInt)+1]"/>
-                                                     </xsl:when>
-                                                     <xsl:otherwise>
-                                                         <xsl:message select="concat('Returning $lastPPosition + 1: ', $lastPPosition + 1)"/>
-                                                         <xsl:copy-of select="$lastPPosition + 1"/>
-                                                     </xsl:otherwise>
-                                                 </xsl:choose>
-                                             </xsl:if>
-                                         </xsl:for-each>
-                                 </xsl:if>
-                             </xsl:if>
-                         </xsl:if>
-                     </xsl:for-each>
-                </xsl:variable>
-                
-                <xsl:if test="count($currentPersonPositionRange_sequence) > 0">
-                    <xsl:message select="concat('count($currentPersonPositionRange_sequence): ', count($currentPersonPositionRange_sequence))"/>
-                    
-                    <xsl:message select="concat('$currentPersonPositionRange_sequence[1]: ', $currentPersonPositionRange_sequence[1])"/>
-                    <xsl:message select="concat('$currentPersonPositionRange_sequence[2]: ', $currentPersonPositionRange_sequence[2])"/>
-                    
-                    <xsl:for-each select="$unescapedContent/root/p">
-                        <xsl:variable name="currentPPosition" select="position()"  as="xs:integer"/>
-                        <xsl:if test="($currentPersonPositionRange_sequence[2] > $currentPPosition) and
-                                      ($currentPPosition > $currentPersonPositionRange_sequence[1])">
-                            
-                            <xsl:message select="concat('$currentPPosition: ', $currentPPosition)"/>
-                            <xsl:if test="string-length(a/@href) > 0">
-                                <xsl:message select="concat('a/@href: ', a/@href)"/>
-                                <xsl:value-of select="a/@href"/>
-                            </xsl:if>
-                        </xsl:if>
-                    </xsl:for-each>
-                </xsl:if>
-            </xsl:if>
-        </xsl:if>
-     </xsl:function-->
-    
-
-    <!--xsl:function name="custom:getOrganisationForName_sequence" as="xs:string*">
-        <xsl:param name="soughtName" as="xs:string"/>
-        <xsl:param name="html" as="node()"/>
-        
-        <xsl:message select="concat('html: ', $html)"/>
-        
-        <xsl:if test="string-length($html) > 0">
-            <xsl:variable name="unescapedContent" select="saxon:parse(concat('&lt;root&gt;', $html, '&lt;/root&gt;'))" as="document-node()*"/>
-            <xsl:if test="count($unescapedContent) > 0">
-                <xsl:message select="concat('unescapedContent ', $unescapedContent)"/>
-                <xsl:for-each select="$unescapedContent/root/p">
-                    <xsl:if test="count(strong) > 0">
-                        <xsl:variable name="currentName" select="custom:getName(.)"/>
-                        <xsl:if test="string-length($currentName) > 0 and (contains($currentName, ' ') or contains($currentName, ','))">
-                            <xsl:if test="boolean(custom:nameMatch($soughtName, $currentName)) = true()">
-                                <xsl:message select="concat('Match $currentName ', $currentName)"/>
-                                <xsl:variable name="organisation_sequence" select="em" as="xs:string*"/>
-                                <xsl:if test="count($organisation_sequence) > 0">
-                                    <xsl:if test="count($organisation_sequence) > 0">
-                                        <xsl:copy-of select="$organisation_sequence"/>
-                                    </xsl:if>
-                                </xsl:if>
-                            </xsl:if>
-                        </xsl:if>
-                    </xsl:if>
-                </xsl:for-each>
-            </xsl:if>
-        </xsl:if>
-    </xsl:function-->
-    
-    <!--xsl:function name="custom:formatName">
-        <xsl:param name="name"/>
-        <xsl:choose>
-            <xsl:when test="contains($name, ', ')">
-                <xsl:value-of select="concat(substring-after($name, ','), ' ', substring-before($name, ','))"/>
-            </xsl:when>
-            <xsl:otherwise>
-                <xsl:value-of select="$name"/>
-            </xsl:otherwise>
-        </xsl:choose>
-    </xsl:function-->
-    
-    <!--xsl:function name="custom:nameMatch" as="xs:boolean">
-        <xsl:param name="name"/>
-        <xsl:param name="match"/>
-        
-        <xsl:choose>
-             <xsl:when test="
-                 tokenize(custom:formatName($name), ' ')[1] = tokenize(custom:formatName($match), ' ')[1] and
-                 tokenize(custom:formatName($name), ' ')[last()] = tokenize(custom:formatName($match), ' ')[last()]">
-                 <xsl:copy-of select="true()"/>
-             </xsl:when>
-             <xsl:otherwise>
-                 <xsl:copy-of select="false()"/>
-             </xsl:otherwise>
-         </xsl:choose>
-    </xsl:function-->
     
     <xsl:function name="custom:formatKey">
         <xsl:param name="input"/>
@@ -591,13 +546,15 @@
         <xsl:value-of select="concat($global_baseURI, '/', $temp)"/>
     </xsl:function>
     
-    <xsl:function name="custom:getId_TypeValuePair" as="xs:string*">
+    <xsl:function name="custom:partyID" as="xs:string">
         <xsl:param name="name" as="xs:string"/>
         <xsl:choose>
             <xsl:when test="lower-case($name) = 'university of wollongong'">
-                <xsl:text>AU-ANL:PEAU</xsl:text>
                 <xsl:text>http://nla.gov.au/nla.party-464691</xsl:text>
             </xsl:when>
+            <xsl:otherwise>
+                <xsl:text/>
+            </xsl:otherwise>
         </xsl:choose>
     </xsl:function>
     
