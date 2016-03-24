@@ -69,6 +69,9 @@
         </xsl:for-each>
         
         <xsl:choose>
+            <!-- Note that we may have metadata point of truth containing 'eatlas' while originating source is AIMS.
+                 In such a case, we want the eatlas crosswalk to be called, hence placing the test for 'eatlas'
+                 in metadata point of truth above the test for 'aims' in originating source -->
             <xsl:when test="
                 custom:sequenceContains($metadataPointOfTruth_sequence, 'eatlas') or
                 contains(lower-case($originatingSource), 'eatlas') or
@@ -78,6 +81,8 @@
                 </xsl:apply-templates>
              </xsl:when>
              <xsl:when test="
+                 custom:sequenceContains($metadataPointOfTruth_sequence, 'imas') or
+                 custom:sequenceContains($metadataPointOfTruth_sequence, 'utas') or
                  contains(lower-case($originatingSource), 'imas') or
                  contains(lower-case($originatingSource), 'utas') or
                  contains(lower-case($originatingSource), 'institute for marine and antarctic studies') or
@@ -87,6 +92,7 @@
                  </xsl:apply-templates>
              </xsl:when>
              <xsl:when test="
+                 custom:sequenceContains($metadataPointOfTruth_sequence, 'imos') or
                  contains(lower-case($originatingSource), 'imos') or
                  contains(lower-case($originatingSource), 'integrated marine observing system')">
                  <xsl:apply-templates select="." mode="IMOS">
@@ -94,6 +100,7 @@
                  </xsl:apply-templates>
              </xsl:when>
              <xsl:when test="
+                 custom:sequenceContains($metadataPointOfTruth_sequence, 'data.aims') or
                  contains(lower-case($originatingSource), 'aims') or
                  contains(lower-case($originatingSource), 'australian institute of marine science')">
                  <xsl:apply-templates select="." mode="AIMS">
