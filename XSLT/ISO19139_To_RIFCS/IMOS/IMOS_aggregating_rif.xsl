@@ -76,6 +76,7 @@
                 </xsl:apply-templates>
             </xsl:when>
             <xsl:when test="
+                custom:sequenceContains($metadataPointOfTruth_sequence, 'data.aims') or
                 contains(lower-case($originatingSource), 'aims') or
                 contains(lower-case($originatingSource), 'australian institute of marine science')">
                 <xsl:apply-templates select="." mode="AIMS">
@@ -83,6 +84,8 @@
                 </xsl:apply-templates>
             </xsl:when>
             <xsl:when test="
+                custom:sequenceContains($metadataPointOfTruth_sequence, 'imas') or
+                custom:sequenceContains($metadataPointOfTruth_sequence, 'utas') or
                 contains(lower-case($originatingSource), 'imas') or
                 contains(lower-case($originatingSource), 'utas') or
                 contains(lower-case($originatingSource), 'institute for marine and antarctic studies') or
