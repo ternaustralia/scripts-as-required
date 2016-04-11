@@ -8,7 +8,7 @@
     <xsl:output method="xml"/>
     
  <!-- set NESP program -->
-    <xsl:variable name="parent-program-purl">http://purl.org/au-research/grants/doe/nesp</xsl:variable>
+    <xsl:variable name="parent-program-purl">http://purl.org/au-research/grants/nesp</xsl:variable>
 
  <!-- set DOE as funder -->
     <xsl:variable name="funder">http://dx.doi.org/10.13039/501100003531</xsl:variable>
