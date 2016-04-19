@@ -112,7 +112,7 @@
                                             <xsl:value-of select="$managerID"/>
                                         </xsl:element>
                                         <xsl:element name="relation">
-                                            <xsl:attribute name="type">hasManager</xsl:attribute>
+                                            <xsl:attribute name="type">isManagedBy</xsl:attribute>
                                         </xsl:element>
                                         <xsl:if test="string-length($managerName) > 0">
                                             <xsl:element name="title">
