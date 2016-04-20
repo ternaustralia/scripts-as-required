@@ -28,7 +28,7 @@
 
     <xsl:template match="datasets">
         
-       <xsl:apply-templates select="result" mode="constructObjects"/>
+        <xsl:apply-templates select="result" mode="constructObjects"/>
             
     </xsl:template>
     
@@ -179,7 +179,7 @@
     <!-- Party RegistryObject Template          -->
     <!-- =========================================== -->
 
-    <xsl:template match="results" mode="party">
+    <xsl:template match="result" mode="party">
 
         <xsl:apply-templates select="organization"/>
 
@@ -437,7 +437,7 @@
     </xsl:template>
 
     <!-- Collection - Related Info Element - Services -->
-    <xsl:template match="results" mode="collection_relatedInfo">
+    <xsl:template match="result" mode="collection_relatedInfo">
         <xsl:variable name="organizationTitle" select="organization/title"/>
         <!-- Related Services -->
         <xsl:for-each select="resources">
@@ -765,7 +765,7 @@
     </xsl:template>
 
     <!-- Party Registry Object (Individuals (person) and Organisations (group)) -->
-    <xsl:template match="results" mode="party_author">
+    <xsl:template match="result" mode="party_author">
         <xsl:variable name="name" select="author"/>
         <xsl:if test="string-length($name) > 0">
             <registryObject group="{$global_group}">
@@ -830,7 +830,7 @@
     <!-- ====================================== -->
 
     <!-- Service Registry Object -->
-    <xsl:template match="results" mode="service">
+    <xsl:template match="result" mode="service">
         <xsl:variable name="organizationTitle" select="normalize-space(organization/title)"/>
         <xsl:variable name="organizationName" select="normalize-space(organization/name)"/>
         <xsl:variable name="organizationDescription"
@@ -1082,10 +1082,10 @@
     -->
     
     <xsl:function name="custom:locallyStored" as="xs:boolean">
-        <xsl:param name="results" as="node()"/>
+        <xsl:param name="result" as="node()"/>
         
         <xsl:variable name="true_sequence" as="xs:boolean*">
-            <xsl:for-each select="$results/resources/url_type">
+            <xsl:for-each select="$result/resources/url_type">
                 <xsl:if test="contains(., $globalLocalIndicator)">
                     <xsl:value-of select="true()"/>
                 </xsl:if>
@@ -1096,13 +1096,13 @@
     </xsl:function>
     
     <xsl:function name="custom:proceedWithHarvest" as="xs:boolean">
-        <xsl:param name="results" as="node()"/>
+        <xsl:param name="result" as="node()"/>
         
         <xsl:choose>
-             <xsl:when test="$results/type = 'harvest'">
+             <xsl:when test="$result/type = 'harvest'">
                  <!-- This is a harvest source - only accept it if it is a known and acceptable harvest source -->
                  <xsl:choose>
-                     <xsl:when test="custom:status($results/id)[1] = true()">
+                     <xsl:when test="custom:status($result/id)[1] = true()">
                         <xsl:value-of select="true()"/>
                      </xsl:when>
                      <xsl:otherwise>
@@ -1112,9 +1112,9 @@
             </xsl:when> 
             <xsl:otherwise> <!-- This is not a harvest entity -->
                 <xsl:choose>
-                    <xsl:when test="count($results/harvest_source_id) > 0"> <!-- When we have a harvest source id -->
+                    <xsl:when test="count($result/harvest_source_id) > 0"> <!-- When we have a harvest source id -->
                         <xsl:variable name="proceed_sequence" as="xs:boolean*">
-                            <xsl:for-each select="$results/harvest_source_id">
+                            <xsl:for-each select="$result/harvest_source_id">
                                 <xsl:if test="custom:status(.) = true()">
                                     <xsl:value-of select="true()"/> <!-- Accept if the harvest source is known and acceptable -->
                                 </xsl:if> 
@@ -1124,7 +1124,7 @@
                     </xsl:when>
                     <xsl:otherwise> <!-- Not a harvest source, and not indicated as harvested, so return true() unless there are exceptions -->
                         <xsl:choose>
-                            <xsl:when test="custom:exceptions($results) = true()">
+                            <xsl:when test="custom:exceptions($result) = true()">
                                 <xsl:value-of select="false()"/>
                             </xsl:when>
                             <xsl:otherwise>
@@ -1138,7 +1138,7 @@
     </xsl:function>
     
     <xsl:function name="custom:exceptions" as="xs:boolean">
-        <xsl:param name="results" as="node()"/>
+        <xsl:param name="result" as="node()"/>
         <xsl:value-of select="false()"/>
     </xsl:function>
     
