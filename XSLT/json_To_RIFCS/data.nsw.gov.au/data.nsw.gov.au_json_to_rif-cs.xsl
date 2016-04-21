@@ -39,8 +39,10 @@
     
     <xsl:template match="result" mode="constructObjects">
         <xsl:variable name="harvestSourceTitle_sequence" as="xs:string*" select="harvest_source_title"/>
-        <xsl:if test="(count($harvestSourceTitle_sequence) = 0) or not(boolean(custom:sequenceContains($harvestSourceTitle_sequence, 'Commonwealth Datasets')))">
-            
+        <xsl:variable name="organisationTitle_sequence" as="xs:string*" select="organization/title"/>
+        <!-- Construct a record if organisation is not Commonwealth Datasets or if there is either no harvest source title, or it isn't "commonwealth datasets" -->
+        <xsl:if test="(not(boolean(custom:sequenceContains($organisationTitle_sequence, 'Commonwealth Datasets'))) and 
+            ((count($harvestSourceTitle_sequence) = 0) or not(boolean(custom:sequenceContains($harvestSourceTitle_sequence, 'Commonwealth Datasets')))))">
             <xsl:apply-templates select="." mode="collection"/>
             <xsl:apply-templates select="." mode="party"/>
             <xsl:apply-templates select="." mode="service"/>
