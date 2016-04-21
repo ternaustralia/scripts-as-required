@@ -19,36 +19,35 @@
         <xsl:apply-templates/>
     </xsl:template>
 
-    <xsl:template match="datasets/help"/>
-    <xsl:template match="datasets/success"/>
+    <xsl:template match="//datasets/help"/>
+    <xsl:template match="//datasets/success"/>
 
     <!-- =========================================== -->
     <!-- dataset (datasets) Template             -->
     <!-- =========================================== -->
 
-    <xsl:template match="datasets">
+    <xsl:template match="root">
+        <registryObjects>
+            <xsl:attribute name="xsi:schemaLocation">
+                <xsl:text>http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd</xsl:text>
+            </xsl:attribute>
         
-        <xsl:apply-templates select="result" mode="constructObjects"/>
+            <xsl:apply-templates select="datasets/result/results" mode="constructObjects"/>
+            
+        </registryObjects>
             
     </xsl:template>
     
     
-    <xsl:template match="result" mode="constructObjects">
+    <xsl:template match="results" mode="constructObjects">
         <xsl:if test="boolean(custom:proceedWithHarvest(.)) = true()">   
-            <registryObjects>
-                <xsl:attribute name="xsi:schemaLocation">
-                    <xsl:text>http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd</xsl:text>
-                </xsl:attribute>
-                
-                
                 <xsl:apply-templates select="." mode="collection"/>
                 <xsl:apply-templates select="." mode="party"/>
                 <xsl:apply-templates select="." mode="service"/>
-            </registryObjects>
         </xsl:if>
     </xsl:template>
 
-    <xsl:template match="result" mode="collection">
+    <xsl:template match="results" mode="collection">
         
         <xsl:variable name="metadataURL">
             <xsl:variable name="name" select="normalize-space(name)"/>
@@ -179,7 +178,7 @@
     <!-- Party RegistryObject Template          -->
     <!-- =========================================== -->
 
-    <xsl:template match="result" mode="party">
+    <xsl:template match="results" mode="party">
 
         <xsl:apply-templates select="organization"/>
 
@@ -437,7 +436,7 @@
     </xsl:template>
 
     <!-- Collection - Related Info Element - Services -->
-    <xsl:template match="result" mode="collection_relatedInfo">
+    <xsl:template match="results" mode="collection_relatedInfo">
         <xsl:variable name="organizationTitle" select="organization/title"/>
         <!-- Related Services -->
         <xsl:for-each select="resources">
@@ -765,7 +764,7 @@
     </xsl:template>
 
     <!-- Party Registry Object (Individuals (person) and Organisations (group)) -->
-    <xsl:template match="result" mode="party_author">
+    <xsl:template match="results" mode="party_author">
         <xsl:variable name="name" select="author"/>
         <xsl:if test="string-length($name) > 0">
             <registryObject group="{$global_group}">
@@ -830,7 +829,7 @@
     <!-- ====================================== -->
 
     <!-- Service Registry Object -->
-    <xsl:template match="result" mode="service">
+    <xsl:template match="results" mode="service">
         <xsl:variable name="organizationTitle" select="normalize-space(organization/title)"/>
         <xsl:variable name="organizationName" select="normalize-space(organization/name)"/>
         <xsl:variable name="organizationDescription"
