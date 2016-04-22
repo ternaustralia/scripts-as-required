@@ -8,7 +8,7 @@ import getopt
 import numbers
 import codecs
 import exceptions
-from xml.dom.minidom import Document
+from xml.dom.minidom import parseString, Document, DOMImplementation
 
 def json2xml(json_obj, line_padding=""):
     result_list = list()
@@ -82,44 +82,77 @@ def parse_doc(root, j):
   doc.appendChild(elem)
   return doc
 
-def writeXmlFromJson(dataSetUri, outFileName, outputDirectory):
+def writeXmlFromJson(dataSetUri, outFileName):
 
-  try:
-    obj_addinfourl = urllib2.urlopen(dataSetUri, timeout=5)
-  except exceptions.KeyboardInterrupt:
-    print "Interrupted - ", sys.exc_info()[0]
-    raise
-  except:
-    print("Exception %s when opening %s" % (sys.exc_info()[0], dataSetUri))
-    return
+    postfix=""
+    rows=99
+    start=0
+    count=100
 
-  obj_StreamReaderWriter = None
+    domImplementation = DOMImplementation()
+    obj_xml_rootDocument = Document()
+    root = obj_xml_rootDocument.createElement("root")
+    obj_xml_rootDocument.appendChild(root)
 
-  try:
-    print("Retrieved content at "+dataSetUri)
-    assert(obj_addinfourl is not None)
-    obj_json_str = (obj_addinfourl.read())
-    assert(obj_json_str is not None)
-    obj_dict = json.loads(obj_json_str)
-    obj_xml_Document = parse_doc("datasets", obj_dict)
-    print("About to create file "+outFileName)
-    obj_StreamReaderWriter = codecs.open(outFileName, 'w', 'utf-8')
-    print("obj_StreamReaderWriter:  " + obj_StreamReaderWriter.__class__.__name__)  
-    #obj_StreamReaderWriter.write("<datasets>")
-    obj_StreamReaderWriter.write(obj_xml_Document.toprettyxml())  
-    #obj_StreamReaderWriter.write(obj_xml_Document.toprettyxml(encoding='utf-8', indent=' '))
-    #obj_StreamReaderWriter.write("</datasets>")
+
+    try:
+
+        print("About to create file "+outFileName)
+        obj_StreamReaderWriter = codecs.open(outFileName, 'w', 'utf-8')
+        print("obj_StreamReaderWriter:  " + obj_StreamReaderWriter.__class__.__name__)
+
+
+        while(count > (rows+start)):
+            postfix = str.format("&rows="+str(rows)+"&start="+str(start))
+
+            try:
+                obj_addinfourl = urllib2.urlopen(dataSetUri+postfix, timeout=5)
+            except exceptions.KeyboardInterrupt:
+                print "Interrupted - ", sys.exc_info()[0]
+                raise
+            except:
+                print("Exception %s when opening %s" % (sys.exc_info()[0], dataSetUri+postfix))
+                return
+
+
+            print("Retrieved content at "+dataSetUri+postfix)
+            assert(obj_addinfourl is not None)
+            obj_json_str = (obj_addinfourl.read())
+            assert(obj_json_str is not None)
+            obj_dict = json.loads(obj_json_str)
+
+            elem = obj_xml_rootDocument.createElement("datasets")
+            parse_element(obj_xml_rootDocument, elem, obj_dict)
+            root.appendChild(elem)
+
+            #print(obj_xml_rootDocument.toprettyxml())
+
+            countElementList = elem.getElementsByTagName("count")
+            assert(len(countElementList) == 1)
+            assert(len(countElementList[0].childNodes[0].data) > 0)
+            count=int(countElementList[0].childNodes[0].data)
+            print("Count: "+str(count))
+            print("Remaining: "+str(count-(rows+start)))
+
+
+            #obj_StreamReaderWriter.write(obj_xml_Document.toprettyxml(encoding='utf-8', indent=' '))
+            start+=100
+
+
+    except exceptions.KeyboardInterrupt:
+        print "Interrupted - ", sys.exc_info()[0]
+        raise
+    except:
+        print "Exception - ", sys.exc_info()[0]
+        traceback.print_exc(file=sys.stdout)
+
+    obj_StreamReaderWriter.write(obj_xml_rootDocument.toprettyxml())
+
     print("Output written to "+outputDirectory+"/JsonXML/%s" % outFileName)
-  except exceptions.KeyboardInterrupt:
-    print "Interrupted - ", sys.exc_info()[0]
-    raise
-  except:
-    print "Exception - ", sys.exc_info()[0]
-    traceback.print_exc(file=sys.stdout)
-  finally:
+
     if obj_StreamReaderWriter is not None:
-      obj_StreamReaderWriter.close()
-      
+        obj_StreamReaderWriter.close()
+
   
 
     

@@ -66,7 +66,7 @@ for key in loadedJson.keys():
       try:
         outFileName = (outputDirectory+'/JsonXML/%s.xml' % dataSetName)
         dataSetUri = (descriptionByIdentifierURI % dataSetName) 
-        JsonToXML.writeXmlFromJson(dataSetUri, outFileName, outputDirectory)
+        JsonToXML.writeXmlFromJson(dataSetUri, outFileName)
       except exceptions.KeyboardInterrupt:
         print "Interrupted - ", sys.exc_info()[0]
         sys.exit(0)

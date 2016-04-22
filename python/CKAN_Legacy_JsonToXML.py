@@ -15,7 +15,6 @@ from xml.dom.minidom import Document
 usage = "usage: %prog [options] arg1"
 parser = OptionParser(usage=usage)
 parser.add_option("--URI", action="store", dest="URI", help="uri of all metadata in JSON, e.g. https://www.opengov.nsw.gov.au/publication.json")
-parser.add_option("--outputDirectory", action="store", dest="outputDirectory", help="output directory for JSON files to be written to")
 
 (options, args) = parser.parse_args()
 
@@ -39,6 +38,6 @@ if len(options.outputDirectory) < 1:
 dataSetUri = options.URI
 outputDirectory = options.outputDirectory
 
-outFileName = (outputDirectory+'/JsonXML/%s.xml' % outputDirectory)
+outFileName = "JsonOut.xml"
 print("Out file: %s" % outFileName)
-JsonToXML.writeXmlFromJson(dataSetUri, outFileName, outputDirectory)
+JsonToXML.writeXmlFromJson(dataSetUri, outFileName)
