@@ -28,19 +28,20 @@
     xmlns:mdq="http://standards.iso.org/iso/19157/-2/mdq/1.0" 
     xmlns:mac="http://standards.iso.org/iso/19115/-3/mac/1.0" 
     xmlns:gco="http://standards.iso.org/iso/19115/-3/gco/1.0" 
+    xmlns:gmx="http://www.isotc211.org/2005/gmx"
     xmlns:gml="http://www.opengis.net/gml/3.2" 
     xmlns:xlink="http://www.w3.org/1999/xlink" 
     xmlns:geonet="http://www.fao.org/geonetwork" 
     xmlns:oai="http://www.openarchives.org/OAI/2.0/"
     xmlns:custom="http://custom.nowhere.yet"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
-    exclude-result-prefixes="oai">
+    exclude-result-prefixes="oai lan mrc xlink srv mrd geonet mas mri mcc mrl xs mco mrs xsi mda msr mdb mds mdq cat mdt mac cit mex gco gcx mmi gmx gex mpc gml custom">
     <!-- stylesheet to convert iso19139 in OAI-PMH ListRecords response to RIF-CS -->
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements='*'/>
     <xsl:param name="global_originatingSource" select="'Geoscience Australia'"/>
     <xsl:param name="global_acronym" select="'GA'"/>
-    <xsl:param name="global_baseURI" select="'http://ecat.ga.gov.au/'"/>
+    <xsl:param name="global_baseURI" select="'ecat.ga.gov.au'"/>
     <xsl:param name="global_path" select="'/geonetwork/srv/eng/search#!'"/>
     <xsl:param name="global_group" select="'Geoscience Australia'"/>
     <xsl:param name="global_publisherName" select="'Geoscience Australia'"/>
@@ -84,38 +85,25 @@
            <xsl:variable name="originator_sequence" as="node()*" select="
                mdb:identificationInfo/*[contains(lower-case(name()),'identification')]/mri:citation/cit:CI_Citation/cit:citedResponsibleParty/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'originator'] |
                mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'originator'] |
-               mdb:identificationInfo/*[contains(lower-case(name()),'identification')]/mri:pointOfContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'originator'] |
                mdb:contact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'originator']"/>
            
            <xsl:variable name="resourceProvider_sequence" as="node()*" select="
                mdb:identificationInfo/*[contains(lower-case(name()),'identification')]/mri:citation/cit:CI_Citation/cit:citedResponsibleParty/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'resourceProvider'] |
                mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'resourceProvider'] |
-               mdb:identificationInfo/*[contains(lower-case(name()),'identification')]/mri:pointOfContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'resourceProvider'] |
                mdb:contact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'resourceProvider']"/>
            
            <xsl:variable name="owner_sequence" as="node()*" select="
                mdb:identificationInfo/*[contains(lower-case(name()),'identification')]/mri:citation/cit:CI_Citation/cit:citedResponsibleParty/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'owner'] |
                mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'owner'] |
-               mdb:identificationInfo/*[contains(lower-case(name()),'identification')]/mri:pointOfContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'owner'] |
                mdb:contact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'owner']"/>
            
             <xsl:variable name="custodian_sequence" as="node()*" select="
                mdb:identificationInfo/*[contains(lower-case(name()),'identification')]/mri:citation/cit:CI_Citation/cit:citedResponsibleParty/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'custodian'] |
                mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'custodian'] |
-               mdb:identificationInfo/*[contains(lower-case(name()),'identification')]/mri:pointOfContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'custodian'] |
                mdb:contact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'custodian']"/>
           
-           <xsl:variable name="pointOfContact_sequence" as="node()*" select="
-               mdb:identificationInfo/*[contains(lower-case(name()),'identification')]/mri:citation/cit:CI_Citation/cit:citedResponsibleParty/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'pointOfContact'] |
-               mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'pointOfContact'] |
-               mdb:identificationInfo/*[contains(lower-case(name()),'identification')]/mri:pointOfContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'pointOfContact'] |
-               mdb:contact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'pointOfContact']"/>
-           
-           
            <xsl:variable name="contact_sequence" as="node()*" select="
               mdb:contact/cit:CI_Responsibility"/>
-           
-            
            
             <xsl:choose>
                 <xsl:when test="(count($originator_sequence) > 0) and string-length($originator_sequence[1]/cit:party/cit:CI_Organisation/cit:name) > 0">
@@ -129,9 +117,6 @@
                 </xsl:when>
                 <xsl:when test="(count($custodian_sequence) > 0) and string-length($custodian_sequence[1]/cit:party/cit:CI_Organisation/cit:name) > 0">
                     <xsl:value-of select="$custodian_sequence[1]/cit:party/cit:CI_Organisation/cit:name"/>
-                </xsl:when>
-                <xsl:when test="(count($pointOfContact_sequence) > 0) and string-length($pointOfContact_sequence[1]/cit:party/cit:CI_Organisation/cit:name) > 0">
-                    <xsl:value-of select="$pointOfContact_sequence[1]/cit:party/cit:CI_Organisation/cit:name"/>
                 </xsl:when>
                 <xsl:when test="(count($contact_sequence) > 0) and string-length($contact_sequence[1]/cit:party/cit:CI_Organisation/cit:name) > 0">
                      <xsl:value-of select="$contact_sequence[1]/cit:party/cit:CI_Organisation/cit:name"/>
@@ -158,33 +143,34 @@
                 <xsl:attribute name="type" select="custom:getRegistryObjectTypeSubType(mdb:metadataScope/mdb:MD_MetadataScope/mdb:resourceScope/mcc:MD_ScopeCode/@codeListValue)[2]"/>
                         
                 <xsl:if test="custom:getRegistryObjectTypeSubType(mdb:metadataScope/mdb:MD_MetadataScope/mdb:resourceScope/mcc:MD_ScopeCode/@codeListValue)[1] = 'collection'">
-                    <xsl:if test="string-length(mdb:dateInfo/cit:CI_Date/cit:date[following-sibling::cit:dateType/cit:CI_DateTypeCode/@codeListValue = 'creation']) > 0">
+                    <xsl:if test="string-length(mdb:dateInfo/cit:CI_Date[cit:dateType/cit:CI_DateTypeCode/@codeListValue = 'creation']/cit:date) > 0">
                             <xsl:attribute name="dateAccessioned">
-                                <xsl:value-of select="mdb:dateInfo/cit:CI_Date/cit:date[following-sibling::cit:dateType/cit:CI_DateTypeCode/@codeListValue = 'creation']"/>
+                                <xsl:value-of select="mdb:dateInfo/cit:CI_Date[cit:dateType/cit:CI_DateTypeCode/@codeListValue = 'creation']/cit:date"/>
                             </xsl:attribute>  
                         </xsl:if>
                 </xsl:if>
                 
-                <xsl:apply-templates select="mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:identifier/mcc:MD_Identifier/mcc:code[contains(following-sibling::mcc:codeSpace, 'ga-dataSetURI') and (string-length(.) > 0)]" mode="registryObject_identifier"/>
+                <xsl:apply-templates select="mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:identifier/mcc:MD_Identifier/mcc:code[contains(lower-case(.), 'doi') and (string-length(.) > 0)]" mode="registryObject_identifier"/>
+                <xsl:apply-templates select="mdb:distributionInfo/mrd:MD_Distribution/mrd:transferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:description), 'link to data')]/cit:linkage[contains(lower-case(.), 'doi') and (string-length(.) > 0)]" mode="registryObject_identifier"/>
+                <xsl:apply-templates select="mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:identifier/mcc:MD_Identifier[contains(mcc:codeSpace, 'ga-dataSetURI')]/mcc:code[(string-length(.) > 0)]" mode="registryObject_identifier"/>
+                
                 <!-- ToDo - ensure that this will be to metadata landing page?  -->    
-                <xsl:apply-templates select="mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:identifier/mcc:MD_Identifier/mcc:code[contains(following-sibling::mcc:codeSpace, 'ga-dataSetURI') and (string-length(.) > 0)]" mode="registryObject_location"/>
+                <!--xsl:apply-templates select="mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:identifier/mcc:MD_Identifier[contains(mcc:codeSpace, 'ga-dataSetURI')]/mcc:code[(string-length(.) > 0)]" mode="registryObject_location"/-->
                 <xsl:apply-templates select="mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code" mode="registryObject_identifier_global"/>
-                <xsl:apply-templates select="mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:identifier/mcc:MD_Identifier/mcc:code[contains(following-sibling::mcc:codeSpace, 'ga-dataSetURI') and (string-length(.) > 0)]" mode="registryObject_relatedInfo_data_via_service"/>
+                <xsl:apply-templates select="mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code" mode="registryObject_location"/>
+                <xsl:apply-templates select="mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:identifier/mcc:MD_Identifier[contains(mcc:codeSpace, 'ga-dataSetURI')]/mcc:code[(string-length(.) > 0)]" mode="registryObject_relatedInfo_data_via_service"/>
                     
                 <xsl:apply-templates select="mdb:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="registryObject">
                     <xsl:with-param name="originatingSource" select="$originatingSource"/>
                 </xsl:apply-templates>
+            </xsl:element>
                 
-                <xsl:apply-templates select="mdb:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="relatedRegistryObjects">
-                    <xsl:with-param name="originatingSource" select="$originatingSource"/>
-                </xsl:apply-templates>
-                    
-                </xsl:element>
-            </registryObject>
+        </registryObject>
+        
+        <xsl:apply-templates select="mdb:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="relatedRegistryObjects">
+            <xsl:with-param name="originatingSource" select="$originatingSource"/>
+        </xsl:apply-templates>
 
-            <xsl:apply-templates></xsl:apply-templates>
-
-            
     </xsl:template>
     
     <xsl:template match="*[contains(lower-case(name()),'identification')]" mode="registryObject">
@@ -195,25 +181,23 @@
         <xsl:for-each
             select="mri:citation/cit:CI_Citation/cit:citedResponsibleParty/cit:CI_Responsibility[(string-length(normalize-space(cit:party/cit:CI_Individual/cit:name))) > 0] |
             ancestor::mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility[(string-length(normalize-space(cit:party/cit:CI_Individual/cit:name))) > 0] |
-            mri:pointOfContact/cit:CI_Responsibility[(string-length(normalize-space(cit:party/cit:CI_Individual/cit:name))) > 0] |
             ancestor::mdb:MD_Metadata/mdb:contact/cit:CI_Responsibility[(string-length(normalize-space(cit:party/cit:CI_Individual/cit:name))) > 0]">
             <xsl:apply-templates select="." mode="registryObject_related_object"/>
         </xsl:for-each>
         
         <xsl:for-each
-            select="mri:citation/cit:CI_Citation/cit:citedResponsibleParty/cit:CI_Responsibility[((string-length(normalize-space(cit:party/cit:CI_Organisation/cit:name))) > 0)] |
-            ancestor::mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility[((string-length(normalize-space(cit:party/cit:CI_Organisation/cit:name))) > 0)] |
-            mri:pointOfContact/cit:CI_Responsibility[((string-length(normalize-space(cit:party/cit:CI_Organisation/cit:name))) > 0)] |
-            ancestor::mdb:MD_Metadata/mdb:contact/cit:CI_Responsibility[((string-length(normalize-space(cit:party/cit:CI_Organisation/cit:name))) > 0)]">
+            select="mri:citation/cit:CI_Citation/cit:citedResponsibleParty/cit:CI_Responsibility[(string-length(normalize-space(cit:party/cit:CI_Organisation/cit:name)) > 0)] |
+            ancestor::mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility[(string-length(normalize-space(cit:party/cit:CI_Organisation/cit:name)) > 0)] |
+            ancestor::mdb:MD_Metadata/mdb:contact/cit:CI_Responsibility[(string-length(normalize-space(cit:party/cit:CI_Organisation/cit:name)) > 0)]">
             <xsl:apply-templates select="." mode="registryObject_related_object"/>
         </xsl:for-each>
         
         <xsl:apply-templates
-            select="mri:topicCategory/mri:MD_TopicCategoryCode"
+            select="mri:topicCategory/mri:MD_TopicCategoryCode[string-length(.) > 0]"
             mode="registryObject_subject"/>
         
         <xsl:apply-templates
-            select="mri:descriptiveKeywords/mri:MD_Keywords/mri:keyword"
+            select="mri:descriptiveKeywords/mri:MD_Keywords/mri:keyword[string-length(.) > 0]"
             mode="registryObject_subject"/>
         
          <xsl:apply-templates
@@ -236,9 +220,11 @@
            mode="registryObject_rights_access"/>
         
         
-        <xsl:apply-templates select="ancestor::mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorTransferOptions" mode="registryObject_rights_access"/>
+        <xsl:apply-templates
+            select="ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:transferOptions/mrd:MD_DigitalTransferOptions[mrd:onLine/cit:CI_OnlineResource/cit:function/cit:CI_OnLineFunctionCode/@codeListValue = 'download']" mode="registryObject_rights_access"/>
         
        <xsl:if test="custom:getRegistryObjectTypeSubType(ancestor::mdb:MD_Metadata/mdb:metadataScope/mdb:MD_MetadataScope/mdb:resourceScope/mcc:MD_ScopeCode/@codeListValue)[1] = 'collection'">
+            <xsl:apply-templates select="mdb:dateInfo/cit:CI_Date/cit:date" mode="registryObject_dates"/>
             <xsl:apply-templates select="mri:citation/cit:CI_Citation/cit:date" mode="registryObject_dates"/>
             <xsl:apply-templates select="mri:citation/cit:CI_Citation" mode="registryObject_citationMetadata_citationInfo">
                 <xsl:with-param name="originatingSource" select="$originatingSource"></xsl:with-param>
@@ -254,30 +240,18 @@
     
     <xsl:template match="*[contains(lower-case(name()),'identification')]" mode="relatedRegistryObjects">
         <xsl:param name="originatingSource"/>
+  
         <xsl:for-each
-            select="mri:citation/cit:CI_Citation/cit:citedResponsibleParty/cit:CI_Responsibility[(string-length(normalize-space(cit:party/cit:CI_Individual/cit:name))) > 0] |
-            ancestor::mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility[(string-length(normalize-space(cit:party/cit:CI_Individual/cit:name))) > 0] |
-            mri:pointOfContact/cit:CI_Responsibility[string-length(normalize-space(cit:party/cit:CI_Individual/cit:name)) > 0] |
-            ancestor::mdb:MD_Metadata/mdb:contact/cit:CI_Responsibility[string-length(normalize-space(cit:party/cit:CI_Individual/cit:name)) > 0]">
-            <xsl:call-template name="partyPerson">
-                <xsl:with-param name="originatingSource" select="$originatingSource"/>
-            </xsl:call-template>
-        </xsl:for-each>
-        
-        <xsl:for-each
-            select="mri:citation/cit:CI_Citation/cit:citedResponsibleParty/cit:CI_Responsibility[(string-length(normalize-space(cit:party/cit:CI_Organisation/cit:name))) > 0] |
-            ancestor::mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility[(string-length(normalize-space(cit:party/cit:CI_Organisation/cit:name))) > 0] |
-            mri:pointOfContact/cit:CI_Responsibility[string-length(normalize-space(cit:party/cit:CI_Organisation/cit:name)) > 0] |
-            ancestor::mdb:MD_Metadata/mdb:contact/cit:CI_Responsibility[string-length(normalize-space(cit:party/cit:CI_Organisation/cit:name)) > 0]">
-            <xsl:call-template name="partyGroup">
+            select="mri:citation/cit:CI_Citation/cit:citedResponsibleParty/cit:CI_Responsibility/cit:party/*[string-length(normalize-space(cit:name)) > 0] |
+            ancestor::mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility/cit:party/*[string-length(normalize-space(cit:name)) > 0] |
+            ancestor::mdb:MD_Metadata/mdb:contact/cit:CI_Responsibility/cit:party/*[string-length(normalize-space(cit:name)) > 0]">
+            <xsl:call-template name="party">
                 <xsl:with-param name="originatingSource" select="$originatingSource"/>
             </xsl:call-template>
         </xsl:for-each>
     </xsl:template>
     
     
-    
-
     <!-- =========================================== -->
     <!-- RegistryObject RegistryObject - Child Templates -->
     <!-- =========================================== -->
@@ -289,22 +263,26 @@
         </key>
     </xsl:template>
 
-    <xsl:template match="mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code" mode="registryObject_identifier_global">
-        <xsl:if test="string-length(normalize-space(.)) > 0">
-            <identifier type="global">
-                <xsl:value-of select="."/>
-            </identifier>
-        </xsl:if>
+    <xsl:template match="mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code[string-length(.) > 0]" mode="registryObject_identifier_global">
+        <identifier type="global">
+            <xsl:value-of select="."/>
+        </identifier>
     </xsl:template>
    
     <!-- RegistryObject - Identifier Element  -->
     <xsl:template match="mcc:code" mode="registryObject_identifier">
-        <xsl:if test="string-length(normalize-space(.)) > 0">
-            <identifier>
-                <xsl:attribute name="type" select="custom:getIdentifierType"/>
-                <xsl:value-of select="normalize-space(.)"/>
-            </identifier>
-        </xsl:if>
+        <identifier>
+            <xsl:attribute name="type" select="custom:getIdentifierType"/>
+            <xsl:value-of select="normalize-space(.)"/>
+        </identifier>
+    </xsl:template>
+    
+    <!-- RegistryObject - Identifier Element  -->
+    <xsl:template match="cit:linkage" mode="registryObject_identifier">
+        <identifier>
+            <xsl:attribute name="type" select="custom:getIdentifierType"/>
+            <xsl:value-of select="normalize-space(.)"/>
+        </identifier>
     </xsl:template>
     
     <xsl:template match="mcc:code" mode="registryObject_location">
@@ -318,7 +296,7 @@
                         <xsl:text>landingPage</xsl:text>
                     </xsl:attribute>
                     <value>
-                        <xsl:value-of select="."/>
+                        <xsl:value-of select="concat('http://', $global_baseURI, $global_path, .)"/>
                     </value>
                 </electronic>
             </address>
@@ -327,9 +305,7 @@
     
 
     <!-- RegistryObject - Name Element  -->
-    <xsl:template
-        match="mri:citation/cit:CI_Citation/cit:title"
-        mode="registryObject_name">
+    <xsl:template match="mri:citation/cit:CI_Citation/cit:title" mode="registryObject_name">
         <xsl:if test="string-length(normalize-space(.)) > 0">
           <name>
               <xsl:attribute name="type">
@@ -345,8 +321,7 @@
     <!-- RegistryObject - Dates Element  -->
     <xsl:template match="cit:date" mode="registryObject_dates">
         <xsl:variable name="dateValue" select="normalize-space(cit:CI_Date/cit:date/gco:DateTime)"/>
-        <xsl:variable name="dateCode"
-            select="normalize-space(cit:CI_Date/cit:dateType/cit:CI_DateTypeCode/@codeListValue)"/>
+        <xsl:variable name="dateCode" select="normalize-space(cit:CI_Date/cit:dateType/cit:CI_DateTypeCode/@codeListValue)"/>
         <xsl:variable name="transformedDateCode">
             <xsl:choose>
                 <xsl:when test="contains(lower-case($dateCode), 'creation')">
@@ -361,10 +336,7 @@
             </xsl:choose>
         </xsl:variable>
 
-        <xsl:if
-            test="
-            (string-length($dateValue) > 0) and
-            (string-length($transformedDateCode) > 0)">
+        <xsl:if test="(string-length($dateValue) > 0) and (string-length($transformedDateCode) > 0)">
             <dates>
                 <xsl:attribute name="type">
                     <xsl:value-of select="$transformedDateCode"/>
@@ -394,34 +366,31 @@
                     <xsl:attribute name="type" select="$role"/>
                 </relation>
              </relatedObject>
+            
+            <xsl:for-each select="*/cit:individual/cit:CI_Individual">
+                <relatedObject>
+                    <key>
+                        <xsl:value-of select="concat($global_acronym, '/', translate(normalize-space(cit:name),' ',''))"/>
+                    </key>
+                    <relation>
+                        <xsl:attribute name="type" select="$role"/>
+                    </relation>
+                </relatedObject>
+            </xsl:for-each>
         </xsl:for-each>
             
-        <xsl:for-each select="cit:individual/cit:CI_Individual">
-            <relatedObject>
-                <key>
-                    <xsl:value-of select="concat($global_acronym, '/', translate(normalize-space(cit:name),' ',''))"/>
-                </key>
-                <relation>
-                    <xsl:attribute name="type" select="$role"/>
-                </relation>
-            </relatedObject>
-        </xsl:for-each>
     </xsl:template>
     
     <xsl:template match="mri:MD_TopicCategoryCode" mode="registryObject_subject">
-        <xsl:if test="string-length(normalize-space(.)) > 0">
-            <subject type="local">
-                <xsl:value-of select="."></xsl:value-of>
-            </subject>
-        </xsl:if>
+        <subject type="local">
+            <xsl:value-of select="."></xsl:value-of>
+        </subject>
     </xsl:template>
 
     <xsl:template match="mri:keyword" mode="registryObject_subject">
-        <xsl:if test="string-length(normalize-space(.)) > 0">
-            <subject type="local">
-                <xsl:value-of select="."></xsl:value-of>
-            </subject>
-        </xsl:if>
+        <subject type="local">
+            <xsl:value-of select="."></xsl:value-of>
+        </subject>
     </xsl:template>
     
     <!-- RegistryObject - Decription Element -->
@@ -533,7 +502,40 @@
     
    <!-- RegistryObject - Rights License -->
     <xsl:template match="mco:MD_LegalConstraints" mode="registryObject_rights_license">
-        <xsl:value-of select="mco:otherConstraints"/>
+        <rights>
+            <licence>
+                
+                <xsl:variable name="inputTransformed" select="normalize-space(replace(replace(mco:otherConstraints, 'icence', 'icense', 'i'), '[\d.]+', ''))"/>
+                <xsl:variable name="codeDefinition" select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCodeAustralia' or @gml:id='LicenseCodeInternational']/gmx:codeEntry/gmx:CodeDefinition[normalize-space(replace(gml:name, '\{n\}', ' ')) = $inputTransformed]"/>
+                
+                <xsl:variable name="licenceVersion" as="xs:string*">
+                    <xsl:analyze-string select="normalize-space(mco:otherConstraints)"
+                        regex="[\d.]+">
+                        <xsl:matching-substring>
+                            <xsl:value-of select="regex-group(0)"/>
+                        </xsl:matching-substring>
+                    </xsl:analyze-string>
+                </xsl:variable>
+                
+                <xsl:variable name="licenceURI">
+                    <xsl:value-of select="replace($codeDefinition/gml:remarks, '\{n\}', $licenceVersion)"/>
+                </xsl:variable>
+   
+                <xsl:message select="concat('licenceURI : ', $licenceURI)"/>
+                
+               <xsl:if test="string-length($licenceURI) and count($licenceVersion) > 0">
+                    <xsl:attribute name="rightsUri">
+                        <xsl:value-of select="$licenceURI"/>
+                    </xsl:attribute>
+               </xsl:if>
+                
+                <xsl:attribute name="type">
+                    <xsl:value-of select="$codeDefinition/gml:identifier"/>
+                </xsl:attribute>
+
+                <xsl:value-of select="mco:otherConstraints"/>
+            </licence>
+        </rights>
     </xsl:template>
     
     <!-- RegistryObject - Rights Statement Access -->
@@ -541,16 +543,11 @@
         
     </xsl:template>
     
-    <xsl:template match="mrd:distributorTransferOptions" mode="registryObject_rights_access">
-        <xsl:for-each select="mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource/cit:function/cit:CI_OnLineFunctionCode/@codeListValue">
-            <xsl:if test="contains(lower-case(.), 'download')">
-                <rights>
-                    <accessRights type="open"/>
-                </rights>
-            </xsl:if>
-        </xsl:for-each>
+    <xsl:template match="mrd:MD_DigitalTransferOptions" mode="registryObject_rights_access">
+        <rights>
+            <accessRights type="open"/>
+        </rights>
     </xsl:template>
-    
     
     
     <!-- RegistryObject - CitationInfo Element -->
@@ -562,49 +559,41 @@
        <xsl:variable name="citedResponsibleParty_sequence" select="cit:citedResponsibleParty/cit:CI_Responsibility" as="node()*"/>
        <xsl:message select="concat('Count citedResponsibleParty_sequence: ', count($citedResponsibleParty_sequence))"/>
        <xsl:message select="concat('Count distributing responsibilities: ', count(../../../../mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility))"/>
-       <xsl:message select="concat('Count point of contact responsibilities: ', count( ../../mri:pointOfContact/cit:CI_Responsibility))"/>
         
        <xsl:variable name="principalInvestigator_sequence" as="node()*" select="
             cit:citedResponsibleParty/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'principalInvestigator'] |
-            ../../../../mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'principalInvestigator'] |
-            ../../mri:pointOfContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'principalInvestigator']"/>
+            ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'principalInvestigator']"/>
         
         <xsl:variable name="author_sequence" as="node()*" select="
             cit:citedResponsibleParty/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'author'] |
-            ../../../../mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'author'] |
-            ../../mri:pointOfContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'author']"/>
+            ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'author']"/>
         
         <xsl:variable name="contentexpert_sequence" as="node()*" select="
             cit:citedResponsibleParty/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'contentexpert'] |
-            ../../../../mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'contentexpert'] |
-            ../../mri:pointOfContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'contentexpert']"/>
+            ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'contentexpert']"/>
         
         <xsl:variable name="coInvestigator_sequence" as="node()*" select="
             cit:citedResponsibleParty/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'coInvestigator'] |
-            ../../../../mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'coInvestigator'] |
-            ../../mri:pointOfContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'coInvestigator']"/>
+            ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'coInvestigator']"/>
         
         <xsl:variable name="publisher_sequence" as="node()*" select="
             cit:citedResponsibleParty/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'publisher'] |
-            ../../../../mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'publisher'] |
-            ../../mri:pointOfContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'publisher']"/>  
+            ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'publisher']"/>  
         
         <xsl:variable name="owner_sequence" as="node()*" select="
             cit:citedResponsibleParty/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'owner'] |
-            ../../../../mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'owner'] |
-            ../../mri:pointOfContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'owner']"/>  
+            ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'owner']"/>  
         
         <xsl:variable name="publisher_sequence" as="node()*" select="
             cit:citedResponsibleParty/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'publisher'] |
-            ../../../../mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'publisher'] |
-            ../../mri:pointOfContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'publisher']"/>
+            ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'publisher']"/>
         
         <xsl:variable name="allContributorName_sequence" as="xs:string*">
            <xsl:for-each select="$principalInvestigator_sequence">
                <xsl:choose>
                    <xsl:when test="string-length(cit:party/cit:CI_Individual/cit:name) = 0">
                        <xsl:choose>
-                            <xsl:when test="string-length(cit:party/cit:CI_Organisation/cit:individual/CI_Individual/cit:name) > 0">
+                           <xsl:when test="string-length(cit:party/cit:CI_Organisation/cit:individual/CI_Individual/cit:name) > 0">
                                <xsl:value-of select="cit:party/cit:CI_Organisation/cit:individual/CI_Individual/cit:name"/>
                             </xsl:when>
                             <xsl:otherwise>
@@ -705,85 +694,84 @@
             <xsl:message select="concat('Contributor name: ', .)"/>
         </xsl:for-each>
         
-        <!-- We can only accept one DOI; howerver, first we will find all -->
-        
-        <xsl:variable name = "doiIdentifier_sequence" as="xs:string*" select="cit:identifier/mcc:MD_Identifier/mcc:code[contains(lower-case(.), 'doi')]"/>
-        <xsl:variable name = "dataSetUri_sequence" as="xs:string*" select="cit:identifier/mcc:MD_Identifier/mcc:code[contains(following-sibling::mcc:codeSpace, 'ga-dataSetURI')]"/>
-        <xsl:variable name = "otherId_sequence" as="xs:string*" select="cit:identifier/mcc:MD_Identifier/mcc:code[not(contains(following-sibling::mcc:codeSpace, 'ga-dataSetURI'))]"/>
-        
-        <xsl:variable name="identifierToUse">
-            <xsl:choose>
-                <xsl:when test="count($doiIdentifier_sequence) and (string-length($doiIdentifier_sequence[1]) > 0)">
-                    <xsl:value-of select="$doiIdentifier_sequence[1]"/>   
-                </xsl:when>
-                <xsl:when test="count($dataSetUri_sequence) and (string-length($dataSetUri_sequence[1]) > 0)">
-                    <xsl:value-of select="$dataSetUri_sequence[1]"/>   
-                </xsl:when>
-                
-                <xsl:when test="count($otherId_sequence) and (string-length($otherId_sequence[1]) > 0)">
-                    <xsl:value-of select="$otherId_sequence[1]"/>   
-                </xsl:when>
-                <xsl:otherwise>
-                    <xsl:value-of select="concat('http://', $global_baseURI, $global_path, ancestor::mdb:MD_Metadata/mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code)"/>
-                </xsl:otherwise>
-            </xsl:choose>
-        </xsl:variable>
-          
         <xsl:if test="count($allContributorName_sequence) > 0">
            <citationInfo>
                 <citationMetadata>
-                    <xsl:if test="string-length($identifierToUse) > 0">
-                        <identifier>
-                            <xsl:attribute name="type" select="custom:getIdentifierType($identifierToUse)"/>
-                            <xsl:value-of select='$identifierToUse'/>
-                        </identifier>
-                    </xsl:if>
-    
+                    <identifier>
+                        <xsl:choose>
+                            <xsl:when 
+                                test="count(cit:identifier/mcc:MD_Identifier/mcc:code[contains(lower-case(.), 'doi')]) 
+                                and (string-length(cit:identifier/mcc:MD_Identifier/mcc:code[contains(lower-case(.), 'doi')][1]) > 0)">
+                                <xsl:attribute name="type" select="'doi'"/>
+                                <xsl:value-of select="cit:identifier/mcc:MD_Identifier/mcc:code[contains(lower-case(.), 'doi')][1]"/>  
+                            </xsl:when>
+                            <xsl:when 
+                                test="count(ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:transferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:description), 'link to data')]/cit:linkage[contains(lower-case(.), 'doi')]) and 
+                                (string-length(ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:transferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:description), 'link to data')]/cit:linkage[contains(lower-case(.), 'doi')][1]) > 0)">
+                                <xsl:attribute
+                                    name="type" 
+                                    select="'doi'"/>
+                                <xsl:value-of 
+                                    select="ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:transferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:description), 'link to data')]/cit:linkage[contains(lower-case(.), 'doi')][1]"/>   
+                            </xsl:when>
+                            <xsl:when 
+                                test="count(cit:identifier/mcc:MD_Identifier[contains(mcc:codeSpace, 'ga-dataSetURI')]/mcc:code) and (string-length(cit:identifier/mcc:MD_Identifier[contains(mcc:codeSpace, 'ga-dataSetURI')]/mcc:code[1]) > 0)">
+                                <xsl:attribute 
+                                    name="type" 
+                                    select="'uri'"/>
+                                <xsl:value-of 
+                                    select="cit:identifier/mcc:MD_Identifier[contains(mcc:codeSpace, 'ga-dataSetURI')]/mcc:code[1]"/>   
+                            </xsl:when>
+                            <xsl:when 
+                                test="count(cit:identifier/mcc:MD_Identifier[not(contains(mcc:codeSpace, 'ga-dataSetURI'))]/mcc:code) and (string-length(cit:identifier/mcc:MD_Identifier[not(contains(mcc:codeSpace, 'ga-dataSetURI'))]/mcc:code) > 0)">
+                                <xsl:attribute 
+                                    name="type" 
+                                    select="'uri'"/>
+                                <xsl:value-of 
+                                    select="cit:identifier/mcc:MD_Identifier[not(contains(mcc:codeSpace, 'ga-dataSetURI'))]/mcc:code"/>   
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:attribute name="type" select="'uri'"/>
+                                <xsl:value-of select="concat('http://', $global_baseURI, $global_path, ancestor::mdb:MD_Metadata/mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code)"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </identifier>
+                 
                     <title>
                         <xsl:value-of select="cit:title"/>
                     </title>
                     
-                    <xsl:variable name="codelist" select="$gmdCodelists/codelists/codelist[@name = 'gmd:CI_DateTypeCode']"/>
-                    
-                    <xsl:for-each select="cit:date/cit:CI_Date">
-                        <xsl:variable name="dateType">
-                            <xsl:if test="count($CI_Date_sequence) > 0">
-                                <xsl:variable name="codevalue" select="$CI_Date_sequence[1]/cit:dateType/cit:CI_DateTypeCode/@codeListValue"/>
-                                <xsl:value-of select="$codelist/entry[code = $codevalue]/description"/>
-                            </xsl:if>
-                        </xsl:variable>
-                        
-                        <xsl:variable name="dateValue">
-                            <xsl:if test="count($CI_Date_sequence)">
-                                <xsl:if test="string-length($CI_Date_sequence[1]/cit:date/gco:DateTime) > 3">
-                                    <xsl:value-of select="substring($CI_Date_sequence[1]/cit:date/gco:DateTime, 1, 4)"/>
-                                </xsl:if>
-                                <xsl:if test="string-length($CI_Date_sequence[1]/cit:date/gco:DateTime) > 3">
-                                    <xsl:value-of select="substring($CI_Date_sequence[1]/cit:date/gco:DateTime, 1, 4)"/>
-                                </xsl:if>
-                            </xsl:if>
-                        </xsl:variable>
-                        
-                         <xsl:choose>
-                            <xsl:when test="(string-length($dateType) > 0) and (string-length($dateValue) > 0)">
-                                <date>
-                                    <xsl:attribute name="type">
-                                        <xsl:value-of select="$dateType"/>
-                                    </xsl:attribute>
-                                    <xsl:value-of select="$dateValue"/>
-                                </date>
+                   <date>
+                        <xsl:attribute name="type">
+                            <xsl:text>publicationDate</xsl:text>
+                        </xsl:attribute>
+                        <xsl:choose>
+                            <xsl:when 
+                                test="string-length(cit:date/cit:CI_Date[cit:dateType/cit:CI_DateTypeCode/@codeListValue = 'revision']/cit:date/gco:DateTime) > 3">
+                                <xsl:value-of select="substring(cit:date/cit:CI_Date[cit:dateType/cit:CI_DateTypeCode/@codeListValue = 'revision']/cit:date/gco:DateTime, 1, 4)"/>
                             </xsl:when>
-                             <xsl:when test="string-length(ancestor::mdb:MD_Metadata/mdb:dateInfo/cit:CI_Date/cit:date[following-sibling::cit:dateType/cit:CI_DateTypeCode/@codeListValue = 'publication']) > 3">
-                                <date>
-                                    <xsl:attribute name="type">
-                                        <xsl:text>publicationDate</xsl:text>
-                                    </xsl:attribute>
-                                    <xsl:value-of select="substring(ancestor::mdb:MD_Metadata/mdb:dateInfo/cit:CI_Date/cit:date[following-sibling::cit:dateType/cit:CI_DateTypeCode/@codeListValue = 'publication'], 1, 4)"/>
-                                </date>
+                            <xsl:when 
+                                test="string-length(cit:date/cit:CI_Date[cit:dateType/cit:CI_DateTypeCode/@codeListValue = 'publication']/cit:date/gco:DateTime) > 3">
+                                <xsl:value-of select="substring(cit:date/cit:CI_Date[cit:dateType/cit:CI_DateTypeCode/@codeListValue = 'publication']/cit:date/gco:DateTime, 1, 4)"/>
                             </xsl:when>
-                           
-                         </xsl:choose>
-                        <c.
+                            <xsl:when 
+                                test="string-length(cit:date/cit:CI_Date[cit:dateType/cit:CI_DateTypeCode/@codeListValue = 'creation']/cit:date/gco:DateTime) > 3">
+                                <xsl:value-of select="substring(cit:date/cit:CI_Date[cit:dateType/cit:CI_DateTypeCode/@codeListValue = 'creation']/cit:date/gco:DateTime, 1, 4)"/>
+                            </xsl:when>
+                            <xsl:when 
+                                test="string-length(ancestor::mdb:MD_Metadata/mdb:dateInfo/cit:CI_Date[cit:dateType/cit:CI_DateTypeCode/@codeListValue = 'revision']/cit:date/gco:DateTime) > 3">
+                                <xsl:value-of select="ancestor::mdb:MD_Metadata/mdb:dateInfo/cit:CI_Date[cit:dateType/cit:CI_DateTypeCode/@codeListValue = 'revision']/cit:date/gco:DateTime"/>
+                            </xsl:when>
+                            <xsl:when 
+                                test="string-length(ancestor::mdb:MD_Metadata/mdb:dateInfo/cit:CI_Date[cit:dateType/cit:CI_DateTypeCode/@codeListValue = 'publication']/cit:date/gco:DateTime) > 3">
+                                <xsl:value-of select="ancestor::mdb:MD_Metadata/mdb:dateInfo/cit:CI_Date[cit:dateType/cit:CI_DateTypeCode/@codeListValue = 'publication']/cit:date/gco:DateTime"/>
+                            </xsl:when>
+                            <xsl:when 
+                                test="string-length(ancestor::mdb:MD_Metadata/mdb:dateInfo/cit:CI_Date[cit:dateType/cit:CI_DateTypeCode/@codeListValue = 'creation']/cit:date/gco:DateTime) > 3">
+                                <xsl:value-of select="ancestor::mdb:MD_Metadata/mdb:dateInfo/cit:CI_Date[cit:dateType/cit:CI_DateTypeCode/@codeListValue = 'creation']/cit:date/gco:DateTime"/>
+                            </xsl:when>
+                            </xsl:choose>
+                    </date>
                     
                   <!-- If there is more than one contributor, and publisher 
                   name is within contributor list, remove it -->
@@ -837,82 +825,53 @@
     <!-- Party RegistryObject - Child Templates -->
     <!-- ====================================== -->
 
-    <!-- Party Registry Object (Individuals (person) and Organisations (group)) -->
-    <xsl:template name="partyPerson">
+    <xsl:template name="party">
         <xsl:param name="originatingSource"/>
-        
-        <xsl:for-each select="cit:party">
-          
-            <registryObject group="{$global_group}">
-    
-              <key>
-                  <xsl:value-of select="concat($global_acronym, '/', translate(normalize-space(cit:CI_Individual/cit:name),' ',''))"/>
-              </key>
-             
-              <originatingSource>
-                  <xsl:value-of select="$originatingSource"/>
-              </originatingSource> 
-               
-                <party type="person">
-                    
-                    <xsl:apply-templates select="cit:CI_Organisation/cit:contactInfo/cit:CI_Contact/cit:onlineResource/cit:CI_OnlineResource"/>
-                    
-                    <name type="primary">
-                         <namePart>
-                             <xsl:value-of select="normalize-space(cit:CI_Individual/cit:name)"/>
-                         </namePart>
-                    </name>
-                    
-                    <xsl:apply-templates select="cit:CI_Organisation/cit:contactInfo/cit:CI_Contact/cit:address/cit:CI_Address"/>
-                    <xsl:apply-templates select="cit:CI_Organisation/cit:contactInfo/cit:CI_Contact/cit:phone/cit:CI_Telephone"/>
-        
-                </party>
-            </registryObject>
-        </xsl:for-each>
-    </xsl:template>
-        
-    <!-- Party Registry Object (Individuals (person) and Organisations (group)) -->
-    <xsl:template name="partyGroup">
-        <xsl:param name="originatingSource"/>
-        
-        <xsl:for-each select="cit:party">
-        
-            <registryObject group="{$global_group}">
+       
+        <registryObject group="{$global_group}">
+            
+            <key>
+                <xsl:value-of select="concat($global_acronym, '/', translate(normalize-space(cit:name),' ',''))"/>
+            </key>
+            
+            <originatingSource>
+                <xsl:value-of select="$originatingSource"/>
+            </originatingSource> 
+            
+            <party type="group">
+                <xsl:apply-templates select="cit:contactInfo/cit:CI_Contact/cit:onlineResource/cit:CI_OnlineResource"/>
                 
-                <key>
-                    <xsl:value-of select="concat($global_acronym, '/', translate(normalize-space(cit:CI_Organisation/cit:name),' ',''))"/>
-                </key>
+                <name type="primary">
+                    <namePart>
+                        <xsl:value-of select="normalize-space(cit:name)"/>
+                    </namePart>
+                </name>
                 
-                <originatingSource>
-                    <xsl:value-of select="$originatingSource"/>
-                </originatingSource> 
+                <xsl:apply-templates select="cit:contactInfo/cit:CI_Contact/cit:address/cit:CI_Address"/>
+                <xsl:apply-templates select="cit:contactInfo/cit:CI_Contact/cit:phone/cit:CI_Telephone"/>
+                 
+                <xsl:if test="(count(cit:individual) > 0) and (string-length(cit:individual/cit:CI_Individual/cit:name) > 0)">
+                  <relatedObject>
+                      <key>
+                          <xsl:value-of select="concat($global_acronym, '/', translate(normalize-space(cit:individual/cit:CI_Individual/cit:name),' ',''))"/>
+                      </key>
+                      <relation type="hasMember"/>
+                  </relatedObject>
+                </xsl:if>
                 
-                <party type="group">
-                    <xsl:apply-templates select="cit:CI_Organisation/cit:contactInfo/cit:CI_Contact/cit:onlineResource/cit:CI_OnlineResource"/>
-                    
-                    <name type="primary">
-                        <namePart>
-                            <xsl:value-of select="normalize-space(cit:CI_Organisation/cit:name)"/>
-                        </namePart>
-                    </name>
-                    
-                    <xsl:apply-templates select="cit:CI_Organisation/cit:contactInfo/cit:CI_Contact/cit:address/cit:CI_Address"/>
-                    <xsl:apply-templates select="cit:CI_Organisation/cit:contactInfo/cit:CI_Contact/cit:phone/cit:CI_Telephone"/>
-                     
-                    <xsl:if test="(count(cit:CI_Organisation/cit:individual) > 0) and (string-length(cit:CI_Organisation/cit:individual/CI_Individual/cit:name) > 0)">
-                        <!-- Organisation has an individual -->
-                        <relatedObject>
-                            <key>
-                                <xsl:value-of select="concat($global_acronym, '/', translate(normalize-space(cit:CI_Organisation/cit:individual/CI_Individual/cit:name),' ',''))"/>
-                            </key>
-                            <relation type="hasMember"/>
-                        </relatedObject>
-                    </xsl:if>
-                    
-                </party>
-            </registryObject>
-        </xsl:for-each>
-    </xsl:template>
+            </party>
+        </registryObject>
+        
+        <xsl:if test="(count(cit:individual) > 0) and (string-length(cit:individual/cit:CI_Individual/cit:name) > 0)">
+            <!-- Organisation has an individual -->
+            
+            <xsl:for-each select="cit:individual/cit:CI_Individual">
+                <xsl:call-template name="party">
+                    <xsl:with-param name="originatingSource" select="$originatingSource"/>
+                </xsl:call-template>
+            </xsl:for-each>
+        </xsl:if>
+     </xsl:template>
     
     <xsl:template match="cit:CI_OnlineResource">
         <xsl:if test="string-length(cit:linkage) > 0">
@@ -970,28 +929,33 @@
             </xsl:for-each>
         </address>
     </location>
-</xsl:template>
-
+    </xsl:template>
 
     <xsl:template match="cit:CI_Telephone">
-        <xsl:for-each select="cit:number">
+        <xsl:for-each select=".[cit:numberType/cit:CI_TelephoneTypeCode/@codeListValue = 'facsimile']/cit:number">
             <location>
                 <address>
                     <physical type="streetAddress">
                         <addressPart>
-                            <xsl:choose>
-                                <xsl:when test="following-sibling::cit:numberType/cit:CI_TelephoneTypeCode/@codeListValue = 'facsimile'">
-                                    <xsl:attribute name="type">
-                                        <xsl:text>faxNumber</xsl:text>
-                                    </xsl:attribute>
-                                </xsl:when>
-                                <xsl:otherwise>
-                                     <xsl:attribute name="type">
-                                        <xsl:text>telephoneNumber</xsl:text>
-                                    </xsl:attribute>
-                                </xsl:otherwise>
-                            </xsl:choose>
-                            <xsl:value-of select="normalize-space(.)"/>
+                            <xsl:attribute name="type">
+                                <xsl:text>faxNumber</xsl:text>
+                            </xsl:attribute>
+                           <xsl:value-of select="normalize-space(.)"/>
+                        </addressPart>
+                    </physical>
+                </address>
+            </location>
+        </xsl:for-each>
+        
+        <xsl:for-each select=".[cit:numberType/cit:CI_TelephoneTypeCode/@codeListValue = 'voice']/cit:number">
+            <location>
+                <address>
+                    <physical type="streetAddress">
+                        <addressPart>
+                            <xsl:attribute name="type">
+                                <xsl:text>telephoneNumber</xsl:text>
+                            </xsl:attribute>
+                           <xsl:value-of select="normalize-space(.)"/>
                         </addressPart>
                     </physical>
                 </address>
