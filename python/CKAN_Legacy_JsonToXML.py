@@ -14,7 +14,8 @@ from xml.dom.minidom import Document
 # Get data source link from input
 usage = "usage: %prog [options] arg1"
 parser = OptionParser(usage=usage)
-parser.add_option("--URI", action="store", dest="URI", help="uri of all metadata in JSON, e.g. https://www.opengov.nsw.gov.au/publication.json")
+parser.add_option("--uri", action="store", dest="URI", help="uri of all metadata in JSON, e.g. https://www.opengov.nsw.gov.au/publication.json")
+parser.add_option("--outputFile", action="store", dest="outputFile", help="file name for output")
 
 (options, args) = parser.parse_args()
 
@@ -26,18 +27,17 @@ if not(options.URI):
 if len(options.URI) < 1:
     parser.error("Requires URI.  Try --help for usage")
     sys.exit(-1)
-    
-if not(options.outputDirectory):
-    parser.error("Requires outputDirectory.  Try --help for usage")
+
+if not(options.outputFile):
+    parser.error("Requires file name for output.  Try --help for usage")
     sys.exit(-1)
 
-if len(options.outputDirectory) < 1:
-    parser.error("Requires outputDirectory.  Try --help for usage")
+if len(options.outputFile) < 1:
+    parser.error("Requires file name for output.  Try --help for usage")
     sys.exit(-1)
 
 dataSetUri = options.URI
-outputDirectory = options.outputDirectory
+outputFile = options.outputFile
 
-outFileName = "JsonOut.xml"
-print("Out file: %s" % outFileName)
-JsonToXML.writeXmlFromJson(dataSetUri, outFileName)
+print("Out file: %s" % outputFile)
+JsonToXML.writeXmlFromJson(dataSetUri, outputFile)
