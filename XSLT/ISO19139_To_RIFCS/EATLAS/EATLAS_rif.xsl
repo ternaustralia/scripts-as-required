@@ -127,6 +127,8 @@
             <xsl:copy-of select="*:identificationInfo/*/*:pointOfContact"/>
          </xsl:variable>
         
+        
+        
         <xsl:variable name="contactNode_sequence" select="*:contact" as="node()*"/>
         
         <xsl:variable name="distributorContactNode_sequence" as="node()*" select="*:distributionInfo/*:MD_Distribution/*:distributor/*:MD_Distributor/*:distributorContact"/>
@@ -136,12 +138,12 @@
                 
                 <xsl:for-each select="$contactNode_sequence">
                     <xsl:variable name="contact" select="." as="node()"/>
-                    <xsl:copy-of select="customEATLAS:getOrganisationNameSequence($contact, null)"/>  
+                    <xsl:copy-of select="gmd:organisationName"/>  
                 </xsl:for-each>
                 
                 <xsl:for-each select="$pointOfContactNode_sequence">
                     <xsl:variable name="pointOfContact" select="." as="node()"/>
-                    <xsl:copy-of select="customEATLAS:getOrganisationNameSequence($pointOfContact, null)"/>  
+                    <xsl:copy-of select="gmd:organisationName"/>  
                 </xsl:for-each>
             </xsl:variable>
             
@@ -1515,7 +1517,7 @@
         </xsl:for-each>
         
     </xsl:function>
-    <!-- RegistryObject - CitationInfo Element -->
+    <!-- RegistryObject - sfo Element -->
     <xsl:template name="EATLAS_registryObject_citationMetadata_citationInfo">
         <xsl:param name="locationURL_sequence"/>
         <xsl:param name="originatingSource"/>
@@ -1525,6 +1527,8 @@
         <xsl:param name="distributorContactNode_sequence" as="node()*"/>
         <xsl:param name="metadataCreationDate"/>
         
+        <xsl:message select="concat('count pointOfContactNode_sequence :', count($pointOfContactNode_sequence))"/>
+        
         <xsl:variable name="CI_Citation" select="." as="node()"></xsl:variable>
         <xsl:variable name="citedResponsibleParty_sequence" select="$CI_Citation/*:citedResponsibleParty" as="node()*"></xsl:variable>
         
@@ -1533,22 +1537,22 @@
         <xsl:variable name="principalInvestigatorName_sequence" as="xs:string*">
             <xsl:if test="$citedResponsibleParty_sequence and (count($citedResponsibleParty_sequence) > 0)">
                 <xsl:for-each select="$citedResponsibleParty_sequence">
-                    <xsl:copy-of select="customEATLAS:getIndividualNameSequence(., 'principalInvestigator')"/>  
+                    <xsl:copy-of select="gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'principalInvestigator']/gmd:individualName"/>  
                 </xsl:for-each>
             </xsl:if>
             
             <xsl:for-each select="$pointOfContactNode_sequence">
-                <xsl:copy-of select="customEATLAS:getIndividualNameSequence(., 'principalInvestigator')"/>  
+                <xsl:copy-of select="gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'principalInvestigator']/gmd:individualName"/>  
             </xsl:for-each>
         
             <xsl:if test="$citedResponsibleParty_sequence and (count($citedResponsibleParty_sequence) > 0)">
                 <xsl:for-each select="$citedResponsibleParty_sequence">
-                    <xsl:copy-of  select="customEATLAS:getOrganisationNameNoIndividualSequence(., 'principalInvestigator')"/>  
+                    <xsl:copy-of  select="gmd:CI_ResponsibleParty[(gmd:role/gmd:CI_RoleCode/@codeListValue = 'principalInvestigator') and (string-length(gmd:individualName) = 0)]/gmd:organisationName"/>  
                 </xsl:for-each>
             </xsl:if>
             
             <xsl:for-each select="$pointOfContactNode_sequence">
-                <xsl:copy-of select="customEATLAS:getOrganisationNameNoIndividualSequence(., 'principalInvestigator')"/>
+                <xsl:copy-of select="gmd:CI_ResponsibleParty[(gmd:role/gmd:CI_RoleCode/@codeListValue = 'principalInvestigator') and (string-length(gmd:individualName) = 0)]/gmd:organisationName"/>
             </xsl:for-each>
             
         </xsl:variable>
@@ -1557,16 +1561,16 @@
       
             <xsl:if test="$citedResponsibleParty_sequence and (count($citedResponsibleParty_sequence) > 0)">
                 <xsl:for-each select="$citedResponsibleParty_sequence">
-                    <xsl:copy-of  select="customEATLAS:getOrganisationNameNoIndividualSequence(., 'publisher')"/>  
+                    <xsl:copy-of  select="gmd:CI_ResponsibleParty[(gmd:role/gmd:CI_RoleCode/@codeListValue = 'publisher') and (string-length(gmd:individualName) = 0)]/gmd:organisationName"/>  
                 </xsl:for-each>
             </xsl:if>
             
             <xsl:for-each select="$pointOfContactNode_sequence">
-                <xsl:copy-of select="customEATLAS:getOrganisationNameNoIndividualSequence(., 'publisher')"/>
+                <xsl:copy-of select="gmd:CI_ResponsibleParty[(gmd:role/gmd:CI_RoleCode/@codeListValue = 'publisher') and (string-length(gmd:individualName) = 0)]/gmd:organisationName"/>
             </xsl:for-each>
             
             <xsl:for-each select="$contactNode_sequence">
-                <xsl:copy-of select="customEATLAS:getOrganisationNameNoIndividualSequence(., 'publisher')"/>
+                <xsl:copy-of select="gmd:CI_ResponsibleParty[(gmd:role/gmd:CI_RoleCode/@codeListValue = 'publisher') and (string-length(gmd:individualName) = 0)]/gmd:organisationName"/>
             </xsl:for-each>
         </xsl:variable>
         
@@ -1574,16 +1578,16 @@
             
             <xsl:if test="$citedResponsibleParty_sequence and (count($citedResponsibleParty_sequence) > 0)">
                 <xsl:for-each select="$citedResponsibleParty_sequence">
-                    <xsl:copy-of  select="customEATLAS:getOrganisationNameNoIndividualSequence(., 'custodian')"/>  
+                    <xsl:copy-of  select="gmd:CI_ResponsibleParty[(gmd:role/gmd:CI_RoleCode/@codeListValue = 'custodian') and (string-length(gmd:individualName) = 0)]/gmd:organisationName"/>  
                 </xsl:for-each>
             </xsl:if>
             
            <xsl:for-each select="$pointOfContactNode_sequence">
-                <xsl:copy-of select="customEATLAS:getOrganisationNameNoIndividualSequence(., 'custodian')"/>
+               <xsl:copy-of select="gmd:CI_ResponsibleParty[(gmd:role/gmd:CI_RoleCode/@codeListValue = 'custodian') and (string-length(gmd:individualName) = 0)]/gmd:organisationName"/>
             </xsl:for-each>
             
             <xsl:for-each select="$contactNode_sequence">
-                <xsl:copy-of select="customEATLAS:getOrganisationNameNoIndividualSequence(., 'custodian')"/>
+                <xsl:copy-of select="gmd:CI_ResponsibleParty[(gmd:role/gmd:CI_RoleCode/@codeListValue = 'custodian') and (string-length(gmd:individualName) = 0)]/gmd:organisationName"/>
             </xsl:for-each>
             
         </xsl:variable>
@@ -1592,16 +1596,16 @@
             
             <xsl:if test="$citedResponsibleParty_sequence and (count($citedResponsibleParty_sequence) > 0)">
                 <xsl:for-each select="$citedResponsibleParty_sequence">
-                    <xsl:copy-of  select="customEATLAS:getOrganisationNameNoIndividualSequence(., 'resourceProvider')"/> 
+                    <xsl:copy-of  select="gmd:CI_ResponsibleParty[(gmd:role/gmd:CI_RoleCode/@codeListValue = 'resourceProvider') and (string-length(gmd:individualName) = 0)]/gmd:organisationName"/> 
                 </xsl:for-each>
             </xsl:if>
             
             <xsl:for-each select="$pointOfContactNode_sequence">
-                <xsl:copy-of select="customEATLAS:getOrganisationNameNoIndividualSequence(., 'resourceProvider')"/>
+                <xsl:copy-of select="gmd:CI_ResponsibleParty[(gmd:role/gmd:CI_RoleCode/@codeListValue = 'resourceProvider') and (string-length(gmd:individualName) = 0)]/gmd:organisationName"/>
             </xsl:for-each>
             
             <xsl:for-each select="$contactNode_sequence">
-                <xsl:copy-of select="customEATLAS:getOrganisationNameNoIndividualSequence(., 'resourceProvider')"/>
+                <xsl:copy-of select="gmd:CI_ResponsibleParty[(gmd:role/gmd:CI_RoleCode/@codeListValue = 'resourceProvider') and (string-length(gmd:individualName) = 0)]/gmd:organisationName"/>
             </xsl:for-each>
             
         </xsl:variable>
@@ -1610,16 +1614,16 @@
             
             <xsl:if test="$citedResponsibleParty_sequence and (count($citedResponsibleParty_sequence) > 0)">
                 <xsl:for-each select="$citedResponsibleParty_sequence">
-                    <xsl:copy-of  select="customEATLAS:getOrganisationNameNoIndividualSequence(., 'distributor')"/>  
+                    <xsl:copy-of  select="gmd:CI_ResponsibleParty[(gmd:role/gmd:CI_RoleCode/@codeListValue = 'distributor') and (string-length(gmd:individualName) = 0)]/gmd:organisationName"/>  
                 </xsl:for-each>
             </xsl:if>
             
             <xsl:for-each select="$pointOfContactNode_sequence">
-                <xsl:copy-of select="customEATLAS:getOrganisationNameNoIndividualSequence(., 'distributor')"/>
+                <xsl:copy-of select="gmd:CI_ResponsibleParty[(gmd:role/gmd:CI_RoleCode/@codeListValue = 'distributor') and (string-length(gmd:individualName) = 0)]/gmd:organisationName"/>
             </xsl:for-each>
             
             <xsl:for-each select="$contactNode_sequence">
-                <xsl:copy-of select="customEATLAS:getOrganisationNameNoIndividualSequence(., 'distributor')"/>
+                <xsl:copy-of select="gmd:CI_ResponsibleParty[(gmd:role/gmd:CI_RoleCode/@codeListValue = 'distributor') and (string-length(gmd:individualName) = 0)]/gmd:organisationName"/>
             </xsl:for-each>
             
         </xsl:variable>
@@ -1628,17 +1632,17 @@
         <xsl:variable name="coInvestigatorName_sequence" as="xs:string*">
             <xsl:if test="$citedResponsibleParty_sequence and (count($citedResponsibleParty_sequence) > 0)">
                 <xsl:for-each select="$citedResponsibleParty_sequence">
-                    <xsl:copy-of select="customEATLAS:getIndividualNameSequence(., 'coInvestigator')"/>  
+                    <xsl:copy-of select="gmd:CI_ResponsibleParty[(gmd:role/gmd:CI_RoleCode/@codeListValue = 'coInvestigator')]/gmd:individualName"/>  
                 </xsl:for-each>
             </xsl:if>
             
             <xsl:for-each select="$pointOfContactNode_sequence">
-                <xsl:copy-of select="customEATLAS:getIndividualNameSequence(., 'coInvestigator')"/>  
+                <xsl:copy-of select="gmd:CI_ResponsibleParty[(gmd:role/gmd:CI_RoleCode/@codeListValue = 'coInvestigator')]/gmd:individualName"/>  
             </xsl:for-each>
             
             <xsl:if test="$citedResponsibleParty_sequence and (count($citedResponsibleParty_sequence) > 0)">
                 <xsl:for-each select="$citedResponsibleParty_sequence">
-                    <xsl:copy-of  select="customEATLAS:getOrganisationNameNoIndividualSequence(., 'coInvestigator')"/>
+                    <xsl:copy-of  select="gmd:CI_ResponsibleParty[(gmd:role/gmd:CI_RoleCode/@codeListValue = 'coInvestigator')]/gmd:individualName"/>
                 </xsl:for-each>
             </xsl:if>
             
@@ -1646,26 +1650,28 @@
         
         <xsl:variable name="pointOfContactName_sequence" as="xs:string*">
             <xsl:for-each select="$pointOfContactNode_sequence">
-                <xsl:copy-of select="customEATLAS:getIndividualNameSequence(., 'pointOfContact')"/>  
+                <xsl:copy-of select="gmd:CI_ResponsibleParty[(gmd:role/gmd:CI_RoleCode/@codeListValue = 'pointOfContact')]/gmd:individualName"/>  
               </xsl:for-each>
             
            <xsl:for-each select="$pointOfContactNode_sequence">
-                <xsl:copy-of select="customEATLAS:getOrganisationNameNoIndividualSequence(., 'pointOfContact')"/>
+               <xsl:copy-of select="gmd:CI_ResponsibleParty[(gmd:role/gmd:CI_RoleCode/@codeListValue = 'pointOfContact') and (string-length(gmd:individualName) = 0)]/gmd:organisationName"/>
              </xsl:for-each>
         </xsl:variable>
+        
+        <xsl:message select="concat('count pointOfContactName_sequence :', count($pointOfContactName_sequence))"/>
         
         <xsl:variable name="allCitedPartyName_sequence" as="xs:string*">
             <!-- Get individual names, regardless of role -->
             <xsl:if test="$citedResponsibleParty_sequence and (count($citedResponsibleParty_sequence) > 0)">
                 <xsl:for-each select="$citedResponsibleParty_sequence">
-                    <xsl:copy-of select="customEATLAS:getIndividualNameSequence(., null)"/>  
+                    <xsl:copy-of select="gmd:CI_ResponsibleParty/gmd:individualName"/>  
                 </xsl:for-each>
             </xsl:if>
             
             <!-- Get organisation names, regardless of role -->
             <xsl:if test="$citedResponsibleParty_sequence and (count($citedResponsibleParty_sequence) > 0)">
                 <xsl:for-each select="$citedResponsibleParty_sequence">
-                    <xsl:copy-of  select="customEATLAS:getOrganisationNameNoIndividualSequence(., null)"/>  
+                    <xsl:copy-of  select="gmd:CI_ResponsibleParty[string-length(gmd:individualName) = 0]/gmd:organisationName"/>  
                 </xsl:for-each>
             </xsl:if>
         </xsl:variable>
@@ -1725,7 +1731,7 @@
             </xsl:choose>
         </xsl:variable>
         
-        
+        <xsl:message select="concat('count contributors: ', count($allContributorName_sequence))"/>
         <xsl:if test="count($allContributorName_sequence) > 0">
            <citationInfo>
                 <citationMetadata>
@@ -2292,154 +2298,7 @@
             </xsl:otherwise>
         </xsl:choose>
     </xsl:function>
-
-    <!-- Finds name of organisation with particular role - ignores organisations that have an individual name -->
-    <xsl:function name="customEATLAS:getOrganisationNameSequence" as="xs:string*">
-        <xsl:param name="parent" as="node()"/>
-        <xsl:param name="role_sequence" as="xs:string*"/>  <!-- if role_sequence is empty: return every, regardless of role -->
-        
-        <xsl:choose>
-            <xsl:when test="count($role_sequence) > 0">
-               <xsl:for-each select="tokenize($role_sequence, ',')">
-                    <xsl:variable name="role" select="normalize-space(.)"/>
-                   
-                    <xsl:for-each-group
-                        select="$parent/descendant::*:CI_ResponsibleParty[
-                        (string-length(normalize-space(*:organisationName)) > 0)]"
-                        group-by="*:organisationName">
-                        
-                        <xsl:variable name="organisationName" select="normalize-space(current-grouping-key())"/>
-                        
-                        <xsl:choose>
-                            <xsl:when test="string-length($role) > 0">
-                                <xsl:if test="boolean(customEATLAS:isRole(current-group(), $role))">
-                                    <xsl:if test="string-length($organisationName) > 0">
-                                        <xsl:value-of select="$organisationName"/>
-                                    </xsl:if>
-                                </xsl:if>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <!-- No role specified, so return the name -->
-                                <xsl:if test="string-length($organisationName) > 0">
-                                    <xsl:value-of select="$organisationName"/>
-                                </xsl:if>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                    </xsl:for-each-group>
-                </xsl:for-each>     
-            </xsl:when>
-            <xsl:otherwise>
-                <xsl:for-each-group
-                    select="$parent/*:CI_ResponsibleParty"
-                    group-by="*:organisationName">
-                    
-                    <xsl:if test="string-length(normalize-space(current-grouping-key())) > 0">
-                        <xsl:value-of select="normalize-space(current-grouping-key())"/>
-                    </xsl:if>
-                </xsl:for-each-group>
-            </xsl:otherwise>
-        </xsl:choose>
-    </xsl:function>
-    
-    <!-- Finds name of organisation with particular role - ignores organisations that have an individual name -->
-    <xsl:function name="customEATLAS:getOrganisationNameNoIndividualSequence" as="xs:string*">
-        <xsl:param name="parent" as="node()"/>
-        <xsl:param name="role_sequence" as="xs:string*"/>  <!-- if role_sequence is empty: return every, regardless of role -->
-        
-        <xsl:choose>
-            <xsl:when test="count($role_sequence) > 0">
-                <xsl:for-each select="tokenize($role_sequence, ',')">
-                    <xsl:variable name="role" select="normalize-space(.)"/>
-                    
-                    <xsl:for-each-group
-                        select="$parent/descendant::*:CI_ResponsibleParty[
-                        (count(*:individualName) = 0)]"
-                        group-by="*:organisationName">
-                        
-                        <xsl:variable name="organisationName" select="normalize-space(current-grouping-key())"/>
-                        
-                        <xsl:choose>
-                            <xsl:when test="string-length($role) > 0">
-                                <xsl:if test="boolean(customEATLAS:isRole(current-group(), $role))">
-                                    <xsl:if test="string-length($organisationName) > 0">
-                                        <xsl:value-of select="$organisationName"/>
-                                    </xsl:if>
-                                </xsl:if>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <!-- No role specified, so return the name -->
-                                <xsl:if test="string-length($organisationName) > 0">
-                                    <xsl:value-of select="$organisationName"/>
-                                </xsl:if>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                    </xsl:for-each-group>
-                </xsl:for-each>     
-            </xsl:when>
-            <xsl:otherwise>
-                <xsl:for-each-group
-                    select="$parent/descendant::*:CI_ResponsibleParty[
-                    (string-length(normalize-space(*:organisationName)) > 0) and
-                    (string-length(normalize-space(*:individualName)) = 0)]"
-                    group-by="*:organisationName">
-                    
-                    <xsl:if test="string-length(normalize-space(current-grouping-key())) > 0">
-                        <xsl:value-of select="normalize-space(current-grouping-key())"/>
-                    </xsl:if>
-                </xsl:for-each-group>
-            </xsl:otherwise>
-        </xsl:choose>
-    </xsl:function>
-    
-    
-    <xsl:function name="customEATLAS:getIndividualNameSequence" as="xs:string*">
-        <xsl:param name="parent" as="node()"/>
-        <xsl:param name="role_sequence" as="xs:string*"/>  <!-- if role_sequence is empty: return every, regardless of role -->
-       
-        <xsl:choose>
-            <xsl:when test="count($role_sequence)">
-                <xsl:for-each select="tokenize($role_sequence, ',')">
-                    <xsl:variable name="role" select="normalize-space(.)"/>
-                    
-                    <xsl:for-each-group
-                        select="$parent/*:CI_ResponsibleParty[
-                        (string-length(normalize-space(*:individualName)) &gt; 0)]"
-                        group-by="*:individualName">
-                        
-                        <xsl:variable name="individualName" select="normalize-space(current-grouping-key())"/>
-                        
-                        <xsl:choose>
-                            <xsl:when test="string-length($role) > 0">
-                                <xsl:if test="boolean(customEATLAS:isRole(current-group(), $role))">
-                                    <xsl:if test="string-length($individualName) &gt; 0">
-                                        <xsl:value-of select="$individualName"/>
-                                    </xsl:if>
-                                </xsl:if>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                 <xsl:if test="string-length($individualName) &gt; 0">
-                                     <xsl:value-of select="$individualName"/>
-                                </xsl:if>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                    </xsl:for-each-group>
-                </xsl:for-each>     
-            </xsl:when>
-            <xsl:otherwise>
-                <xsl:for-each-group
-                    select="$parent/*:CI_ResponsibleParty[
-                    (string-length(normalize-space(*:individualName)) &gt; 0)]"
-                    group-by="*:individualName">
-                    
-                    <xsl:if test="string-length(normalize-space(current-grouping-key())) &gt; 0">
-                        <xsl:value-of select="normalize-space(current-grouping-key())"/>
-                    </xsl:if>
-                </xsl:for-each-group>
-            </xsl:otherwise>
-        </xsl:choose>
-    </xsl:function>
-   
-    <xsl:function name="customEATLAS:getProtocolURL_sequence" as="xs:string*">
+  <xsl:function name="customEATLAS:getProtocolURL_sequence" as="xs:string*">
        <xsl:param name="protocol"/> 
        <xsl:param name="transferOptions"/>
         <xsl:for-each select="$transferOptions/*:onLine/*:CI_OnlineResource">
