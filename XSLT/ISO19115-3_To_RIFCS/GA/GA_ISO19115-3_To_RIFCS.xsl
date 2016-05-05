@@ -272,7 +272,7 @@
     <!-- RegistryObject - Identifier Element  -->
     <xsl:template match="mcc:code" mode="registryObject_identifier">
         <identifier>
-            <xsl:attribute name="type" select="custom:getIdentifierType"/>
+            <xsl:attribute name="type" select="custom:getIdentifierType(.)"/>
             <xsl:value-of select="normalize-space(.)"/>
         </identifier>
     </xsl:template>
@@ -280,7 +280,7 @@
     <!-- RegistryObject - Identifier Element  -->
     <xsl:template match="cit:linkage" mode="registryObject_identifier">
         <identifier>
-            <xsl:attribute name="type" select="custom:getIdentifierType"/>
+            <xsl:attribute name="type" select="custom:getIdentifierType(.)"/>
             <xsl:value-of select="normalize-space(.)"/>
         </identifier>
     </xsl:template>
@@ -506,33 +506,40 @@
             <licence>
                 
                 <xsl:variable name="inputTransformed" select="normalize-space(replace(replace(mco:otherConstraints, 'icence', 'icense', 'i'), '[\d.]+', ''))"/>
-                <xsl:variable name="codeDefinition" select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCodeAustralia' or @gml:id='LicenseCodeInternational']/gmx:codeEntry/gmx:CodeDefinition[normalize-space(replace(gml:name, '\{n\}', ' ')) = $inputTransformed]"/>
+                <xsl:variable name="codeDefinition_sequence" select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCodeAustralia' or @gml:id='LicenseCodeInternational']/gmx:codeEntry/gmx:CodeDefinition[normalize-space(replace(gml:name, '\{n\}', ' ')) = $inputTransformed]" as="node()*"/>
                 
-                <xsl:variable name="licenceVersion" as="xs:string*">
-                    <xsl:analyze-string select="normalize-space(mco:otherConstraints)"
-                        regex="[\d.]+">
-                        <xsl:matching-substring>
-                            <xsl:value-of select="regex-group(0)"/>
-                        </xsl:matching-substring>
-                    </xsl:analyze-string>
-                </xsl:variable>
+                <xsl:variable name="otherConstraints" select="mco:otherConstraints"/>
+                    
+                <xsl:for-each select="$codeDefinition_sequence">
+                    <xsl:variable name="codeDefinition" select="." as="node()"/>
+                     <xsl:variable name="licenceVersion" as="xs:string*">
+                        <xsl:analyze-string select="normalize-space($otherConstraints)"
+                            regex="[\d.]+">
+                            <xsl:matching-substring>
+                                <xsl:value-of select="regex-group(0)"/>
+                            </xsl:matching-substring>
+                        </xsl:analyze-string>
+                     </xsl:variable>
+                     
+                     <xsl:variable name="licenceURI">
+                         <xsl:value-of select="replace($codeDefinition/gml:remarks, '\{n\}', $licenceVersion)"/>
+                     </xsl:variable>
+        
+                     <xsl:message select="concat('licenceURI : ', $licenceURI)"/>
+                     
+                    <xsl:if test="string-length($licenceURI) and count($licenceVersion) > 0">
+                         <xsl:attribute name="rightsUri">
+                             <xsl:value-of select="$licenceURI"/>
+                         </xsl:attribute>
+                    </xsl:if>
+                    
+                    <xsl:if test="string-length(gml:identifier) > 0">
+                         <xsl:attribute name="type">
+                             <xsl:value-of select="gml:identifier"/>
+                         </xsl:attribute>
+                    </xsl:if>
+                </xsl:for-each>
                 
-                <xsl:variable name="licenceURI">
-                    <xsl:value-of select="replace($codeDefinition/gml:remarks, '\{n\}', $licenceVersion)"/>
-                </xsl:variable>
-   
-                <xsl:message select="concat('licenceURI : ', $licenceURI)"/>
-                
-               <xsl:if test="string-length($licenceURI) and count($licenceVersion) > 0">
-                    <xsl:attribute name="rightsUri">
-                        <xsl:value-of select="$licenceURI"/>
-                    </xsl:attribute>
-               </xsl:if>
-                
-                <xsl:attribute name="type">
-                    <xsl:value-of select="$codeDefinition/gml:identifier"/>
-                </xsl:attribute>
-
                 <xsl:value-of select="mco:otherConstraints"/>
             </licence>
         </rights>
