@@ -834,6 +834,17 @@
 
     <xsl:template name="party">
         <xsl:param name="originatingSource"/>
+        
+        <xsl:variable name="partyType">
+            <xsl:choose>
+                <xsl:when test="contains(name(.), 'Individual')">
+                    <xsl:text>person</xsl:text>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:text>group</xsl:text>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
        
         <registryObject group="{$global_group}">
             
@@ -845,7 +856,7 @@
                 <xsl:value-of select="$originatingSource"/>
             </originatingSource> 
             
-            <party type="group">
+            <party type="{$partyType}">
                 <xsl:apply-templates select="cit:contactInfo/cit:CI_Contact/cit:onlineResource/cit:CI_OnlineResource"/>
                 
                 <name type="primary">
