@@ -102,7 +102,7 @@ def writeXmlFromJson(dataSetUri, outFileName):
         print("obj_StreamReaderWriter:  " + obj_StreamReaderWriter.__class__.__name__)
 
 
-        while(count > (rows+start)):
+        while(count > (rows+start-100)):
 
             postfix = str.format("&rows="+str(rows)+"&start="+str(start))
 
@@ -133,10 +133,13 @@ def writeXmlFromJson(dataSetUri, outFileName):
                 assert(len(countElementList[0].childNodes[0].data) > 0)
                 count=int(countElementList[0].childNodes[0].data)
 
+            
+            print("Remaining: "+str(count-(rows+start)))
+            print("Remaining: "+str(count-(rows+start)))
+
             start+=100
 
-            print("Count: "+str(count))
-            print("Remaining: "+str(count-(rows+start)))
+            print("Rows+Start-100: "+str((rows+start-100)))
 
             #obj_StreamReaderWriter.write(obj_xml_Document.toprettyxml(encoding='utf-8', indent=' '))
 
