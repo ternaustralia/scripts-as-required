@@ -11,9 +11,11 @@
     xmlns:gmx="http://www.isotc211.org/2005/gmx"
     xmlns:oai="http://www.openarchives.org/OAI/2.0/" 
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:ncifunc="http://nci.nowhere.yet"
     xmlns:custom="http://custom.nowhere.yet"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
     exclude-result-prefixes="geonet gmx oai xsi gmd srv gml gco gts">
+    <xsl:import href="CustomFunctions.xsl"/>
     <!-- stylesheet to convert iso19139 in OAI-PMH ListRecords response to RIF-CS -->
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
@@ -36,6 +38,7 @@
     <xsl:template match="oai:ListRecords/oai:record/oai:header/oai:datestamp"/>
     <xsl:template match="oai:ListRecords/oai:record/oai:header/oai:setSpec"/>
     
+    
     <!-- =========================================== -->
     <!-- RegistryObjects (root) Template             -->
     <!-- =========================================== -->
@@ -57,68 +60,17 @@
 
     <xsl:template match="gmd:MD_Metadata">
         
-       <xsl:variable name="originatingSource">
-           
-           <xsl:variable name="originator_sequence" as="node()*" select="
-               gmd:identificationInfo/*[contains(lower-case(name()),'identification')]/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(gmd:role/gmd:CI_RoleCode/@codeListValue = 'originator')] |
-               gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'originator'] |
-               gmd:identificationInfo/*[contains(lower-case(name()),'identification')]/gmd:pointOfContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'originator'] |
-               gmd:contact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'originator']"/>
-           
-           <xsl:variable name="resourceProvider_sequence" as="node()*" select="
-               gmd:identificationInfo/*[contains(lower-case(name()),'identification')]/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'resourceProvider'] |
-               gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'resourceProvider'] |
-               gmd:identificationInfo/*[contains(lower-case(name()),'identification')]/gmd:pointOfContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'resourceProvider'] |
-               gmd:contact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'resourceProvider']"/>
-           
-           <xsl:variable name="owner_sequence" as="node()*" select="
-               gmd:identificationInfo/*[contains(lower-case(name()),'identification')]/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'owner'] |
-               gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'owner'] |
-               gmd:identificationInfo/*[contains(lower-case(name()),'identification')]/gmd:pointOfContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'owner'] |
-               gmd:contact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'owner']"/>
-           
-            <xsl:variable name="custodian_sequence" as="node()*" select="
-               gmd:identificationInfo/*[contains(lower-case(name()),'identification')]/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'custodian'] |
-               gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'custodian'] |
-               gmd:identificationInfo/*[contains(lower-case(name()),'identification')]/gmd:pointOfContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'custodian'] |
-               gmd:contact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'custodian']"/>
-          
-           <xsl:variable name="pointOfContact_sequence" as="node()*" select="
-               gmd:identificationInfo/*[contains(lower-case(name()),'identification')]/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'pointOfContact'] |
-               gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'pointOfContact'] |
-               gmd:identificationInfo/*[contains(lower-case(name()),'identification')]/gmd:pointOfContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'pointOfContact'] |
-               gmd:contact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'pointOfContact']"/>
-           
-           
-           <xsl:variable name="contact_sequence" as="node()*" select="
-              gmd:contact/gmd:CI_ResponsibleParty"/>
-           
-            
-           
+        <xsl:variable name="originatingSource">
             <xsl:choose>
-                <xsl:when test="(count($originator_sequence) > 0) and string-length($originator_sequence[1]/gmd:organisationName) > 0">
-                     <xsl:value-of select="$originator_sequence[1]/gmd:organisationName"/>
-                </xsl:when>
-                <xsl:when test="(count($resourceProvider_sequence) > 0) and string-length($resourceProvider_sequence[1]/gmd:organisationName) > 0">
-                    <xsl:value-of select="$resourceProvider_sequence[1]/gmd:organisationName"/>
-                </xsl:when>
-                <xsl:when test="(count($owner_sequence) > 0) and string-length($owner_sequence[1]/gmd:organisationName) > 0">
-                     <xsl:value-of select="$owner_sequence[1]/gmd:organisationName"/>
-                </xsl:when>
-                <xsl:when test="(count($custodian_sequence) > 0) and string-length($custodian_sequence[1]/gmd:organisationName) > 0">
-                    <xsl:value-of select="$custodian_sequence[1]/gmd:organisationName"/>
-                </xsl:when>
-                <xsl:when test="(count($pointOfContact_sequence) > 0) and string-length($pointOfContact_sequence[1]/gmd:organisationName) > 0">
-                    <xsl:value-of select="$pointOfContact_sequence[1]/gmd:organisationName"/>
-                </xsl:when>
-                <xsl:when test="(count($contact_sequence) > 0) and string-length($contact_sequence[1]/gmd:organisationName) > 0">
-                     <xsl:value-of select="$contact_sequence[1]/gmd:organisationName"/>
+                <xsl:when test="string-length(custom:originatingSource(.)) > 0">
+                    <xsl:value-of select="custom:originatingSource(.)"/>
                 </xsl:when>
                 <xsl:otherwise>
-                    <xsl:value-of select="$global_originatingSource"/>    
+                    <xsl:value-of select="$global_originatingSource"/>
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
+        
         <registryObject>
             <xsl:attribute name="group">
                 <xsl:value-of select="$global_group"/>    
@@ -131,11 +83,11 @@
             </originatingSource> 
                 
                 
-            <xsl:element name="{custom:registryObjectClass(gmd:hierarchyLevel/*[contains(lower-case(name()),'scopecode')]/@codeListValue)}">
+            <xsl:element name="{ncifunc:registryObjectClass(gmd:hierarchyLevel/*[contains(lower-case(name()),'scopecode')]/@codeListValue)}">
     
-                <xsl:attribute name="type" select="custom:registryObjectType(gmd:hierarchyLevel/*[contains(lower-case(name()),'scopecode')]/@codeListValue)"/>
+                <xsl:attribute name="type" select="ncifunc:registryObjectType(gmd:hierarchyLevel/*[contains(lower-case(name()),'scopecode')]/@codeListValue)"/>
                         
-                <xsl:if test="custom:registryObjectClass(gmd:hierarchyLevel/*[contains(lower-case(name()),'scopecode')]/@codeListValue) = 'collection'">
+                <xsl:if test="ncifunc:registryObjectClass(gmd:hierarchyLevel/*[contains(lower-case(name()),'scopecode')]/@codeListValue) = 'collection'">
                         <xsl:if test="
                             (count(gmd:dateStamp/*[contains(lower-case(name()),'date')]) > 0) and 
                             (string-length(gmd:dateStamp/*[contains(lower-case(name()),'date')][1]) > 0)">
@@ -269,7 +221,7 @@
             select="gmd:resourceConstraints/gmd:MD_Constraints"
             mode="registryObject_rights_rights"/>
         
-        <xsl:if test="custom:registryObjectClass(ancestor::gmd:MD_Metadata/gmd:hierarchyLevel/*[contains(lower-case(name()),'scopecode')]/@codeListValue) = 'collection'">
+        <xsl:if test="ncifunc:registryObjectClass(ancestor::gmd:MD_Metadata/gmd:hierarchyLevel/*[contains(lower-case(name()),'scopecode')]/@codeListValue) = 'collection'">
             
             <xsl:apply-templates
                 select="gmd:citation/gmd:CI_Citation/gmd:date"
@@ -344,10 +296,7 @@
         <xsl:for-each select="gmd:onLine/gmd:CI_OnlineResource">
             <xsl:if test="contains(lower-case(gmd:protocol), 'metadata-url')">
                 <xsl:if test="string-length(normalize-space(gmd:linkage/gmd:URL)) > 0">
-                    <identifier>
-                        <xsl:attribute name="type">
-                            <xsl:text>uri</xsl:text>
-                        </xsl:attribute>
+                    <identifier type="{custom:getIdentifierType(gmd:linkage/gmd:URL)}">
                         <xsl:value-of select="normalize-space(gmd:linkage/gmd:URL)"/>
                     </identifier>
                 </xsl:if>
@@ -458,7 +407,7 @@
     <xsl:template match="gmd:CI_ResponsibleParty" mode="registryObject_related_object">
          <relatedObject>
             <key>
-                <xsl:variable name="mappedKey" select="custom:getMappedKey(translate(normalize-space(current-grouping-key()),' ',''))"/>
+                <xsl:variable name="mappedKey" select="ncifunc:getMappedKey(translate(normalize-space(current-grouping-key()),' ',''))"/>
                 <xsl:choose>
                     <xsl:when test="string-length($mappedKey) > 0">
                         <xsl:value-of select="$mappedKey"/>
@@ -468,29 +417,40 @@
                     </xsl:otherwise>
                 </xsl:choose>
             </key>
-            <xsl:for-each-group select="current-group()/gmd:role"
-                group-by="gmd:CI_RoleCode/@codeListValue">
-                <xsl:variable name="code">
-                    <xsl:value-of select="normalize-space(current-grouping-key())"/>
-                </xsl:variable>
-                <xsl:choose>
-                    <xsl:when test="string-length($code) > 0">
-                        <relation>
-                            <xsl:attribute name="type">
-                                <xsl:value-of select="$code"/>
-                            </xsl:attribute>
-                        </relation>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <relation>
-                            <xsl:attribute name="type">
-                                <xsl:text>unknown</xsl:text>
-                            </xsl:attribute>
-                        </relation>
-                    </xsl:otherwise>
-                </xsl:choose>
-                
-            </xsl:for-each-group>
+            <xsl:choose>
+                <xsl:when test="count(current-group()/gmd:role) > 0">
+                    <xsl:for-each-group select="current-group()/gmd:role"
+                        group-by="gmd:CI_RoleCode/@codeListValue">
+                        <xsl:variable name="code">
+                            <xsl:value-of select="normalize-space(current-grouping-key())"/>
+                        </xsl:variable>
+                        <xsl:choose>
+                            <xsl:when test="string-length($code) > 0">
+                                <relation>
+                                    <xsl:attribute name="type">
+                                        <xsl:value-of select="$code"/>
+                                    </xsl:attribute>
+                                </relation>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <relation>
+                                    <xsl:attribute name="type">
+                                        <xsl:text>isAssociatedWith</xsl:text>
+                                    </xsl:attribute>
+                                </relation>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                        
+                    </xsl:for-each-group>
+                </xsl:when>     
+                <xsl:otherwise>
+                    <relation>
+                        <xsl:attribute name="type">
+                            <xsl:text>isAssociatedWith</xsl:text>
+                        </xsl:attribute>
+                    </relation>
+                </xsl:otherwise>
+            </xsl:choose>
         </relatedObject>
     </xsl:template>
 
@@ -756,17 +716,7 @@
                 <xsl:variable name="identifierValue" select="normalize-space(gmd:linkage/gmd:URL)"/>
                 <xsl:if test="string-length($identifierValue) > 0">
                     <relatedInfo type="relatedInformation">
-                            <identifier>
-                                <xsl:attribute name="type">
-                                    <xsl:choose>
-                                        <xsl:when test="contains(lower-case($identifierValue), 'doi')">
-                                            <xsl:text>doi</xsl:text>
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <xsl:text>uri</xsl:text>
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </xsl:attribute>
+                        <identifier type="{custom:getIdentifierType($identifierValue)}">
                                 <xsl:value-of select="$identifierValue"/>
                             </identifier>
 
@@ -839,17 +789,7 @@
                    </xsl:otherwise>
                </xsl:choose>
            </xsl:attribute>
-           <identifier>
-               <xsl:attribute name="type">
-                   <xsl:choose>
-                       <xsl:when test="contains(lower-case(gmd:sourceCitation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier/gmd:code), 'doi')">
-                           <xsl:text>doi</xsl:text>
-                       </xsl:when>
-                       <xsl:otherwise>
-                           <xsl:text>uri</xsl:text>
-                       </xsl:otherwise>
-                   </xsl:choose>
-               </xsl:attribute>
+            <identifier type="{custom:getIdentifierType(gmd:sourceCitation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier/gmd:code)}">
                <xsl:value-of select="gmd:sourceCitation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier/gmd:code"/>
            </identifier>
            <relation>
@@ -879,9 +819,7 @@
         <xsl:if test="string-length($identifier) > 0">
             <relatedInfo type="collection">
                 <identifier type="uri">
-                    <xsl:value-of
-                        select="concat('http://', $global_baseURI, $global_path, $identifier)"
-                    />
+                    <xsl:value-of select="concat('http://', $global_baseURI, $global_path, $identifier)"/>
                 </identifier>
                 <relation>
                     <xsl:attribute name="type">
@@ -1185,27 +1123,12 @@
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
-        <xsl:variable name="typeToUse">
-            <xsl:choose>
-                <xsl:when test="count($doiIdentifier_sequence) and (string-length($doiIdentifier_sequence[1]) > 0)">
-                    <xsl:text>doi</xsl:text>
-                </xsl:when>
-                <xsl:otherwise>
-                    <xsl:text>uri</xsl:text>
-                </xsl:otherwise>
-            </xsl:choose>
-        </xsl:variable>
-        
+             
         <xsl:if test="count($allContributorName_sequence) > 0">
            <citationInfo>
                 <citationMetadata>
                     <xsl:if test="string-length($identifierToUse) > 0">
-                        <identifier>
-                            <xsl:if test="string-length($typeToUse) > 0">
-                                <xsl:attribute name="type">
-                                    <xsl:value-of select='$typeToUse'/>
-                                </xsl:attribute>
-                            </xsl:if>
+                        <identifier type="{custom:getIdentifierType($identifierToUse)}">
                             <xsl:value-of select='$identifierToUse'/>
                         </identifier>
                     </xsl:if>
@@ -1559,28 +1482,24 @@
             </xsl:for-each>
         </xsl:variable>
         <xsl:for-each select="distinct-values($url_sequence)">
-            <xsl:choose>
-                <xsl:when test="contains(lower-case(.), 'orcid')">
-                    <identifier type="orcid">
-                        <xsl:value-of select="."/> 
-                    </identifier>
-                </xsl:when>
-                <xsl:otherwise>
-                    <location>
-                        <address>
-                            <electronic type="url">
-                                <value>
-                                    <xsl:value-of select="."/>
-                                </value>
-                            </electronic>
-                        </address>
-                    </location>
-                </xsl:otherwise>
-            </xsl:choose>
+            <identifier type="{custom:getIdentifierType(.)}">
+                <xsl:value-of select="."/>
+            </identifier>
+            <xsl:if test="contains(., 'http')">
+                <location>
+                    <address>
+                        <electronic type="url">
+                            <value>
+                                <xsl:value-of select="."/>
+                            </value>
+                        </electronic>
+                    </address>
+                </location>
+            </xsl:if>
         </xsl:for-each>
     </xsl:template>
     
-   <xsl:function name="custom:registryObjectClass" as="xs:string">
+    <xsl:function name="ncifunc:registryObjectClass" as="xs:string">
         <xsl:param name="scopeCode_sequence" as="xs:string*"/>
        <xsl:choose>
             <xsl:when test="count($scopeCode_sequence) > 0">
@@ -1614,7 +1533,7 @@
        </xsl:choose>
    </xsl:function>
     
-    <xsl:function name="custom:registryObjectType" as="xs:string*">
+    <xsl:function name="ncifunc:registryObjectType" as="xs:string*">
         <xsl:param name="scopeCode_sequence" as="xs:string*"/>
         <xsl:choose>
             <xsl:when test="count($scopeCode_sequence) > 0">
@@ -1648,7 +1567,7 @@
         </xsl:choose>
     </xsl:function>
     
-    <xsl:function name="custom:getMappedKey" as="xs:string">
+    <xsl:function name="ncifunc:getMappedKey" as="xs:string">
         <xsl:param name="inputKey" as="xs:string"/>
         <xsl:choose>
             <xsl:when test="contains(lower-case($inputKey), 'nationalcomputationalinfrastructure') or 
