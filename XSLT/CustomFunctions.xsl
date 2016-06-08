@@ -111,5 +111,38 @@
             </xsl:otherwise>
           </xsl:choose>
     </xsl:function>
+    
+    <xsl:function name="custom:getIdentifierType" as="xs:string">
+        <xsl:param name="identifier"/>
+        <xsl:choose>
+            <xsl:when test="contains(lower-case($identifier), 'orcid')">
+                <xsl:text>orcid</xsl:text>
+            </xsl:when>
+            <xsl:when test="contains(lower-case($identifier), 'purl.org')">
+                <xsl:text>purl</xsl:text>
+            </xsl:when>
+            <xsl:when test="contains(lower-case($identifier), 'doi.org')">
+                <xsl:text>doi</xsl:text>
+            </xsl:when>
+            <xsl:when test="contains(lower-case($identifier), 'scopus')">
+                <xsl:text>scopus</xsl:text>
+            </xsl:when>
+            <xsl:when test="contains(lower-case($identifier), 'handle.net')">
+                <xsl:text>handle</xsl:text>
+            </xsl:when>
+            <xsl:when test="contains(lower-case($identifier), 'nla.gov.au')">
+                <xsl:text>AU-ANL:PEAU</xsl:text>
+            </xsl:when>
+            <xsl:when test="contains(lower-case($identifier), 'fundref')">
+                <xsl:text>fundref</xsl:text>
+            </xsl:when>
+            <xsl:when test="contains(lower-case($identifier), 'http')">
+                <xsl:text>uri</xsl:text>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:text>global</xsl:text>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:function>
         
 </xsl:stylesheet>
