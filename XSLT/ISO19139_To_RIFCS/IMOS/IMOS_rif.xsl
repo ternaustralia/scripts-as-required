@@ -128,9 +128,6 @@
                     <xsl:with-param name="source" select="$source"/>  
                 </xsl:apply-templates>
              
-                <xsl:apply-templates
-                    select="gmd:distributionInfo" mode="IMOS_registryObject_relatedInfo"/>
-                 
                 <!--xsl:apply-templates select="gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:source/gmd:LI_Source[string-length(gmd:sourceCitation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier/gmd:code) > 0]"
                      mode="IMOS_registryObject_relatedInfo"/-->
                  
@@ -151,17 +148,7 @@
 
     </xsl:template>
     
-    <xsl:template match="gmd:distributionInfo" mode="IMOS_registryObject_relatedInfo">
-        <xsl:apply-templates select="gmd:MD_Distribution/gmd:transferOptions" mode="IMOS_registryObject_relatedInfo"/>
-    </xsl:template>
-    
-    <xsl:template match="gmd:transferOptions" mode="IMOS_registryObject_relatedInfo">
-        
-        <xsl:apply-templates select="gmd:MD_DigitalTransferOptions" mode="IMOS_registryObject_relatedInfo"/>
-        
-    </xsl:template>
-    
-   <xsl:template match="*[contains(lower-case(name()),'identification')]" mode="IMOS_registryObject">
+    <xsl:template match="*[contains(lower-case(name()),'identification')]" mode="IMOS_registryObject">
         <xsl:param name="originatingSource"/>
        <xsl:param name="source"/>
         
