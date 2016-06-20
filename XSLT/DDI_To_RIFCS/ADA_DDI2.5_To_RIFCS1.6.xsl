@@ -33,11 +33,13 @@
             <key>
                 <xsl:value-of select="normalize-space(ddi:stdyDscr/ddi:citation/ddi:titlStmt/ddi:IDNo)"/>
             </key>
-            <originatingSource select="{$global_originatingSource}"/>
+            <originatingSource>
+                <xsl:value-of select="$global_originatingSource"/>
+            </originatingSource> 
                 
-            <xsl:element name="collection">
-                
+            <collection>
                 <xsl:attribute name="type" select="'dataset'"/>
+                <xsl:attribute name="dateAccessioned" select="ddi:stdyDscr/ddi:citation/ddi:distStmt/ddi:depDate/@date[(string-length(.) > 0)]"/>
                 <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:titlStmt/ddi:IDNo[(string-length(.) > 0)]" mode="registryObject_identifier"/>
                 <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:titlStmt/ddi:titl[(string-length(.) > 0)]" mode="registryObject_name"/>
                 <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:titlStmt/ddi:IDNo[(string-length(.) > 0)]" mode="registryObject_location"/>
@@ -52,7 +54,7 @@
                 <xsl:apply-templates select="." mode="registryObject_citationInfo"/>
                 <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:distStmt/ddi:depDate/@date[(string-length(.) > 0)]" mode="registryObject_dates_submitted"/>
                 <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:distStmt/ddi:distDate/@date[(string-length(.) > 0)]" mode="registryObject_dates_available"/>
-            </xsl:element>
+            </collection>
         </registryObject>
     </xsl:template>
     
@@ -66,7 +68,9 @@
         <location>
             <address>
                  <electronic type="url">
-                    <value select="{concat($global_baseURL, substring-after(normalize-space(.), 'au.edu.anu.ada.ddi.'))}"/>
+                    <value>
+                        <xsl:value-of select="concat($global_baseURL, substring-after(normalize-space(.), 'au.edu.anu.ada.ddi.'))"/>
+                    </value> 
                 </electronic>
             </address>
         </location>
@@ -75,8 +79,20 @@
         </identifier>
     </xsl:template>
     
-    <xsl:template match="ddi:keyword" mode="registryObject_subject">
-        <subject type="{@vocab}" termIdentifier="{@vocabURI}">
+   <xsl:template match="ddi:keyword" mode="registryObject_subject">
+        <subject>
+            <xsl:choose>
+                <xsl:when test="string-length(@vocab) > 0">
+                    <xsl:attribute name="type" select="@vocab"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:attribute name="type" select="'local'"/>
+                </xsl:otherwise>
+            </xsl:choose>
+            
+            <xsl:if test="string-length(@vocabURI) > 0">
+                <xsl:attribute name="termIdentifier" select="@vocabURI"/>
+            </xsl:if>
             <xsl:value-of select="normalize-space(.)"/>
         </subject>
     </xsl:template>
@@ -100,27 +116,41 @@
     
     <xsl:template match="ddi:relPubl" mode="registryObject_relatedInfo">
         <relatedInfo type="'publication'">
-            <identifier type="uri" select="{normalize-space(ddi:citation/ddi:holdings/@URI)}"/>
-            <title select="{normalize-space(ddi:citation/ddi:titlStmt/ddi:titl)}"/>
+            <identifier type="uri">
+                <xsl:value-of select="normalize-space(ddi:citation/ddi:holdings/@URI)"/>
+            </identifier> 
+            <title>
+                <xsl:value-of select="normalize-space(ddi:citation/ddi:titlStmt/ddi:titl)"/>
+            </title> 
             <relation type="'isCitedBy'"/>
-            <notes select="{normalize-space(.)}"/>
+            <notes>
+                <xsl:value-of select="normalize-space(.)"/>
+            </notes>
         </relatedInfo>
     </xsl:template>
     
     <xsl:template match="@date" mode="registryObject_coverage_temporal_start">
-        <date type="dateFrom" dateFormat="W3CDTF" select="{normalize-space(.)}"/>
+        <date type="dateFrom" dateFormat="W3CDTF">
+            <xsl:value-of select="normalize-space(.)"/>
+        </date>
     </xsl:template>
     
     <xsl:template match="@date" mode="registryObject_coverage_temporal_end">
-        <date type="dateTo" dateFormat="W3CDTF" select="{normalize-space(.)}"/>
+        <date type="dateTo" dateFormat="W3CDTF">
+            <xsl:value-of select="normalize-space(.)"/>
+        </date>
     </xsl:template>
     
     <xsl:template match="ddi:geogCover" mode="registryObject_coverage_spatial">
-        <spatial type="text" select="{normalize-space(.)}"/>
+        <spatial type="text">
+            <xsl:value-of select="normalize-space(.)"/>
+        </spatial>
     </xsl:template>
     
     <xsl:template match="ddi:geogUnit" mode="registryObject_coverage_spatial">
-        <spatial type="text" select="{normalize-space(.)}"/>
+        <spatial type="text">
+            <xsl:value-of select="normalize-space(.)"/>
+        </spatial>
     </xsl:template>
     
     
@@ -171,13 +201,17 @@
     
     <xsl:template match="@date" mode="registryObject_dates_submitted">
         <dates type="dateSubmitted">
-            <date type="dateFrom" dateFormat="W3CDTF" select="{normalize-space(.)}"/>
+            <date type="dateFrom" dateFormat="W3CDTF">
+                <xsl:value-of select="normalize-space(.)"/>
+            </date>
         </dates>
     </xsl:template>
     
     <xsl:template match="@date" mode="registryObject_dates_available">
         <dates type="available">
-            <date type="dateFrom" dateFormat="W3CDTF" select="{normalize-space(.)}"/>
+            <date type="dateFrom" dateFormat="W3CDTF">
+                <xsl:value-of select="normalize-space(.)"/>
+            </date>
         </dates>
     </xsl:template>
     
@@ -190,14 +224,15 @@
                 <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:prodStmt/ddi:producer[@role='Data Collectors' and (string-length(.) > 0)]" mode="registryObject_citation_publisher"/>
                 <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:titlStmt/ddi:titl[(string-length(.) > 0)]" mode="registryObject_citation_title"/>
                 <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:verStmt/ddi:version[(string-length(.) > 0)]" mode="registryObject_citation_version"/>
-                <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:distStmt/ddi:distDate/@date[(string-length(.) > 0)]" mode="registryObject_citation_date"/>
+                <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:distStmt/ddi:depDate/@date[(string-length(.) > 0)]" mode="registryObject_citation_date_submitted"/>
+                <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:distStmt/ddi:distDate/@date[(string-length(.) > 0)]" mode="registryObject_citation_date_published"/>
             </citationMetadata>
         </citationInfo>
     </xsl:template>
     
     
     <xsl:template match="ddi:IDNo" mode="registryObject_citation_identifier">
-        <identifier>
+        <identifier type="{localFunc:getIdentifierType(.)}">
             <xsl:value-of select="normalize-space(.)"/>
         </identifier>
     </xsl:template>
@@ -222,8 +257,14 @@
         </version>
     </xsl:template>
     
-    <xsl:template match="@date" mode="registryObject_citation_date">
-        <date>
+    <xsl:template match="@date" mode="registryObject_citation_date_submitted">
+        <date type="dateSubmitted">
+            <xsl:value-of select="normalize-space(.)"/>
+        </date>
+    </xsl:template>
+    
+    <xsl:template match="@date" mode="registryObject_citation_date_published">
+        <date type="publicationDate">
             <xsl:value-of select="normalize-space(.)"/>
         </date>
     </xsl:template>
