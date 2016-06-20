@@ -44,8 +44,10 @@
                 <xsl:apply-templates select="ddi:stdyDscr/ddi:stdyInfo/ddi:subject/ddi:keyword[(string-length(.) > 0)]" mode="registryObject_subject"/>
                 <xsl:apply-templates select="ddi:stdyDscr/ddi:stdyInfo/ddi:abstract[(string-length(.) > 0)]" mode="registryObject_description"/>
                 <xsl:apply-templates select="ddi:stdyDscr/ddi:stdyInfo/ddi:sumDscr" mode="registryObject_coverage"/>
+                <xsl:apply-templates select="ddi:stdyDscr/ddi:othrStdyMat/ddi:relPubl" mode="registryObject_relatedInfo"/>
                 <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:titlStmt/ddi:altTitl[(string-length(.) > 0)]" mode="registryObject_altname"/>
                 <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:prodStmt/ddi:copyright" mode="registryObject_rights_statement"/>
+                <xsl:apply-templates select="ddi:stdyDscr/ddi:dataAccs/ddi:useStmt" mode="registryObject_rights_access"/>
                 
                 <xsl:apply-templates select="." mode="registryObject_citationInfo"/>
                 <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:distStmt/ddi:depDate/@date[(string-length(.) > 0)]" mode="registryObject_dates_submitted"/>
@@ -96,6 +98,15 @@
         </coverage>
     </xsl:template>
     
+    <xsl:template match="ddi:relPubl" mode="registryObject_relatedInfo">
+        <relatedInfo type="'publication'">
+            <identifier type="uri" select="{normalize-space(ddi:citation/ddi:holdings/@URI)}"/>
+            <title select="{normalize-space(ddi:citation/ddi:titlStmt/ddi:titl)}"/>
+            <relation type="'isCitedBy'"/>
+            <notes select="{normalize-space(.)}"/>
+        </relatedInfo>
+    </xsl:template>
+    
     <xsl:template match="@date" mode="registryObject_coverage_temporal_start">
         <date type="dateFrom" dateFormat="W3CDTF" select="{normalize-space(.)}"/>
     </xsl:template>
@@ -144,6 +155,17 @@
             <rightsStatement>
                 <xsl:value-of select="normalize-space(.)"/>
             </rightsStatement>
+        </rights>
+    </xsl:template>
+    
+    <xsl:template match="ddi:useStmt" mode="registryObject_rights_access">
+        <rights>
+            <accessRights>
+                <xsl:value-of select="normalize-space(ddi:confDec)"/>
+            </accessRights>
+            <accessRights>
+                <xsl:value-of select="normalize-space(ddi:restrctn)"/>
+            </accessRights>
         </rights>
     </xsl:template>
     
