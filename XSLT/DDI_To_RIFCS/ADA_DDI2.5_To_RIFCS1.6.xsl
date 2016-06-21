@@ -132,17 +132,11 @@
             <date type="dateFrom" dateFormat="W3CDTF">
                 <xsl:value-of select="normalize-space(@date)"/>
             </date>
-            <text>
-                <xsl:value-of select="normalize-space(@cycle)"/>
-            </text>
             
             <xsl:if test="following-sibling::ddi:timePrd[@event = 'end'][1]/@date[string-length(.) > 0]">
                 <date type="dateTo" dateFormat="W3CDTF">
                     <xsl:value-of select="normalize-space(following-sibling::ddi:timePrd[@event = 'end'][1]/@date)"/>
                 </date>
-                <text>
-                    <xsl:value-of select="normalize-space(@cycle)"/>
-                </text>
             </xsl:if>
         </temporal>
     </xsl:template>
@@ -152,10 +146,7 @@
             <date type="dateFrom" dateFormat="W3CDTF">
                 <xsl:value-of select="normalize-space(@date)"/>
             </date>
-            <text>
-                <xsl:value-of select="normalize-space(@cycle)"/>
-            </text>
-        </temporal>
+            </temporal>
     </xsl:template>
     
     <xsl:template match="ddi:collDate" mode="registryObject_coverage_temporal_start">
@@ -163,18 +154,11 @@
             <date type="dateFrom" dateFormat="W3CDTF">
                 <xsl:value-of select="normalize-space(@date)"/>
             </date>
-            <text>
-                <xsl:value-of select="normalize-space(@cycle)"/>
-            </text>
-           
-           <xsl:if test="following-sibling::ddi:collDate[@event = 'end'][1]/@date[string-length(.) > 0]">
+            <xsl:if test="following-sibling::ddi:collDate[@event = 'end'][1]/@date[string-length(.) > 0]">
                <date type="dateTo" dateFormat="W3CDTF">
                    <xsl:value-of select="normalize-space(following-sibling::ddi:collDate[@event = 'end'][1]/@date)"/>
                </date>
-               <text>
-                   <xsl:value-of select="normalize-space(@cycle)"/>
-               </text>
-           </xsl:if>
+            </xsl:if>
         </temporal>
     </xsl:template>
     
@@ -183,10 +167,7 @@
             <date type="dateFrom" dateFormat="W3CDTF">
                 <xsl:value-of select="normalize-space(@date)"/>
             </date>
-            <text>
-                <xsl:value-of select="normalize-space(@cycle)"/>
-            </text>
-        </temporal>
+          </temporal>
     </xsl:template>
     
     <xsl:template match="ddi:nation" mode="registryObject_coverage_spatial">
