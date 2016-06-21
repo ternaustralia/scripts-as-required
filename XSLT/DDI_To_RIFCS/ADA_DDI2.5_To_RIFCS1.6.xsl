@@ -74,10 +74,7 @@
                 </electronic>
             </address>
         </location>
-        <identifier type="{localFunc:getIdentifierType(.)}">
-            <xsl:value-of select="normalize-space(.)"/>
-        </identifier>
-    </xsl:template>
+     </xsl:template>
     
    <xsl:template match="ddi:keyword" mode="registryObject_subject">
         <subject>
@@ -105,43 +102,42 @@
     
     <xsl:template match="ddi:sumDscr" mode="registryObject_coverage">
         <coverage>
-            <temporal>
-                <xsl:apply-templates select="ddi:collDate[@event = 'start']/@date[string-length(.) > 0]" mode="registryObject_coverage_temporal_start"/>
-                <xsl:apply-templates select="ddi:collDate[@event = 'end']/@date[string-length(.) > 0]" mode="registryObject_coverage_temporal_end"/>
-            </temporal>
+            <xsl:apply-templates select="ddi:collDate[(@event = 'start') and (string-length(@date) > 0)]" mode="registryObject_coverage_temporal"/>
             <xsl:apply-templates select="ddi:geogCover[string-length(.) > 0]" mode="registryObject_coverage_spatial"/>
             <xsl:apply-templates select="ddi:geogUnit[string-length(.) > 0]" mode="registryObject_coverage_spatial"/>
         </coverage>
     </xsl:template>
     
     <xsl:template match="ddi:relPubl" mode="registryObject_relatedInfo">
-        <relatedInfo type="'publication'">
+        <relatedInfo type="publication">
             <identifier type="uri">
                 <xsl:value-of select="normalize-space(ddi:citation/ddi:holdings/@URI)"/>
             </identifier> 
             <title>
                 <xsl:value-of select="normalize-space(ddi:citation/ddi:titlStmt/ddi:titl)"/>
             </title> 
-            <relation type="'isCitedBy'"/>
+            <relation type="isCitedBy"/>
             <notes>
                 <xsl:value-of select="normalize-space(.)"/>
             </notes>
         </relatedInfo>
     </xsl:template>
     
-    <xsl:template match="@date" mode="registryObject_coverage_temporal_start">
-        <date type="dateFrom" dateFormat="W3CDTF">
-            <xsl:value-of select="normalize-space(.)"/>
-        </date>
+    <xsl:template match="ddi:collDate" mode="registryObject_coverage_temporal">
+        <temporal>
+            <date type="dateFrom" dateFormat="W3CDTF">
+                <xsl:value-of select="normalize-space(@date)"/>
+            </date>
+           
+           <xsl:if test="following-sibling::ddi:collDate[@event = 'end'][1]/@date[string-length(.) > 0]">
+               <date type="dateTo" dateFormat="W3CDTF">
+                   <xsl:value-of select="normalize-space(following-sibling::ddi:collDate[@event = 'end'][1]/@date)"/>
+               </date>
+           </xsl:if>
+        </temporal>
     </xsl:template>
     
-    <xsl:template match="@date" mode="registryObject_coverage_temporal_end">
-        <date type="dateTo" dateFormat="W3CDTF">
-            <xsl:value-of select="normalize-space(.)"/>
-        </date>
-    </xsl:template>
-    
-    <xsl:template match="ddi:geogCover" mode="registryObject_coverage_spatial">
+     <xsl:template match="ddi:geogCover" mode="registryObject_coverage_spatial">
         <spatial type="text">
             <xsl:value-of select="normalize-space(.)"/>
         </spatial>
