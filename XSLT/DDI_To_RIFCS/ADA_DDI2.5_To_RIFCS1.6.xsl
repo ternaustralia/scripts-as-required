@@ -31,7 +31,7 @@
         <registryObject>
             <xsl:attribute name="group" select="$global_group"/>
             <key>
-                <xsl:value-of select="normalize-space(ddi:stdyDscr/ddi:citation/ddi:titlStmt/ddi:IDNo)"/>
+                <xsl:value-of select="normalize-space(@ID)"/>
             </key>
             <originatingSource>
                 <xsl:value-of select="$global_originatingSource"/>
@@ -102,7 +102,11 @@
     
     <xsl:template match="ddi:sumDscr" mode="registryObject_coverage">
         <coverage>
-            <xsl:apply-templates select="ddi:collDate[(@event = 'start') and (string-length(@date) > 0)]" mode="registryObject_coverage_temporal"/>
+            <xsl:apply-templates select="ddi:timePrd[(@event = 'start') and (string-length(@date) > 0)]" mode="registryObject_coverage_temporal_start"/>
+            <xsl:apply-templates select="ddi:timePrd[(@event = 'single') and (string-length(@date) > 0)]" mode="registryObject_coverage_temporal_single"/>
+            <xsl:apply-templates select="ddi:collDate[(@event = 'start') and (string-length(@date) > 0)]" mode="registryObject_coverage_temporal_start"/>
+            <xsl:apply-templates select="ddi:collDate[(@event = 'single') and (string-length(@date) > 0)]" mode="registryObject_coverage_temporal_single"/>
+            <xsl:apply-templates select="ddi:nation[string-length(.) > 0]" mode="registryObject_coverage_spatial"/>
             <xsl:apply-templates select="ddi:geogCover[string-length(.) > 0]" mode="registryObject_coverage_spatial"/>
             <xsl:apply-templates select="ddi:geogUnit[string-length(.) > 0]" mode="registryObject_coverage_spatial"/>
         </coverage>
@@ -123,21 +127,75 @@
         </relatedInfo>
     </xsl:template>
     
-    <xsl:template match="ddi:collDate" mode="registryObject_coverage_temporal">
+    <xsl:template match="ddi:timePrd" mode="registryObject_coverage_temporal_start">
         <temporal>
             <date type="dateFrom" dateFormat="W3CDTF">
                 <xsl:value-of select="normalize-space(@date)"/>
             </date>
+            <text>
+                <xsl:value-of select="normalize-space(@cycle)"/>
+            </text>
+            
+            <xsl:if test="following-sibling::ddi:timePrd[@event = 'end'][1]/@date[string-length(.) > 0]">
+                <date type="dateTo" dateFormat="W3CDTF">
+                    <xsl:value-of select="normalize-space(following-sibling::ddi:timePrd[@event = 'end'][1]/@date)"/>
+                </date>
+                <text>
+                    <xsl:value-of select="normalize-space(@cycle)"/>
+                </text>
+            </xsl:if>
+        </temporal>
+    </xsl:template>
+    
+    <xsl:template match="ddi:timePrd" mode="registryObject_coverage_temporal_single">
+        <temporal>
+            <date type="dateFrom" dateFormat="W3CDTF">
+                <xsl:value-of select="normalize-space(@date)"/>
+            </date>
+            <text>
+                <xsl:value-of select="normalize-space(@cycle)"/>
+            </text>
+        </temporal>
+    </xsl:template>
+    
+    <xsl:template match="ddi:collDate" mode="registryObject_coverage_temporal_start">
+        <temporal>
+            <date type="dateFrom" dateFormat="W3CDTF">
+                <xsl:value-of select="normalize-space(@date)"/>
+            </date>
+            <text>
+                <xsl:value-of select="normalize-space(@cycle)"/>
+            </text>
            
            <xsl:if test="following-sibling::ddi:collDate[@event = 'end'][1]/@date[string-length(.) > 0]">
                <date type="dateTo" dateFormat="W3CDTF">
                    <xsl:value-of select="normalize-space(following-sibling::ddi:collDate[@event = 'end'][1]/@date)"/>
                </date>
+               <text>
+                   <xsl:value-of select="normalize-space(@cycle)"/>
+               </text>
            </xsl:if>
         </temporal>
     </xsl:template>
     
-     <xsl:template match="ddi:geogCover" mode="registryObject_coverage_spatial">
+    <xsl:template match="ddi:collDate" mode="registryObject_coverage_temporal_single">
+        <temporal>
+            <date type="dateFrom" dateFormat="W3CDTF">
+                <xsl:value-of select="normalize-space(@date)"/>
+            </date>
+            <text>
+                <xsl:value-of select="normalize-space(@cycle)"/>
+            </text>
+        </temporal>
+    </xsl:template>
+    
+    <xsl:template match="ddi:nation" mode="registryObject_coverage_spatial">
+        <spatial type="text">
+            <xsl:value-of select="normalize-space(.)"/>
+        </spatial>
+    </xsl:template>
+    
+    <xsl:template match="ddi:geogCover" mode="registryObject_coverage_spatial">
         <spatial type="text">
             <xsl:value-of select="normalize-space(.)"/>
         </spatial>
@@ -185,13 +243,34 @@
     </xsl:template>
     
     <xsl:template match="ddi:useStmt" mode="registryObject_rights_access">
+        
+        <xsl:variable name="accessType">
+            <xsl:choose>
+                <xsl:when test="ddi:specPerm/@required = 'yes'">
+                    <xsl:text>restricted</xsl:text>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:text>open</xsl:text>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        
         <rights>
-            <accessRights>
-                <xsl:value-of select="normalize-space(ddi:confDec)"/>
-            </accessRights>
-            <accessRights>
-                <xsl:value-of select="normalize-space(ddi:restrctn)"/>
-            </accessRights>
+            <xsl:if test="string-length(normalize-space(ddi:confDec))">
+                <accessRights type="{$accessType}">
+                    <xsl:value-of select="normalize-space(ddi:confDec)"/>
+                </accessRights>
+            </xsl:if>
+            <xsl:if test="string-length(normalize-space(ddi:restrctn))">
+                <accessRights type="{$accessType}">
+                    <xsl:value-of select="normalize-space(ddi:restrctn)"/>
+                </accessRights>
+            </xsl:if>
+            <xsl:if test="string-length(normalize-space(ddi:conditions))">
+                <accessRights type="{$accessType}">
+                    <xsl:value-of select="normalize-space(ddi:conditions)"/>
+                </accessRights>
+            </xsl:if>
         </rights>
     </xsl:template>
     
