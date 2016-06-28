@@ -105,21 +105,36 @@
                             </xsl:variable>
                             <xsl:choose>
                                 <xsl:when test="$managerID != ''">
-                                    <xsl:element name="relatedInfo">
-                                        <xsl:attribute name="type" select="'party'"/>
-                                        <xsl:element name="identifier">
-                                            <xsl:attribute name="type" select="nesp:identifierType($managerID)"/>
-                                            <xsl:value-of select="$managerID"/>
-                                        </xsl:element>
-                                        <xsl:element name="relation">
-                                            <xsl:attribute name="type">isManagedBy</xsl:attribute>
-                                        </xsl:element>
-                                        <xsl:if test="string-length($managerName) > 0">
-                                            <xsl:element name="title">
-                                                <xsl:value-of select="$managerName"/>
+                                    <xsl:choose>
+                                        <xsl:when test="contains($managerID, 'nla.gov.au')">
+                                            <xsl:element name="relatedObject">
+                                                <xsl:element name="key">
+                                                    <xsl:value-of select="$managerID"/>
+                                                </xsl:element>
+                                                <xsl:element name="relation">
+                                                    <xsl:attribute name="type">isManagedBy</xsl:attribute>
+                                                </xsl:element>
                                             </xsl:element>
-                                        </xsl:if>
-                                    </xsl:element>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:element name="relatedInfo">
+                                                <xsl:attribute name="type" select="'party'"/>
+                                                <xsl:element name="identifier">
+                                                    <xsl:attribute name="type" select="nesp:identifierType($managerID)"/>
+                                                    <xsl:value-of select="$managerID"/>
+                                                </xsl:element>
+                                                <xsl:element name="relation">
+                                                    <xsl:attribute name="type">isManagedBy</xsl:attribute>
+                                                </xsl:element>
+                                                <xsl:if test="string-length($managerName) > 0">
+                                                    <xsl:element name="title">
+                                                        <xsl:value-of select="$managerName"/>
+                                                    </xsl:element>
+                                                </xsl:if>
+                                            </xsl:element>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                    
                                 </xsl:when>
                                 <xsl:otherwise>
                                     <xsl:if test="string-length($managerID) = 0">
@@ -152,21 +167,35 @@
                             </xsl:variable>
                             <xsl:choose>
                                 <xsl:when test="$partnerID != ''">
-                                    <xsl:element name="relatedInfo">
-                                        <xsl:attribute name="type" select="'party'"/>
-                                        <xsl:element name="identifier">
-                                            <xsl:attribute name="type" select="nesp:identifierType($partnerID)"/>
-                                            <xsl:value-of select="$partnerID"/>
-                                        </xsl:element>
-                                        <xsl:element name="relation">
-                                            <xsl:attribute name="type">hasParticipant</xsl:attribute>
-                                        </xsl:element>
-                                        <xsl:if test="string-length($partnerName) > 0">
-                                            <xsl:element name="title">
-                                                <xsl:value-of select="$partnerName"/>
+                                    <xsl:choose>
+                                        <xsl:when test="contains($partnerID, 'nla.gov.au')">
+                                            <xsl:element name="relatedObject">
+                                                <xsl:element name="key">
+                                                    <xsl:value-of select="$partnerID"/>
+                                                </xsl:element>
+                                                <xsl:element name="relation">
+                                                    <xsl:attribute name="type">hasParticipant</xsl:attribute>
+                                                </xsl:element>
                                             </xsl:element>
-                                        </xsl:if>
-                                    </xsl:element>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:element name="relatedInfo">
+                                                <xsl:attribute name="type" select="'party'"/>
+                                                <xsl:element name="identifier">
+                                                    <xsl:attribute name="type" select="nesp:identifierType($partnerID)"/>
+                                                    <xsl:value-of select="$partnerID"/>
+                                                </xsl:element>
+                                                <xsl:element name="relation">
+                                                    <xsl:attribute name="type">hasParticipant</xsl:attribute>
+                                                </xsl:element>
+                                                <xsl:if test="string-length($partnerName) > 0">
+                                                    <xsl:element name="title">
+                                                        <xsl:value-of select="$partnerName"/>
+                                                    </xsl:element>
+                                                </xsl:if>
+                                            </xsl:element>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
                                 </xsl:when>
                                 <xsl:otherwise>
                                     <xsl:if test="string-length($partnerID) = 0">
@@ -385,7 +414,7 @@
         <xsl:param name="identifier"/>
         
         <xsl:choose>
-            <xsl:when test="contains($identifier,'nla.party')">
+            <xsl:when test="contains($identifier,'nla.gov.au')">
                 <xsl:text>AU-ANL:PEAU</xsl:text>
             </xsl:when>
             <xsl:when test="contains($identifier,'orcid')">
