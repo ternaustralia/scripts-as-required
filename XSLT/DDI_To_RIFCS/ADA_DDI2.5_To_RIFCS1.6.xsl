@@ -52,6 +52,7 @@
                 <xsl:apply-templates select="ddi:stdyDscr/ddi:dataAccs/ddi:useStmt" mode="registryObject_rights_access"/>
                 
                 <xsl:apply-templates select="." mode="registryObject_citationInfo"/>
+                
                 <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:distStmt/ddi:depDate/@date[(string-length(.) > 0)]" mode="registryObject_dates_submitted"/>
                 <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:distStmt/ddi:distDate/@date[(string-length(.) > 0)]" mode="registryObject_dates_available"/>
             </collection>
@@ -69,7 +70,14 @@
             <address>
                  <electronic type="url">
                     <value>
-                        <xsl:value-of select="concat($global_baseURL, substring-after(normalize-space(.), 'au.edu.anu.ada.ddi.'))"/>
+                        <xsl:choose>
+                            <xsl:when test="contains(., 'au.edu.anu.ada.ddi.')">
+                                <xsl:value-of select="concat($global_baseURL, substring-after(normalize-space(.), 'au.edu.anu.ada.ddi.'))"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:value-of select="normalize-space(.)"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
                     </value> 
                 </electronic>
             </address>
@@ -225,7 +233,7 @@
     
     <xsl:template match="ddi:useStmt" mode="registryObject_rights_access">
         
-        <xsl:variable name="accessType">
+        <!--xsl:variable name="accessType">
             <xsl:choose>
                 <xsl:when test="ddi:specPerm/@required = 'yes'">
                     <xsl:text>restricted</xsl:text>
@@ -234,24 +242,27 @@
                     <xsl:text>open</xsl:text>
                 </xsl:otherwise>
             </xsl:choose>
-        </xsl:variable>
+        </xsl:variable-->
+        
+        <xsl:variable name="accessType" select="'restricted'"/>
         
         <rights>
-            <xsl:if test="string-length(normalize-space(ddi:confDec))">
+            <xsl:if test="lower-case(normalize-space(ddi:confDec/@required)) = 'yes'">
                 <accessRights type="{$accessType}">
-                    <xsl:value-of select="normalize-space(ddi:confDec)"/>
+                    <xsl:text>Confidentiality Declaration Required</xsl:text>
                 </accessRights>
             </xsl:if>
-            <xsl:if test="string-length(normalize-space(ddi:restrctn))">
+            <xsl:if test="lower-case(normalize-space(ddi:specPerm/@required)) = 'no'">
                 <accessRights type="{$accessType}">
-                    <xsl:value-of select="normalize-space(ddi:restrctn)"/>
+                    <xsl:text>General Access Application Required</xsl:text>
                 </accessRights>
             </xsl:if>
-            <xsl:if test="string-length(normalize-space(ddi:conditions))">
+            <xsl:if test="lower-case(normalize-space(ddi:specPerm/@required)) = 'yes'">
                 <accessRights type="{$accessType}">
-                    <xsl:value-of select="normalize-space(ddi:conditions)"/>
+                    <xsl:text>Restricted Application and Access Approval Required</xsl:text>
                 </accessRights>
             </xsl:if>
+           
         </rights>
     </xsl:template>
     
@@ -272,18 +283,29 @@
     </xsl:template>
     
     <xsl:template match="ddi:codeBook" mode="registryObject_citationInfo">
+      
+        <citationInfo>
+            <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:biblCit[(string-length(.) > 0)]" mode="registryObject_citation_full"/>
+        </citationInfo>
         
         <citationInfo>
             <citationMetadata>
                 <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:titlStmt/ddi:IDNo[(string-length(.) > 0)]" mode="registryObject_citation_identifier"/>
                 <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:rspStmt/ddi:AuthEnty[(string-length(.) > 0)]" mode="registryObject_citation_contributor"/>
-                <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:prodStmt/ddi:producer[@role='Data Collectors' and (string-length(.) > 0)]" mode="registryObject_citation_publisher"/>
+                <xsl:apply-templates select="ddi:docDscr/ddi:citation/ddi:prodStmt/ddi:producer[(string-length(.) > 0)]" mode="registryObject_citation_publisher"/>
                 <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:titlStmt/ddi:titl[(string-length(.) > 0)]" mode="registryObject_citation_title"/>
                 <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:verStmt/ddi:version[(string-length(.) > 0)]" mode="registryObject_citation_version"/>
-                <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:distStmt/ddi:depDate/@date[(string-length(.) > 0)]" mode="registryObject_citation_date_submitted"/>
-                <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:distStmt/ddi:distDate/@date[(string-length(.) > 0)]" mode="registryObject_citation_date_published"/>
+                <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:distStmt/ddi:distDate/@date[(string-length(.) > 3)]" mode="registryObject_citation_date_published"/>
+                <!--xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:titlStmt/ddi:IDNo[(string-length(.) > 0)]" mode="registryObject_citation_url"/-->
+                
             </citationMetadata>
         </citationInfo>
+    </xsl:template>
+    
+    <xsl:template match="ddi:biblCit" mode="registryObject_citation_full">
+        <fullCitation>
+            <xsl:value-of select="normalize-space(.)"/>
+        </fullCitation>
     </xsl:template>
     
     
@@ -313,25 +335,33 @@
         </version>
     </xsl:template>
     
-    <xsl:template match="@date" mode="registryObject_citation_date_submitted">
-        <date type="dateSubmitted">
-            <xsl:value-of select="normalize-space(.)"/>
-        </date>
-    </xsl:template>
-    
     <xsl:template match="@date" mode="registryObject_citation_date_published">
         <date type="publicationDate">
-            <xsl:value-of select="normalize-space(.)"/>
+            <xsl:value-of select="normalize-space(substring(., 1, 4))"/>
         </date>
     </xsl:template>
     
     <xsl:template match="ddi:producer" mode="registryObject_citation_publisher">
         <publisher>
             <xsl:value-of select="normalize-space(.)"/>
+            <xsl:if test="string-length(@affiliation) > 0">
+                <xsl:value-of select="concat(', ', @affiliation)"/>
+            </xsl:if>
         </publisher>
     </xsl:template>
     
-    
+    <!--xsl:template match="ddi:IDNo" mode="registryObject_citation_url">
+        <url>
+            <xsl:choose>
+                <xsl:when test="contains(., 'au.edu.anu.ada.ddi.')">
+                    <xsl:value-of select="concat($global_baseURL, substring-after(normalize-space(.), 'au.edu.anu.ada.ddi.'))"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="normalize-space(.)"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </url>
+    </xsl:template-->
     
     
     <xsl:function name="localFunc:getIdentifierType" as="xs:string">
