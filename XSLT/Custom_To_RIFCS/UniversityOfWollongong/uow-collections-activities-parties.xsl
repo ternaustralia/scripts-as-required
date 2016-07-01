@@ -57,19 +57,22 @@
                 <xsl:apply-templates select="fields/field[@name='doi' and (string-length(.) > 0)]" mode="identifier"/>
                 
                 <xsl:choose>
-                    <xsl:when test="fields/field[@name='doi']/value[string-length(text()) > 0]">
+                    <xsl:when test="fields/field[@name='doi' and (string-length(.) > 0)]">
                         <xsl:apply-templates select="fields/field[@name='doi']" mode="location"/>
                     </xsl:when>
                     <xsl:when test="fields/field[@name='persistent_identifier' and (string-length(.) > 0)]">
                         <xsl:apply-templates select="fields/field[@name='persistent_identifier']" mode="location"/>
                     </xsl:when>
-                    <xsl:when test="string-length(coverpage-url) > 0">
+                    <xsl:when test="coverpage-url[string-length(.) > 0]">
                         <xsl:apply-templates select="coverpage-url" mode="location"/>
                     </xsl:when>
                 </xsl:choose>
                 
-                
                 <xsl:apply-templates select="title[string-length(.) > 0]"/>
+                
+                <xsl:apply-templates select="authors/author"/>
+                
+                <xsl:apply-templates select="fields/field[(@name = 'additional_investigators') and (string-length(.) > 0)]"/>
                 
                 <xsl:apply-templates select="keywords/keyword[string-length(.) > 0]"/>
                 
@@ -80,8 +83,6 @@
                 <xsl:apply-templates select="abstract[string-length(.) > 0]"/>
                 
                 <xsl:apply-templates select="fields/field[(@name='date_range') and (string-length(.) > 0)]"/>
-                
-                <xsl:apply-templates select="fields/field[(@name='geolocate') and (string-length(.) > 0)]"/>
                 
                 <xsl:apply-templates select="fields/field[(@name='geolocate') and (string-length(.) > 0)]"/>
                 
@@ -115,9 +116,10 @@
         <xsl:for-each select="authors/author">
             
             <xsl:variable name="firstName" select="fname"/>
+            <xsl:variable name="mname" select="mname"/>
             <xsl:variable name="lastName" select="lname"/>
             
-            <xsl:variable name="nameFormatted" select="concat($firstName, ' ', $lastName)"/>
+            <xsl:variable name="nameFormatted" select="concat($firstName, ' ', $mname, ' ', $lastName)"/>
             
             <xsl:variable name="key" select="custom:formatKey($nameFormatted)"/>
             
@@ -125,11 +127,13 @@
             <xsl:variable name="type" select="'person'"/>
             
             <registryObject>
-                <xsl:attribute name="group"><xsl:value-of select="$global_group"/></xsl:attribute>
+                <xsl:attribute name="group" select="$global_group"/>
                 <key>
                     <xsl:value-of select="custom:formatKey($nameFormatted)"/>
                 </key>
-                <originatingSource><xsl:value-of select="$global_originatingSource"/></originatingSource>
+                <originatingSource>
+                    <xsl:value-of select="$global_originatingSource"/>
+                </originatingSource>
                 <xsl:element name="{$class}">
                     
                     <xsl:attribute name="type" select="$type"/>
@@ -196,12 +200,12 @@
                     </xsl:if>
                     
                     <xsl:if test="../../fields/field[(@name='grant_purl') and (string-length(.) > 0)]">
-                        <xsl:analyze-string select="../../fields/field[@name='grant_purl']" regex="href=&quot;(http.+?)&quot;">
+                        <xsl:analyze-string select="../../fields/field[@name='grant_purl']" regex="(http).+?(&quot;|&lt;|$)">
                             <xsl:matching-substring>
                                 <relatedInfo type="activity">
-                                    <xsl:variable name="identifierType" select="custom:identifierType(regex-group(1))"/>
+                                    <xsl:variable name="identifierType" select="custom:identifierType(regex-group(0))"/>
                                     <identifier type="{$identifierType}">
-                                        <xsl:value-of select="regex-group(1)"/>
+                                        <xsl:value-of select="translate(translate(regex-group(0), '&quot;', ''), '&lt;', '')"/>
                                     </identifier>
                                     <relation type="isParticipantIn"/>
                                 </relatedInfo>
@@ -233,7 +237,7 @@
         </originatingSource>
     </xsl:template>
     
-    <xsl:template match="fields/field[@name='doi']" mode="identifier">
+    <xsl:template match="field[@name='doi']" mode="identifier">
         <xsl:choose>
             <xsl:when test="not(contains(lower-case(.), 'doi')) and (substring(., 1) castable as xs:integer)">
                 <identifier type="doi">
@@ -248,15 +252,17 @@
         </xsl:choose>
     </xsl:template>
     
-    <xsl:template match="fields/field[@name='persistent_identifier']" mode="identifier">
-        <xsl:analyze-string select="." regex="href=&quot;(http.+?)&quot;">
-            <xsl:matching-substring>
-                <xsl:variable name="identifierType" select="custom:identifierType(regex-group(1))"/>
-                <identifier type="{$identifierType}">
-                    <xsl:value-of select="regex-group(1)"/>
-                </identifier>
-            </xsl:matching-substring>
-        </xsl:analyze-string>
+    <xsl:template match="field[@name='persistent_identifier']" mode="identifier">
+        <xsl:for-each select="value">
+            <!--xsl:analyze-string select="." regex="(http).+?(&quot;|&lt;|$)"-->
+            <xsl:analyze-string select="." regex="(http).+?(&quot;|&lt;|$)">
+                <xsl:matching-substring>
+                    <identifier type="{custom:identifierType(regex-group(0))}">
+                        <xsl:value-of select="translate(translate(regex-group(0), '&quot;', ''), '&lt;', '')"/>
+                    </identifier>
+                </xsl:matching-substring>
+            </xsl:analyze-string>
+        </xsl:for-each>
     </xsl:template>
     
     <xsl:template match="coverpage-url" mode="location">
@@ -274,7 +280,7 @@
     </xsl:template>
     
     
-    <xsl:template match="fields/field[@name='doi']" mode="location">
+    <xsl:template match="field[@name='doi']" mode="location">
         <xsl:message select="concat('current doi: ', .)"/>
         <xsl:choose>
             <!--xsl:when test="not(contains(lower-case(.), 'doi')) and (substring(., 1) castable as xs:integer)"-->
@@ -304,23 +310,70 @@
     </xsl:template>
     
     
-    <xsl:template match="fields/field[@name='persistent_identifier']" mode="location">
-        <xsl:variable name="doi" select="../../field[@name='doi' and (string-length(.) > 0)]"/>
-       
-        <xsl:message select="concat('current pid: ', .)"/>
-        <xsl:analyze-string select="." regex="href=&quot;(http.+?)&quot;">
-            <xsl:matching-substring>
-                <location>
-                    <address>
-                        <electronic type="url" target="landingPage">
-                            <value>
-                                <xsl:value-of select="regex-group(1)"/>
-                            </value>
-                        </electronic>
-                    </address>
-                </location>
-            </xsl:matching-substring>
-        </xsl:analyze-string>
+    <xsl:template match="field[@name='persistent_identifier']" mode="location">
+        <xsl:for-each select="value">
+            <xsl:variable name="doi" select="../../field[@name='doi' and (string-length(.) > 0)]"/>
+           
+            <xsl:message select="concat('current pid: ', .)"/>
+            <xsl:choose>
+                <xsl:when test="contains(., '&quot;')">
+                    <xsl:analyze-string select="." regex="(http).+?(&quot;|&lt;|$)">
+                         <xsl:matching-substring>
+                             <location>
+                                 <address>
+                                     <electronic type="url" target="landingPage">
+                                         <value>
+                                             <xsl:value-of select="translate(translate(regex-group(0), '&quot;', ''), '&lt;', '')"/>
+                                         </value>
+                                     </electronic>
+                                 </address>
+                             </location>
+                         </xsl:matching-substring>
+                     </xsl:analyze-string>
+                </xsl:when>
+                <xsl:otherwise>
+                    <location>
+                        <address>
+                             <electronic type="url" target="landingPage">
+                                 <value>
+                                     <xsl:value-of select="."/>
+                                 </value>
+                             </electronic>
+                         </address>
+                    </location>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:for-each>
+    </xsl:template>
+    
+    <xsl:template match="author">
+            
+        <xsl:variable name="firstName" select="fname"/>
+        <xsl:variable name="mname" select="mname"/>
+        <xsl:variable name="lastName" select="lname"/>
+        
+        <xsl:variable name="nameFormatted" select="concat($firstName, ' ', $mname, ' ', $lastName)"/>
+        
+        <xsl:variable name="key" select="custom:formatKey($nameFormatted)"/>
+        
+        <xsl:if test="string-length($key) > 0">
+            <relatedObject>
+                <key>
+                    <xsl:value-of select="custom:formatKey($nameFormatted)"/>
+                </key>
+                <relation type="hasCollector"/>
+            </relatedObject>
+        </xsl:if>
+        
+    </xsl:template>
+    
+    <xsl:template match="field[@name='additional_investigators']">
+        <xsl:for-each select="value">
+            <description type="notes">
+                <xsl:text>Additional Investigators:&lt;br&gt;</xsl:text>
+                <xsl:value-of select="."/>
+            </description>
+        </xsl:for-each>
     </xsl:template>
     
     <xsl:template match="title">
@@ -343,13 +396,15 @@
         </subject>
     </xsl:template>
     
-    <xsl:template match="fields/field[(@name='for')]">
-        <xsl:variable name="forCode" select="tokenize(., ' ')[1]"/>
-        <xsl:if test="(string-length($forCode) > 0) and ($forCode castable as xs:integer)">
-            <subject type="anzsrc-for">
-                <xsl:value-of select="$forCode"/>
-            </subject>
-        </xsl:if>
+    <xsl:template match="field[(@name='for')]">
+        <xsl:for-each select="value">
+            <xsl:variable name="forCode" select="tokenize(., ' ')[1]"/>
+             <xsl:if test="(string-length($forCode) > 0) and ($forCode castable as xs:integer)">
+                 <subject type="anzsrc-for">
+                     <xsl:value-of select="$forCode"/>
+                 </subject>
+             </xsl:if>
+        </xsl:for-each>
     </xsl:template>
     
     <xsl:template match="abstract">
@@ -359,32 +414,36 @@
     </xsl:template>
     
     <xsl:template match="fields/field[@name='date_range']">
-        <coverage>
-            <temporal>
-                <text>
-                    <xsl:value-of select="."/>
-                </text>
-            </temporal>
-        </coverage>
+        <xsl:for-each select="value">
+            <coverage>
+                <temporal>
+                    <text>
+                        <xsl:value-of select="."/>
+                    </text>
+                </temporal>
+            </coverage>
+        </xsl:for-each>
     </xsl:template>
     
-    <xsl:template match="fields/field[@name='geolocate']">
-        <coverage>
-            <spatial type="text">
-                <xsl:value-of select="."/>
-            </spatial>
-        </coverage>
+    <xsl:template match="field[@name='geolocate']">
+        <xsl:for-each select="value">
+            <coverage>
+                <spatial type="text">
+                    <xsl:value-of select="."/>
+                </spatial>
+            </coverage>
+        </xsl:for-each>
     </xsl:template>
     
     <xsl:template match="fields" mode="spatial_coverage">
-       <xsl:if test="
-           (string-length(field[@name='latitude']) > 0) and
-           (string-length(field[@name='longitude']) > 0)">
-           <location>
-               <spatial type="kmlPolyCoords">
-                   <xsl:value-of select="concat(field[@name='longitude'], ',',field[@name='latitude'])"/>
-               </spatial>
-           </location>
+        <xsl:if test="
+            (string-length(field[@name='latitude']) > 0) and
+            (string-length(field[@name='longitude']) > 0)">
+            <location>
+                <spatial type="kmlPolyCoords">
+                    <xsl:value-of select="concat(field[@name='longitude'], ',',field[@name='latitude'])"/>
+                </spatial>
+            </location>
         </xsl:if>
     </xsl:template>
     
@@ -396,69 +455,83 @@
         </dates>
     </xsl:template>
     
-    <xsl:template match="fields/field[@name='custom_citation']">
-        <citationInfo>
-            <fullCitation>
-                <xsl:value-of select="."/>
-            </fullCitation>
-        </citationInfo>
+    <xsl:template match="field[@name='custom_citation']">
+        <xsl:for-each select="value">
+            <citationInfo>
+                <fullCitation>
+                    <xsl:value-of select="."/>
+                </fullCitation>
+            </citationInfo>
+        </xsl:for-each>
     </xsl:template>
     
-    <xsl:template match="fields/field[@name='grant_purl']">
-        <xsl:analyze-string select="." regex="href=&quot;(http.+?)&quot;">
-            <xsl:matching-substring>
-                <relatedInfo type="activity">
-                    <xsl:variable name="identifierType" select="custom:identifierType(regex-group(1))"/>
-                    <identifier type="{$identifierType}">
-                        <xsl:value-of select="regex-group(1)"/>
-                    </identifier>
-                    <relation type="isOutputOf"/>
-                </relatedInfo>
-            </xsl:matching-substring>
-        </xsl:analyze-string>
+    <xsl:template match="field[@name='grant_purl']">
+        <xsl:for-each select="value">
+            <xsl:analyze-string select="." regex="(http).+?(&quot;|&lt;|$)">
+              <xsl:matching-substring>
+                  <relatedInfo type="activity">
+                      <xsl:variable name="identifierType" select="custom:identifierType(regex-group(0))"/>
+                      <identifier type="{$identifierType}">
+                          <xsl:value-of select="translate(translate(regex-group(0), '&quot;', ''), '&lt;', '')"/>
+                      </identifier>
+                      <relation type="isOutputOf"/>
+                  </relatedInfo>
+              </xsl:matching-substring>
+          </xsl:analyze-string>
+        </xsl:for-each>
     </xsl:template>
     
     <xsl:template match="native-url">
-        <xsl:if test="contains(., 'viewcontent')">
-            <rights>
-                <accessRights type="open"/>
-            </rights>
-        </xsl:if>
+        <xsl:for-each select="value">
+            <xsl:if test="contains(., 'viewcontent')">
+                <rights>
+                    <accessRights type="open"/>
+                </rights>
+            </xsl:if>
+        </xsl:for-each>
     </xsl:template>
     
     <xsl:template match="field[@name='rights']">
-        <rights>
-            <rightsStatement>
-                <xsl:value-of select="."/>
-            </rightsStatement>
-        </rights>
+        <xsl:for-each select="value">
+            <rights>
+                <rightsStatement>
+                    <xsl:value-of select="."/>
+                </rightsStatement>
+            </rights>
+            <xsl:if test="contains(lower-case(.), 'open access')">
+                <rights>
+                    <accessRights type="open"/>
+                </rights>
+            </xsl:if>
+        </xsl:for-each>
     </xsl:template>
     
     <xsl:template match="field[@name='distribution_license']">
-        
-        <rights>
-            <licence>
-                <xsl:choose>
-                    <xsl:when test="contains(., 'http')">
-                        <xsl:attribute name="rightsUri">
-                            <xsl:value-of select="."/>
-                        </xsl:attribute>
-                        <xsl:if test="contains(., 'creativecommons')">
-                            <xsl:message select="concat('creativecommons: ', .)"/>
-                            <xsl:analyze-string select="." regex="(http://creativecommons.org/licenses/)(.*)(/\d)">
-                                <xsl:matching-substring>
-                                    <xsl:if test="string-length(regex-group(2)) > 0">
-                                        <xsl:attribute name="type">
-                                            <xsl:value-of select="upper-case(concat('cc-', regex-group(2)))"/>
-                                        </xsl:attribute>
-                                    </xsl:if>
-                                </xsl:matching-substring>
-                            </xsl:analyze-string>
-                        </xsl:if>
-                    </xsl:when>
-                </xsl:choose>
-            </licence>
-        </rights>
+        <xsl:for-each select="value">
+            <rights>
+                <licence>
+                    <xsl:choose>
+                        <xsl:when test="contains(., 'http')">
+                            <xsl:attribute name="rightsUri">
+                                <xsl:value-of select="."/>
+                            </xsl:attribute>
+                            <xsl:if test="contains(., 'creativecommons')">
+                                <xsl:message select="concat('creativecommons: ', .)"/>
+                                <xsl:analyze-string select="." regex="(http://creativecommons.org/licenses/)(.*)(/\d)">
+                                    <xsl:matching-substring>
+                                        <xsl:if test="string-length(regex-group(2)) > 0">
+                                            <xsl:attribute name="type">
+                                                <xsl:value-of select="upper-case(concat('cc-', regex-group(2)))"/>
+                                            </xsl:attribute>
+                                        </xsl:if>
+                                    </xsl:matching-substring>
+                                </xsl:analyze-string>
+                            </xsl:if>
+                        </xsl:when>
+                    </xsl:choose>
+                </licence>
+            </rights>
+        </xsl:for-each>
     </xsl:template>
     
     
@@ -470,21 +543,21 @@
         </xsl:if>
     </xsl:template>
     
-    <xsl:template match="fields/field[@name='related_content']">
-        <xsl:analyze-string select="." regex="href=&quot;(http.+?)&quot;">
-            <xsl:matching-substring>
-                <relatedInfo>
-                     <xsl:variable name="identifierType" select="custom:identifierType(regex-group(1))"/>
-                     <identifier type="{$identifierType}">
-                         <xsl:value-of select="regex-group(1)"/>
-                     </identifier>
-                    <relation type="hasAssociationWith"/>
-                </relatedInfo>
-            </xsl:matching-substring>
-        </xsl:analyze-string>
+    <xsl:template match="field[@name='related_content']">
+        <xsl:for-each select="value">
+            <xsl:analyze-string select="." regex="(http).+?(&quot;|&lt;|$)">
+                <xsl:matching-substring>
+                    <relatedInfo>
+                         <xsl:variable name="identifierType" select="custom:identifierType(regex-group(0))"/>
+                         <identifier type="{$identifierType}">
+                             <xsl:value-of select="translate(translate(regex-group(0), '&quot;', ''), '&lt;', '')"/>
+                         </identifier>
+                        <relation type="hasAssociationWith"/>
+                    </relatedInfo>
+                </xsl:matching-substring>
+            </xsl:analyze-string>
+        </xsl:for-each>
     </xsl:template>
-    
-    
     
     <!-- Functions -->
     
@@ -521,6 +594,9 @@
             <xsl:when test="contains(lower-case($identifier), 'doi')">
                 <xsl:text>doi</xsl:text>
             </xsl:when>
+            <xsl:when test="contains(lower-case($identifier), 'handle')">
+                <xsl:text>handle</xsl:text>
+            </xsl:when>
             <xsl:otherwise>
                 <xsl:text>uri</xsl:text>
             </xsl:otherwise>
@@ -528,11 +604,9 @@
     </xsl:function>
     
     
-    
-    
     <xsl:function name="custom:formatKey">
         <xsl:param name="input"/>
-        <xsl:variable name="raw" select="translate($input, ' ', '')"/>
+        <xsl:variable name="raw" select="translate(translate($input, ' ', ''), '.', '')"/>
         <xsl:variable name="temp">
             <xsl:choose>
                 <xsl:when test="substring($raw, string-length($raw), 1) = '.'">
