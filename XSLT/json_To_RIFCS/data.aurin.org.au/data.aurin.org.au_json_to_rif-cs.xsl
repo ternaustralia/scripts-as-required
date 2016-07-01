@@ -10,6 +10,7 @@
     <xsl:param name="global_originatingSource" select="'External Data Hub'"/>
     <xsl:param name="global_baseURI" select="'http://data.aurin.org.au/'"/>
     <xsl:param name="global_baseGroupURI" select="'http://data.aurin.org.au/uploads/group/'"/>
+    <xsl:param name="global_acronym" select="'AURIN'"/>
     <xsl:param name="global_group"
         select="'Australian Urban Research Infrastructure Network (AURIN)'"/>
     <xsl:param name="global_contributor"
@@ -21,26 +22,32 @@
     <xsl:template match="/">
         <xsl:apply-templates/>
     </xsl:template>
-
-    <xsl:template match="datasets/help"/>
-    <xsl:template match="datasets/success"/>
-
+    
+    <xsl:template match="//datasets/help"/>
+    <xsl:template match="//datasets/success"/>
+    
     <!-- =========================================== -->
     <!-- dataset (datasets) Template             -->
     <!-- =========================================== -->
-
-    <xsl:template match="datasets">
+    
+    <xsl:template match="root">
         <registryObjects>
             <xsl:attribute name="xsi:schemaLocation">
                 <xsl:text>http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd</xsl:text>
             </xsl:attribute>
-            <xsl:apply-templates select="result" mode="collection"/>
-            <xsl:apply-templates select="result" mode="party"/>
-            <xsl:apply-templates select="result" mode="service"/>
+            
+            <xsl:apply-templates select="datasets/result/results" mode="constructObjects"/>
+            
         </registryObjects>
     </xsl:template>
+    
+    <xsl:template match="results" mode="constructObjects">
+        <xsl:apply-templates select="." mode="collection"/>
+        <xsl:apply-templates select="." mode="party"/>
+        <xsl:apply-templates select="." mode="service"/>
+    </xsl:template>
 
-    <xsl:template match="result" mode="collection">
+    <xsl:template match="results" mode="collection">
 
         <xsl:variable name="metadataURL">
             <xsl:variable name="name" select="normalize-space(name)"/>
@@ -143,7 +150,7 @@
     <!-- Party RegistryObject Template          -->
     <!-- =========================================== -->
 
-    <xsl:template match="result" mode="party">
+    <xsl:template match="results" mode="party">
 
         <xsl:apply-templates select="organization"/>
 
@@ -163,7 +170,7 @@
     <xsl:template match="id" mode="collection_key">
         <xsl:if test="string-length(normalize-space(.))">
             <key>
-                <xsl:value-of select="concat($global_group,'/', lower-case(normalize-space(.)))"/>
+                <xsl:value-of select="concat($global_acronym,'/', lower-case(normalize-space(.)))"/>
             </key>
         </xsl:if>
     </xsl:template>
@@ -173,7 +180,7 @@
         <xsl:if test="string-length(normalize-space(.))">
             <identifier>
                 <xsl:attribute name="type">
-                    <xsl:text>local</xsl:text>
+                    <xsl:text>global</xsl:text>
                 </xsl:attribute>
                 <xsl:value-of select="normalize-space(.)"/>
             </identifier>
@@ -247,7 +254,7 @@
             <relatedObject>
                 <key>
                     <xsl:value-of
-                        select="concat($global_group,'/', translate(lower-case(normalize-space(title)),' ',''))"
+                        select="concat($global_acronym,'/', translate(lower-case(normalize-space(title)),' ',''))"
                     />
                 </key>
                 <relation>
@@ -266,7 +273,7 @@
             <relatedObject>
                 <key>
                     <xsl:value-of
-                        select="concat($global_group,'/', translate(normalize-space(lower-case(normalize-space(.))),' ',''))"
+                        select="concat($global_acronym,'/', translate(normalize-space(lower-case(normalize-space(.))),' ',''))"
                     />
                 </key>
                 <relation>
@@ -289,7 +296,7 @@
     </xsl:template>
 
     <!-- Collection - Decription (brief) Element -->
-    <xsl:template match="result" mode="collection_extras">
+    <xsl:template match="results" mode="collection_extras">
         <xsl:variable name="extraNotes_sequence" as="xs:string*">
             <xsl:for-each select="extras">
                 <xsl:if test="string-length(normalize-space(value)) > 0">
@@ -440,7 +447,7 @@
     </xsl:template>
 
     <!-- Collection - Related Info Element - Services -->
-    <xsl:template match="result" mode="collection_relatedInfo">
+    <xsl:template match="results" mode="collection_relatedInfo">
         <xsl:variable name="organizationTitle" select="organization/title"/>
         <!-- Related Services -->
         <xsl:for-each select="resources">
@@ -670,7 +677,7 @@
 
                 <key>
                     <xsl:value-of
-                        select="concat($global_group, '/', translate(lower-case($title),' ',''))"/>
+                        select="concat($global_acronym, '/', translate(lower-case($title),' ',''))"/>
                 </key>
 
                 <originatingSource>
@@ -761,14 +768,14 @@
     </xsl:template>
 
     <!-- Party Registry Object (Individuals (person) and Organisations (group)) -->
-    <xsl:template match="datasets/result" mode="party_author">
+    <xsl:template match="datasets/results" mode="party_author">
         <xsl:variable name="name" select="author"/>
         <xsl:if test="string-length($name) > 0">
             <registryObject group="{$global_group}">
 
                 <key>
                     <xsl:value-of
-                        select="concat($global_group, '/', translate(lower-case($name),' ',''))"/>
+                        select="concat($global_acronym, '/', translate(lower-case($name),' ',''))"/>
                 </key>
 
                 <originatingSource>
@@ -806,7 +813,7 @@
                         <relatedObject>
                             <key>
                                 <xsl:value-of
-                                    select="concat($global_group,'/', translate(lower-case($name),' ',''))"
+                                    select="concat($global_acronym,'/', translate(lower-case($name),' ',''))"
                                 />
                             </key>
                             <relation>
@@ -826,7 +833,7 @@
     <!-- ====================================== -->
 
     <!-- Service Registry Object -->
-    <xsl:template match="result" mode="service">
+    <xsl:template match="results" mode="service">
         <xsl:variable name="organizationTitle" select="normalize-space(organization/title)"/>
         <xsl:variable name="organizationName" select="normalize-space(organization/name)"/>
         <xsl:variable name="organizationDescription"
@@ -983,7 +990,14 @@
         <rights>
             <licence>
                 <xsl:attribute name="type">
-                    <xsl:value-of select="upper-case($id)"/>
+                    <xsl:choose>
+                        <xsl:when test="matches($id, '-[\d].[\d]-AU')">
+                            <xsl:value-of select="replace($id, '-[\d].[\d]-AU', '')"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="$id"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
                 </xsl:attribute>
                 <xsl:attribute name="rightsUri">
                     <xsl:value-of select="$url"/>

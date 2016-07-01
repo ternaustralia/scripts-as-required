@@ -45,7 +45,7 @@
             ((count($harvestSourceTitle_sequence) = 0) or not(boolean(custom:sequenceContains($harvestSourceTitle_sequence, 'Commonwealth Datasets')))))">
             <xsl:apply-templates select="." mode="collection"/>
             <xsl:apply-templates select="." mode="party"/>
-            <xsl:apply-templates select="." mode="service"/>
+            <!--xsl:apply-templates select="." mode="service"/-->
             
         </xsl:if>
     </xsl:template>
@@ -115,7 +115,7 @@
 
                 <xsl:apply-templates select="organization" mode="collection_related_object"/>
 
-                <xsl:apply-templates select="author" mode="collection_related_object"/>
+                <!--xsl:apply-templates select="author" mode="collection_related_object"/-->
 
                 <xsl:apply-templates select="tags" mode="collection_subject"/>
 
@@ -131,7 +131,7 @@
                     <xsl:with-param name="url" select="license_url"/>
                 </xsl:call-template>
 
-                <xsl:apply-templates select="." mode="collection_relatedInfo"/>
+                <!--xsl:apply-templates select="." mode="collection_relatedInfo"/-->
 
 
                 <!--xsl:apply-templates select="" 
@@ -158,12 +158,11 @@
 
         <xsl:apply-templates select="organization"/>
 
-        <!-- If the author differs from the organisation -->
-        <xsl:variable name="authorName" select="author"/>
+        <!-- name of author differs from name of organisation, so construct an author record and relate it to the organization-->
+        <!--xsl:variable name="authorName" select="author"/>
         <xsl:if test="not(contains(lower-case(organization/title), lower-case($authorName)))">
-            <!-- name of author differs from name of organisation, so construct an author record and relate it to the organization-->
             <xsl:apply-templates select="." mode="party_author"/>
-        </xsl:if>
+        </xsl:if-->
     </xsl:template>
 
     <!-- =========================================== -->
@@ -279,7 +278,7 @@
         </xsl:if>
     </xsl:template>
 
-    <xsl:template match="author" mode="collection_related_object">
+    <!--xsl:template match="author" mode="collection_related_object">
         <xsl:if test="string-length(normalize-space(.))">
             <relatedObject>
                 <key>
@@ -294,7 +293,7 @@
                 </relation>
             </relatedObject>
         </xsl:if>
-    </xsl:template>
+    </xsl:template-->
 
     <!-- Collection - Subject Element -->
     <xsl:template match="tags" mode="collection_subject">
@@ -662,7 +661,7 @@
                             <xsl:value-of select="normalize-space(description)"/>
                         </description>
                     </xsl:if>
-                    <xsl:for-each select="../resources">
+                    <!--xsl:for-each select="../resources">
                         <xsl:message>resources</xsl:message>
                         <xsl:variable name="serviceUrl" select="custom:getServiceUrl(.)"/>
                         <xsl:variable name="serviceName" select="custom:getServiceName($serviceUrl)"/>
@@ -692,7 +691,7 @@
                                 </xsl:if>
                             </relatedInfo>
                         </xsl:if>
-                    </xsl:for-each>
+                    </xsl:for-each-->
 
                 </party>
             </registryObject>
@@ -700,7 +699,7 @@
     </xsl:template>
 
     <!-- Party Registry Object (Individuals (person) and Organisations (group)) -->
-    <xsl:template match="datasets/result" mode="party_author">
+    <!--xsl:template match="datasets/result" mode="party_author">
         <xsl:variable name="name" select="author"/>
         <xsl:if test="string-length($name) > 0">
             <registryObject group="{$global_group}">
@@ -759,7 +758,7 @@
                 </party>
             </registryObject>
         </xsl:if>
-    </xsl:template>
+    </xsl:template-->
 
     <!-- ====================================== -->
     <!-- Service RegistryObject - Template -->

@@ -31,7 +31,7 @@
             </xsl:attribute>
             <xsl:apply-templates select="result" mode="collection"/>
             <xsl:apply-templates select="result" mode="party"/>
-            <xsl:apply-templates select="result" mode="service"/>
+            <!--xsl:apply-templates select="result" mode="service"/-->
         </registryObjects>
     </xsl:template>
 
