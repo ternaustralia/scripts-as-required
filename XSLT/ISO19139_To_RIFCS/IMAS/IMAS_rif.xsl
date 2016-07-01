@@ -15,19 +15,26 @@
     xmlns:srv="http://www.isotc211.org/2005/srv"
     xmlns:oai="http://www.openarchives.org/OAI/2.0/" 
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:custom="http://custom.nowhere.yet"
     xmlns:customIMAS="http://customIMAS.nowhere.yet"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
-    exclude-result-prefixes="xlink geonet gmx oai xsi gmd srv gml gco mcp dwc customIMAS">
+    exclude-result-prefixes="xlink geonet gmx oai xsi gmd srv gml gco mcp dwc customIMAS custom">
+    <xsl:import href="CustomFunctions.xsl"/>
     <!-- stylesheet to convert iso19139 in OAI-PMH ListRecords response to RIF-CS -->
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
-    <xsl:param name="global_IMAS_defaultOriginatingSource" select="'external'"/>
-    <xsl:param name="global_IMAS_acronym" select="'UTAS'"/>
-    <xsl:param name="global_IMAS_group" select="'University of Tasmania, Australia'"/> 
-    <xsl:param name="global_IMAS_baseURI" select="'http://metadata.imas.utas.edu.au'"/>
+    
+    <xsl:param name="global_IMAS_group" select="'UTAS:University of Tasmania, Australia'"/>
+    <xsl:param name="global_IMAS_sourceURL" select="'http://metadata.imas.utas.edu.au'"/>
+    <!--xsl:param name="global_IMAS_originatingSourceOrganisation" select="'undetermined'"/-->
+    
     <xsl:param name="global_IMAS_path" select="'/metadataviewer/faces/view.xhtml?uuid='"/>
+    
     <xsl:param name="global_IMAS_cannedCitation" select="'The citation in a list of references is: citation author name/s (year metadata published), metadata title. Citation author organisation/s. File identifier and Data accessed at (add http link).'"/>
     <xsl:param name="global_IMAS_identifier_open" select="'39060c33-9246-49fe-8f97-758b67ced4ce'"/>
+    
+    
+    
     <!--xsl:param name="global_IMAS_ActivityKeyNERP" select="'to be determined'"/-->
     <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>
     <xsl:variable name="gmdCodelists" select="document('codelists.xml')"/>
@@ -62,28 +69,73 @@
     <!-- =========================================== -->
 
     <xsl:template match="mcp:MD_Metadata" mode="IMAS">
-        <xsl:param name="source"/>
+        <xsl:param name="aggregatingGroup"/>
         
-        <xsl:message select="concat('source: ', $source)"/>
+        <xsl:variable name="groupToUse">
+            <xsl:choose>
+                <xsl:when test="string-length($aggregatingGroup) > 0">
+                    <xsl:value-of select="$aggregatingGroup"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="$global_IMAS_group"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
         
-        <xsl:variable name="metadataTruthURL" select="customIMAS:getMetadataTruthURL(gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions)"/>
-        <!--xsl:message select="concat('metadataTruthURL: ', $metadataTruthURL)"/-->
+        <xsl:message select="concat('groupToUse: ', $groupToUse)"/>
+        
+        <xsl:variable name="metadataURL_sequence" select="customIMAS:getMetadataTruthURL_sequence(gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions)[1]"/>
+        <xsl:variable name="metadataURL">
+            <xsl:choose>
+                <xsl:when test="count($metadataURL_sequence) > 0">
+                    <xsl:value-of select="$metadataURL_sequence[1]"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:text></xsl:text>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable> 
+        
+        <xsl:message select="concat('metadataURL: ', $metadataURL)"/>
+        
+        
+        <xsl:variable name="datasetURI" select="gmd:dataSetURI"/>
+        <xsl:message select="concat('datasetURI: ', $datasetURI)"/>
+        
+        <xsl:variable name="originatingSourceURL">
+            <xsl:choose>
+                <xsl:when test="string-length($metadataURL) > 0">
+                    <xsl:value-of select="custom:getDomainFromURL($metadataURL)"/>
+                </xsl:when>
+                <xsl:when test="string-length($datasetURI) > 0">
+                    <xsl:value-of select="custom:getDomainFromURL($datasetURI)"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:text>undetermined</xsl:text>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable> 
+        
+        <xsl:message select="concat('originatingSourceURL: ', $originatingSourceURL)"/>
+        
+        <xsl:message select="concat('originatingSourceURL: ', $originatingSourceURL)"/>
+         
         
         <xsl:variable name="dataSetURI" select="gmd:dataSetURI"/>
         <!--xsl:message select="concat('dataSetURI: ', $dataSetURI)"/-->
         
         <xsl:variable name="fileIdentifier" select="gmd:fileIdentifier"/>
-        <xsl:message select="concat('fileIdentifier: ', $fileIdentifier)"/>
+        <!--xsl:message select="concat('fileIdentifier: ', $fileIdentifier)"/-->
 
         <xsl:variable name="imasDataCatalogueURL">
             <xsl:if test="string-length($fileIdentifier) > 0">
-                <xsl:copy-of select="concat('http://', $global_IMAS_baseURI, $global_IMAS_path, $fileIdentifier)"/>
+                <xsl:copy-of select="concat($global_IMAS_sourceURL, $global_IMAS_path, $fileIdentifier)"/>
             </xsl:if>
         </xsl:variable>
         <!--xsl:message select="concat('imasDataCatalogueURL: ', $imasDataCatalogueURL)"/-->
         
         <xsl:variable name="projectionCode">
-            <xsl:variable name="projectionCode_sequence" as="xs:string*" select="gmd:referenceSystemInfo/gmd:MD_ReferenceSystem/gmd:referenceSystemIdentifier/gmd:RS_Identifier/gmd:code"/>
+            <xsl:variable name="projectionCode_sequence" select="gmd:referenceSystemInfo/gmd:MD_ReferenceSystem/gmd:referenceSystemIdentifier/gmd:RS_Identifier/gmd:code"/>
             <!--xsl:message select="concat('total projectionCodes: ', count($projectionCode_sequence))"/-->
             <xsl:if test="count($projectionCode_sequence) > 0">
                 <xsl:value-of select="$projectionCode_sequence[1]"/>
@@ -107,7 +159,6 @@
         </xsl:variable>
 
         <!--xsl:message select="concat('scopeCode: ', $scopeCode)"/-->
-        
         <xsl:variable name="pointOfContactNode_sequence" as="node()*">
             <xsl:if test="count(gmd:identificationInfo/mcp:MD_DataIdentification) > 0">
                 <xsl:copy-of select="customIMAS:getPointOfContactSequence(gmd:identificationInfo/mcp:MD_DataIdentification)"/>
@@ -223,7 +274,7 @@
             <xsl:message select="concat('citation constributor: ', .)"/>
         </xsl:for-each-->
         
-        <xsl:variable name="originatingSource_sequence" as="xs:string*">
+        <xsl:variable name="originatingSourceOrganisation_sequence" as="xs:string*">
             <!-- ToDo - use individual if AAD, otherwise, organisation.. ? -->
             <xsl:choose>
                 <xsl:when test="count($citationContributorOrganisationNameNoIndividualName_specificRole_sequence) > 0">
@@ -258,13 +309,13 @@
             <xsl:message select="concat('originating source: ', .)"/>
         </xsl:for-each-->
         
-        <xsl:variable name="originatingSource">
+        <xsl:variable name="originatingSourceOrganisation">
             <xsl:choose>
-                <xsl:when test="count($originatingSource_sequence) > 0">
-                    <xsl:value-of select="customIMAS:getTransformedOriginatingSource($originatingSource_sequence[1])"/>  
+                <xsl:when test="count($originatingSourceOrganisation_sequence) > 0">
+                    <xsl:value-of select="customIMAS:getTransformedOriginatingSourceOrganisation($originatingSourceOrganisation_sequence[1])"/>  
                 </xsl:when>
                 <xsl:otherwise>
-                    <xsl:value-of select="$global_IMAS_defaultOriginatingSource"/>
+                    <xsl:value-of select="$global_IMAS_sourceURL"/>
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
@@ -274,9 +325,9 @@
             <xsl:variable name="publishingOrganisationNotTransformed">
                 <xsl:variable name="baseURI">
                     <xsl:choose>
-                        <xsl:when test="string-length($metadataTruthURL) > 0">
-                            <!--xsl:message select="concat('metadataTruthURL: ', $metadataTruthURL)"/-->
-                            <xsl:copy-of select="customIMAS:getBaseURI($metadataTruthURL)"/>
+                        <xsl:when test="string-length($metadataURL) > 0">
+                            <!--xsl:message select="concat('metadataTruthURL: ', $metadataURL)"/-->
+                            <xsl:copy-of select="customIMAS:getBaseURI($metadataURL)"/>
                         </xsl:when>
                         <xsl:when test="string-length($dataSetURI) > 0">
                             <!--xsl:message select="concat('dataSetURI: ', $dataSetURI)"/-->
@@ -319,23 +370,14 @@
         <!--xsl:message select="concat('publishingOrganisation: ', $publishingOrganisation)"/-->
 
         <registryObject>
-            <xsl:attribute name="group">
-                <xsl:choose>
-                    <xsl:when test="string-length(substring-after($source, ':')) > 0">
-                        <xsl:value-of select="substring-after($source, ':')"/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:value-of select="$global_IMAS_group"/>
-                    </xsl:otherwise>
-                </xsl:choose>
-            </xsl:attribute>
+            <xsl:attribute name="group" select="substring-after($groupToUse, ':')"/>
 
             <xsl:apply-templates select="gmd:fileIdentifier" mode="IMAS_registryObject_key">
-                <xsl:with-param name="source" select="$source"/>
+                <xsl:with-param name="groupToUse" select="$groupToUse"/>
             </xsl:apply-templates>
 
             <originatingSource>
-                <xsl:value-of select="$originatingSource"/>
+                <xsl:value-of select="$originatingSourceURL"/>
             </originatingSource>
             
             <xsl:variable name="metadataCreationDate">
@@ -366,9 +408,9 @@
                     </xsl:call-template>
                     
                     <xsl:choose>
-                        <xsl:when test="string-length($metadataTruthURL) > 0">
+                        <xsl:when test="string-length($metadataURL) > 0">
                             <xsl:call-template name="IMAS_set_registryObjectIdentifier">
-                                <xsl:with-param name="identifier" select="$metadataTruthURL"/>
+                                <xsl:with-param name="identifier" select="$metadataURL"/>
                                 <xsl:with-param name="type" select="'uri'"/>
                             </xsl:call-template>
                         </xsl:when>
@@ -394,7 +436,7 @@
                     
                     <xsl:apply-templates select="gmd:parentIdentifier"
                         mode="IMAS_registryObject_related_object">
-                        <xsl:with-param name="source" select="$source"/>
+                        <xsl:with-param name="groupToUse" select="$groupToUse"/>
                     </xsl:apply-templates>
 
                    <xsl:apply-templates select="gmd:distributionInfo/gmd:MD_Distribution"
@@ -411,7 +453,7 @@
                          (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)) > 0)]"
                         group-by="gmd:individualName">
                         <xsl:apply-templates select="." mode="IMAS_registryObject_related_object">
-                            <xsl:with-param name="source" select="$source"/>
+                            <xsl:with-param name="groupToUse" select="$groupToUse"/>
                         </xsl:apply-templates>
                     </xsl:for-each-group>
 
@@ -422,13 +464,13 @@
                          (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)) > 0)]"
                         group-by="gmd:organisationName">
                         <xsl:apply-templates select="." mode="IMAS_registryObject_related_object">
-                            <xsl:with-param name="source" select="$source"/>
+                            <xsl:with-param name="groupToUse" select="$groupToUse"/>
                         </xsl:apply-templates>
                     </xsl:for-each-group>
 
                     <xsl:apply-templates select="mcp:children/mcp:childIdentifier"
                         mode="IMAS_registryObject_related_object">
-                        <xsl:with-param name="source" select="$source"/>
+                        <xsl:with-param name="groupToUse" select="$groupToUse"/>
                     </xsl:apply-templates>
 
                     <xsl:apply-templates
@@ -526,9 +568,9 @@
 
                        <xsl:for-each select="gmd:identificationInfo/*/gmd:citation/gmd:CI_Citation">
                             <xsl:call-template name="IMAS_registryObject_citationMetadata_citationInfo">
-                                <xsl:with-param name="metadataTruthURL" select="$metadataTruthURL"/>
+                                <xsl:with-param name="metadataURL" select="$metadataURL"/>
                                 <xsl:with-param name="imasDataCatalogueURL" select="$imasDataCatalogueURL"/>
-                                <xsl:with-param name="originatingSource" select="$originatingSource"/>
+                                <xsl:with-param name="originatingSourceOrganisation" select="$originatingSourceOrganisation"/>
                                 <xsl:with-param name="publishingOrganisation" select="$publishingOrganisation"/>
                                 <xsl:with-param name="citation" select="."/>
                                 <xsl:with-param name="citationContributorName_sequence" select="$citationContributorName_sequence"/>
@@ -552,8 +594,8 @@
             group-by="gmd:individualName">
             <xsl:call-template name="IMAS_party">
                 <xsl:with-param name="type">person</xsl:with-param>
-                <xsl:with-param name="originatingSource" select="$originatingSource"/>
-                <xsl:with-param name="source" select="$source"/>
+                <xsl:with-param name="originatingSourceURL" select="$originatingSourceURL"/>
+                <xsl:with-param name="groupToUse" select="$groupToUse"/>
             </xsl:call-template>
         </xsl:for-each-group>
 
@@ -565,8 +607,8 @@
             group-by="gmd:organisationName">
             <xsl:call-template name="IMAS_party">
                 <xsl:with-param name="type">group</xsl:with-param>
-                <xsl:with-param name="originatingSource" select="$originatingSource"/>
-                <xsl:with-param name="source" select="$source"/>
+                <xsl:with-param name="originatingSourceURL" select="$originatingSourceURL"/>
+                <xsl:with-param name="groupToUse" select="$groupToUse"/>
             </xsl:call-template>
         </xsl:for-each-group>
 
@@ -580,16 +622,9 @@
 
     <!-- RegistryObject - Key Element  -->
     <xsl:template match="gmd:fileIdentifier" mode="IMAS_registryObject_key">
-        <xsl:param name="source"/>
+        <xsl:param name="groupToUse"/>
         <key>
-            <xsl:choose>
-                <xsl:when test="string-length(substring-before($source, ':')) > 0">
-                    <xsl:value-of select="concat(substring-before($source, ':'), '/', normalize-space(.))"/>
-                </xsl:when>
-                <xsl:otherwise>
-                    <xsl:value-of select="concat($global_IMAS_acronym,'/', normalize-space(.))"/>
-                </xsl:otherwise>
-            </xsl:choose>
+            <xsl:value-of select="concat(substring-before($groupToUse, ':'), '/', normalize-space(.))"/>
         </key>
     </xsl:template>
 
@@ -607,7 +642,7 @@
                 <xsl:attribute name="type">
                     <xsl:text>global</xsl:text>
                 </xsl:attribute>
-                <xsl:value-of select="concat($global_IMAS_acronym,'/', $identifier)"/>
+                <xsl:value-of select="$identifier"/>
             </identifier>
         </xsl:if>
     </xsl:template>
@@ -703,19 +738,12 @@
 
     <!-- RegistryObject - Related Object Element  -->
     <xsl:template match="gmd:parentIdentifier" mode="IMAS_registryObject_related_object">
-        <xsl:param name="source"/>
+        <xsl:param name="groupToUse"/>
         <xsl:variable name="identifier" select="normalize-space(.)"/>
         <xsl:if test="string-length($identifier) > 0">
             <relatedObject>
                 <key>
-                    <xsl:choose>
-                        <xsl:when test="string-length(substring-before($source, ':')) > 0">
-                            <xsl:value-of select="concat(substring-before($source, ':'), '/', normalize-space(.))"/>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <xsl:value-of select="concat($global_IMAS_acronym,'/', normalize-space(.))"/>
-                        </xsl:otherwise>
-                    </xsl:choose>
+                    <xsl:value-of select="concat(substring-before($groupToUse, ':'), '/', normalize-space(.))"/>
                 </key>
                 <relation>
                     <xsl:attribute name="type">
@@ -814,19 +842,12 @@
 
     <!-- RegistryObject - Related Object (Organisation or Individual) Element -->
     <xsl:template match="gmd:CI_ResponsibleParty" mode="IMAS_registryObject_related_object">
-        <xsl:param name="source"/>
+        <xsl:param name="groupToUse"/>
         
         <xsl:variable name="name" select="normalize-space(current-grouping-key())"/>
         <relatedObject>
             <key>
-               <xsl:choose>
-                    <xsl:when test="string-length(substring-before($source, ':')) > 0">
-                        <xsl:value-of select="concat(substring-before($source, ':'), '/', translate(customIMAS:nameNoTitle($name),' ',''))"/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:value-of select="concat($global_IMAS_acronym,'/', translate(customIMAS:nameNoTitle($name),' ',''))"/>
-                    </xsl:otherwise>
-                </xsl:choose>
+                <xsl:value-of select="concat(substring-before($groupToUse, ':'), '/', translate(customIMAS:nameNoTitle($name),' ',''))"/>
             </key>
             <!-- if current grouping key is organisation name and there is an individual name, make relation soft-->
             <xsl:choose>
@@ -852,19 +873,13 @@
 
     <!-- RegistryObject - Related Object Element  -->
     <xsl:template match="mcp:childIdentifier" mode="IMAS_registryObject_related_object">
-        <xsl:param name="source"/>
+        <xsl:param name="groupToUse"/>
         <!--xsl:message>mcp:children</xsl:message-->
         <xsl:variable name="identifier" select="normalize-space(.)"/>
         <xsl:if test="string-length($identifier) > 0">
             <relatedObject>
-                <xsl:choose>
-                    <xsl:when test="string-length(substring-before($source, ':')) > 0">
-                        <xsl:value-of select="concat(substring-before($source, ':'), '/', normalize-space(.))"/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:value-of select="concat($global_IMAS_acronym,'/', normalize-space(.))"/>
-                    </xsl:otherwise>
-                </xsl:choose>
+                <xsl:value-of select="concat(substring-before($groupToUse, ':'), '/', normalize-space(.))"/>
+                
                 <relation>
                     <xsl:attribute name="type">
                         <xsl:text>hasPart</xsl:text>
@@ -1229,7 +1244,7 @@
             <relatedInfo type="collection">
                 <identifier type="uri">
                     <xsl:value-of
-                        select="concat('http://', $global_IMAS_baseURI, $global_IMAS_path, $identifier)"/>
+                        select="concat($global_IMAS_sourceURL, $global_IMAS_path, $identifier)"/>
                 </identifier>
                 <relation>
                     <xsl:attribute name="type">
@@ -1283,7 +1298,7 @@
                         <xsl:value-of select="concat($global_IMAS_groupAcronym,'/', $uuid)"/>
                     </identifier-->
                     <xsl:variable name="constructedUri"
-                        select="concat('http://', $global_IMAS_baseURI, $global_IMAS_path, $uuid)"/>
+                        select="concat($global_IMAS_sourceURL, $global_IMAS_path, $uuid)"/>
 
                     <xsl:if test="$constructedUri != $uri">
                         <identifier type="uri">
@@ -1519,10 +1534,10 @@
 
     <!-- RegistryObject - CitationInfo Element -->
     <xsl:template name="IMAS_registryObject_citationMetadata_citationInfo">
-        <xsl:param name="metadataTruthURL"/>
+        <xsl:param name="metadataURL"/>
         <xsl:param name="imasDataCatalogueURL"/>
         <xsl:param name="dataSetURI"/>
-        <xsl:param name="originatingSource"/>
+        <xsl:param name="originatingSourceOrganisation"/>
         <xsl:param name="publishingOrganisation"/>
         <xsl:param name="citation"/>
         <xsl:param name="citationContributorName_sequence" as="xs:string*"/>
@@ -1539,12 +1554,12 @@
                     test="count($doiIdentifier_sequence) and string-length($doiIdentifier_sequence[1])">
                 <xsl:value-of select="$doiIdentifier_sequence[1]"/>
                     </xsl:when>
-                        <xsl:when                            test="string-length($metadataTruthURL) > 0">
+                        <xsl:when test="string-length($metadataURL) > 0">
                             <identifier>
                                 <xsl:attribute name="type">
                                     <xsl:text>uri</xsl:text>
                                 </xsl:attribute>
-                                <xsl:value-of select="$metadataTruthURL"/>
+                                <xsl:value-of select="$metadataURL"/>
                             </identifier>
                         </xsl:when>
                         <xsl:when test="string-length($imasDataCatalogueURL) > 0">
@@ -1683,35 +1698,19 @@
     <!-- Party Registry Object (Individuals (person) and Organisations (group)) -->
     <xsl:template name="IMAS_party">
         <xsl:param name="type"/>
-        <xsl:param name="originatingSource"/>
-        <xsl:param name="source"/>
+        <xsl:param name="originatingSourceURL"/>
+        <xsl:param name="groupToUse"/>
         <registryObject>
-            <xsl:attribute name="group">
-                <xsl:choose>
-                    <xsl:when test="string-length(substring-after($source, ':')) > 0">
-                        <xsl:value-of select="substring-after($source, ':')"/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:value-of select="$global_IMAS_group"/>
-                    </xsl:otherwise>
-                </xsl:choose>
-            </xsl:attribute>
+            <xsl:attribute name="group" select="substring-after($groupToUse, ':')"/>
 
             <xsl:variable name="name" select="normalize-space(current-grouping-key())"/>
             <!-- Name is to be 'surname,firstname' or 'surname,i', to attempt to reduce replicated records -->
             <key>
-                <xsl:choose>
-                    <xsl:when test="string-length(substring-before($source, ':')) > 0">
-                        <xsl:value-of select="concat(substring-before($source, ':'), '/', translate(customIMAS:nameNoTitle($name),' ',''))"/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:value-of select="concat($global_IMAS_acronym, '/', translate(customIMAS:nameNoTitle($name),' ',''))"/>
-                    </xsl:otherwise>
-                </xsl:choose>
+                <xsl:value-of select="concat(substring-before($groupToUse, ':'), '/', translate(customIMAS:nameNoTitle($name),' ',''))"/>
             </key>
 
             <originatingSource>
-                <xsl:value-of select="$originatingSource"/>
+                <xsl:value-of select="$originatingSourceURL"/>
             </originatingSource>
 
             <!-- Use the party type provided, except for exception:
@@ -1757,14 +1756,7 @@
                                         (the address will be included within the organisation to which this individual is related) -->
                                 <relatedObject>
                                     <key>
-                                        <xsl:choose>
-                                            <xsl:when test="string-length(substring-before($source, ':')) > 0">
-                                                <xsl:value-of select="concat(substring-before($source, ':'), '/', translate(normalize-space($organisationName),' ',''))"/>
-                                            </xsl:when>
-                                            <xsl:otherwise>
-                                                <xsl:value-of select="concat($global_IMAS_acronym, '/', translate(normalize-space($organisationName),' ',''))"/>
-                                            </xsl:otherwise>
-                                        </xsl:choose>
+                                        <xsl:value-of select="concat(substring-before($groupToUse, ':'), '/', translate(normalize-space($organisationName),' ',''))"/>
                                     </key>
                                     <relation type="isMemberOf"/>
                                 </relatedObject>
@@ -2330,7 +2322,7 @@
         </xsl:choose>
     </xsl:function>
     
-    <xsl:function name="customIMAS:getTransformedOriginatingSource">
+    <xsl:function name="customIMAS:getTransformedOriginatingSourceOrganisation">
         <xsl:param name="inputString"/>
         <xsl:choose>
             <xsl:when test="contains(lower-case($inputString), 'imas')">
@@ -2436,7 +2428,7 @@
         </xsl:analyze-string>
     </xsl:function>
     
-   <xsl:function name="customIMAS:getMetadataTruthURL">
+   <xsl:function name="customIMAS:getMetadataTruthURL_sequence" as="xs:string*">
         <xsl:param name="transferOptions"/>
         
         <xsl:variable name="metadataTruth_sequence" as="xs:string*">

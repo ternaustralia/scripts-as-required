@@ -12,18 +12,19 @@
     xmlns:oai="http://www.openarchives.org/OAI/2.0/" xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xmlns:customIMOS="http://customIMOS.nowhere.yet"
     xmlns:custom="http://custom.nowhere.yet"
+    xmlns:customGMD="http://customGMD.nowhere.yet"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
-    exclude-result-prefixes="geonet gmx oai xsi gmd srv gml gco gts csw grg mcp customIMOS custom">
+    exclude-result-prefixes="geonet gmx oai xsi gmd srv gml gco gts csw grg mcp customIMOS custom customGMD">
     <xsl:import href="CustomFunctions.xsl"/>
+    <xsl:import href="CustomFunctionsGMD.xsl"/>
     <!-- stylesheet to convert iso19139 in OAI-PMH ListRecords response to RIF-CS -->
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
     
-    <xsl:param name="global_IMOS_defaultContributingOrganisation" select="'external'"/>
-    <xsl:param name="global_IMOS_baseURI" select="'imosmest.aodn.org.au'"/>
-    <xsl:param name="global_IMOS_group" select="'Integrated Marine Observing System'"/>
-    <xsl:param name="global_IMOS_acronym" select="'IMOS'"/>
-    <xsl:param name="global_IMOS_defaultOriginatingSource" select="'external provider'"/>
+    <xsl:param name="global_IMOS_group" select="'IMOS:Integrated Marine Observing System'"/>
+    <xsl:param name="global_IMOS_sourceURL" select="'http://imosmest.aodn.org.au'"/>
+    <!--xsl:param name="global_IMOS_originatingSourceOrganisation" select="'undetermined'"/-->
+    
     <xsl:param name="global_IMOS_path" select="'/geonetwork/srv/en/metadata.show?uuid='"/>
     
     <xsl:variable name="anzsrcCodelist" select="document('anzsrc-codelist.xml')"/>
@@ -62,38 +63,55 @@
     <!-- =========================================== -->
 
     <xsl:template match="*:MD_Metadata" mode="IMOS">
-       <xsl:param name="source"/>
+        <xsl:param name="aggregatingGroup"/>
         
-        <xsl:variable name="originatingSource">
+        <xsl:variable name="groupToUse">
             <xsl:choose>
-                <xsl:when test="string-length(custom:originatingSource(.)) > 0">
-                    <xsl:value-of select="custom:originatingSource(.)"/>
+                <xsl:when test="string-length($aggregatingGroup) > 0">
+                    <xsl:value-of select="$aggregatingGroup"/>
                 </xsl:when>
                 <xsl:otherwise>
-                    <xsl:value-of select="$global_IMOS_defaultOriginatingSource"/>
+                    <xsl:value-of select="$global_IMOS_group"/>
                 </xsl:otherwise>
             </xsl:choose>
-            
         </xsl:variable>
+        
+        <xsl:variable name="metadataTruthURL" select="(gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage[contains(lower-case(following-sibling::gmd:protocol), 'metadata-url')]/gmd:URL)[1]"/>
+        
+        <xsl:variable name="datasetURI" select="gmd:dataSetURI"/>
+        <!--xsl:message select="concat('datasetURI: ', $datasetURI)"/-->
+        
+        <xsl:variable name="originatingSourceURL">
+            <xsl:choose>
+                <xsl:when test="string-length($metadataTruthURL) > 0">
+                    <xsl:value-of select="custom:getDomainFromURL($metadataTruthURL)"/>
+                </xsl:when>
+                <xsl:when test="string-length($datasetURI) > 0">
+                    <xsl:value-of select="custom:getDomainFromURL($datasetURI)"/>
+                </xsl:when>
+                <xsl:when test="count(gmd:contact/gmd:CI_ResponsibleParty/gmd:contactInfo/gmd:CI_Contact/gmd:onlineResource/gmd:CI_OnlineResource/gmd:linkage/gmd:URL) > 0">
+                    <xsl:value-of select="custom:getDomainFromURL(gmd:contact/gmd:CI_ResponsibleParty/gmd:contactInfo/gmd:CI_Contact/gmd:onlineResource/gmd:CI_OnlineResource/gmd:linkage/gmd:URL[1])"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:text>undetermined</xsl:text>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable> 
+        
+        <!--xsl:message select="concat('originatingSourceURL: ', $originatingSourceURL)"/-->
+        <xsl:variable name="originatingSourceOrganisation" select="customGMD:originatingSourceOrganisation(.)"/>
+        <!--xsl:message select="concat('originatingSourceOrganisation: ', $originatingSourceOrganisation)"/-->
+        
        
        <registryObject>
-            <xsl:attribute name="group">
-                <xsl:choose>
-                    <xsl:when test="string-length(substring-after($source, ':')) > 0">
-                        <xsl:value-of select="substring-after($source, ':')"/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:value-of select="$global_IMOS_group"/>
-                    </xsl:otherwise>
-                </xsl:choose>
-            </xsl:attribute>
+           <xsl:attribute name="group" select="substring-after($groupToUse, ':')"/>
             
             <xsl:apply-templates select="gmd:fileIdentifier" mode="IMOS_registryObject_key">
-                <xsl:with-param name="source" select="$source"/>
+                <xsl:with-param name="groupToUse" select="$groupToUse"/>
             </xsl:apply-templates>
         
             <originatingSource>
-                <xsl:value-of select="$originatingSource"/>
+                <xsl:value-of select="$originatingSourceURL"/>
             </originatingSource> 
                 
                 
@@ -119,29 +137,29 @@
                 <xsl:apply-templates select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions" mode="IMOS_registryObject_relatedInfo"/>
             
                 <xsl:apply-templates select="gmd:parentIdentifier" mode="IMOS_registryObject_related_object">
-                    <xsl:with-param name="source" select="$source"/>  
+                    <xsl:with-param name="groupToUse" select="$groupToUse"/>  
                 </xsl:apply-templates>
                 
                 <!--xsl:apply-templates select="gmd:dataSetURI" mode="IMOS_registryObject_relatedInfo_data_via_service"/-->
                 
                 <xsl:apply-templates select="gmd:children/gmd:childIdentifier" mode="IMOS_registryObject_related_object">
-                    <xsl:with-param name="source" select="$source"/>  
+                    <xsl:with-param name="groupToUse" select="$groupToUse"/>  
                 </xsl:apply-templates>
              
                 <!--xsl:apply-templates select="gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:source/gmd:LI_Source[string-length(gmd:sourceCitation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier/gmd:code) > 0]"
                      mode="IMOS_registryObject_relatedInfo"/-->
                  
                 <xsl:apply-templates select="gmd:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="IMOS_registryObject">
-                         <xsl:with-param name="originatingSource" select="$originatingSource"/>
-                    <xsl:with-param name="source" select="$source"/>
+                    <xsl:with-param name="originatingSourceURL" select="$originatingSourceURL"/>
+                    <xsl:with-param name="groupToUse" select="$groupToUse"/>
                 </xsl:apply-templates>
                 
             </xsl:element>
         </registryObject>
             
         <xsl:apply-templates select="gmd:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="IMOS_relatedRegistryObjects">
-            <xsl:with-param name="originatingSource" select="$originatingSource"/>
-            <xsl:with-param name="source" select="$source"/>
+            <xsl:with-param name="originatingSourceURL" select="$originatingSourceURL"/>
+            <xsl:with-param name="groupToUse" select="$groupToUse"/>
         </xsl:apply-templates>
                     
                
@@ -150,7 +168,7 @@
     
     <xsl:template match="*[contains(lower-case(name()),'identification')]" mode="IMOS_registryObject">
         <xsl:param name="originatingSource"/>
-       <xsl:param name="source"/>
+        <xsl:param name="groupToUse"/>
         
         <xsl:apply-templates
             select="gmd:citation/gmd:CI_Citation/gmd:title"
@@ -163,7 +181,7 @@
             ancestor::*:MD_Metadata/gmd:contact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) > 0]"
             group-by="gmd:individualName">
             <xsl:apply-templates select="." mode="IMOS_registryObject_related_object">
-                <xsl:with-param name="source" select="$source"/>
+                <xsl:with-param name="groupToUse" select="$groupToUse"/>
             </xsl:apply-templates>
         </xsl:for-each-group>
         
@@ -174,7 +192,7 @@
             ancestor::*:MD_Metadata/gmd:contact/gmd:CI_ResponsibleParty[((string-length(normalize-space(gmd:organisationName))) > 0) and ((string-length(normalize-space(gmd:individualName))) = 0)]" 
             group-by="gmd:organisationName">
             <xsl:apply-templates select="." mode="IMOS_registryObject_related_object">
-                <xsl:with-param name="source" select="$source"/>
+                <xsl:with-param name="groupToUse" select="$groupToUse"/>
             </xsl:apply-templates>
         </xsl:for-each-group>
         
@@ -231,12 +249,13 @@
             mode="IMOS_registryObject_rights_rightsStatement_creative"/>
         
         <xsl:apply-templates
-            select="gmd:resourceConstraints/gmd:MD_LegalConstraints"
-            mode="IMOS_registryObject_rights_rights"/>
+            select="."
+            mode="IMOS_registryObject_rights_accessRights"/>
         
         <xsl:apply-templates
-            select="gmd:resourceConstraints/gmd:MD_Constraints"
-            mode="IMOS_registryObject_rights_rights"/>
+            select="gmd:resourceConstraints/*[contains(local-name(), 'Constraints')]"
+            mode="IMOS_registryObject_rights_constraints"/>
+        
         
        <xsl:if test="customIMOS:registryObjectClass(ancestor::*:MD_Metadata/gmd:hierarchyLevel/*[contains(lower-case(name()),'scopecode')]/@codeListValue) = 'collection'">
             
@@ -259,8 +278,8 @@
     <!-- =========================================== -->
     
     <xsl:template match="*[contains(lower-case(name()),'identification')]" mode="IMOS_relatedRegistryObjects">
-        <xsl:param name="originatingSource"/>
-        <xsl:param name="source"/>
+        <xsl:param name="originatingSourceURL"/>
+        <xsl:param name="groupToUse"/>
         <xsl:for-each-group
             select="gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) > 0] |
             ancestor::gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) > 0] |
@@ -268,8 +287,8 @@
             ancestor::*:MD_Metadata/gmd:contact/gmd:CI_ResponsibleParty[string-length(normalize-space(gmd:individualName)) > 0]"
             group-by="gmd:individualName">
             <xsl:call-template name="IMOS_partyPerson">
-                <xsl:with-param name="originatingSource" select="$originatingSource"/>
-                <xsl:with-param name="source" select="$source"/>
+                <xsl:with-param name="originatingSourceURL" select="$originatingSourceURL"/>
+                <xsl:with-param name="groupToUse" select="$groupToUse"/>
             </xsl:call-template>
         </xsl:for-each-group>
         
@@ -280,8 +299,8 @@
             ancestor::*:MD_Metadata/gmd:contact/gmd:CI_ResponsibleParty[string-length(normalize-space(gmd:organisationName)) > 0]"
             group-by="gmd:organisationName">
             <xsl:call-template name="IMOS_partyGroup">
-                <xsl:with-param name="originatingSource" select="$originatingSource"/>
-                <xsl:with-param name="source" select="$source"/>
+                <xsl:with-param name="originatingSourceURL" select="$originatingSourceURL"/>
+                <xsl:with-param name="groupToUse" select="$groupToUse"/>
             </xsl:call-template>
         </xsl:for-each-group>
     </xsl:template>
@@ -295,16 +314,9 @@
 
     <!-- RegistryObject - Key Element  -->
     <xsl:template match="gmd:fileIdentifier" mode="IMOS_registryObject_key">
-        <xsl:param name="source"/>
+        <xsl:param name="groupToUse"/>
         <key>
-            <xsl:choose>
-                <xsl:when test="string-length(substring-before($source, ':')) > 0">
-                    <xsl:value-of select="concat(substring-before($source, ':'), '/', normalize-space(.))"/>
-                </xsl:when>
-                <xsl:otherwise>
-                    <xsl:value-of select="concat($global_IMOS_acronym,'/', normalize-space(.))"/>
-                </xsl:otherwise>
-            </xsl:choose>
+            <xsl:value-of select="concat(substring-before($groupToUse, ':'), '/', normalize-space(.))"/>
         </key>
     </xsl:template>
     
@@ -397,19 +409,12 @@
     
     <!-- RegistryObject - Related Object Element  -->
     <xsl:template match="gmd:parentIdentifier" mode="IMOS_registryObject_related_object">
-        <xsl:param name="source"/>
+        <xsl:param name="groupToUse"/>
         <xsl:variable name="identifier" select="normalize-space(.)"/>
         <xsl:if test="string-length($identifier) > 0">
             <relatedObject>
                 <key>
-                    <xsl:choose>
-                        <xsl:when test="string-length(substring-before($source, ':')) > 0">
-                            <xsl:value-of select="concat(substring-before($source, ':'), '/', $identifier)"/>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <xsl:value-of select="concat($global_IMOS_acronym,'/', $identifier)"/>
-                        </xsl:otherwise>
-                    </xsl:choose>
+                    <xsl:value-of select="concat(substring-before($groupToUse, ':'), '/', $identifier)"/>
                 </key>
                 <relation>
                     <xsl:attribute name="type">
@@ -592,17 +597,10 @@
     
     <!-- RegistryObject - Related Object (Organisation or Individual) Element -->
     <xsl:template match="gmd:CI_ResponsibleParty" mode="IMOS_registryObject_related_object">
-        <xsl:param name="source"/>
+        <xsl:param name="groupToUse"/>
          <relatedObject>
             <key>
-                <xsl:choose>
-                    <xsl:when test="string-length(substring-before($source, ':')) > 0">
-                        <xsl:value-of select="concat(substring-before($source, ':'), '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:value-of select="concat($global_IMOS_acronym, '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
-                    </xsl:otherwise>
-                </xsl:choose>
+                <xsl:value-of select="concat(substring-before($groupToUse, ':'), '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
             </key>
             <xsl:for-each-group select="current-group()/gmd:role"
                 group-by="gmd:CI_RoleCode/@codeListValue">
@@ -632,20 +630,13 @@
 
     <!-- RegistryObject - Related Object Element  -->
     <xsl:template match="gmd:childIdentifier" mode="IMOS_registryObject_related_object">
-        <xsl:param name="source"/>
+        <xsl:param name="groupToUse"/>
         <xsl:variable name="identifier" select="normalize-space(.)"/>
         
         <xsl:if test="string-length($identifier) > 0">
             <relatedObject>
                 <key>
-                    <xsl:choose>
-                        <xsl:when test="string-length(substring-before($source, ':')) > 0">
-                            <xsl:value-of select="concat(substring-before($source, ':'), '/', $identifier)"/>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <xsl:value-of select="concat($global_IMOS_acronym,'/', $identifier)"/>
-                        </xsl:otherwise>
-                    </xsl:choose>
+                    <xsl:value-of select="concat(substring-before($groupToUse, ':'), '/', $identifier)"/>
                 </key>
                 <relation>
                     <xsl:attribute name="type">
@@ -1025,7 +1016,7 @@
             <relatedInfo type="collection">
                 <identifier type="uri">
                     <xsl:value-of
-                        select="concat('http://', $global_IMOS_baseURI, $global_IMOS_path, $identifier)"
+                        select="concat($global_IMOS_sourceURL, $global_IMOS_path, $identifier)"
                     />
                 </identifier>
                 <relation>
@@ -1132,18 +1123,26 @@
     </xsl:template>
 
     <!-- RegistryObject - RightsStatement -->
-    <xsl:template match="gmd:MD_Constraints" mode="IMOS_registryObject_rights_rights">
-       <xsl:copy-of select="customIMOS:rights(.)"/>
+    <xsl:template match="*[contains(lower-case(name()),'identification')]" mode="IMOS_registryObject_rights_accessRights">
+         
+        <xsl:variable name="restrictionCode_sequence" select="gmd:resourceConstraints/*[contains(local-name(), 'Constraints')]/gmd:accessConstraints/gmd:MD_RestrictionCode/@codeListValue" as="xs:string*"/>
+        <xsl:choose>
+            <xsl:when test="custom:sequenceContains($restrictionCode_sequence, 'restricted')">
+                <rights>
+                    <accessRights type="restricted"/>
+                </rights>
+            </xsl:when>
+            <xsl:otherwise>
+                <rights>
+                    <accessRights type="open"/>
+                </rights>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:template>
     
-    <!-- RegistryObject - RightsStatement -->
-    <xsl:template match="gmd:MD_LegalConstraints" mode="IMOS_registryObject_rights_rights">
-       <xsl:copy-of select="customIMOS:rights(.)"/>
-    </xsl:template>
-    
-    <xsl:function name="customIMOS:rights">
-        <xsl:param name="currentNode" as="node()"/>
-        <xsl:for-each select="$currentNode/gmd:useLimitation">
+    <xsl:template match="*[contains(local-name(), 'Constraints')]" mode="IMOS_registryObject_rights_constraints">
+        
+        <xsl:for-each select="gmd:useLimitation">
             <xsl:variable name="useLimitation" select="normalize-space(.)"/>
             <!-- If there is text in other contraints, use this; otherwise, do nothing -->
             <xsl:if test="string-length($useLimitation) > 0">
@@ -1154,7 +1153,7 @@
                 </rights>
             </xsl:if>
         </xsl:for-each>
-        <xsl:for-each select="$currentNode/gmd:otherConstraints">
+        <xsl:for-each select="gmd:otherConstraints">
             <xsl:variable name="otherConstraints" select="normalize-space(.)"/>
             <!-- If there is text in other contraints, use this; otherwise, do nothing -->
             <xsl:if test="string-length($otherConstraints) > 0">
@@ -1202,7 +1201,7 @@
             </xsl:if>
         </xsl:for-each>
         
-    </xsl:function>
+    </xsl:template>
     <!-- RegistryObject - CitationInfo Element -->
     <xsl:template match="gmd:CI_Citation" mode="IMOS_registryObject_citationMetadata_citationInfo">
         <xsl:param name="originatingSource"/>
@@ -1247,7 +1246,7 @@
             ancestor::*:MD_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'publisher'] |
             ancestor::*:MD_DataIdentification/gmd:pointOfContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'publisher']"/>
         
-        <xsl:message select="concat('count principalInvestigator_sequence: ', count($principalInvestigator_sequence))"/>
+        <!--xsl:message select="concat('count principalInvestigator_sequence: ', count($principalInvestigator_sequence))"/-->
         <xsl:variable name="allContributorName_sequence" as="xs:string*">
            <xsl:for-each select="$principalInvestigator_sequence">
                <xsl:choose>
@@ -1332,7 +1331,7 @@
                     </xsl:if>
                 </xsl:when>
                 <xsl:otherwise>
-                    <xsl:value-of select="concat('http://', $global_IMOS_baseURI, $global_IMOS_path, ancestor::*:MD_Metadata/gmd:fileIdentifier)"/>
+                    <xsl:value-of select="concat($global_IMOS_sourceURL, $global_IMOS_path, ancestor::*:MD_Metadata/gmd:fileIdentifier)"/>
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
@@ -1475,40 +1474,22 @@
 
     <!-- Party Registry Object (Individuals (person) and Organisations (group)) -->
     <xsl:template name="IMOS_partyPerson">
-        <xsl:param name="originatingSource"/>
-        <xsl:param name="source"/>
+        <xsl:param name="originatingSourceURL"/>
+        <xsl:param name="groupToUse"/>
           
         <registryObject>
-            <xsl:attribute name="group">
-                <xsl:choose>
-                    <xsl:when test="string-length(substring-after($source, ':')) > 0">
-                        <xsl:value-of select="substring-after($source, ':')"/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:value-of select="$global_IMOS_group"/>
-                    </xsl:otherwise>
-                </xsl:choose>
-            </xsl:attribute>
+            <xsl:attribute name="group" select="substring-after($groupToUse, ':')"/>
 
-             <!--
-             <xsl:message select="concat('Creating key: ', translate(normalize-space(current-grouping-key()),' ',''))"/>
-             <xsl:message select="concat('Individual name: ', gmd:individualName)"/>
-             <xsl:message select="concat('Organisation name: ', gmd:organisationName)"/>
-             -->
+             <!--xsl:message select="concat('Creating key: ', translate(normalize-space(current-grouping-key()),' ',''))"/-->
+             <!--xsl:message select="concat('Individual name: ', gmd:individualName)"/-->
+             <!--xsl:message select="concat('Organisation name: ', gmd:organisationName)"/-->
              
              <key>
-                 <xsl:choose>
-                     <xsl:when test="string-length(substring-before($source, ':')) > 0">
-                         <xsl:value-of select="concat(substring-before($source, ':'), '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
-                     </xsl:when>
-                     <xsl:otherwise>
-                         <xsl:value-of select="concat($global_IMOS_acronym, '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
-                     </xsl:otherwise>
-                 </xsl:choose>
+                <xsl:value-of select="concat(substring-before($groupToUse, ':'), '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
              </key>
             
              <originatingSource>
-                 <xsl:value-of select="$originatingSource"/>
+                 <xsl:value-of select="$originatingSourceURL"/>
              </originatingSource> 
               
              <party type="person">
@@ -1529,14 +1510,7 @@
                                   (the address will be included within the organisation to which this individual is related) -->
                           <relatedObject>
                               <key>
-                                  <xsl:choose>
-                                      <xsl:when test="string-length(substring-before($source, ':')) > 0">
-                                          <xsl:value-of select="concat(substring-before($source, ':'), '/', translate(normalize-space(*:organisationName),' ',''))"/>
-                                      </xsl:when>
-                                      <xsl:otherwise>
-                                          <xsl:value-of select="concat($global_IMOS_acronym,'/', translate(normalize-space(*:organisationName),' ',''))"/>
-                                      </xsl:otherwise>
-                                  </xsl:choose>
+                                <xsl:value-of select="concat(substring-before($groupToUse, ':'), '/', translate(normalize-space(*:organisationName),' ',''))"/>
                               </key>
                               <relation type="isMemberOf"/>
                           </relatedObject>
@@ -1559,39 +1533,22 @@
         
     <!-- Party Registry Object (Individuals (person) and Organisations (group)) -->
     <xsl:template name="IMOS_partyGroup">
-        <xsl:param name="originatingSource"/>
-        <xsl:param name="source"/>
+        <xsl:param name="originatingSourceURL"/>
+        <xsl:param name="groupToUse"/>
         
         <registryObject>
-            <xsl:attribute name="group">
-                <xsl:choose>
-                    <xsl:when test="string-length(substring-after($source, ':')) > 0">
-                        <xsl:value-of select="substring-after($source, ':')"/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:value-of select="$global_IMOS_group"/>
-                    </xsl:otherwise>
-                </xsl:choose>
-            </xsl:attribute>
+            <xsl:attribute name="group" select="substring-after($groupToUse, ':')"/>
             
-            <!--
-            <xsl:message select="concat('Creating key: ', translate(normalize-space(current-grouping-key()),' ',''))"/>
-            <xsl:message select="concat('Individual name: ', gmd:individualName)"/>
-            <xsl:message select="concat('Organisation name: ', gmd:organisationName)"/>
-            -->
+            <!--xsl:message select="concat('Creating key: ', translate(normalize-space(current-grouping-key()),' ',''))"/-->
+            <!--xsl:message select="concat('Individual name: ', gmd:individualName)"/-->
+            <!--xsl:message select="concat('Organisation name: ', gmd:organisationName)"/-->
+            
             <key>
-                <xsl:choose>
-                    <xsl:when test="string-length(substring-before($source, ':')) > 0">
-                        <xsl:value-of select="concat(substring-before($source, ':'), '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:value-of select="concat($global_IMOS_acronym, '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
-                    </xsl:otherwise>
-                </xsl:choose>
+                <xsl:value-of select="concat(substring-before($groupToUse, ':'), '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
             </key>
             
             <originatingSource>
-                <xsl:value-of select="$originatingSource"/>
+                <xsl:value-of select="$originatingSourceURL"/>
             </originatingSource> 
             
             <party type="group">

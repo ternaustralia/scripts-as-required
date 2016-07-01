@@ -13,17 +13,22 @@
     xmlns:oai="http://www.openarchives.org/OAI/2.0/" 
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xmlns:customEATLAS="http://customEATLAS.nowhere.yet"
+    xmlns:custom="http://custom.nowhere.yet"
+    xmlns:customGMD="http://customGMD.nowhere.yet"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
-    exclude-result-prefixes="geonet gmx oai xsi gmd srv gml gco gts customEATLAS">
+    exclude-result-prefixes="geonet gmx oai xsi gmd srv gml gco gts customGMD custom customEATLAS">
+    <xsl:import href="CustomFunctions.xsl"/>
+    <xsl:import href="CustomFunctionsGMD.xsl"/>
     <!-- stylesheet to convert iso19139 in OAI-PMH ListRecords response to RIF-CS -->
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
-    <xsl:param name="global_EATLAS_defaultOriginatingSource" select="'external'"/>
-    <xsl:param name="global_EATLAS_acronym" select="'eAtlas'"/>
-    <xsl:param name="global_EATLAS_originatingSource" select="'eAtlas'"/> <!-- Only used as originating source if organisation name cannot be determined from Point Of Contact -->
-    <xsl:param name="global_EATLAS_group" select="'eAtlas'"/> 
-    <xsl:param name="global_EATLAS_baseURI" select="'eatlas.org.au'"/>
+    
+    <xsl:param name="global_EATLAS_group" select="'eAtlas:eAtlas'"/>
+    <xsl:param name="global_EATLAS_sourceURL" select="'http://eatlas.org.au'"/>
+    <!--xsl:param name="global_EATLAS_originatingSourceOrganisation" select="'undetermined'"/-->
+    
     <!--xsl:param name="global_EATLAS_ActivityKeyNERP" select="'to be determined'"/-->
+    
     <xsl:variable name="anzsrcCodelist" select="document('anzsrc-codelist.xml')"/>
     <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>
     <xsl:variable name="gmdCodelists" select="document('codelists.xml')"/>
@@ -55,9 +60,53 @@
     <!-- =========================================== -->
 
     <xsl:template match="*:MD_Metadata" mode="EATLAS">
-        <xsl:param name="source"/>
+        <xsl:param name="aggregatingGroup"/>
+        
+        <xsl:variable name="groupToUse">
+            <xsl:choose>
+                <xsl:when test="string-length($aggregatingGroup) > 0">
+                    <xsl:value-of select="$aggregatingGroup"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="$global_EATLAS_group"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        
 
         <xsl:variable name="metadataURL_sequence" select="customEATLAS:getProtocolURL_sequence('metadata-url', *:distributionInfo/*:MD_Distribution/*:transferOptions/*:MD_DigitalTransferOptions)"/>
+        <xsl:variable name="metadataTruthURL">
+            <xsl:choose>
+                <xsl:when test="count($metadataURL_sequence) > 0">
+                    <xsl:value-of select="$metadataURL_sequence[1]"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:text></xsl:text>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable> 
+        
+        <xsl:message select="concat('metadataTruthURL: ', $metadataTruthURL)"/>
+        <xsl:variable name="datasetURI" select="gmd:dataSetURI"/>
+       
+        <xsl:message select="concat('datasetURI: ', $datasetURI)"/>
+        
+        <xsl:variable name="originatingSourceURL">
+            <xsl:choose>
+                <xsl:when test="string-length($metadataTruthURL) > 0">
+                    <xsl:value-of select="custom:getDomainFromURL($metadataTruthURL)"/>
+                </xsl:when>
+                <xsl:when test="string-length($datasetURI) > 0">
+                    <xsl:value-of select="custom:getDomainFromURL($datasetURI)"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:text>undetermined</xsl:text>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable> 
+        
+        <xsl:message select="concat('originatingSourceURL: ', $originatingSourceURL)"/>
+        
         <xsl:variable name="downloaddataURL_sequence" select="customEATLAS:getProtocolURL_sequence('downloaddata', *:distributionInfo/*:MD_Distribution/*:transferOptions/*:MD_DigitalTransferOptions)"/>
         <xsl:variable name="title" select="*:identificationInfo/*/*:citation/*:CI_Citation/*:title"/>
         <xsl:variable name="restrictionCode_sequence" select="*:identificationInfo/*/*:resourceConstraints/*/*/*:MD_RestrictionCode/@codeListValue"/>
@@ -102,7 +151,7 @@
                     </xsl:for-each>
                 </xsl:when>
                 <xsl:otherwise>
-                    <xsl:value-of select="concat('http://', $global_EATLAS_baseURI, '/geonetwork/srv/en/metadata.show?uuid=', $fileIdentifier)"/>
+                    <xsl:value-of select="concat($global_EATLAS_sourceURL, '/geonetwork/srv/en/metadata.show?uuid=', $fileIdentifier)"/>
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
@@ -133,7 +182,7 @@
         
         <xsl:variable name="distributorContactNode_sequence" as="node()*" select="*:distributionInfo/*:MD_Distribution/*:distributor/*:MD_Distributor/*:distributorContact"/>
         
-        <xsl:variable name="originatingSource">
+        <xsl:variable name="originatingSourceOrganisation">
             <xsl:variable name="originatingSource_sequence" as="xs:string*">
                 
                 <xsl:for-each select="$contactNode_sequence">
@@ -152,30 +201,21 @@
                     <xsl:value-of select="$originatingSource_sequence[1]"/>
                 </xsl:when>
                 <xsl:otherwise>
-                    <xsl:value-of select="$global_EATLAS_defaultOriginatingSource"/>
+                    <xsl:value-of select="substring-after($global_EATLAS_group, ':')"/>
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
         
-        <xsl:if test="customEATLAS:sequence_contains($metadataURL_sequence, $global_EATLAS_baseURI)">
+        <xsl:if test="customEATLAS:sequence_contains($metadataURL_sequence, substring-after($global_EATLAS_sourceURL, '://'))">
             <registryObject>
-                <xsl:attribute name="group">
-                    <xsl:choose>
-                        <xsl:when test="string-length(substring-after($source, ':')) > 0">
-                            <xsl:value-of select="substring-after($source, ':')"/>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <xsl:value-of select="$global_EATLAS_group"/>
-                        </xsl:otherwise>
-                    </xsl:choose>
-                </xsl:attribute>
+                    <xsl:attribute name="group" select="substring-after($groupToUse, ':')"/>
                     
                     <xsl:apply-templates select="*:fileIdentifier" mode="EATLAS_registryObject_key">
-                        <xsl:with-param name="source" select="$source"/>
+                        <xsl:with-param name="groupToUse" select="$groupToUse"/>
                     </xsl:apply-templates>
     
                     <originatingSource>
-                        <xsl:value-of select="$originatingSource"/>    
+                        <xsl:value-of select="$originatingSourceURL"/>    
                     </originatingSource>
                     
                     <xsl:variable name="metadataCreationDate">
@@ -222,7 +262,7 @@
         
                             <xsl:apply-templates select="*:parentIdentifier"
                                 mode="EATLAS_registryObject_related_object">
-                                <xsl:with-param name="source" select="$source"/>
+                                <xsl:with-param name="groupToUse" select="$groupToUse"/>
                             </xsl:apply-templates>
         
                             <xsl:copy-of select="customEATLAS:set_registryObject_location_metadata($locationURL_sequence)"/>
@@ -236,7 +276,7 @@
                                 *:identificationInfo/*/*:pointOfContact/*:CI_ResponsibleParty[string-length(normalize-space(*:individualName)) > 0]"
                                 group-by="*:individualName">
                                 <xsl:apply-templates select="." mode="EATLAS_registryObject_related_object">
-                                    <xsl:with-param name="source" select="$source"/>
+                                    <xsl:with-param name="groupToUse" select="$groupToUse"/>
                                 </xsl:apply-templates>
                             </xsl:for-each-group>
         
@@ -247,7 +287,7 @@
                                 *:identificationInfo/*/*:pointOfContact/*:CI_ResponsibleParty[((string-length(normalize-space(*:organisationName))) > 0) and ((string-length(normalize-space(*:individualName))) = 0)]"
                                 group-by="*:organisationName">
                                 <xsl:apply-templates select="." mode="EATLAS_registryObject_related_object">
-                                    <xsl:with-param name="source" select="$source"/>
+                                    <xsl:with-param name="groupToUse" select="$groupToUse"/>
                                 </xsl:apply-templates>
                             </xsl:for-each-group>
                             
@@ -258,13 +298,13 @@
                                 *:identificationInfo/*/*:pointOfContact/*:CI_ResponsibleParty[((string-length(normalize-space(*:organisationName))) > 0) and ((string-length(normalize-space(*:individualName))) > 0)]"
                                 group-by="*:organisationName">
                                 <xsl:apply-templates select="." mode="EATLAS_registryObject_related_object_associated">
-                                    <xsl:with-param name="source" select="$source"/>
+                                    <xsl:with-param name="groupToUse" select="$groupToUse"/>
                                 </xsl:apply-templates>
                             </xsl:for-each-group>
         
                             <xsl:apply-templates select="*:children/*:childIdentifier"
                                 mode="EATLAS_registryObject_related_object">
-                                <xsl:with-param name="source" select="$source"/>
+                                <xsl:with-param name="groupToUse" select="$groupToUse"/>
                             </xsl:apply-templates>
         
                             <xsl:apply-templates
@@ -355,7 +395,7 @@
                                      select="*:identificationInfo/*/*:citation/*:CI_Citation">
                                      <xsl:call-template name="EATLAS_registryObject_citationMetadata_citationInfo">
                                          <xsl:with-param name="locationURL_sequence" select="$locationURL_sequence"/>
-                                         <xsl:with-param name="originatingSource" select="$originatingSource"/>
+                                         <xsl:with-param name="originatingSourceOrganisation" select="$originatingSourceOrganisation"/>
                                          <xsl:with-param name="citation" select="."/>
                                          <xsl:with-param name="contactNode_sequence" select="$contactNode_sequence" as="node()*"/>
                                          <xsl:with-param name="pointOfContactNode_sequence" select="$pointOfContactNode_sequence" as="node()*"/>
@@ -380,8 +420,8 @@
                 group-by="*:individualName">
                 <xsl:call-template name="EATLAS_party">
                     <xsl:with-param name="type">person</xsl:with-param>
-                    <xsl:with-param name="originatingSource" select="$originatingSource"/>
-                    <xsl:with-param name="source" select="$source"/>
+                    <xsl:with-param name="originatingSourceURL" select="$originatingSourceURL"/>
+                    <xsl:with-param name="groupToUse" select="$groupToUse"/>
                 </xsl:call-template>
             </xsl:for-each-group>
 
@@ -392,8 +432,8 @@
                 group-by="*:organisationName">
                 <xsl:call-template name="EATLAS_party">
                     <xsl:with-param name="type">group</xsl:with-param>
-                    <xsl:with-param name="originatingSource" select="$originatingSource"/>
-                    <xsl:with-param name="source" select="$source"/>
+                    <xsl:with-param name="originatingSourceURL" select="$originatingSourceURL"/>
+                    <xsl:with-param name="groupToUse" select="$groupToUse"/>
                 </xsl:call-template>
             </xsl:for-each-group>
 
@@ -408,16 +448,9 @@
 
     <!-- RegistryObject - Key Element  -->
     <xsl:template match="*:fileIdentifier" mode="EATLAS_registryObject_key">
-        <xsl:param name="source"/>
+        <xsl:param name="groupToUse"/>
         <key>
-            <xsl:choose>
-                <xsl:when test="string-length(substring-before($source, ':')) > 0">
-                    <xsl:value-of select="concat(substring-before($source, ':'), '/', normalize-space(.))"/>
-                </xsl:when>
-                <xsl:otherwise>
-                    <xsl:value-of select="concat($global_EATLAS_acronym, '/', normalize-space(.))"/>
-                </xsl:otherwise>
-            </xsl:choose>
+            <xsl:value-of select="concat(substring-before($groupToUse, ':'), '/', normalize-space(.))"/>
         </key>
     </xsl:template>
 
@@ -595,19 +628,12 @@
     
     <!-- RegistryObject - Related Object Element  -->
     <xsl:template match="*:parentIdentifier" mode="EATLAS_registryObject_related_object">
-        <xsl:param name="source"/>
+        <xsl:param name="groupToUse"/>
         <xsl:variable name="identifier" select="normalize-space(.)"/>
         <xsl:if test="string-length($identifier) > 0">
             <relatedObject>
                 <key>
-                    <xsl:choose>
-                        <xsl:when test="string-length(substring-before($source, ':')) > 0">
-                            <xsl:value-of select="concat(substring-before($source, ':'), '/', $identifier)"/>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <xsl:value-of select="concat($global_EATLAS_acronym, '/', $identifier)"/>
-                        </xsl:otherwise>
-                    </xsl:choose>
+                    <xsl:value-of select="concat(substring-before($groupToUse, ':'), '/', $identifier)"/>
                 </key>
                 <relation>
                     <xsl:attribute name="type">
@@ -672,21 +698,10 @@
     
     <!-- RegistryObject - Related Object (Organisation or Individual) Element -->
     <xsl:template match="*:CI_ResponsibleParty" mode="EATLAS_registryObject_related_object">
-        <xsl:param name="source"/>
+        <xsl:param name="groupToUse"/>
          <relatedObject>
             <key>
-                <xsl:variable name="mappedKey" select="customEATLAS:getMappedKey(translate(normalize-space(current-grouping-key()),' ',''))"/>
-                <xsl:choose>
-                    <xsl:when test="string-length($mappedKey) > 0">
-                        <xsl:value-of select="$mappedKey"/>
-                    </xsl:when>
-                    <xsl:when test="string-length(substring-before($source, ':')) > 0">
-                        <xsl:value-of select="concat(substring-before($source, ':'), '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:value-of select="concat($global_EATLAS_acronym,'/', translate(normalize-space(current-grouping-key()),' ',''))"/>
-                    </xsl:otherwise>
-                </xsl:choose>
+                <xsl:value-of select="concat(substring-before($groupToUse, ':'), '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
             </key>
             <xsl:for-each-group select="current-group()/*:role"
                 group-by="*:CI_RoleCode/@codeListValue">
@@ -716,21 +731,10 @@
     
     <!-- RegistryObject - Organisation which has an Individual name - relate indirectly, by association, only -->
     <xsl:template match="*:CI_ResponsibleParty" mode="EATLAS_registryObject_related_object_associated">
-        <xsl:param name="source"/>
+        <xsl:param name="groupToUse"/>
         <relatedObject>
             <key>
-                <xsl:variable name="mappedKey" select="customEATLAS:getMappedKey(translate(normalize-space(current-grouping-key()),' ',''))"/>
-                <xsl:choose>
-                    <xsl:when test="string-length($mappedKey) > 0">
-                        <xsl:value-of select="$mappedKey"/>
-                    </xsl:when>
-                    <xsl:when test="string-length(substring-before($source, ':')) > 0">
-                        <xsl:value-of select="concat(substring-before($source, ':'), '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:value-of select="concat($global_EATLAS_acronym,'/', translate(normalize-space(current-grouping-key()),' ',''))"/>
-                    </xsl:otherwise>
-                </xsl:choose>
+                <xsl:value-of select="concat(substring-before($groupToUse, ':'), '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
             </key>
             <relation>
                 <xsl:attribute name="type">
@@ -742,19 +746,12 @@
 
     <!-- RegistryObject - Related Object Element  -->
     <xsl:template match="*:childIdentifier" mode="EATLAS_registryObject_related_object">
-        <xsl:param name="source"/>
+        <xsl:param name="groupToUse"/>
         <xsl:variable name="identifier" select="normalize-space(.)"/>
         <xsl:if test="string-length($identifier) > 0">
             <relatedObject>
                 <key>
-                    <xsl:choose>
-                        <xsl:when test="string-length(substring-before($source, ':')) > 0">
-                            <xsl:value-of select="concat(substring-before($source, ':'), '/', $identifier)"/>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <xsl:value-of select="concat($global_EATLAS_acronym, '/', $identifier)"/>
-                        </xsl:otherwise>
-                    </xsl:choose>
+                    <xsl:value-of select="concat(substring-before($groupToUse, ':'), '/', $identifier)"/>
                 </key>
                 <relation>
                     <xsl:attribute name="type">
@@ -1317,7 +1314,7 @@
             <relatedInfo type="collection">
                 <identifier type="uri">
                     <xsl:value-of
-                        select="concat('http://', $global_EATLAS_baseURI, '/geonetwork/srv/en/metadata.show?uuid=', $identifier)"
+                        select="concat($global_EATLAS_sourceURL, '/geonetwork/srv/en/metadata.show?uuid=', $identifier)"
                     />
                 </identifier>
                 <relation>
@@ -1520,7 +1517,7 @@
     <!-- RegistryObject - sfo Element -->
     <xsl:template name="EATLAS_registryObject_citationMetadata_citationInfo">
         <xsl:param name="locationURL_sequence"/>
-        <xsl:param name="originatingSource"/>
+        <xsl:param name="originatingSourceOrganisation"/>
         <xsl:param name="citation"/>
         <xsl:param name="contactNode_sequence" as="node()*"/>
         <xsl:param name="pointOfContactNode_sequence" as="node()*"/>
@@ -1815,9 +1812,14 @@
                     </xsl:choose>
                     
                     <xsl:variable name="publisherToUse">
-                        <xsl:if test="count($publisherName_sequence) > 0">
-                            <xsl:copy-of select="$publisherName_sequence[1]"/>
-                        </xsl:if>
+                        <xsl:choose>
+                            <xsl:when test="count($publisherName_sequence) > 0">
+                                <xsl:copy-of select="$publisherName_sequence[1]"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:copy-of select="substring-after($global_EATLAS_group, ':')"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
                     </xsl:variable>
                     
                     <!-- If there is more than one contributor, and publisher 
@@ -1839,34 +1841,6 @@
                         </xsl:when>
                     </xsl:choose>
                     
-                    
-                    <!-- <xsl:variable name="publisherToUse">
-                        <xsl:choose>
-                            <xsl:when test="count($publisherName_sequence) > 0">
-                                <xsl:copy-of select="$publisherName_sequence[1]"/>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:choose>
-                                    <xsl:when test="count($custodianName_sequence) > 0">
-                                        <xsl:copy-of select="$custodianName_sequence[1]"/>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:choose>
-                                            <xsl:when test="count($resourceProviderName_sequence) > 0">
-                                                <xsl:copy-of select="$resourceProviderName_sequence[1]"/>
-                                            </xsl:when>
-                                            <xsl:otherwise>
-                                                <xsl:if test="count($distributorName_sequence) > 0">
-                                                    <xsl:copy-of select="distributorName_sequence[1]"/>
-                                                </xsl:if>
-                                            </xsl:otherwise>
-                                        </xsl:choose>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                    </xsl:variable>
-                    -->
                     
                     <xsl:if test="string-length($publisherToUse) > 0">
                         <publisher>
@@ -1913,7 +1887,7 @@
                         <xsl:value-of select="concat($global_EATLAS_groupAcronym,'/', $uuid)"/>
                         </identifier-->
                     
-                    <xsl:variable name="constructedUri" select="concat('http://', $global_EATLAS_baseURI, '/geonetwork/srv/en/metadata.show?uuid=', $uuid)"/>
+                    <xsl:variable name="constructedUri" select="concat($global_EATLAS_sourceURL, '/geonetwork/srv/en/metadata.show?uuid=', $uuid)"/>
                     
                     <xsl:if test="$constructedUri != $uri">
                         <identifier type="uri">
@@ -1947,101 +1921,78 @@
     <!-- Party Registry Object (Individuals (person) and Organisations (group)) -->
     <xsl:template name="EATLAS_party">
         <xsl:param name="type"/>
-        <xsl:param name="originatingSource"/>
-        <xsl:param name="source"/>
+        <xsl:param name="originatingSourceURL"/>
+        <xsl:param name="groupToUse"/>
         <xsl:choose>
             <xsl:when test="boolean(customEATLAS:createObject(translate(normalize-space(current-grouping-key()),' ','')))">
         
                 <registryObject>
-                    <xsl:attribute name="group">
-                        <xsl:choose>
-                            <xsl:when test="string-length(substring-after($source, ':')) > 0">
-                                <xsl:value-of select="substring-after($source, ':')"/>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:value-of select="$global_EATLAS_group"/>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                    </xsl:attribute>
+                    <xsl:attribute name="group" select="substring-after($groupToUse, ':')"/>
      
-                 <key>
-                     <xsl:choose>
-                         <xsl:when test="string-length(substring-before($source, ':')) > 0">
-                             <xsl:value-of select="concat(substring-before($source, ':'), '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
-                         </xsl:when>
-                         <xsl:otherwise>
-                             <xsl:value-of select="concat($global_EATLAS_acronym, '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
-                         </xsl:otherwise>
-                     </xsl:choose>
-                 </key>
-     
-                 <originatingSource>
-                     <xsl:value-of select="$originatingSource"/>
-                 </originatingSource>
-     
-                 <party type="{$type}">
-                     <name type="primary">
-                         <namePart>
-                             <xsl:value-of select="normalize-space(current-grouping-key())"/>
-                         </namePart>
-                     </name>
-     
-                     <!-- If we have are dealing with individual who has an organisation name:
-                         - leave out the address (so that it is on the organisation only); and 
-                         - relate the individual to the organisation -->
-     
-                     <!-- If we are dealing with an individual...-->
-                     <xsl:choose>
-                         <xsl:when test="contains(lower-case($type), 'person')">
-                             <xsl:choose>
-                                 <xsl:when
-                                     test="string-length(normalize-space(*:organisationName)) > 0">
-                                     <!--  Individual has an organisation name, so relate the individual to the organisation, and omit the address 
-                                             (the address will be included within the organisation to which this individual is related) -->
-                                     <relatedObject>
-                                         <key>
-                                             <xsl:choose>
-                                                 <xsl:when test="string-length(substring-before($source, ':')) > 0">
-                                                     <xsl:value-of select="concat(substring-before($source, ':'), '/', translate(normalize-space(*:organisationName),' ',''))"/>
-                                                 </xsl:when>
-                                                 <xsl:otherwise>
-                                                    <xsl:value-of select="concat($global_EATLAS_acronym,'/', translate(normalize-space(*:organisationName),' ',''))"/>
-                                                 </xsl:otherwise>
-                                             </xsl:choose>
-                                         </key>
-                                         <relation type="isMemberOf"/>
-                                     </relatedObject>
-                                 </xsl:when>
-     
-                                 <xsl:otherwise>
-                                     <!-- Individual does not have an organisation name, so physicalAddress must pertain this individual -->
-                                     <xsl:call-template name="EATLAS_physicalAddress"/>
-                                 </xsl:otherwise>
-                             </xsl:choose>
-                             
-                             <!-- Individual - Phone and email on the individual, regardless of whether there's an organisation name -->
-                             <xsl:call-template name="EATLAS_onlineResource"/>
-                             <xsl:call-template name="EATLAS_telephone"/>
-                             <xsl:call-template name="EATLAS_facsimile"/>
-                             <xsl:call-template name="EATLAS_email"/>
-                             
-                         </xsl:when>
-                         <xsl:otherwise>
-                             <!-- If we are dealing with an Organisation with no individual name, phone and email must pertain to this organisation -->
-                             <xsl:variable name="individualName" select="normalize-space(*:individualName)"/>
-                             <xsl:if test="string-length($individualName) = 0">
+                     <key>
+                         <xsl:value-of select="concat(substring-before($groupToUse, ':'), '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
+                     </key>
+         
+                     <originatingSource>
+                         <xsl:value-of select="$originatingSourceURL"/>
+                     </originatingSource>
+         
+                     <party type="{$type}">
+                         <name type="primary">
+                             <namePart>
+                                 <xsl:value-of select="normalize-space(current-grouping-key())"/>
+                             </namePart>
+                         </name>
+         
+                         <!-- If we have are dealing with individual who has an organisation name:
+                             - leave out the address (so that it is on the organisation only); and 
+                             - relate the individual to the organisation -->
+         
+                         <!-- If we are dealing with an individual...-->
+                         <xsl:choose>
+                             <xsl:when test="contains(lower-case($type), 'person')">
+                                 <xsl:choose>
+                                     <xsl:when
+                                         test="string-length(normalize-space(*:organisationName)) > 0">
+                                         <!--  Individual has an organisation name, so relate the individual to the organisation, and omit the address 
+                                                 (the address will be included within the organisation to which this individual is related) -->
+                                         <relatedObject>
+                                             <key>
+                                                 <xsl:value-of select="concat(substring-before($groupToUse, ':'), '/', translate(normalize-space(*:organisationName),' ',''))"/>
+                                             </key>
+                                             <relation type="isMemberOf"/>
+                                         </relatedObject>
+                                     </xsl:when>
+         
+                                     <xsl:otherwise>
+                                         <!-- Individual does not have an organisation name, so physicalAddress must pertain this individual -->
+                                         <xsl:call-template name="EATLAS_physicalAddress"/>
+                                     </xsl:otherwise>
+                                 </xsl:choose>
+                                 
+                                 <!-- Individual - Phone and email on the individual, regardless of whether there's an organisation name -->
                                  <xsl:call-template name="EATLAS_onlineResource"/>
                                  <xsl:call-template name="EATLAS_telephone"/>
                                  <xsl:call-template name="EATLAS_facsimile"/>
                                  <xsl:call-template name="EATLAS_email"/>
-                             </xsl:if>
-                             
-                             <!-- We are dealing with an organisation, so always include the address -->
-                             <xsl:call-template name="EATLAS_physicalAddress"/>
-                             
-                         </xsl:otherwise>
-                     </xsl:choose>
-                 </party>
+                                 
+                             </xsl:when>
+                             <xsl:otherwise>
+                                 <!-- If we are dealing with an Organisation with no individual name, phone and email must pertain to this organisation -->
+                                 <xsl:variable name="individualName" select="normalize-space(*:individualName)"/>
+                                 <xsl:if test="string-length($individualName) = 0">
+                                     <xsl:call-template name="EATLAS_onlineResource"/>
+                                     <xsl:call-template name="EATLAS_telephone"/>
+                                     <xsl:call-template name="EATLAS_facsimile"/>
+                                     <xsl:call-template name="EATLAS_email"/>
+                                 </xsl:if>
+                                 
+                                 <!-- We are dealing with an organisation, so always include the address -->
+                                 <xsl:call-template name="EATLAS_physicalAddress"/>
+                                 
+                             </xsl:otherwise>
+                         </xsl:choose>
+                     </party>
              </registryObject>
             </xsl:when>
         </xsl:choose>
@@ -2366,25 +2317,7 @@
         </xsl:for-each>
    </xsl:function>
     
-    <xsl:function name="customEATLAS:getMappedKey" as="xs:string">
-        <xsl:param name="inputKey" as="xs:string"/>
-        <!--xsl:message select="concat('customEATLAS:getMappedKey(), inputKey: ', lower-case($inputKey))"/-->
-        <!--xsl:choose>
-            <xsl:when test="
-                (lower-case($inputKey) = 'nationalcomputationalinfrastructure') or 
-                (lower-case($inputKey) = 'nationalcomputationalinfrastructure(nci)') or 
-                (lower-case($inputKey) = 'nci')">
-                <xsl:value-of select="$global_EATLAS_ActivityKeyNERP"/>
-            </xsl:when>
-            <xsl:otherwise>
-                <xsl:value-of select="''"/>
-            </xsl:otherwise> 
-            </xsl:choose-->
-        <!-- ToDo: update and enable above for connections to environment parties and activities -->
-        <xsl:value-of select="''"/>
-    </xsl:function>
-    
-    <xsl:function name="customEATLAS:createObject" as="xs:boolean">
+   <xsl:function name="customEATLAS:createObject" as="xs:boolean">
         <xsl:param name="inputKey" as="xs:string"/>
         <!--xsl:message select="concat('customEATLAS:createObject(), inputKey: ', lower-case($inputKey))"/-->
         <xsl:choose>

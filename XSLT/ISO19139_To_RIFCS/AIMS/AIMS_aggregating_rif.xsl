@@ -14,12 +14,15 @@
     xmlns:oai="http://www.openarchives.org/OAI/2.0/" 
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xmlns:custom="http://custom.nowhere.yet"
+    xmlns:customGMD="http://customGMD.nowhere.yet"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
-    exclude-result-prefixes="geonet gmx oai xsi gmd srv gml gco gts custom">
+    exclude-result-prefixes="geonet gmx oai xsi gmd srv gml gco gts custom customGMD">
     <xsl:import href="AIMS_rif.xsl"/>
     <xsl:import href="IMOS_rif.xsl"/>
     <xsl:import href="EATLAS_rif.xsl"/>
     <xsl:import href="CustomFunctions.xsl"/>
+    <xsl:import href="CustomFunctionsGMD.xsl"/>
+    
     
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
@@ -64,11 +67,11 @@
     
     <xsl:template match="*:MD_Metadata" mode="AIMS_aggregating">
         
-        <xsl:variable name="originatingSource" select="custom:originatingSource(.)"/>
+        <xsl:variable name="originatingSourceOrganisation" select="customGMD:originatingSourceOrganisation(.)"/>
         
         <xsl:variable name="metadataPointOfTruth_sequence" select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage[contains(lower-case(following-sibling::gmd:protocol/gco:CharacterString), 'metadata-url')]/gmd:URL" as="xs:string*"/>
         
-        <xsl:message select="concat('$originatingSource: ', $originatingSource)"/>
+        <xsl:message select="concat('$originatingSourceOrganisation: ', $originatingSourceOrganisation)"/>
         <xsl:for-each select="distinct-values($metadataPointOfTruth_sequence)">
             <xsl:message select="concat('$metadataPointOfTruth_sequence: ', .)"/>
         </xsl:for-each>
@@ -77,33 +80,32 @@
         <xsl:choose>
             <xsl:when test="
                 custom:sequenceContains($metadataPointOfTruth_sequence, 'eatlas') or
-                contains(lower-case($originatingSource), 'eatlas') or
-                contains(lower-case($originatingSource), 'e-atlas')">
+                contains(lower-case($originatingSourceOrganisation), 'eatlas') or
+                contains(lower-case($originatingSourceOrganisation), 'e-atlas')">
                 <xsl:apply-templates select="." mode="EATLAS">
-                    <xsl:with-param name="source" select="$global_group"/>
+                    <xsl:with-param name="aggregatingGroup" select="$global_group"/>
                 </xsl:apply-templates>
             </xsl:when>
             <xsl:when test="
                 custom:sequenceContains($metadataPointOfTruth_sequence, 'imos') or
-                contains(lower-case($originatingSource), 'imos') or
-                contains(lower-case($originatingSource), 'integrated marine observing system')">
+                contains(lower-case($originatingSourceOrganisation), 'imos') or
+                contains(lower-case($originatingSourceOrganisation), 'integrated marine observing system')">
                 <xsl:apply-templates select="." mode="IMOS">
-                    <xsl:with-param name="source" select="$global_group"/>
+                    <xsl:with-param name="aggregatingGroup" select="$global_group"/>
                 </xsl:apply-templates>
             </xsl:when>
             <xsl:when test="
                 custom:sequenceContains($metadataPointOfTruth_sequence, 'data.aims') or
-                contains(lower-case($originatingSource), 'aims') or
-                contains(lower-case($originatingSource), 'australian institute of marine science')">
+                contains(lower-case($originatingSourceOrganisation), 'aims') or
+                contains(lower-case($originatingSourceOrganisation), 'australian institute of marine science')">
                 <xsl:apply-templates select="." mode="AIMS">
-                    <xsl:with-param name="source" select="$global_group"/>
+                    <xsl:with-param name="aggregatingGroup" select="$global_group"/>
                 </xsl:apply-templates>
             </xsl:when>
    
             <xsl:otherwise>
                 <xsl:apply-templates select="." mode="AIMS">
-                    <xsl:with-param name="source" select="$global_group"/>
-                    <xsl:with-param name="originatingSource" select="$originatingSource"/>
+                    <xsl:with-param name="aggregatingGroup" select="$global_group"/>
                 </xsl:apply-templates>
             </xsl:otherwise>
         </xsl:choose>

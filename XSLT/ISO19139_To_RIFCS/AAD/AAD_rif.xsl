@@ -37,7 +37,7 @@
 
     
     <xsl:template match="*:MD_Metadata" mode="AAD">
-        <xsl:param name="source"/>
+        <xsl:param name="aggregatingGroup"/>
         
         <xsl:apply-templates select="." mode="AAD_collection"/>
         <xsl:apply-templates select="." mode="AAD_party"/>
