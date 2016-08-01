@@ -53,7 +53,7 @@
                 
                 <xsl:apply-templates select="." mode="registryObject_citationInfo"/>
                 
-                <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:distStmt/ddi:depDate/@date[(string-length(.) > 0)]" mode="registryObject_dates_submitted"/>
+                <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:distStmt/ddi:depDate/@date[(string-length(.) > 0)]" mode="registryObject_dates_accepted"/>
                 <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:distStmt/ddi:distDate/@date[(string-length(.) > 0)]" mode="registryObject_dates_available"/>
             </collection>
         </registryObject>
@@ -110,8 +110,8 @@
     
     <xsl:template match="ddi:sumDscr" mode="registryObject_coverage">
         <coverage>
-            <xsl:apply-templates select="ddi:timePrd[(@event = 'start') and (string-length(@date) > 0)]" mode="registryObject_coverage_temporal_start"/>
-            <xsl:apply-templates select="ddi:timePrd[(@event = 'single') and (string-length(@date) > 0)]" mode="registryObject_coverage_temporal_single"/>
+            <!--xsl:apply-templates select="ddi:timePrd[(@event = 'start') and (string-length(@date) > 0)]" mode="registryObject_coverage_temporal_start"/-->
+            <!--xsl:apply-templates select="ddi:timePrd[(@event = 'single') and (string-length(@date) > 0)]" mode="registryObject_coverage_temporal_single"/-->
             <xsl:apply-templates select="ddi:collDate[(@event = 'start') and (string-length(@date) > 0)]" mode="registryObject_coverage_temporal_start"/>
             <xsl:apply-templates select="ddi:collDate[(@event = 'single') and (string-length(@date) > 0)]" mode="registryObject_coverage_temporal_single"/>
             <xsl:apply-templates select="ddi:nation[string-length(.) > 0]" mode="registryObject_coverage_spatial"/>
@@ -135,7 +135,7 @@
         </relatedInfo>
     </xsl:template>
     
-    <xsl:template match="ddi:timePrd" mode="registryObject_coverage_temporal_start">
+    <!--xsl:template match="ddi:timePrd" mode="registryObject_coverage_temporal_start">
         <temporal>
             <date type="dateFrom" dateFormat="W3CDTF">
                 <xsl:value-of select="normalize-space(@date)"/>
@@ -147,15 +147,15 @@
                 </date>
             </xsl:if>
         </temporal>
-    </xsl:template>
+    </xsl:template-->
     
-    <xsl:template match="ddi:timePrd" mode="registryObject_coverage_temporal_single">
+    <!--xsl:template match="ddi:timePrd" mode="registryObject_coverage_temporal_single">
         <temporal>
             <date type="dateFrom" dateFormat="W3CDTF">
                 <xsl:value-of select="normalize-space(@date)"/>
             </date>
             </temporal>
-    </xsl:template>
+    </xsl:template-->
     
     <xsl:template match="ddi:collDate" mode="registryObject_coverage_temporal_start">
         <temporal>
@@ -266,8 +266,8 @@
         </rights>
     </xsl:template>
     
-    <xsl:template match="@date" mode="registryObject_dates_submitted">
-        <dates type="dateSubmitted">
+    <xsl:template match="@date" mode="registryObject_dates_accepted">
+        <dates type="dateAccepted">
             <date type="dateFrom" dateFormat="W3CDTF">
                 <xsl:value-of select="normalize-space(.)"/>
             </date>
