@@ -129,6 +129,8 @@
                         </xsl:if>
                             
                 </xsl:if>
+                
+                <xsl:apply-templates select="gmd:fileIdentifier" mode="IMOS_registryObject_identifier"/>
                        
                 <xsl:apply-templates select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage[contains(lower-case(following-sibling::gmd:protocol), 'metadata-url')]/gmd:URL" mode="IMOS_registryObject_identifier"/>
                 
