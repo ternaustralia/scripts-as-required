@@ -14,7 +14,7 @@
     
     <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>
     
-    <xsl:param name="global_originatingSource" select="'Monash University'"/>
+    <xsl:param name="global_originatingSource" select="'Monash University Figshare'"/>
     <xsl:param name="global_baseURI" select="'monash.edu.au'"/>
     <xsl:param name="global_group" select="'Monash University'"/>
     <xsl:param name="global_publisherName" select="'Monash University'"/>
@@ -109,7 +109,14 @@
                                  <xsl:variable name="identifierType" select="custom:identifierType(.)"></xsl:variable>
                                  <xsl:if test="string-length(.) > 0">
                                       <identifier type="{$identifierType}">
-                                          <xsl:value-of select="."/>
+                                          <xsl:choose>
+                                            <xsl:when test="(starts-with(., '10.'))">
+                                                <xsl:value-of select="concat('http://doi.org/', .)"/>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:value-of select="."/>
+                                            </xsl:otherwise>
+                                          </xsl:choose>
                                       </identifier>
                                  </xsl:if>
                         </xsl:if>
@@ -132,7 +139,14 @@
                             <address>
                                 <electronic type="url" target="landingPage">
                                     <value>
-                                        <xsl:value-of select="$doiOfThisPackage"/>
+                                         <xsl:choose>
+                                            <xsl:when test="(starts-with($doiOfThisPackage, '10.'))">
+                                                <xsl:value-of select="concat('http://doi.org/', $doiOfThisPackage)"/>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:value-of select="$doiOfThisPackage"/>
+                                            </xsl:otherwise>
+                                          </xsl:choose>
                                     </value>
                                 </electronic>
                             </address>
