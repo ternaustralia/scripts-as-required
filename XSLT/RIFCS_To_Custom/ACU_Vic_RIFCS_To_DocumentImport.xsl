@@ -7,8 +7,8 @@
     xmlns:fn="http://www.w3.org/2005/xpath-functions"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0" exclude-result-prefixes="ro">
     
-    <xsl:param name="columnSeparator" select="','"/>
-    <xsl:param name="valueSeparator" select="'|'"/>
+    <xsl:param name="columnSeparator" select="'^'"/>
+    <xsl:param name="valueSeparator" select="','"/>
     <xsl:output omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>  
     
@@ -102,11 +102,30 @@
         <xsl:value-of select="$columnSeparator"/>
         
         <!--	column: keywords	-->
+        <xsl:text>&quot;</xsl:text>
+        <xsl:variable name="total" select="count(ro:collection/ro:subject[@type = 'local'])" as="xs:integer"/>
+        <xsl:for-each select="ro:collection/ro:subject[@type = 'local']">
+            <xsl:value-of select="."/>
+            <xsl:if test="position() &lt; $total">
+                <xsl:value-of select="$valueSeparator"/>
+            </xsl:if>
+        </xsl:for-each>
+        <xsl:text>&quot;</xsl:text>
         <xsl:value-of select="$columnSeparator"/>
         
         <!--	column: abstract	-->
         <xsl:text>&quot;</xsl:text>
-        <xsl:value-of select="ro:collection/ro:description[@type = 'full']"/>
+        <xsl:choose>
+            <xsl:when test="string-length(ro:collection/ro:description[@type = 'full']) > 0">
+                <xsl:value-of select="ro:collection/ro:description[@type = 'full']"/>   
+            </xsl:when>
+            <xsl:when test="string-length(ro:collection/ro:description[@type = 'brief']) > 0">
+                <xsl:value-of select="ro:collection/ro:description[@type = 'brief']"/>   
+            </xsl:when>
+            <xsl:when test="string-length(ro:collection/ro:description[@type = 'notes']) > 0">
+                <xsl:value-of select="ro:collection/ro:description[@type = 'notes']"/>   
+            </xsl:when>
+        </xsl:choose>
         <xsl:text>&quot;</xsl:text>
         <xsl:value-of select="$columnSeparator"/>
         
@@ -323,7 +342,6 @@
         <xsl:text>&quot;</xsl:text>
         <xsl:value-of select="$columnSeparator"/>
         
-        
         <!--	column: fpage	-->
         <xsl:value-of select="$columnSeparator"/>
         
@@ -361,9 +379,57 @@
         <xsl:value-of select="$columnSeparator"/>
        
         <!--	column: publication_date (mandatory) -->
+        <xsl:choose>
+            <xsl:when test="string-length(ro:collection/ro:dates[contains(lower-case(@type), 'issued')]/ro:date[contains(lower-case(@type),'from')]) > 0">
+                <xsl:value-of select="ro:collection/ro:dates[contains(lower-case(@type), 'issued')]/ro:date[contains(lower-case(@type),'from')]"/>   
+            </xsl:when>
+            <xsl:when test="string-length(ro:collection/ro:dates[contains(lower-case(@type), 'issued')]/ro:date[contains(lower-case(@type),'to')]) > 0">
+                <xsl:value-of select="ro:collection/ro:dates[contains(lower-case(@type), 'issued')]/ro:date[contains(lower-case(@type),'to')]"/>   
+            </xsl:when>
+            <xsl:when test="string-length(ro:collection/ro:citationInfo/ro:citationMetadata/ro:date[@type='publicationDate']) > 0">
+                <xsl:value-of select="ro:collection/ro:citationInfo/ro:citationMetadata/ro:date[@type='publicationDate']"/>
+            </xsl:when>
+            <xsl:when test="string-length(ro:collection/@dateAccessioned) > 0">
+                <xsl:value-of select="ro:collection/@dateAccessioned"/>   
+            </xsl:when>
+            <xsl:when test="string-length(ro:collection/ro:dates[contains(lower-case(@type), 'accepted')]/ro:date[contains(lower-case(@type),'from')]) > 0">
+                <xsl:value-of select="ro:collection/ro:dates[contains(lower-case(@type), 'accepted')]/ro:date[contains(lower-case(@type),'from')]"/>   
+            </xsl:when>
+            <xsl:when test="string-length(ro:collection/ro:dates[contains(lower-case(@type), 'accepted')]/ro:date[contains(lower-case(@type),'to')]) > 0">
+                <xsl:value-of select="ro:collection/ro:dates[contains(lower-case(@type), 'accepted')]/ro:date[contains(lower-case(@type),'to')]"/>   
+            </xsl:when>
+            <xsl:when test="string-length(ro:collection/ro:dates[contains(lower-case(@type), 'submitted')]/ro:date[contains(lower-case(@type),'from')]) > 0">
+                <xsl:value-of select="ro:collection/ro:dates[contains(lower-case(@type), 'submitted')]/ro:date[contains(lower-case(@type),'from')]"/>   
+            </xsl:when>
+            <xsl:when test="string-length(ro:collection/ro:dates[contains(lower-case(@type), 'submitted')]/ro:date[contains(lower-case(@type),'to')]) > 0">
+                <xsl:value-of select="ro:collection/ro:dates[contains(lower-case(@type), 'submitted')]/ro:date[contains(lower-case(@type),'to')]"/>   
+            </xsl:when>
+            <xsl:when test="string-length(ro:collection/ro:dates[contains(lower-case(@type), 'created')]/ro:date[contains(lower-case(@type),'from')]) > 0">
+                <xsl:value-of select="ro:collection/ro:dates[contains(lower-case(@type), 'created')]/ro:date[contains(lower-case(@type),'from')]"/>   
+            </xsl:when>
+            <xsl:when test="string-length(ro:collection/ro:dates[contains(lower-case(@type), 'created')]/ro:date[contains(lower-case(@type),'to')]) > 0">
+                <xsl:value-of select="ro:collection/ro:dates[contains(lower-case(@type), 'created')]/ro:date[contains(lower-case(@type),'to')]"/>   
+            </xsl:when>
+            <xsl:when test="string-length(ro:collection/ro:dates[contains(lower-case(@type), 'available')]/ro:date[contains(lower-case(@type),'from')]) > 0">
+                <xsl:value-of select="ro:collection/ro:dates[contains(lower-case(@type), 'available')]/ro:date[contains(lower-case(@type),'from')]"/>   
+            </xsl:when>
+            <xsl:when test="string-length(ro:collection/ro:dates[contains(lower-case(@type), 'available')]/ro:date[contains(lower-case(@type),'to')]) > 0">
+                <xsl:value-of select="ro:collection/ro:dates[contains(lower-case(@type), 'available')]/ro:date[contains(lower-case(@type),'to')]"/>   
+            </xsl:when>
+            <xsl:when test="string-length(ro:collection/ro:dates[contains(lower-case(@type), 'valid')]/ro:date[contains(lower-case(@type),'from')]) > 0">
+                <xsl:value-of select="ro:collection/ro:dates[contains(lower-case(@type), 'valid')]/ro:date[contains(lower-case(@type),'from')]"/>   
+            </xsl:when>
+            <xsl:when test="string-length(ro:collection/ro:dates[contains(lower-case(@type), 'valid')]/ro:date[contains(lower-case(@type),'to')]) > 0">
+                <xsl:value-of select="ro:collection/ro:dates[contains(lower-case(@type), 'valid')]/ro:date[contains(lower-case(@type),'to')]"/>   
+            </xsl:when>
+            <xsl:when test="string-length(ro:collection/@dateModified) > 0">
+                <xsl:value-of select="ro:collection/@dateModified"/>   
+            </xsl:when>
+        </xsl:choose>
         <xsl:value-of select="$columnSeparator"/>
         
         <!--	column: publisher	-->
+        <xsl:value-of select="ro:collection/ro:citationInfo/ro:citationMetadata/ro:publisher"/>
         <xsl:value-of select="$columnSeparator"/>
        
         <!--	column: publisher_location	-->
