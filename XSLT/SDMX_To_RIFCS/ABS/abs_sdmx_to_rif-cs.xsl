@@ -138,7 +138,19 @@
                     <xsl:value-of select="$id"/>
                 </identifier>
                 
-                <xsl:choose>
+                <!-- Do the following instead of the commented bit below
+                    because abstract url was sometimes the same for a whole
+                    family of datasets, e.g. www.abs.gov.au/census
+                    so we were getting a lot of links where it would
+                    be better to indicate hierarchy -->
+                
+                <xsl:if test="string-length($directSourceURL) > 0">
+                    <identifier type="uri">
+                        <xsl:value-of select="$directSourceURL"/>
+                    </identifier>
+                </xsl:if>
+                
+                <!--xsl:choose>
                     <xsl:when test="string-length($abstractURL) > 0">
                         <identifier type="uri">
                             <xsl:value-of select="$abstractURL"/>
@@ -151,31 +163,29 @@
                             </identifier>
                         </xsl:if>
                     </xsl:otherwise>
-                </xsl:choose>
+                    </xsl:choose-->
                 
                 <xsl:choose>
-                     <xsl:when test="string-length($abstractURL) > 0">
+                    <xsl:when test="string-length($directSourceURL) > 0">
                         <location>
-                             <address>
-                                 <electronic type="url">
-                                     <value><xsl:value-of select="$abstractURL"/></value>
-                                 </electronic>
-                             </address>
-                         </location>
-                     </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:if test="string-length($directSourceURL) > 0">
-                            <location>
-                                <address>
+                            <address>
                                     <electronic type="url">
                                         <value><xsl:value-of select="$directSourceURL"/></value>
                                     </electronic>
                                 </address>
-                            </location>
-                        </xsl:if>
-                    </xsl:otherwise>
+                        </location>
+                    </xsl:when>
+                    <xsl:when test="string-length($abstractURL) > 0">
+                        <location>
+                            <address>
+                             <electronic type="url">
+                                 <value><xsl:value-of select="$abstractURL"/></value>
+                             </electronic>
+                         </address>
+                        </location>
+                    </xsl:when>
                 </xsl:choose>
-                            
+                
                 <xsl:if test="string-length($global_productName) > 0">
                     <name>
                         <xsl:attribute name="type">
