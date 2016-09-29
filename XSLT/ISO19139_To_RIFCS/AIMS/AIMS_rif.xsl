@@ -1779,7 +1779,7 @@
                                 <xsl:copy-of select="$publisherName_sequence[1]"/>
                             </xsl:when>
                             <xsl:when test="string-length($originatingSourceOrganisation) > 0">
-                                <xsl:value-of select="string-length($originatingSourceOrganisation) > 0"/>
+                                <xsl:value-of select="$originatingSourceOrganisation"/>
                             </xsl:when>
                             <xsl:otherwise>
                                 <xsl:value-of select="substring-after($global_AIMS_group, ':')"/>
