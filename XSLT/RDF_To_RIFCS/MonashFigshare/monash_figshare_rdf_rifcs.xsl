@@ -21,8 +21,6 @@
     
     <xsl:variable name="categoryCodeList" select="document('api.figshare.com_v2_categories.xml')"/>
     
-    <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>
-    
     <xsl:param name="global_originatingSource" select="'Monash University Figshare'"/>
     <xsl:param name="global_baseURI" select="'monash.edu.au'"/>
     <xsl:param name="global_group" select="'Monash University'"/>
@@ -130,9 +128,7 @@
                 
                 <xsl:attribute name="type" select="$type"/>
              
-                <xsl:if test="string-length(*/vivo:dateModified) > 0">   
-                    <xsl:attribute name="dateModified" select="*/vivo:dateModified"/>  
-                </xsl:if>
+                <xsl:apply-templates select="*/vivo:dateModified/@rdf:resource[string-length(.) > 0]" mode="collection_date_modified"/>
                 
                 <xsl:apply-templates select="*/bibo:doi[string-length(.) > 0]" mode="collection_identifier"/>
                 
@@ -163,38 +159,10 @@
     </xsl:template>
    
     
-    <!-- Functions -->
-    
-    <xsl:template name="dates">
-        <xsl:param name="currentType"/>
-        <xsl:for-each select="*[contains(name(), $currentType)]">
-            <xsl:if test="string-length(.) > 0">
-                <!--xsl:message select="concat('Node name:', name())"/-->
-                <xsl:variable name="type">
-                    <xsl:choose>
-                        <xsl:when test="position() = 1">
-                            <xsl:text>dateFrom</xsl:text>
-                        </xsl:when>
-                        <xsl:when test="position() = 2">
-                            <xsl:text>dateTo</xsl:text>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <!-- assert confirms no otherwise -->      
-                        </xsl:otherwise>
-                    </xsl:choose>
-                </xsl:variable>
-                <xsl:if test="string-length($type) > 0">
-                    <xsl:variable name="dctype" select="substring-after(name(.), 'dc:date.')"/>
-                    <dates type="{$dctype}">
-                        <date type="{$type}" dateFormat="W3CDTF">
-                            <xsl:value-of select="."/>
-                        </date>
-                    </dates>
-                </xsl:if>
-            </xsl:if>
-        </xsl:for-each>
+    <xsl:template match="@rdf:resource" mode="collection_date_modified">
+        <xsl:attribute name="dateModified" select="substring-after(., 'http://openvivo.org/a/date')"/>
     </xsl:template>
-    
+       
     <xsl:template match="bibo:doi" mode="collection_identifier">
         <identifier type="doi">
             <xsl:choose>
