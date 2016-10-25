@@ -57,9 +57,10 @@
                 <xsl:apply-templates select="fields/field[@name='doi' and (string-length(.) > 0)]" mode="identifier"/>
                 
                 <xsl:choose>
-                    <xsl:when test="fields/field[@name='doi' and (string-length(.) > 0)]">
+                    <!--  Don't use doi in location because it may go to data directly rather than ro landing page -->
+                    <!--xsl:when test="fields/field[@name='doi' and (string-length(.) > 0)]">
                         <xsl:apply-templates select="fields/field[@name='doi']" mode="location"/>
-                    </xsl:when>
+                    </xsl:when-->
                     <xsl:when test="fields/field[@name='persistent_identifier' and (string-length(.) > 0)]">
                         <xsl:apply-templates select="fields/field[@name='persistent_identifier']" mode="location"/>
                     </xsl:when>
