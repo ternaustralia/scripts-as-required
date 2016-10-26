@@ -11,7 +11,7 @@
     xmlns:fn="http://www.w3.org/2005/xpath-functions"
     xmlns:saxon="http://saxon.sf.net/"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0" exclude-result-prefixes="dc">
-    
+    <xsl:import href="CustomFunctions.xsl"/>
     <xsl:strip-space elements="*"/>
     
     <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>
@@ -57,9 +57,10 @@
                 <xsl:apply-templates select="fields/field[@name='doi' and (string-length(.) > 0)]" mode="identifier"/>
                 
                 <xsl:choose>
-                    <xsl:when test="fields/field[@name='doi' and (string-length(.) > 0)]">
+                    <!--  Don't use doi in location because it may go to data directly rather than ro landing page -->
+                    <!--xsl:when test="fields/field[@name='doi' and (string-length(.) > 0)]">
                         <xsl:apply-templates select="fields/field[@name='doi']" mode="location"/>
-                    </xsl:when>
+                    </xsl:when-->
                     <xsl:when test="fields/field[@name='persistent_identifier' and (string-length(.) > 0)]">
                         <xsl:apply-templates select="fields/field[@name='persistent_identifier']" mode="location"/>
                     </xsl:when>
@@ -174,7 +175,7 @@
                             </address>
                         </location>
                     </xsl:if>
-                    
+                        
                     <xsl:if test="string-length(institution) > 0">
                         <xsl:variable name="institutionID" select="custom:partyID(institution)"/>
                         <xsl:if test="string-length($institutionID) > 0">
@@ -182,7 +183,7 @@
                                 <title>
                                     <xsl:value-of select="institution"/>
                                 </title> 
-                                <identifier type="{custom:identifierType($institutionID)}">
+                                <identifier type="{custom:getIdentifierType($institutionID)}">
                                     <xsl:value-of select="$institutionID"/>
                                 </identifier>
                                 <relation type="isMemberOf"/>
@@ -203,7 +204,7 @@
                         <xsl:analyze-string select="../../fields/field[@name='grant_purl']" regex="(http).+?(&quot;|&lt;|$)">
                             <xsl:matching-substring>
                                 <relatedInfo type="activity">
-                                    <xsl:variable name="identifierType" select="custom:identifierType(regex-group(0))"/>
+                                    <xsl:variable name="identifierType" select="custom:getIdentifierType(regex-group(0))"/>
                                     <identifier type="{$identifierType}">
                                         <xsl:value-of select="translate(translate(regex-group(0), '&quot;', ''), '&lt;', '')"/>
                                     </identifier>
@@ -253,11 +254,11 @@
     </xsl:template>
     
     <xsl:template match="field[@name='persistent_identifier']" mode="identifier">
-        <xsl:for-each select="value">
-            <!--xsl:analyze-string select="." regex="(http).+?(&quot;|&lt;|$)"-->
-            <xsl:analyze-string select="." regex="(http).+?(&quot;|&lt;|$)">
+         <xsl:for-each select="value">
+            <!--xsl:analyze-string select="." regex="(&quot;http).+?(&quot;)"-->
+            <xsl:analyze-string select="." regex="(&quot;http).+?(&quot;)">
                 <xsl:matching-substring>
-                    <identifier type="{custom:identifierType(regex-group(0))}">
+                    <identifier type="{custom:getIdentifierType(regex-group(0))}">
                         <xsl:value-of select="translate(translate(regex-group(0), '&quot;', ''), '&lt;', '')"/>
                     </identifier>
                 </xsl:matching-substring>
@@ -287,7 +288,7 @@
             <xsl:when test="not(contains(lower-case(.), 'doi.org'))">
                 <location>
                     <address>
-                        <electronic type="url" target="landingPage">
+                        <electronic type="doi" target="landingPage">
                             <value>
                                 <xsl:value-of select="concat('http://doi.org/', .)"/>
                              </value>
@@ -298,7 +299,7 @@
             <xsl:otherwise>
                 <location>
                     <address>
-                        <electronic type="url" target="landingPage">
+                        <electronic type="doi" target="landingPage">
                             <value>
                                 <xsl:value-of select="."/>
                             </value>
@@ -312,12 +313,11 @@
     
     <xsl:template match="field[@name='persistent_identifier']" mode="location">
         <xsl:for-each select="value">
-            <xsl:variable name="doi" select="../../field[@name='doi' and (string-length(.) > 0)]"/>
            
             <xsl:message select="concat('current pid: ', .)"/>
             <xsl:choose>
                 <xsl:when test="contains(., '&quot;')">
-                    <xsl:analyze-string select="." regex="(http).+?(&quot;|&lt;|$)">
+                    <xsl:analyze-string select="." regex="(&quot;http).+?(&quot;)">
                          <xsl:matching-substring>
                              <location>
                                  <address>
@@ -467,10 +467,10 @@
     
     <xsl:template match="field[@name='grant_purl']">
         <xsl:for-each select="value">
-            <xsl:analyze-string select="." regex="(http).+?(&quot;|&lt;|$)">
+            <xsl:analyze-string select="." regex="(&quot;http).+?(&quot;)">
               <xsl:matching-substring>
                   <relatedInfo type="activity">
-                      <xsl:variable name="identifierType" select="custom:identifierType(regex-group(0))"/>
+                      <xsl:variable name="identifierType" select="custom:getIdentifierType(regex-group(0))"/>
                       <identifier type="{$identifierType}">
                           <xsl:value-of select="translate(translate(regex-group(0), '&quot;', ''), '&lt;', '')"/>
                       </identifier>
@@ -545,10 +545,10 @@
     
     <xsl:template match="field[@name='related_content']">
         <xsl:for-each select="value">
-            <xsl:analyze-string select="." regex="(http).+?(&quot;|&lt;|$)">
+            <xsl:analyze-string select="." regex="(&quot;http).+?(&quot;)">
                 <xsl:matching-substring>
                     <relatedInfo>
-                         <xsl:variable name="identifierType" select="custom:identifierType(regex-group(0))"/>
+                         <xsl:variable name="identifierType" select="custom:getIdentifierType(regex-group(0))"/>
                          <identifier type="{$identifierType}">
                              <xsl:value-of select="translate(translate(regex-group(0), '&quot;', ''), '&lt;', '')"/>
                          </identifier>
@@ -578,31 +578,6 @@
             </xsl:otherwise>
         </xsl:choose>
     </xsl:function>
-    
-    <xsl:function name="custom:identifierType" as="xs:string">
-        <xsl:param name="identifier" as="xs:string"/>
-        <xsl:choose>
-            <xsl:when test="contains(lower-case($identifier), 'nla.party')">
-                <xsl:text>AU-ANL:PEAU</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains(lower-case($identifier), 'scopus')">
-                <xsl:text>scopus</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains(lower-case($identifier), 'orcid')">
-                <xsl:text>orcid</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains(lower-case($identifier), 'doi')">
-                <xsl:text>doi</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains(lower-case($identifier), 'handle')">
-                <xsl:text>handle</xsl:text>
-            </xsl:when>
-            <xsl:otherwise>
-                <xsl:text>uri</xsl:text>
-            </xsl:otherwise>
-        </xsl:choose>
-    </xsl:function>
-    
     
     <xsl:function name="custom:formatKey">
         <xsl:param name="input"/>
@@ -645,5 +620,5 @@
     </xsl:function-->
     
    <xsl:template match="node() | text() | @*"/>
-
+   
 </xsl:stylesheet>

@@ -265,7 +265,7 @@
         <xsl:if test="string-length(.) > 0">
             <identifier>
                 <xsl:attribute name="type">
-                     <xsl:text>local</xsl:text>
+                     <xsl:text>global</xsl:text>
                 </xsl:attribute>
                 <xsl:value-of select="."/>
             </identifier>
