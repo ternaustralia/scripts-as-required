@@ -196,7 +196,7 @@
                             <key>
                                 <xsl:value-of select="custom:datasetKey(../..)"/>
                             </key>
-                            <relation type="isCollectorOf"/>
+                            <relation type="isPrincipalInvestigatorOf"/>
                         </relatedObject>
                     </xsl:if>
                     
@@ -361,7 +361,7 @@
                 <key>
                     <xsl:value-of select="custom:formatKey($nameFormatted)"/>
                 </key>
-                <relation type="hasCollector"/>
+                <relation type="hasPrincipalInvestigator"/>
             </relatedObject>
         </xsl:if>
         
