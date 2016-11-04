@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet 
     xmlns:oai="http://www.openarchives.org/OAI/2.0/" 
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:dc="http://purl.org/dc/terms/" 
     xmlns:bibo="http://purl.org/ontology/bibo/" 
     xmlns:datacite="http://purl.org/spar/datacite/" 
     xmlns:fabio="http://purl.org/spar/fabio/" 
@@ -146,6 +147,8 @@
                
                 <xsl:apply-templates select="*/bibo:freetextKeyword[string-length(.) > 0]" mode="collection_subject"/>
                 
+                <xsl:apply-templates select="*/dc:rights[string-length(.) > 0]" mode="collection_rights_access"/>
+                
                 <xsl:apply-templates select="ancestor::oai:record/oai:header/oai:setSpec[contains(., 'category_')]" mode="collection_subject"/>
                
                 <xsl:apply-templates select="*/bibo:abstract[string-length(.) > 0]" mode="collection_description_full"/>
@@ -256,6 +259,12 @@
         <subject type="local">
             <xsl:value-of select="."/>
         </subject>
+    </xsl:template>
+   
+    <xsl:template match="dc:rights" mode="collection_rights_access">
+        <rights>
+            <accessRights type="{.}"/>
+        </rights>
     </xsl:template>
     
     <xsl:template match="oai:setSpec" mode="collection_subject">
