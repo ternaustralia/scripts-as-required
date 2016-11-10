@@ -176,22 +176,19 @@
             select="gmd:citation/gmd:CI_Citation/gmd:title"
             mode="IMOS_registryObject_name"/>
         
-        <xsl:for-each-group
-            select="gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) > 0] |
-            ancestor::gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) > 0] |
-            gmd:pointOfContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) > 0] |
-            ancestor::*:MD_Metadata/gmd:contact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) > 0]"
+        <!-- xsl:for-each-group
+            select="gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) > 0]"
             group-by="gmd:individualName">
             <xsl:apply-templates select="." mode="IMOS_registryObject_related_object">
                 <xsl:with-param name="groupToUse" select="$groupToUse"/>
             </xsl:apply-templates>
-        </xsl:for-each-group>
+        </xsl:for-each-group-->
         
         <xsl:for-each-group
-            select="gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[((string-length(normalize-space(gmd:organisationName))) > 0) and ((string-length(normalize-space(gmd:individualName))) = 0)] |
-            ancestor::gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[((string-length(normalize-space(gmd:organisationName))) > 0) and ((string-length(normalize-space(gmd:individualName))) = 0)] |
-            gmd:pointOfContact/gmd:CI_ResponsibleParty[((string-length(normalize-space(gmd:organisationName))) > 0) and ((string-length(normalize-space(gmd:individualName))) = 0)] |
-            ancestor::*:MD_Metadata/gmd:contact/gmd:CI_ResponsibleParty[((string-length(normalize-space(gmd:organisationName))) > 0) and ((string-length(normalize-space(gmd:individualName))) = 0)]" 
+            select="gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[((string-length(normalize-space(gmd:organisationName))) > 0)] |
+            ancestor::gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[((string-length(normalize-space(gmd:organisationName))) > 0)] |
+            gmd:pointOfContact/gmd:CI_ResponsibleParty[((string-length(normalize-space(gmd:organisationName))) > 0)] |
+            ancestor::*:MD_Metadata/gmd:contact/gmd:CI_ResponsibleParty[((string-length(normalize-space(gmd:organisationName))) > 0)]" 
             group-by="gmd:organisationName">
             <xsl:apply-templates select="." mode="IMOS_registryObject_related_object">
                 <xsl:with-param name="groupToUse" select="$groupToUse"/>
@@ -282,17 +279,14 @@
     <xsl:template match="*[contains(lower-case(name()),'identification')]" mode="IMOS_relatedRegistryObjects">
         <xsl:param name="originatingSourceURL"/>
         <xsl:param name="groupToUse"/>
-        <xsl:for-each-group
-            select="gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) > 0] |
-            ancestor::gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) > 0] |
-            gmd:pointOfContact/gmd:CI_ResponsibleParty[string-length(normalize-space(gmd:individualName)) > 0] |
-            ancestor::*:MD_Metadata/gmd:contact/gmd:CI_ResponsibleParty[string-length(normalize-space(gmd:individualName)) > 0]"
+        <!-- xsl:for-each-group
+            select="gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) > 0]"
             group-by="gmd:individualName">
             <xsl:call-template name="IMOS_partyPerson">
                 <xsl:with-param name="originatingSourceURL" select="$originatingSourceURL"/>
                 <xsl:with-param name="groupToUse" select="$groupToUse"/>
             </xsl:call-template>
-        </xsl:for-each-group>
+        </xsl:for-each-group-->
         
         <xsl:for-each-group
             select="gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName))) > 0] |
@@ -1213,106 +1207,57 @@
        <xsl:variable name="citedResponsibleParty_sequence" select="gmd:citedResponsibleParty/gmd:CI_ResponsibleParty" as="node()*"/>
         
        <xsl:variable name="principalInvestigator_sequence" as="node()*" select="
-            gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'principalInvestigator'] |
-            ancestor::*:MD_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'principalInvestigator'] |
-            ancestor::*:MD_DataIdentification/gmd:pointOfContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'principalInvestigator']"/>
+            gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'principalInvestigator']"/>
         
         <xsl:variable name="author_sequence" as="node()*" select="
-            gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'author'] |
-            ancestor::*:MD_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'author'] |
-            ancestor::*:MD_DataIdentification/gmd:pointOfContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'author']"/>
+            gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'author']"/>
         
         
         <xsl:variable name="contentexpert_sequence" as="node()*" select="
-            gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'contentexpert'] |
-            ancestor::*:MD_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'contentexpert'] |
-            ancestor::*:MD_DataIdentification/gmd:pointOfContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'contentexpert']"/>
+            gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'contentexpert']"/>
         
         <xsl:variable name="coInvestigator_sequence" as="node()*" select="
-            gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'coInvestigator'] |
-            ancestor::*:MD_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'coInvestigator'] |
-            ancestor::*:MD_DataIdentification/gmd:pointOfContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'coInvestigator']"/>
+            gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'coInvestigator']"/>
         
         <xsl:variable name="publisher_sequence" as="node()*" select="
-            gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'publisher'] |
-            ancestor::*:MD_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'publisher'] |
-            ancestor::*:MD_DataIdentification/gmd:pointOfContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'publisher']"/>  
+            gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'publisher']"/>  
         
         <xsl:variable name="owner_sequence" as="node()*" select="
-            gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'owner'] |
-            ancestor::*:MD_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'owner'] |
-            ancestor::*:MD_DataIdentification/gmd:pointOfContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'owner']"/>  
+            gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'owner']"/>  
         
         <xsl:variable name="publisher_sequence" as="node()*" select="
-            gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'publisher'] |
-            ancestor::*:MD_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'publisher'] |
-            ancestor::*:MD_DataIdentification/gmd:pointOfContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'publisher']"/>
+            gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'publisher']"/>
         
         <!--xsl:message select="concat('count principalInvestigator_sequence: ', count($principalInvestigator_sequence))"/-->
         <xsl:variable name="allContributorName_sequence" as="xs:string*">
            <xsl:for-each select="$principalInvestigator_sequence">
-               <xsl:choose>
-                   <xsl:when test="string-length(gmd:individualName) = 0">
-                       <xsl:if test="string-length(gmd:organisationName) > 0">
-                           <xsl:value-of select="gmd:organisationName"/>
-                       </xsl:if>
-                   </xsl:when>
-                   <xsl:otherwise>
-                       <xsl:value-of select="gmd:individualName"/>
-                   </xsl:otherwise>
-               </xsl:choose>
+               <xsl:if test="string-length(gmd:organisationName) > 0">
+                    <xsl:value-of select="gmd:organisationName"/>
+               </xsl:if>
            </xsl:for-each>
             
             <xsl:for-each select="$author_sequence">
-                <xsl:choose>
-                    <xsl:when test="string-length(gmd:individualName) = 0">
-                        <xsl:if test="string-length(gmd:organisationName) > 0">
-                            <xsl:value-of select="gmd:organisationName"/>
-                        </xsl:if>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:value-of select="gmd:individualName"/>
-                    </xsl:otherwise>
-                </xsl:choose>
+                <xsl:if test="string-length(gmd:organisationName) > 0">
+                    <xsl:value-of select="gmd:organisationName"/>
+               </xsl:if>
             </xsl:for-each>
             
             <xsl:for-each select="$contentexpert_sequence">
-                <xsl:choose>
-                    <xsl:when test="string-length(gmd:individualName) = 0">
-                        <xsl:if test="string-length(gmd:organisationName) > 0">
-                            <xsl:value-of select="gmd:organisationName"/>
-                        </xsl:if>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:value-of select="gmd:individualName"/>
-                    </xsl:otherwise>
-                </xsl:choose>
+                <xsl:if test="string-length(gmd:organisationName) > 0">
+                    <xsl:value-of select="gmd:organisationName"/>
+               </xsl:if>
             </xsl:for-each>
             
             <xsl:for-each select="$coInvestigator_sequence">
-               <xsl:choose>
-                   <xsl:when test="string-length(gmd:individualName) = 0">
-                       <xsl:if test="string-length(gmd:organisationName) > 0">
-                           <xsl:copy-of select="gmd:organisationName"/>
-                       </xsl:if>
-                   </xsl:when>
-                   <xsl:otherwise>
-                       <xsl:copy-of select="gmd:individualName"/>
-                   </xsl:otherwise>
-               </xsl:choose>
+              <xsl:if test="string-length(gmd:organisationName) > 0">
+                    <xsl:value-of select="gmd:organisationName"/>
+               </xsl:if>
            </xsl:for-each>
            
            <xsl:for-each select="$citedResponsibleParty_sequence">
-               <xsl:choose>
-                   <xsl:when test="string-length(gmd:individualName) = 0">
-                       <xsl:if test="string-length(gmd:organisationName) > 0">
-                           <xsl:copy-of select="gmd:organisationName"/>
-                       </xsl:if>
-                   </xsl:when>
-                   <xsl:otherwise>
-                       <xsl:copy-of select="gmd:individualName"/>
-                   </xsl:otherwise>
-               </xsl:choose>
+               <xsl:if test="string-length(gmd:organisationName) > 0">
+                    <xsl:value-of select="gmd:organisationName"/>
+               </xsl:if>
            </xsl:for-each>
        </xsl:variable>
         
@@ -1425,29 +1370,25 @@
                   <!-- If there is more than one contributor, and publisher 
                   name is within contributor list, remove it -->
                     
-                    <xsl:variable name="publisherOrganisationName" as="xs:string">
-                        <xsl:variable name="publisherOrganisationName_sequence" as="xs:string*">
-                            <xsl:for-each select="$publisher_sequence">
-                                <xsl:if test="string-length(gmd:organisationName) > 0">
-                                    <xsl:copy-of select="gmd:organisationName"/>
-                                </xsl:if>
-                            </xsl:for-each>
-                        </xsl:variable>
-                        <xsl:choose>
-                            <xsl:when test="count($publisherOrganisationName_sequence) > 0">
-                                <xsl:value-of select="$publisherOrganisationName_sequence[1]"/>
+                   <xsl:variable name="publisherToUse">
+                   <xsl:choose>
+                            <xsl:when test="count($publisher_sequence) > 0">
+                                <xsl:copy-of select="$publisher_sequence[1]"/>
+                            </xsl:when>
+                            <xsl:when test="string-length($originatingSource) > 0">
+                                <xsl:value-of select="$originatingSource"/>
                             </xsl:when>
                             <xsl:otherwise>
-                                <xsl:value-of select="$originatingSource"/>
+                                <xsl:value-of select="substring-after($global_IMOS_group, ':')"/>
                             </xsl:otherwise>
-                        </xsl:choose>
-                    </xsl:variable>
+                        </xsl:choose>   
+                   </xsl:variable>
                     
-                    <xsl:choose>
+                   <xsl:choose>
                         <xsl:when test="count($allContributorName_sequence) > 0">
                             <xsl:for-each select="distinct-values($allContributorName_sequence)">
                                 <xsl:choose>
-                                    <xsl:when test="($publisherOrganisationName != .) or ((count($allContributorName_sequence) = 1))">
+                                    <xsl:when test="($publisherToUse != .) or ((count($allContributorName_sequence) = 1))">
                                         <contributor>
                                             <namePart>
                                                 <xsl:value-of select="."/>
@@ -1460,9 +1401,8 @@
                     </xsl:choose>
                     
                     <publisher>
-                        <xsl:value-of select="$publisherOrganisationName"/>
+                        <xsl:value-of select="$publisherToUse"/>
                     </publisher>
-                    
                </citationMetadata>
             </citationInfo>
         </xsl:if>
@@ -1592,7 +1532,7 @@
                                          <xsl:value-of select="normalize-space(current-grouping-key())"/>
                                 </addressPart>
                                 
-                                <xsl:for-each select="gmd:contactInfo/gmd:CI_Contact/gmd:address/gmd:CI_Address/gmd:deliveryPoint[string-length(gco:CharacterString) > 0]">
+                                <xsl:for-each select="gmd:contactInfo/gmd:CI_Contact/gmd:address/gmd:CI_Address/gmd:deliveryPoint/gco:CharacterString[string-length(.) > 0]">
                                      <addressPart type="addressLine">
                                          <xsl:value-of select="normalize-space(.)"/>
                                      </addressPart>

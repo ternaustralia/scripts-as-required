@@ -180,8 +180,8 @@
                        
                         <xsl:apply-templates select="*:fileIdentifier" 
                             mode="registryObject_identifier"/>
-                        
-                        <xsl:apply-templates select="
+                            
+                         <xsl:apply-templates select="
                             descendant::*:citation/*:CI_Citation/*:identifier[ancestor::*[contains(local-name(), 'MD_DataIdentification') or contains(local-name(), 'ServiceIdentification')]]" 
                             mode="registryObject_identifier"/>
     
@@ -369,7 +369,7 @@
     <!-- RegistryObject - Key Element  -->
     <xsl:template match="*:fileIdentifier" mode="registryObject_key">
         <key>
-            <xsl:value-of select="normalize-space(.)"/>
+            <xsl:value-of select="concat($global_acronym, '/', normalize-space(.))"/>
         </key>
     </xsl:template>
 
@@ -387,7 +387,7 @@
     </xsl:template>
     
     <xsl:template match="*:identifier" mode="registryObject_identifier">
-        <xsl:variable name="code" select="normalize-space(*:MD_Identifier/*:code)"></xsl:variable>
+        <xsl:variable name="code" select="normalize-space(*[contains(lower-case(local-name()), 'identifier')]/*:code)"></xsl:variable>
         <xsl:if test="string-length($code) > 0">
             <identifier>
                 <xsl:attribute name="type">
@@ -501,7 +501,7 @@
         <xsl:if test="string-length($identifier) > 0">
             <relatedObject>
                 <key>
-                    <xsl:value-of select="$identifier"/>
+                    <xsl:value-of select="concat($global_acronym, '/', $identifier)"/>
                 </key>
                 <relation>
                     <xsl:attribute name="type">
@@ -603,7 +603,7 @@
         <xsl:if test="string-length($identifier) > 0">
             <relatedObject>
                 <key>
-                    <xsl:value-of select="$identifier"/>
+                    <xsl:value-of select="concat($global_acronym, '/', $identifier)"/>
                 </key>
                 <relation>
                     <xsl:attribute name="type">
