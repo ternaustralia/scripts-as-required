@@ -12,7 +12,7 @@
 
     <xsl:import href="CustomFunctions.xsl"/>
     
-     <xsl:param name="global_originatingSource" select="'Central Queensland University'"/>
+    <xsl:param name="global_originatingSource" select="'Central Queensland University'"/>
     <xsl:param name="global_baseURI" select="'Central Queensland.edu.au'"/>
     <xsl:param name="global_group" select="'Central Queensland University'"/>
     <xsl:param name="global_publisherName" select="'Central Queensland University'"/>
