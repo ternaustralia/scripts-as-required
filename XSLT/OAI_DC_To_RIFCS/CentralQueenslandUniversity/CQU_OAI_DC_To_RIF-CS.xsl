@@ -12,12 +12,10 @@
 
     <xsl:import href="CustomFunctions.xsl"/>
     
-    <xsl:variable name="categoryCodeList" select="document('api.figshare.com_v2_categories.xml')"/>
-    
-    <xsl:param name="global_originatingSource" select="'Monash University Figshare'"/>
-    <xsl:param name="global_baseURI" select="'monash.edu.au'"/>
-    <xsl:param name="global_group" select="'Monash University'"/>
-    <xsl:param name="global_publisherName" select="'Monash University'"/>
+     <xsl:param name="global_originatingSource" select="'Central Queensland University'"/>
+    <xsl:param name="global_baseURI" select="'Central Queensland.edu.au'"/>
+    <xsl:param name="global_group" select="'Central Queensland University'"/>
+    <xsl:param name="global_publisherName" select="'Central Queensland University'"/>
 
   <xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes"/>
 
