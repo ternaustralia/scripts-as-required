@@ -254,6 +254,7 @@
      <xsl:template match="document" mode="party">
      
         <xsl:apply-templates select="authors/author[(string-length(fname) > 0) or (string-length(lname) > 0)]" mode="party_individual"/>
+        <xsl:apply-templates select="authors/author[(string-length(institution) > 0)]" mode="party_institution"/>
         <xsl:apply-templates select="authors/author[(string-length(organization) > 0)]" mode="party_organization"/>
         
     </xsl:template>
@@ -301,7 +302,7 @@
                      </xsl:if>
                      
                      <xsl:if test="string-length(institution) > 0">
-                           <relatedObject type="party">
+                           <relatedObject>
                                <key>
                                     <xsl:value-of select="custom:formatKey(custom:formatName(institution))"/> 
                                </key>
@@ -335,10 +336,12 @@
                  <originatingSource><xsl:value-of select="$global_originatingSource"/></originatingSource>
                  <party>
                      
-                     <xsl:attribute name="type" select="'person'"/>
+                     <xsl:attribute name="type" select="'group'"/>
                      
                      <name type="primary">
-                        <xsl:value-of select="organization"/>
+                        <namePart>
+                            <xsl:value-of select="organization"/>
+                        </namePart>
                      </name>
                      
                      <xsl:if test="string-length(email)> 0">
@@ -352,6 +355,28 @@
                                  </address>
                          </location>
                      </xsl:if>
+                 </party>
+             </registryObject>
+    </xsl:template>
+    
+    <xsl:template match="author" mode="party_institution">
+       
+             <registryObject>
+                 <xsl:attribute name="group"><xsl:value-of select="$global_group"/></xsl:attribute>
+                 <key>
+                     <xsl:value-of select="custom:formatKey(institution)"/>
+                 </key>
+                 <originatingSource><xsl:value-of select="$global_originatingSource"/></originatingSource>
+                 <party>
+                     
+                     <xsl:attribute name="type" select="'group'"/>
+                     
+                     <name type="primary">
+                        <namePart>
+                            <xsl:value-of select="institution"/>
+                        </namePart>
+                     </name>
+                     
                  </party>
              </registryObject>
     </xsl:template>
