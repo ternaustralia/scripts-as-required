@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Move &apos;de47e8c0-5315-446e-b637-cf2630ea5f61.xml&apos; to &apos;IMOS&apos;" description="Move &apos;de47e8c0-5315-446e-b637-cf2630ea5f61.xml&apos; to &apos;IMOS&apos;" destination="/IMOS" element1="/IMOS Input Output/ExamplesNoCitationConstructed/de47e8c0-5315-446e-b637-cf2630ea5f61.xml" flags="7" id="org.eclipse.ltk.core.refactoring.move.resources" resources="1" stamp="1479340373199" updateReferences="true"/>
+</session>

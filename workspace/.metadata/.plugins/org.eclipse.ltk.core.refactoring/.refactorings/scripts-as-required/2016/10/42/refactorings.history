@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;scripts-as-required/XSLT/Custom_To_RIFCS/UoW&apos; to &apos;UWA&apos;" description="Rename resource &apos;UoW&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="XSLT/Custom_To_RIFCS/UoW" name="UWA" stamp="1476424360092" updateReferences="true"/>
+</session>

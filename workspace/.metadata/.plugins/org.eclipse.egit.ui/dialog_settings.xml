@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<item value="2" key="org.eclipse.egit.ui.internal.clone.GitSelectWizardPageWizardSel"/>
+	<item value="608" key="DIALOG_WIDTH"/>
+	<item value="1|.SF NS Text|11.0|0|COCOA|1|.SFNSText-Regular" key="DIALOG_FONT_NAME"/>
+	<item value="523" key="DIALOG_HEIGHT"/>
+	<item value="336" key="DIALOG_X_ORIGIN"/>
+	<item value="52" key="DIALOG_Y_ORIGIN"/>
+	<list key="EGit.KnownHosts">
+		<item value="bitbucket.org"/>
+		<item value="git.eclipse.org"/>
+		<item value="github.com"/>
+	</list>
+	<list key="RepositorySelectionPage.UsedUris">
+		<item value="https://github.com/eggsinonebasket/scripts-as-required.git"/>
+	</list>
+	<list key="CommitDialog.authorValues">
+		<item value="melanie &lt;melanie.l.w.barlow@gmail.com&gt;"/>
+		<item value="melanie &lt;melanie@10.1.1.6&gt;"/>
+		<item value="melanie &lt;melanie@10.0.1.68&gt;"/>
+	</list>
+	<list key="CommitDialog.committerValues">
+		<item value="melanie &lt;melanie.l.w.barlow@gmail.com&gt;"/>
+		<item value="melanie &lt;melanie@10.1.1.6&gt;"/>
+		<item value="melanie &lt;melanie@10.0.1.68&gt;"/>
+	</list>
+	<section name="PushToGerritPage">
+	</section>
+	<section name="GitImportWizard">
+	</section>
+	<section name="org.eclipse.egit.ui.internal.push.PushResultDialog.dialogBounds">
+		<item value="650" key="DIALOG_WIDTH"/>
+		<item value="1|.SF NS Text|11.0|0|COCOA|1|.SFNSText-Regular" key="DIALOG_FONT_NAME"/>
+		<item value="440" key="DIALOG_HEIGHT"/>
+		<item value="285" key="DIALOG_X_ORIGIN"/>
+		<item value="90" key="DIALOG_Y_ORIGIN"/>
+		<list key="sashWeights">
+			<item value="600"/>
+			<item value="400"/>
+		</list>
+	</section>
+	<section name="org.eclipse.egit.ui.internal.pull.PullResultDialog.dialogBounds">
+		<item value="613" key="DIALOG_WIDTH"/>
+		<item value="1|.SF NS Text|11.0|0|COCOA|1|.SFNSText-Regular" key="DIALOG_FONT_NAME"/>
+		<item value="283" key="DIALOG_HEIGHT"/>
+		<item value="334" key="DIALOG_X_ORIGIN"/>
+		<item value="178" key="DIALOG_Y_ORIGIN"/>
+	</section>
+	<section name="GitCommitMessageComponent">
+	</section>
+	<section name="org.eclipse.egit.ui.internal.staging.StagingView">
+		<item value="611,388" key="STAGING_SASH_FORM_WEIGHT"/>
+		<item value="false" key="sortItemState"/>
+		<item value="500,500" key="HORIZONTAL_SASH_FORM_WEIGHT"/>
+	</section>
+</section>

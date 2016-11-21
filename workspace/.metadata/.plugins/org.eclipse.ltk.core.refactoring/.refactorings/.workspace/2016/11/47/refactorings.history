@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Delete resource &apos;ACU_Vic Input Output/NewFile.xml&apos;" deleteContents="false" description="Delete resource &apos;ACU_Vic Input Output/NewFile.xml&apos;" element1="/ACU_Vic Input Output/NewFile.xml" flags="7" id="org.eclipse.ltk.core.refactoring.delete.resources" resources="1" stamp="1479272026414"/>
+</session>
