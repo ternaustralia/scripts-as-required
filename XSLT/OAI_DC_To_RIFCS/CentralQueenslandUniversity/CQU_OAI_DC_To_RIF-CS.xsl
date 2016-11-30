@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet version="2.0" 
+<xsl:stylesheet version="2.0"
+    xmlns="http://ands.org.au/standards/rif-cs/registryObjects" 
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:dc="http://purl.org/dc/elements/1.1/" 
     xmlns:oai="http://www.openarchives.org/OAI/2.0/" 
@@ -13,7 +14,7 @@
     <xsl:import href="CustomFunctions.xsl"/>
     
     <xsl:param name="global_originatingSource" select="'Central Queensland University'"/>
-    <xsl:param name="global_baseURI" select="'Central Queensland.edu.au'"/>
+    <xsl:param name="global_baseURI" select="'http://acquire.cqu.edu.au:8080/fedora'"/>
     <xsl:param name="global_group" select="'Central Queensland University'"/>
     <xsl:param name="global_publisherName" select="'Central Queensland University'"/>
 
@@ -36,38 +37,18 @@
     
     <!-- include all sets for now, until otherwise -->
     
-      <!-- xsl:if test="(boolean(custom:sequenceContainsExact(oai:header/oai:setSpec, 'objects')) = true()) or
-                    (boolean(custom:sequenceContainsExact(oai:header/oai:setSpec, '...')) = true())"-->
+        <xsl:if test="(boolean(custom:sequenceContainsExact(oai:metadata/oai_dc:dc/dc:type, 'collection')) = true()) or
+                    (boolean(custom:sequenceContains(oai:metadata/oai_dc:dc/dc:type, 'dataset')) = true())">
                     
-            <xsl:variable name="type">
-                <xsl:choose>
-                    <!-- Data Objects -->
-                    <xsl:when test="(boolean(custom:sequenceContainsExact(oai:header/oai:setSpec, 'objects')) = true()) ">
-                        <xsl:text>dataset</xsl:text>
-                    </xsl:when>
-                    <!-- Behavior Mechanism Objects -->
-                    <xsl:when test="(boolean(custom:sequenceContainsExact(oai:header/oai:setSpec, 'bmechs')) = true()) ">
-                        <xsl:text>collection</xsl:text>
-                    </xsl:when>
-                    <!-- Behavior Definition Objects -->
-                    <xsl:when test="(boolean(custom:sequenceContainsExact(oai:header/oai:setSpec, 'bdefs')) = true()) ">
-                        <xsl:text>collection</xsl:text>
-                    </xsl:when>
-                </xsl:choose>
-            </xsl:variable>
-             <xsl:apply-templates select="oai:metadata/oai_dc:dc" mode="collection">
-                <xsl:with-param name="type" select="$type"/>
-            </xsl:apply-templates>
+             <xsl:apply-templates select="oai:metadata/oai_dc:dc" mode="collection"/>
             <!--  xsl:apply-templates select="oai:metadata/oai_dc:dc/dc:funding" mode="funding_party"/-->
             <xsl:apply-templates select="oai:metadata/oai_dc:dc" mode="party"/> 
-    <!--  /xsl:if-->
+    </xsl:if>
     </xsl:template>
     
     <xsl:template match="oai_dc:dc" mode="collection">
-        <xsl:param name="type" as="xs:string"/>
         <xsl:variable name="class" select="'collection'"/>
         
-        <xsl:message select="concat('mapped type: ', $type)"/>
         <xsl:variable name="key" select="concat($global_baseURI, ':', fn:generate-id(.))"/>
         <registryObject>
             <xsl:attribute name="group" select="$global_group"/>
@@ -79,7 +60,16 @@
             </originatingSource>
             <xsl:element name="{$class}">
                 
-                <xsl:attribute name="type" select="$type"/>
+                <xsl:attribute name="type">
+                    <xsl:choose>
+                        <xsl:when test="boolean(custom:sequenceContains(dc:type, 'dataset')) = true()">
+                            <xsl:value-of select="'dataset'"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="'collection'"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:attribute>
              
                 <xsl:apply-templates select="@todo[string-length(.) > 0]" mode="collection_date_modified"/>
                 
