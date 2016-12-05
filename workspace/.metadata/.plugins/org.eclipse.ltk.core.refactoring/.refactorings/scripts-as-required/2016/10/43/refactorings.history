@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Move &apos;api.figshare.com_v2_categories.xml, license-codelist.xml, monash_figshare_rdf_rifcs.xsl&apos; to &apos;MonashFigshare&apos;" description="Move 3 resources to &apos;MonashFigshare&apos;" destination="XSLT/RDF_To_RIFCS/MonashFigshare" element1="XSLT/RDF_To_RIFCS/api.figshare.com_v2_categories.xml" element2="XSLT/RDF_To_RIFCS/license-codelist.xml" element3="XSLT/RDF_To_RIFCS/monash_figshare_rdf_rifcs.xsl" flags="7" id="org.eclipse.ltk.core.refactoring.move.resources" resources="3" stamp="1477004922595" updateReferences="true"/>
+</session>

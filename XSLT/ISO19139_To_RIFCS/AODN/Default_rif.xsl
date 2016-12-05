@@ -178,21 +178,10 @@
             mode="registryObject_name"/>
         
         <xsl:for-each-group
-            select="*:citation/*:CI_Citation/*:citedResponsibleParty/*:CI_ResponsibleParty[(string-length(normalize-space(*:individualName))) > 0] |
-            ancestor::*:distributionInfo/*:MD_Distribution/*:distributor/*:MD_Distributor/*:distributorContact/*:CI_ResponsibleParty[(string-length(normalize-space(*:individualName))) > 0] |
-            *:pointOfContact/*:CI_ResponsibleParty[(string-length(normalize-space(*:individualName))) > 0] |
-            ancestor::*:MD_Metadata/*:contact/*:CI_ResponsibleParty[(string-length(normalize-space(*:individualName))) > 0]"
-            group-by="*:individualName">
-            <xsl:apply-templates select="." mode="registryObject_related_object">
-                <xsl:with-param name="groupToUse" select="$groupToUse"/>
-            </xsl:apply-templates>
-        </xsl:for-each-group>
-        
-        <xsl:for-each-group
-            select="*:citation/*:CI_Citation/*:citedResponsibleParty/*:CI_ResponsibleParty[((string-length(normalize-space(*:organisationName))) > 0) and ((string-length(normalize-space(*:individualName))) = 0)] |
-            ancestor::*:distributionInfo/*:MD_Distribution/*:distributor/*:MD_Distributor/*:distributorContact/*:CI_ResponsibleParty[((string-length(normalize-space(*:organisationName))) > 0) and ((string-length(normalize-space(*:individualName))) = 0)] |
-            *:pointOfContact/*:CI_ResponsibleParty[((string-length(normalize-space(*:organisationName))) > 0) and ((string-length(normalize-space(*:individualName))) = 0)] |
-            ancestor::*:MD_Metadata/*:contact/*:CI_ResponsibleParty[((string-length(normalize-space(*:organisationName))) > 0) and ((string-length(normalize-space(*:individualName))) = 0)]" 
+            select="*:citation/*:CI_Citation/*:citedResponsibleParty/*:CI_ResponsibleParty[((string-length(normalize-space(*:organisationName))) > 0)] |
+            ancestor::*:distributionInfo/*:MD_Distribution/*:distributor/*:MD_Distributor/*:distributorContact/*:CI_ResponsibleParty[((string-length(normalize-space(*:organisationName))) > 0)] |
+            *:pointOfContact/*:CI_ResponsibleParty[((string-length(normalize-space(*:organisationName))) > 0)] |
+            ancestor::*:MD_Metadata/*:contact/*:CI_ResponsibleParty[((string-length(normalize-space(*:organisationName))) > 0)]" 
             group-by="*:organisationName">
             <xsl:apply-templates select="." mode="registryObject_related_object">
                 <xsl:with-param name="groupToUse" select="$groupToUse"/>
@@ -278,18 +267,7 @@
     <xsl:template match="*[contains(lower-case(name()),'identification')]" mode="relatedRegistryObjects">
         <xsl:param name="originatingSourceURL"/>
         <xsl:param name="groupToUse"/>
-        <xsl:for-each-group
-            select="*:citation/*:CI_Citation/*:citedResponsibleParty/*:CI_ResponsibleParty[(string-length(normalize-space(*:individualName))) > 0] |
-            ancestor::*:distributionInfo/*:MD_Distribution/*:distributor/*:MD_Distributor/*:distributorContact/*:CI_ResponsibleParty[(string-length(normalize-space(*:individualName))) > 0] |
-            *:pointOfContact/*:CI_ResponsibleParty[string-length(normalize-space(*:individualName)) > 0] |
-            ancestor::*:MD_Metadata/*:contact/*:CI_ResponsibleParty[string-length(normalize-space(*:individualName)) > 0]"
-            group-by="*:individualName">
-            <xsl:call-template name="partyPersonDefault">
-                <xsl:with-param name="originatingSourceURL" select="$originatingSourceURL"/>
-                <xsl:with-param name="groupToUse" select="$groupToUse"/>
-            </xsl:call-template>
-        </xsl:for-each-group>
-        
+    
         <xsl:for-each-group
             select="*:citation/*:CI_Citation/*:citedResponsibleParty/*:CI_ResponsibleParty[(string-length(normalize-space(*:organisationName))) > 0] |
             ancestor::*:distributionInfo/*:MD_Distribution/*:distributor/*:MD_Distributor/*:distributorContact/*:CI_ResponsibleParty[(string-length(normalize-space(*:organisationName))) > 0] |
@@ -302,7 +280,6 @@
             </xsl:call-template>
         </xsl:for-each-group>
     </xsl:template>
-    
     
     <!-- =========================================== -->
     <!-- RegistryObject RegistryObject - Child Templates -->
@@ -1061,40 +1038,26 @@
        <xsl:variable name="citedResponsibleParty_sequence" select="*:citedResponsibleParty/*:CI_ResponsibleParty" as="node()*"/>
         
        <xsl:variable name="principalInvestigator_sequence" as="node()*" select="
-            *:citedResponsibleParty/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'principalInvestigator'] |
-            ../../../../*:distributionInfo/*:MD_Distribution/*:distributor/*:MD_Distributor/*:distributorContact/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'principalInvestigator'] |
-            ../../*:pointOfContact/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'principalInvestigator']"/>
+            *:citedResponsibleParty/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'principalInvestigator']"/>
         
         <xsl:variable name="author_sequence" as="node()*" select="
-            *:citedResponsibleParty/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'author'] |
-            ../../../../*:distributionInfo/*:MD_Distribution/*:distributor/*:MD_Distributor/*:distributorContact/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'author'] |
-            ../../*:pointOfContact/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'author']"/>
+            *:citedResponsibleParty/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'author']"/>
         
         
         <xsl:variable name="contentexpert_sequence" as="node()*" select="
-            *:citedResponsibleParty/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'contentexpert'] |
-            ../../../../*:distributionInfo/*:MD_Distribution/*:distributor/*:MD_Distributor/*:distributorContact/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'contentexpert'] |
-            ../../*:pointOfContact/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'contentexpert']"/>
+            *:citedResponsibleParty/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'contentexpert']"/>
         
         <xsl:variable name="coInvestigator_sequence" as="node()*" select="
-            *:citedResponsibleParty/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'coInvestigator'] |
-            ../../../../*:distributionInfo/*:MD_Distribution/*:distributor/*:MD_Distributor/*:distributorContact/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'coInvestigator'] |
-            ../../*:pointOfContact/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'coInvestigator']"/>
+            *:citedResponsibleParty/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'coInvestigator']"/>
         
         <xsl:variable name="publisher_sequence" as="node()*" select="
-            *:citedResponsibleParty/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'publisher'] |
-            ../../../../*:distributionInfo/*:MD_Distribution/*:distributor/*:MD_Distributor/*:distributorContact/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'publisher'] |
-            ../../*:pointOfContact/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'publisher']"/>  
+            *:citedResponsibleParty/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'publisher']"/>  
         
         <xsl:variable name="owner_sequence" as="node()*" select="
-            *:citedResponsibleParty/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'owner'] |
-            ../../../../*:distributionInfo/*:MD_Distribution/*:distributor/*:MD_Distributor/*:distributorContact/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'owner'] |
-            ../../*:pointOfContact/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'owner']"/>  
+            *:citedResponsibleParty/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'owner']"/>  
         
         <xsl:variable name="publisher_sequence" as="node()*" select="
-            *:citedResponsibleParty/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'publisher'] |
-            ../../../../*:distributionInfo/*:MD_Distribution/*:distributor/*:MD_Distributor/*:distributorContact/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'publisher'] |
-            ../../*:pointOfContact/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'publisher']"/>
+            *:citedResponsibleParty/*:CI_ResponsibleParty[*:role/*:CI_RoleCode/@codeListValue = 'publisher']"/>
         
         <xsl:variable name="allContributorName_sequence" as="xs:string*">
            <xsl:for-each select="$principalInvestigator_sequence">
@@ -1167,7 +1130,7 @@
             <xsl:message select="concat('Contributor name: ', .)"/>
         </xsl:for-each>
         
-        <!-- We can only accept one DOI; howerver, first we will find all -->
+        <!-- We can only accept one DOI; however, first we will find all -->
         <xsl:variable name = "doiIdentifier_sequence" as="xs:string*" select="*:identifier/*:MD_Identifier/*:code[contains(lower-case(.), 'doi')]"/>
         <xsl:variable name="identifierToUse">
             <xsl:choose>

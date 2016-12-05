@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<list key="org.eclipse.ui.internal.wizards.datatransfer.SmartImportRootWizardPage.knownSources">
+		<item value="/Users/melanie/git/scripts-as-required/XSLT/Custom_To_RIFCS/ACU"/>
+		<item value="/Users/melanie/git/scripts-as-required/XSLT/OAI_DC_To_RIFCS/CentralQueenslandUniversity"/>
+		<item value="/Users/melanie/projects/CQU"/>
+		<item value="/Users/melanie/git/scripts-as-required/python/CQU_Output"/>
+		<item value="/Users/melanie/projects/AODN"/>
+		<item value="/Users/melanie/git/scripts-as-required/XSLT/ISO19139_To_RIFCS/AODN"/>
+		<item value="/Users/melanie/PycharmProjects/scripts-as-required/python/NEII_Output"/>
+		<item value="/Users/melanie/git/scripts-as-required/python/IMOS_Output"/>
+		<item value="/Users/melanie/git/scripts-as-required/XSLT/ISO19139_To_RIFCS/IMOS"/>
+		<item value="/Users/melanie/projects/IMOS"/>
+		<item value="/Users/melanie/PycharmProjects/scripts-as-required/python/AIMS_Output"/>
+		<item value="/Users/melanie/projects/NEII"/>
+		<item value="/Users/melanie/git/scripts-as-required/XSLT/DDI_To_RIFCS/ADA"/>
+		<item value="/Users/melanie/projects/ADA"/>
+		<item value="/Users/melanie/git/scripts-as-required/XSLT/RDF_To_RIFCS/MonashFigshare"/>
+		<item value="/Users/melanie/git/scripts-as-required/python/MonashFigshare_RDF_Output"/>
+		<item value="/Users/melanie/git/scripts-as-required/python/MonashFigshare_DC_Output"/>
+		<item value="/Users/melanie/projects/ACU_Victoria"/>
+		<item value="/Users/melanie/git/scripts-as-required/XSLT/RIFCS_To_Custom/ACU_Vic"/>
+		<item value="/Users/melanie/git/scripts-as-required/XSLT/ISO19139_To_RIFCS/NEII"/>
+		<item value="/Users/melanie/git/scripts-as-required/python/UOW_Output"/>
+		<item value="/Users/melanie/git/scripts-as-required/XSLT/Custom_To_RIFCS/UWA"/>
+		<item value="/Users/melanie/projects/UWA"/>
+		<item value="/Users/melanie/git/scripts-as-required/XSLT/Custom_To_RIFCS/UniversityOfWollongong"/>
+		<item value="/Users/melanie/projects/UoW"/>
+		<item value="/Users/melanie/projects/UniversityOfWollongong"/>
+		<item value="/Users/melanie/git/scripts-as-required/python/MonashFigshare"/>
+		<item value="/Users/melanie/projects/AIMS"/>
+		<item value="/Users/melanie/git/scripts-as-required/XSLT/ISO19139_To_RIFCS/AIMS"/>
+		<item value="/Users/melanie/shell"/>
+		<item value="/Users/melanie/git/scripts-as-required/XSLT/OAI_DC_To_RIFCS/MonashFigshare"/>
+		<item value="/Users/melanie/projects/MonashFigshare"/>
+		<item value="/Users/melanie/projects/AAD"/>
+		<item value="/Users/melanie/git/scripts-as-required/XSLT/ISO19139_To_RIFCS/AAD"/>
+		<item value="/Users/melanie/projects"/>
+	</list>
+	<section name="NewWizardAction">
+		<item value="org.eclipse.ui.wizards.new.project" key="NewWizardSelectionPage.STORE_SELECTED_ID"/>
+		<list key="NewWizardSelectionPage.STORE_EXPANDED_CATEGORIES_ID">
+			<item value="org.eclipse.ui.Basic"/>
+		</list>
+	</section>
+	<section name="BasicNewProjectResourceWizard">
+	</section>
+	<section name="org.eclipse.ui.dialogs.FilteredResourcesSelectionDialog">
+		<item value="false" key="FilterByLocation"/>
+		<item value="true" key="ShowStatusLine"/>
+		<item value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#x0A;&lt;History&gt;&#x0A;&lt;historyRootNode/&gt;&#x0A;&lt;/History&gt;" key="History"/>
+		<item value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#x0A;&lt;workingSet workingSetName=&quot;&quot;/&gt;" key="WorkingSet"/>
+		<item value="false" key="ShowDerived"/>
+		<section name="DialogBoundsSettings">
+			<item value="600" key="DIALOG_WIDTH"/>
+			<item value="1|.SF NS Text|10.0|0|COCOA|1|.SFNSText-Regular" key="DIALOG_FONT_NAME"/>
+			<item value="500" key="DIALOG_HEIGHT"/>
+			<item value="340" key="DIALOG_X_ORIGIN"/>
+			<item value="33" key="DIALOG_Y_ORIGIN"/>
+		</section>
+	</section>
+	<section name="org.eclipse.ui.internal.views.markers.FiltersConfigurationDialog">
+		<item value="All Errors" key="SELECTED_FILTER_GROUP"/>
+		<list key="PREV_SELECTED_ELEMENTS">
+		</list>
+	</section>
+	<section name="SaveAsDialogSettings">
+		<item value="526" key="DIALOG_WIDTH"/>
+		<item value="1|.SF NS Text|11.0|0|COCOA|1|.SFNSText-Regular" key="DIALOG_FONT_NAME"/>
+		<item value="529" key="DIALOG_HEIGHT"/>
+		<item value="377" key="DIALOG_X_ORIGIN"/>
+		<item value="22" key="DIALOG_Y_ORIGIN"/>
+	</section>
+</section>

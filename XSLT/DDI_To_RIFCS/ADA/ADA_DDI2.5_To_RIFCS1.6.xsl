@@ -6,8 +6,11 @@
     xmlns:fn="http://www.w3.org/2005/xpath-functions"
     xmlns:localFunc="http://www.localfunc.net"
     xmlns:saxon="http://saxon.sf.net/"
+    xmlns:local="http://local.to.here"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="3.0">
+    
+    <xsl:import href="CustomFunctions.xsl"/>
     
     <xsl:param name="global_originatingSource" select="'Australian Data Archive'"/>
     <xsl:param name="global_baseURI" select="'www.ada.edu.au'"/>
@@ -19,11 +22,14 @@
     
     <xsl:template match="/">
         <xsl:message select="concat('name:', name(ddi:codeBook))"/>
-        <registryObjects xmlns="http://ands.org.au/standards/rif-cs/registryObjects" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd">
+        <!-- registryObjects xmlns="http://ands.org.au/standards/rif-cs/registryObjects" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd"-->
             <xsl:apply-templates select="ddi:codeBook" mode="collection"/>
             <!--xsl:apply-templates select="." mode="activity"/-->
-            <!--xsl:apply-templates select="." mode="party"/-->
-        </registryObjects>
+            <xsl:apply-templates select="ddi:codeBook/ddi:stdyDscr/ddi:citation/ddi:rspStmt/ddi:AuthEnty[(string-length(.) > 0)]" mode="party_author"/>
+            <xsl:apply-templates select="ddi:codeBook/ddi:docDscr/ddi:citation/ddi:prodStmt/ddi:producer[(string-length(.) > 0)]" mode="party_producer"/>
+            <xsl:apply-templates select="ddi:codeBook/ddi:stdyDscr/ddi:citation/ddi:rspStmt/ddi:AuthEnty/@affiliation[(string-length(.) > 0)]" mode="party_organisation"/>
+                
+        <!-- /registryObjects-->
     </xsl:template>
     
     <xsl:template match="ddi:codeBook" mode="collection">
@@ -47,6 +53,8 @@
                 <xsl:apply-templates select="ddi:stdyDscr/ddi:stdyInfo/ddi:abstract[(string-length(.) > 0)]" mode="registryObject_description"/>
                 <xsl:apply-templates select="ddi:stdyDscr/ddi:stdyInfo/ddi:sumDscr" mode="registryObject_coverage"/>
                 <xsl:apply-templates select="ddi:stdyDscr/ddi:othrStdyMat/ddi:relPubl" mode="registryObject_relatedInfo"/>
+                <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:rspStmt/ddi:AuthEnty[(string-length(.) > 0)]" mode="registryObject_relatedObject"/>
+                <xsl:apply-templates select="ddi:docDscr/ddi:citation/ddi:prodStmt/ddi:producer[(string-length(.) > 0)]" mode="registryObject_relatedObject"/>
                 <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:titlStmt/ddi:altTitl[(string-length(.) > 0)]" mode="registryObject_altname"/>
                 <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:prodStmt/ddi:copyright" mode="registryObject_rights_statement"/>
                 <xsl:apply-templates select="ddi:stdyDscr/ddi:dataAccs/ddi:useStmt" mode="registryObject_rights_access"/>
@@ -202,7 +210,7 @@
     
     
     <xsl:template match="ddi:IDNo" mode="registryObject_identifier">
-        <identifier type="{localFunc:getIdentifierType(.)}">
+        <identifier type="{custom:getIdentifierType(.)}">
             <xsl:value-of select="normalize-space(.)"/>
         </identifier>
     </xsl:template>
@@ -213,6 +221,30 @@
                 <xsl:value-of select="normalize-space(.)"/>
             </namePart>
         </name>
+    </xsl:template>
+    
+    <xsl:template match="ddi:AuthEnty" mode="registryObject_relatedObject">
+        <xsl:message select="concat('AuthEnty for relatedObject: ', .)"/>
+        <xsl:if test="string-length(.) > 0">
+            <relatedObject>
+                <key>
+                   <xsl:value-of select="local:formatKey(.)"/> 
+                </key>
+                <relation type="hasCollector"/>
+            </relatedObject>
+        </xsl:if>   
+    </xsl:template>
+    
+    <xsl:template match="ddi:producer" mode="registryObject_relatedObject">
+        <xsl:message select="concat('producer for relatedObject: ', .)"/>
+        <xsl:if test="string-length(.) > 0">
+            <relatedObject>
+                <key>
+                   <xsl:value-of select="local:formatKey(.)"/> 
+                </key>
+                <relation type="isOwnedBy"/>
+            </relatedObject>
+        </xsl:if>   
     </xsl:template>
     
     <xsl:template match="ddi:titl" mode="registryObject_altname">
@@ -310,7 +342,7 @@
     
     
     <xsl:template match="ddi:IDNo" mode="registryObject_citation_identifier">
-        <identifier type="{localFunc:getIdentifierType(.)}">
+        <identifier type="{custom:getIdentifierType(.)}">
             <xsl:value-of select="normalize-space(.)"/>
         </identifier>
     </xsl:template>
@@ -364,37 +396,114 @@
     </xsl:template-->
     
     
-    <xsl:function name="localFunc:getIdentifierType" as="xs:string">
-        <xsl:param name="identifier"/>
-         <xsl:choose>
-            <xsl:when test="contains(lower-case($identifier), 'orcid')">
-                <xsl:text>orcid</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains(lower-case($identifier), 'purl.org')">
-                <xsl:text>purl</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains(lower-case($identifier), 'doi.org')">
-                <xsl:text>doi</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains(lower-case($identifier), 'scopus')">
-                <xsl:text>scopus</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains(lower-case($identifier), 'handle.net')">
-                <xsl:text>handle</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains(lower-case($identifier), 'nla.gov.au')">
-                <xsl:text>AU-ANL:PEAU</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains(lower-case($identifier), 'fundref')">
-                <xsl:text>fundref</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains(lower-case($identifier), 'http')">
-                <xsl:text>uri</xsl:text>
-            </xsl:when>
-            <xsl:otherwise>
-                <xsl:text>global</xsl:text>
-            </xsl:otherwise>
-        </xsl:choose>
+    <xsl:template match="ddi:AuthEnty" mode="party_author">
+        <xsl:variable name="personName" select="."/>
+            <xsl:message select="concat('personName for party_producer: ', $personName    )"/>
+        
+            <xsl:if test="(string-length($personName) > 0)">
+            
+                     <registryObject group="{$global_group}">
+                        <key>
+                           <xsl:value-of select="local:formatKey($personName)"/> 
+                        </key>       
+                        <originatingSource>
+                             <xsl:value-of select="$global_originatingSource"/>
+                        </originatingSource>
+                        
+                         <party>
+                            <xsl:attribute name="type" select="'person'"/>
+                             
+                              <name type="primary">
+                                 <namePart>
+                                    <xsl:value-of select="normalize-space(.)"/>
+                                 </namePart>    
+                             </name>
+                             
+                             <xsl:if test="string-length(@affiliation) > 0">
+                                <relatedObject>
+                                    <key>
+                                        <xsl:value-of select="local:formatKey(@affiliation)"/>
+                                    </key>
+                                    <relation type="isMemberOf"/>
+                                </relatedObject>
+                             
+                             </xsl:if>
+                             
+                         </party>
+                     </registryObject>
+                </xsl:if>
+        </xsl:template>
+    
+    <xsl:template match="ddi:producer" mode="party_producer">
+        <xsl:variable name="personName" select="."/>
+            <xsl:message select="concat('personName for party_producer: ', $personName    )"/>
+        
+            <xsl:if test="(string-length($personName) > 0)">
+            
+                     <registryObject group="{$global_group}">
+                        <key>
+                           <xsl:value-of select="local:formatKey($personName)"/> 
+                        </key>       
+                        <originatingSource>
+                             <xsl:value-of select="$global_originatingSource"/>
+                        </originatingSource>
+                        
+                         <party>
+                            <xsl:attribute name="type" select="'person'"/>
+                             
+                              <name type="primary">
+                                 <namePart>
+                                    <xsl:value-of select="normalize-space(.)"/>
+                                 </namePart>    
+                             </name>
+                         </party>
+                     </registryObject>
+                </xsl:if>
+        </xsl:template>
+        
+     <xsl:template match="@affiliation" mode="party_organisation">
+        <xsl:variable name="orgName" select="."/>
+            <xsl:message select="concat('orgName for party_organisation: ', $orgName )"/>
+        
+            <xsl:if test="(string-length($orgName) > 0)">
+            
+                     <registryObject group="{$global_group}">
+                        <key>
+                           <xsl:value-of select="local:formatKey($orgName)"/> 
+                        </key>       
+                        <originatingSource>
+                             <xsl:value-of select="$global_originatingSource"/>
+                        </originatingSource>
+                        
+                         <party>
+                            <xsl:attribute name="type" select="'group'"/>
+                             
+                              <name type="primary">
+                                 <namePart>
+                                    <xsl:value-of select="normalize-space(.)"/>
+                                 </namePart>    
+                             </name>
+                         </party>
+                     </registryObject>
+                </xsl:if>
+        </xsl:template>
+  
+            
+    
+    <xsl:function name="local:formatKey">
+        <xsl:param name="input"/>
+        <xsl:variable name="raw" select="translate(normalize-space($input), ' ', '')"/>
+        <xsl:variable name="temp">
+            <xsl:choose>
+                <xsl:when test="substring($raw, string-length($raw), 1) = '.'">
+                    <xsl:value-of select="substring($raw, 0, string-length($raw))"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="$raw"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        <xsl:value-of select="concat($global_baseURI, '/', $temp)"/>
     </xsl:function>
     
 </xsl:stylesheet>

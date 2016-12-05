@@ -1,0 +1,9 @@
+DEBUG.consoleOpenOnErr=false
+DEBUG.consoleOpenOnOut=false
+StringVariablePreferencePage=124,104,103,82,
+eclipse.preferences.version=1
+org.eclipse.debug.ui.PREF_LAUNCH_PERSPECTIVES=<?xml version\="1.0" encoding\="UTF-8" standalone\="no"?>\n<launchPerspectives/>\n
+org.eclipse.debug.ui.UseContextualLaunch=false
+org.eclipse.debug.ui.relaunch_in_debug_mode=always
+org.eclipse.debug.ui.save_dirty_editors_before_launch=always
+preferredTargets=default\:default|

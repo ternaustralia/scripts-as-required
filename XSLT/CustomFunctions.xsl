@@ -4,7 +4,6 @@
     xmlns:srv="http://www.isotc211.org/2005/srv"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
-    xmlns:gmd="http://www.isotc211.org/2005/gmd" 
     xmlns:custom="http://custom.nowhere.yet"
     exclude-result-prefixes="custom">
     
@@ -15,6 +14,29 @@
         <xsl:variable name="true_sequence" as="xs:boolean*">
             <xsl:for-each select="distinct-values($sequence)">
                 <xsl:if test="contains(lower-case(.), lower-case($str))">
+                    <xsl:copy-of select="true()"/>
+                </xsl:if>
+            </xsl:for-each>
+        </xsl:variable>
+        
+        <xsl:choose>
+            <xsl:when test="count($true_sequence) > 0">
+                <xsl:copy-of select="true()"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:copy-of select="false()"/>
+            </xsl:otherwise>
+        </xsl:choose>
+        
+    </xsl:function>
+    
+    <xsl:function name="custom:sequenceContainsExact" as="xs:boolean">
+        <xsl:param name="sequence" as="xs:string*"/>
+        <xsl:param name="str" as="xs:string"/>
+        
+        <xsl:variable name="true_sequence" as="xs:boolean*">
+            <xsl:for-each select="distinct-values($sequence)">
+                <xsl:if test="(lower-case(.) = lower-case($str))">
                     <xsl:copy-of select="true()"/>
                 </xsl:if>
             </xsl:for-each>
@@ -97,6 +119,19 @@
         </xsl:choose>
         <!--xsl:value-of select="substring-before(substring-before((substring-after($url, '://')), '/'), ':')"/-->
     </xsl:function>
+    
+    <xsl:function name="custom:formatName">
+        <xsl:param name="name"/>
+        <xsl:choose>
+            <xsl:when test="contains($name, ', ')">
+                <xsl:value-of select="concat(normalize-space(substring-after($name, ',')), ' ', normalize-space(substring-before($name, ',')))"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="$name"/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:function>
+    
     
         
 </xsl:stylesheet>

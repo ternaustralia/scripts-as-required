@@ -1,0 +1,449 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
+  <responseDate>2016-11-17T10:40:34Z</responseDate>
+  <request verb="GetRecord" identifier="de47e8c0-5315-446e-b637-cf2630ea5f61" metadataPrefix="iso19139.mcp">http://imosmest.aodn.org.au:80/geonetwork/srv/en/oaipmh</request>
+  <GetRecord>
+    <record>
+      <header>
+        <identifier>de47e8c0-5315-446e-b637-cf2630ea5f61</identifier>
+        <datestamp>2015-06-04T15:43:34Z</datestamp>
+      </header>
+      <metadata>
+        <mcp:MD_Metadata xmlns:mcp="http://bluenet3.antcrc.utas.edu.au/mcp" xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:srv="http://www.isotc211.org/2005/srv" xmlns:gml="http://www.opengis.net/gml" xmlns:gts="http://www.isotc211.org/2005/gts" gco:isoType="gmd:MD_Metadata" xsi:schemaLocation="http://bluenet3.antcrc.utas.edu.au/mcp http://imosmest.aodn.org.au:80/geonetwork/xml/schemas/iso19139.mcp/schema.xsd">
+          <gmd:fileIdentifier>
+            <gco:CharacterString>de47e8c0-5315-446e-b637-cf2630ea5f61</gco:CharacterString>
+          </gmd:fileIdentifier>
+          <gmd:language>
+            <gco:CharacterString>eng</gco:CharacterString>
+          </gmd:language>
+          <gmd:characterSet>
+            <gmd:MD_CharacterSetCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="utf8" />
+          </gmd:characterSet>
+          <gmd:contact>
+            <gmd:CI_ResponsibleParty>
+              <gmd:organisationName>
+                <gco:CharacterString>CSIRO Oceans and Atmosphere - Information and Data Centre</gco:CharacterString>
+              </gmd:organisationName>
+              <gmd:positionName>
+                <gco:CharacterString>Data Librarian</gco:CharacterString>
+              </gmd:positionName>
+              <gmd:contactInfo>
+                <gmd:CI_Contact>
+                  <gmd:address>
+                    <gmd:CI_Address>
+                      <gmd:deliveryPoint>
+                        <gco:CharacterString />
+                      </gmd:deliveryPoint>
+                      <gmd:city>
+                        <gco:CharacterString />
+                      </gmd:city>
+                      <gmd:administrativeArea>
+                        <gco:CharacterString />
+                      </gmd:administrativeArea>
+                      <gmd:postalCode>
+                        <gco:CharacterString />
+                      </gmd:postalCode>
+                      <gmd:country>
+                        <gco:CharacterString />
+                      </gmd:country>
+                      <gmd:electronicMailAddress>
+                        <gco:CharacterString>data-requests-hf@csiro.au</gco:CharacterString>
+                      </gmd:electronicMailAddress>
+                    </gmd:CI_Address>
+                  </gmd:address>
+                  <gmd:onlineResource>
+                    <gmd:CI_OnlineResource>
+                      <gmd:linkage>
+                        <gmd:URL>http://www.cmar.csiro.au/datacentre/</gmd:URL>
+                      </gmd:linkage>
+                      <gmd:protocol>
+                        <gco:CharacterString>WWW:LINK-1.0-http--link</gco:CharacterString>
+                      </gmd:protocol>
+                      <gmd:name>
+                        <gco:CharacterString>CSIRO - Oceans and Atmosphere IDC homepage</gco:CharacterString>
+                      </gmd:name>
+                      <gmd:description>
+                        <gco:CharacterString>Link to CSIRO - Oceans and Atmosphere IDC homepage</gco:CharacterString>
+                      </gmd:description>
+                    </gmd:CI_OnlineResource>
+                  </gmd:onlineResource>
+                </gmd:CI_Contact>
+              </gmd:contactInfo>
+              <gmd:role>
+                <gmd:CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="distributor" />
+              </gmd:role>
+            </gmd:CI_ResponsibleParty>
+          </gmd:contact>
+          <gmd:dateStamp>
+            <gco:Date>2004-09-27</gco:Date>
+          </gmd:dateStamp>
+          <gmd:metadataStandardName>
+            <gco:CharacterString>Australian Marine Community Profile of ISO 19115:2005/19139</gco:CharacterString>
+          </gmd:metadataStandardName>
+          <gmd:metadataStandardVersion>
+            <gco:CharacterString>1.4</gco:CharacterString>
+          </gmd:metadataStandardVersion>
+          <gmd:dataSetURI>
+            <gco:CharacterString>http://www.cmar.csiro.au/datacentre/process/data_files/OceanColourData/Great_Barrier_Reef/LC_IMOS_SRS_BioOptical_B_LB3172_Oct2002_absorption.zip</gco:CharacterString>
+          </gmd:dataSetURI>
+          <gmd:identificationInfo>
+            <mcp:MD_DataIdentification gco:isoType="gmd:MD_DataIdentification">
+              <gmd:citation>
+                <gmd:CI_Citation>
+                  <gmd:title>
+                    <gco:CharacterString>Great Barrier Reef, October 2002, HPLC Pigment and Ocean Colour Data (AIMS cruise code LB3172)</gco:CharacterString>
+                  </gmd:title>
+                  <gmd:date>
+                    <gmd:CI_Date>
+                      <gmd:date>
+                        <gco:Date>2002-10-21</gco:Date>
+                      </gmd:date>
+                      <gmd:dateType>
+                        <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation" />
+                      </gmd:dateType>
+                    </gmd:CI_Date>
+                  </gmd:date>
+                </gmd:CI_Citation>
+              </gmd:citation>
+              <gmd:abstract>
+                <gco:CharacterString>This record contains data collected on the AIMS vessel RV Lady Basten between 21 and 30 October 2002. The data can be used for Ocean Colour sensor validation. Parameters measured are the concentration of chlorophyll and carotenoid pigments and retrieved chlorophyll a estimate, the absorption coefficient for dissolved (CDOM) particulate (a/p) and detrital or non-algal (a/d) components of the water column. 9 stations were sampled. The data was used primarily to validate ocean colour sensors MERIS, MODIS and SeaWIFs and the SST sensor AATSR. Samples were collected and analysed for pigments, total suspended solids (TSS) and absorption coefficient, dissolved and particulate. CLW deployed instruments RAMSES, AC-9, Hydroscat and Hydrorad.
+
+Source: http://www.marine.csiro.au/marq/edd_search.Browse_Citation?txtSession=6377</gco:CharacterString>
+              </gmd:abstract>
+              <gmd:credit>
+                <gco:CharacterString>Ian Barton</gco:CharacterString>
+              </gmd:credit>
+              <gmd:credit>
+                <gco:CharacterString>Lesley Clementson</gco:CharacterString>
+              </gmd:credit>
+              <gmd:credit>
+                <gco:CharacterString>Kadija Oobelkheir(CLW)</gco:CharacterString>
+              </gmd:credit>
+              <gmd:credit>
+                <gco:CharacterString>Paul Daniel(CLW)</gco:CharacterString>
+              </gmd:credit>
+              <gmd:credit>
+                <gco:CharacterString>Vittorio Brando(CLW)</gco:CharacterString>
+              </gmd:credit>
+              <gmd:status>
+                <gmd:MD_ProgressCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ProgressCode" codeListValue="completed" />
+              </gmd:status>
+              <gmd:pointOfContact>
+                <gmd:CI_ResponsibleParty>
+                  <gmd:individualName>
+                    <gco:CharacterString>Ms Lesley Clementson</gco:CharacterString>
+                  </gmd:individualName>
+                  <gmd:organisationName>
+                    <gco:CharacterString>CSIRO Oceans &amp; Atmosphere Flagship - Hobart</gco:CharacterString>
+                  </gmd:organisationName>
+                  <gmd:positionName>
+                    <gco:CharacterString>Research Group Leader (Oceans &amp; Atmosphere)</gco:CharacterString>
+                  </gmd:positionName>
+                  <gmd:contactInfo>
+                    <gmd:CI_Contact>
+                      <gmd:phone>
+                        <gmd:CI_Telephone>
+                          <gmd:voice>
+                            <gco:CharacterString>+61 3 6232 5337</gco:CharacterString>
+                          </gmd:voice>
+                          <gmd:facsimile>
+                            <gco:CharacterString>+61 3 6232 5000</gco:CharacterString>
+                          </gmd:facsimile>
+                        </gmd:CI_Telephone>
+                      </gmd:phone>
+                      <gmd:address>
+                        <gmd:CI_Address>
+                          <gmd:deliveryPoint>
+                            <gco:CharacterString>GPO Box 1538</gco:CharacterString>
+                          </gmd:deliveryPoint>
+                          <gmd:city>
+                            <gco:CharacterString>Hobart</gco:CharacterString>
+                          </gmd:city>
+                          <gmd:administrativeArea>
+                            <gco:CharacterString>TAS</gco:CharacterString>
+                          </gmd:administrativeArea>
+                          <gmd:postalCode>
+                            <gco:CharacterString>7001</gco:CharacterString>
+                          </gmd:postalCode>
+                          <gmd:country>
+                            <gco:CharacterString>Australia</gco:CharacterString>
+                          </gmd:country>
+                          <gmd:electronicMailAddress>
+                            <gco:CharacterString>Lesley.Clementson@csiro.au</gco:CharacterString>
+                          </gmd:electronicMailAddress>
+                        </gmd:CI_Address>
+                      </gmd:address>
+                      <gmd:onlineResource>
+                        <gmd:CI_OnlineResource>
+                          <gmd:linkage>
+                            <gmd:URL>http://www.csiro.au/en/Research/OandA</gmd:URL>
+                          </gmd:linkage>
+                          <gmd:protocol>
+                            <gco:CharacterString>WWW:LINK-1.0-http--link</gco:CharacterString>
+                          </gmd:protocol>
+                          <gmd:name>
+                            <gco:CharacterString>Contact Web Address.</gco:CharacterString>
+                          </gmd:name>
+                          <gmd:description>
+                            <gco:CharacterString>Contact Web Address.</gco:CharacterString>
+                          </gmd:description>
+                        </gmd:CI_OnlineResource>
+                      </gmd:onlineResource>
+                    </gmd:CI_Contact>
+                  </gmd:contactInfo>
+                  <gmd:role>
+                    <gmd:CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="pointOfContact" />
+                  </gmd:role>
+                </gmd:CI_ResponsibleParty>
+              </gmd:pointOfContact>
+              <gmd:resourceMaintenance>
+                <gmd:MD_MaintenanceInformation>
+                  <gmd:maintenanceAndUpdateFrequency>
+                    <gmd:MD_MaintenanceFrequencyCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_MaintenanceFrequencyCode" codeListValue="notPlanned" />
+                  </gmd:maintenanceAndUpdateFrequency>
+                </gmd:MD_MaintenanceInformation>
+              </gmd:resourceMaintenance>
+              <gmd:descriptiveKeywords>
+                <gmd:MD_Keywords>
+                  <gmd:keyword>
+                    <gco:CharacterString>Hydrosphere | Water Quality | Chlorophyll</gco:CharacterString>
+                  </gmd:keyword>
+                  <gmd:keyword>
+                    <gco:CharacterString>Oceans | Ocean Chemistry | Chlorophyll</gco:CharacterString>
+                  </gmd:keyword>
+                  <gmd:keyword>
+                    <gco:CharacterString>Oceans | Ocean Chemistry | Pigments</gco:CharacterString>
+                  </gmd:keyword>
+                  <gmd:keyword>
+                    <gco:CharacterString>Oceans | Ocean Chemistry | Suspended Solids</gco:CharacterString>
+                  </gmd:keyword>
+                  <gmd:keyword>
+                    <gco:CharacterString>Oceans | Ocean Optics | Ocean Color</gco:CharacterString>
+                  </gmd:keyword>
+                  <gmd:type>
+                    <gmd:MD_KeywordTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode" codeListValue="theme" />
+                  </gmd:type>
+                  <gmd:thesaurusName>
+                    <gmd:CI_Citation>
+                      <gmd:title>
+                        <gco:CharacterString>Olsen, L.M., G. Major, K. Shein, J. Scialdone, R. Vogel, S. Leicester, H. Weir, S. Ritz, T. Stevens, M. Meaux, C.Solomon, R. Bilodeau, M. Holland, T. Northcutt, R. A. Restrepo, 2007. NASA/Global Change Master Directory (GCMD) Earth Science Keywords. Version 6.0.0.0.0</gco:CharacterString>
+                      </gmd:title>
+                      <gmd:alternateTitle>
+                        <gco:CharacterString>GCMD</gco:CharacterString>
+                      </gmd:alternateTitle>
+                      <gmd:date>
+                        <gmd:CI_Date>
+                          <gmd:date>
+                            <gco:Date>2007-04</gco:Date>
+                          </gmd:date>
+                          <gmd:dateType>
+                            <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="revision" />
+                          </gmd:dateType>
+                        </gmd:CI_Date>
+                      </gmd:date>
+                    </gmd:CI_Citation>
+                  </gmd:thesaurusName>
+                </gmd:MD_Keywords>
+              </gmd:descriptiveKeywords>
+              <gmd:resourceConstraints>
+                <gmd:MD_LegalConstraints>
+                  <gmd:otherConstraints>
+                    <gco:CharacterString>Public Access data. See Licensing Agreement shown with data download.</gco:CharacterString>
+                  </gmd:otherConstraints>
+                </gmd:MD_LegalConstraints>
+              </gmd:resourceConstraints>
+              <gmd:aggregationInfo>
+                <gmd:MD_AggregateInformation>
+                  <gmd:aggregateDataSetName>
+                    <gmd:CI_Citation>
+                      <gmd:title>
+                        <gco:CharacterString>Kadija Oubelkheir,  Lesley A. Clementson, Ian T. Webster, Phillip W. Ford, Arnold G. Dekker, Lynda C. Radke, and Paul Daniel.(2006). Using inherent optical properties to investigate biogeochemical dynamics in a tropical macrotidal coastal system. Journal of Geophysical Researchvol 111, C07021.</gco:CharacterString>
+                      </gmd:title>
+                      <gmd:date>
+                        <gmd:CI_Date>
+                          <gmd:date>
+                            <gco:Date>2006</gco:Date>
+                          </gmd:date>
+                          <gmd:dateType>
+                            <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="publication" />
+                          </gmd:dateType>
+                        </gmd:CI_Date>
+                      </gmd:date>
+                    </gmd:CI_Citation>
+                  </gmd:aggregateDataSetName>
+                  <gmd:associationType>
+                    <gmd:DS_AssociationTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode" codeListValue="crossReference" />
+                  </gmd:associationType>
+                </gmd:MD_AggregateInformation>
+              </gmd:aggregationInfo>
+              <gmd:language>
+                <gco:CharacterString>eng</gco:CharacterString>
+              </gmd:language>
+              <gmd:characterSet>
+                <gmd:MD_CharacterSetCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="utf8" />
+              </gmd:characterSet>
+              <gmd:topicCategory>
+                <gmd:MD_TopicCategoryCode>oceans</gmd:MD_TopicCategoryCode>
+              </gmd:topicCategory>
+              <gmd:environmentDescription>
+                <gco:CharacterString>Require MS-Excel to be read</gco:CharacterString>
+              </gmd:environmentDescription>
+              <gmd:extent>
+                <gmd:EX_Extent>
+                  <gmd:geographicElement>
+                    <gmd:EX_GeographicBoundingBox>
+                      <gmd:westBoundLongitude>
+                        <gco:Decimal>146</gco:Decimal>
+                      </gmd:westBoundLongitude>
+                      <gmd:eastBoundLongitude>
+                        <gco:Decimal>150.5</gco:Decimal>
+                      </gmd:eastBoundLongitude>
+                      <gmd:southBoundLatitude>
+                        <gco:Decimal>-21</gco:Decimal>
+                      </gmd:southBoundLatitude>
+                      <gmd:northBoundLatitude>
+                        <gco:Decimal>-18</gco:Decimal>
+                      </gmd:northBoundLatitude>
+                    </gmd:EX_GeographicBoundingBox>
+                  </gmd:geographicElement>
+                  <gmd:temporalElement>
+                    <mcp:EX_TemporalExtent gco:isoType="gmd:EX_TemporalExtent">
+                      <gmd:extent>
+                        <gml:TimePeriod gml:id="tp1">
+                          <gml:beginPosition>2002-10-21</gml:beginPosition>
+                          <gml:endPosition>2002-10-30</gml:endPosition>
+                        </gml:TimePeriod>
+                      </gmd:extent>
+                    </mcp:EX_TemporalExtent>
+                  </gmd:temporalElement>
+                </gmd:EX_Extent>
+              </gmd:extent>
+            </mcp:MD_DataIdentification>
+          </gmd:identificationInfo>
+          <gmd:dataQualityInfo>
+            <gmd:DQ_DataQuality>
+              <gmd:scope>
+                <gmd:DQ_Scope>
+                  <gmd:level>
+                    <gmd:MD_ScopeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="dataset" />
+                  </gmd:level>
+                </gmd:DQ_Scope>
+              </gmd:scope>
+              <gmd:report>
+                <gmd:DQ_AbsoluteExternalPositionalAccuracy>
+                  <gmd:result>
+                    <gmd:DQ_ConformanceResult>
+                      <gmd:specification>
+                        <gmd:CI_Citation>
+                          <gmd:title gco:nilReason="inapplicable" />
+                          <gmd:date>
+                            <gmd:CI_Date>
+                              <gmd:date gco:nilReason="inapplicable" />
+                              <gmd:dateType>
+                                <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="publication" />
+                              </gmd:dateType>
+                            </gmd:CI_Date>
+                          </gmd:date>
+                        </gmd:CI_Citation>
+                      </gmd:specification>
+                      <gmd:explanation>
+                        <gco:CharacterString>Position defined by onboard GPS</gco:CharacterString>
+                      </gmd:explanation>
+                      <gmd:pass gco:nilReason="inapplicable" />
+                    </gmd:DQ_ConformanceResult>
+                  </gmd:result>
+                </gmd:DQ_AbsoluteExternalPositionalAccuracy>
+              </gmd:report>
+              <gmd:report>
+                <gmd:DQ_NonQuantitativeAttributeAccuracy>
+                  <gmd:result>
+                    <gmd:DQ_ConformanceResult>
+                      <gmd:specification>
+                        <gmd:CI_Citation>
+                          <gmd:title gco:nilReason="inapplicable" />
+                          <gmd:date>
+                            <gmd:CI_Date>
+                              <gmd:date gco:nilReason="inapplicable" />
+                              <gmd:dateType>
+                                <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="publication" />
+                              </gmd:dateType>
+                            </gmd:CI_Date>
+                          </gmd:date>
+                        </gmd:CI_Citation>
+                      </gmd:specification>
+                      <gmd:explanation>
+                        <gco:CharacterString>For pigment analyses, monovinyl and divinyl chlorophyll a were not resolved, chlorophyll c1 and c2 were not resolved.</gco:CharacterString>
+                      </gmd:explanation>
+                      <gmd:pass gco:nilReason="inapplicable" />
+                    </gmd:DQ_ConformanceResult>
+                  </gmd:result>
+                </gmd:DQ_NonQuantitativeAttributeAccuracy>
+              </gmd:report>
+              <gmd:report>
+                <gmd:DQ_ConceptualConsistency>
+                  <gmd:result>
+                    <gmd:DQ_ConformanceResult>
+                      <gmd:specification>
+                        <gmd:CI_Citation>
+                          <gmd:title gco:nilReason="inapplicable" />
+                          <gmd:date>
+                            <gmd:CI_Date>
+                              <gmd:date gco:nilReason="inapplicable" />
+                              <gmd:dateType>
+                                <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="publication" />
+                              </gmd:dateType>
+                            </gmd:CI_Date>
+                          </gmd:date>
+                        </gmd:CI_Citation>
+                      </gmd:specification>
+                      <gmd:explanation>
+                        <gco:CharacterString>Refer custodian for details of logical checks carried out on the data</gco:CharacterString>
+                      </gmd:explanation>
+                      <gmd:pass gco:nilReason="inapplicable" />
+                    </gmd:DQ_ConformanceResult>
+                  </gmd:result>
+                </gmd:DQ_ConceptualConsistency>
+              </gmd:report>
+              <gmd:report>
+                <gmd:DQ_CompletenessOmission>
+                  <gmd:result>
+                    <gmd:DQ_ConformanceResult>
+                      <gmd:specification>
+                        <gmd:CI_Citation>
+                          <gmd:title gco:nilReason="inapplicable" />
+                          <gmd:date>
+                            <gmd:CI_Date>
+                              <gmd:date gco:nilReason="inapplicable" />
+                              <gmd:dateType>
+                                <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="publication" />
+                              </gmd:dateType>
+                            </gmd:CI_Date>
+                          </gmd:date>
+                        </gmd:CI_Citation>
+                      </gmd:specification>
+                      <gmd:explanation>
+                        <gco:CharacterString>Complete, quality checked.</gco:CharacterString>
+                      </gmd:explanation>
+                      <gmd:pass gco:nilReason="inapplicable" />
+                    </gmd:DQ_ConformanceResult>
+                  </gmd:result>
+                </gmd:DQ_CompletenessOmission>
+              </gmd:report>
+              <gmd:lineage>
+                <gmd:LI_Lineage>
+                  <gmd:statement>
+                    <gco:CharacterString>Water samples were taken on-board the Lady Basten. Samples were filtered onboard. Samples were analysed and QC procedures were carried out in the Ocean Colour Laboratory. Pigment analysis 6 litres of sample water was filtered through a 47 mm glass fibre filter (Whatman GF/F) and then stored in liquid nitrogen until analysis. To extract the pigments, the filters were cut into small pieces and covered with 100% acetone (3 mls) in a 10 ml centrifuge tube. The samples were vortexed for about 30 seconds and then sonicated for 15 minutes in the dark. The samples were then kept in the dark at 4 °C for approximately 15 hours. After this time 200 µL water was added to the acetone such that the extract mixture was 90:10 acetone:water (vol:vol) and sonicated once more for 15 minutes. The extracts were centrifuged to remove the filter paper and then filtered through a 0.2 µm membrane filter (Whatman, anatope) prior to analysis by HPLC using a Waters high performance liquid chromatograph, comprising a 600 controller, 717 plus refrigerated autosampler and a 996 photo-diode array detector. Pigments were separated using a stainless steel 25 cm x 4.6 mm I.D. column packed with ODS2 of 5 µm particle size (SGE) with gradient elution as described in Wright et al., [1991]. The separated pigments were detected at 436 nm and identified against standard spectra using Waters Millenium software. Concentrations of chlorophyll a, chlorophyll b, b,b-carotene and b,e-carotene in sample chromatograms were determined from standards (Sigma) and all other pigment concentrations were determined from standards of purified pigments isolated from algal cultures.  Spectral absorption  4 litres of sample water was filtered through a 25 mm glass fibre filter (Whatman GF/F) and the filter then stored flat in liquid nitrogen until analysis. Optical density spectra for total particulate matter were obtained using a GBC 916 UV/VIS dual beam spectrophotometer equipped</gco:CharacterString>
+                  </gmd:statement>
+                </gmd:LI_Lineage>
+              </gmd:lineage>
+            </gmd:DQ_DataQuality>
+          </gmd:dataQualityInfo>
+          <mcp:revisionDate>
+            <gco:DateTime>2013-09-02T16:04:55</gco:DateTime>
+          </mcp:revisionDate>
+        </mcp:MD_Metadata>
+      </metadata>
+    </record>
+  </GetRecord>
+</OAI-PMH>
+

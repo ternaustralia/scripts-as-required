@@ -9,8 +9,9 @@
     xmlns:gml="http://www.opengis.net/gml"
     xmlns:custom="http://custom.nowhere.yet"
     xmlns:fn="http://www.w3.org/2005/xpath-functions"
-    xmlns:saxon="http://saxon.sf.net/"
+    xmlns:exslt="http://exslt.org/common"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0" exclude-result-prefixes="dc">
+    <xsl:import href="CustomFunctions.xsl"/>
     
     <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>
     
@@ -33,23 +34,80 @@
         </registryObjects>
     </xsl:template>
     
+  
     <xsl:template match="oai:OAI-PMH/*/oai:record">
-         
-         <xsl:if test="count(oai:metadata/oai_dc:dc) > 0">
-             <xsl:if test="contains(lower-case(oai:metadata/oai_dc:dc/dc:type), 'dataset')">
-                 <xsl:apply-templates select="oai:metadata/oai_dc:dc" mode="collection"/>
-                 <xsl:apply-templates select="oai:metadata/oai_dc:dc/dc:funding" mode="funding_party"/>
-                 <xsl:apply-templates select="oai:metadata/oai_dc:dc" mode="party"/>
-             </xsl:if>
-         </xsl:if>
+    
+    <!-- item_type_1 -->
+	<!-- Article type: figure -->
+	<!-- item_type_2 -->
+	<!-- Article type: media -->
+	<!-- item_type_3 -->
+	<!-- Article type: dataset -->
+	<!-- item_type_4 -->
+	<!-- Article type: fileset -->
+	<!-- item_type_5 -->
+	<!-- Article type: poster -->
+	<!-- item_type_6 -->
+	<!-- Article type: paper -->
+	<!-- item_type_7 -->
+	<!-- Article type: presentation -->
+	<!-- item_type_8 -->
+	<!-- Article type: thesis -->
+	<!-- item_type_9 -->
+	<!-- Article type: code -->
+	<!-- item_type_11 -->
+	<!-- Article type: metadata -->
+    
+    <!-- include figure, media, dataset, fileset and code for now -->
+    
+      <xsl:if test="(boolean(custom:sequenceContainsExact(oai:header/oai:setSpec, 'item_type_1')) = true()) or
+    				(boolean(custom:sequenceContainsExact(oai:header/oai:setSpec, 'item_type_2')) = true()) or
+    				(boolean(custom:sequenceContainsExact(oai:header/oai:setSpec, 'item_type_3')) = true()) or
+    				(boolean(custom:sequenceContainsExact(oai:header/oai:setSpec, 'item_type_4')) = true()) or
+    				(boolean(custom:sequenceContainsExact(oai:header/oai:setSpec, 'item_type_9')) = true()) or
+    				(boolean(custom:sequenceContainsExact(oai:header/oai:setSpec, 'item_type_11')) = true())">
+                    
+            <xsl:variable name="type">
+                <xsl:choose>
+                    <!-- figure -->
+                    <xsl:when test="(boolean(custom:sequenceContainsExact(oai:header/oai:setSpec, 'item_type_1')) = true()) ">
+                        <xsl:text>collection</xsl:text>
+                    </xsl:when>
+                    <!-- media -->
+                    <xsl:when test="(boolean(custom:sequenceContainsExact(oai:header/oai:setSpec, 'item_type_2')) = true()) ">
+                        <xsl:text>collection</xsl:text>
+                    </xsl:when>
+                    <!-- dataset -->
+                    <xsl:when test="(boolean(custom:sequenceContainsExact(oai:header/oai:setSpec, 'item_type_3')) = true()) ">
+                        <xsl:text>dataset</xsl:text>
+                    </xsl:when>
+                    <!-- fileset -->
+                    <xsl:when test="(boolean(custom:sequenceContainsExact(oai:header/oai:setSpec, 'item_type_4')) = true()) ">
+                        <xsl:text>collection</xsl:text>
+                    </xsl:when>
+                    <!-- code -->
+                    <xsl:when test="(boolean(custom:sequenceContainsExact(oai:header/oai:setSpec, 'item_type_9')) = true()) ">
+                        <xsl:text>software</xsl:text>
+                    </xsl:when>
+                    <!-- metadata -->
+                    <xsl:when test="(boolean(custom:sequenceContainsExact(oai:header/oai:setSpec, 'item_type_11')) = true()) ">
+                        <xsl:text>collection</xsl:text>
+                    </xsl:when>
+                </xsl:choose>
+            </xsl:variable>
+            <xsl:apply-templates select="oai:metadata/oai_dc:dc" mode="collection">
+                <xsl:with-param name="type" select="$type"/>
+            </xsl:apply-templates>
+            <xsl:apply-templates select="oai:metadata/oai_dc:dc/dc:funding" mode="funding_party"/>
+            <xsl:apply-templates select="oai:metadata/oai_dc:dc" mode="party"/>
+    </xsl:if>
     </xsl:template>
     
     <xsl:template match="oai_dc:dc" mode="collection">
-        
+        <xsl:param name="type" as="xs:string"/>
         <xsl:variable name="class" select="'collection'"/>
-        <xsl:variable name="type" select="dc:type"/>
         
-        <xsl:message select="concat('type: ', dc:type)"/>
+        <xsl:message select="concat('mapped type: ', $type)"/>
         <xsl:variable name="key" select="custom:formatKey(custom:getKey(., true()))"/>
         
         <registryObject>
@@ -62,16 +120,7 @@
             </originatingSource>
             <xsl:element name="{$class}">
                 
-                <xsl:attribute name="type">
-                    <xsl:choose>
-                        <xsl:when test="$type = 'Dataset'">
-                            <xsl:text>dataset</xsl:text>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <xsl:value-of select="$type"/>
-                        </xsl:otherwise>
-                    </xsl:choose>
-                </xsl:attribute>
+                <xsl:attribute name="type" select="$type"/>
                 
                 <!-- ensuring that the DOI of the package is stored for later use, separated from the other identifiers -->
                 <xsl:variable name="doiOfThisPackage">
@@ -208,7 +257,16 @@
                 
                 
                <!-- subject -->
-                <xsl:for-each select="dc:subject">
+               <xsl:for-each select="dc:subject">
+                    <xsl:if test="string-length(.) > 0">
+                        <subject type="local">
+                            <xsl:value-of select="."/>
+                        </subject>
+                    </xsl:if>
+                </xsl:for-each>
+                
+                <!-- subject -->
+               <xsl:for-each select="dc:keyword">
                     <xsl:if test="string-length(.) > 0">
                         <subject type="local">
                             <xsl:value-of select="."/>
@@ -321,26 +379,16 @@
                 
                 
                 <!-- rights -->
-                <xsl:if test="(count(dc:rights.license) = 1) and string-length(dc:rights.license) > 0">
-                    <xsl:variable name="licenseLink" select="dc:rights.license"/>
-                    <xsl:for-each
-                        select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCode']/gmx:codeEntry/gmx:CodeDefinition">
-                        <xsl:if test="string-length(normalize-space(gml:remarks))">
-                            <xsl:if test="contains($licenseLink, gml:remarks)">
-                                <rights>
-                                    <licence>
-                                        <xsl:attribute name="type" select="gml:identifier"/>
-                                        <xsl:attribute name="rightsUri" select="$licenseLink"/>
-                                        <xsl:if test="string-length(normalize-space(gml:name))">
-                                            <xsl:value-of select="normalize-space(gml:name)"/>
-                                        </xsl:if>
-                                    </licence>
-                                </rights>
-                            </xsl:if>
-                        </xsl:if>
-                    </xsl:for-each>
+                <xsl:if test="(count(dc:license) = 1) and string-length(dc:license) > 0">
+                    
+                  <rights>
+                      <licence>
+                          <xsl:attribute name="type" select="translate(dc:license, 'CC BY', 'CC-BY')"/>
+                      </licence>
+                  </rights>
                 </xsl:if>
-                
+                            
+                          
                 <xsl:if test="(count(dc:rights.accessRights) = 1) and string-length(dc:rights.accessRights) > 0">
                     <xsl:if test="lower-case(dc:rights.accessRights) = 'open'">
                           <rights>
@@ -461,21 +509,6 @@
                 <!-- Retrieve identifiers for this party -->
                 <xsl:variable name="identifier_sequence" select="custom:getIdentifiersForName_sequence($name, $htmlFormatted)" as="xs:string*"/>
                 
-                <xsl:variable name="objectType_sequence" as="xs:string*">
-                     <xsl:choose>
-                         <xsl:when test="contains(., ',')">
-                             <xsl:text>party</xsl:text>
-                             <xsl:text>person</xsl:text>
-                         </xsl:when>
-                         <xsl:otherwise>
-                             <xsl:text>party</xsl:text>
-                             <xsl:text>group</xsl:text>
-                         </xsl:otherwise>
-                     </xsl:choose>
-                 </xsl:variable> 
-                 
-                 <xsl:variable name="object" select="$objectType_sequence[1]"/>
-                 <xsl:variable name="type" select="$objectType_sequence[2]"/>
                  
                  <xsl:if test="string-length(normalize-space(.)) > 0">
                      <registryObject group="{$global_group}">
@@ -486,8 +519,8 @@
                              <xsl:value-of select="$global_originatingSource"/>
                          </originatingSource>
                          
-                         <xsl:element name="{$object}">
-                             <xsl:attribute name="type" select="$type"/>
+                         <party>
+                             <xsl:attribute name="type" select="'person'"/>
                              <xsl:if test="count($identifier_sequence) > 0">
                                  <xsl:for-each select="distinct-values($identifier_sequence)">
                                      <xsl:if test="string-length(normalize-space(.)) > 0">
@@ -516,7 +549,7 @@
                                      </relatedObject>
                                  </xsl:if>
                              </xsl:for-each>
-                         </xsl:element>
+                         </party>
                      </registryObject>
                      
                      <xsl:for-each select="distinct-values($organisation_sequence)">
@@ -554,7 +587,10 @@
         <xsl:param name="html" as="xs:string"/>
         
         <xsl:if test="string-length($html) > 0">
-            <xsl:variable name="unescapedContent" select="saxon:parse(concat('&lt;root&gt;', $html, '&lt;/root&gt;'))" as="document-node()*"/>
+            <xsl:variable name="unescapedContent">
+            	<xsl:value-of disable-output-escaping="yes" select="exslt:node-set(concat('&lt;root&gt;', $html, '&lt;/root&gt;'))"/>
+            </xsl:variable>
+            	
             <xsl:if test="count($unescapedContent) > 0">
                 <!--xsl:message select="concat('unescapedContent ', $unescapedContent)"/-->
                 <xsl:variable name="namePosition_sequence" as="xs:integer*">
@@ -639,7 +675,9 @@
         <!--xsl:message select="concat('html: ', $html)"/-->
         
         <xsl:if test="string-length($html) > 0">
-            <xsl:variable name="unescapedContent" select="saxon:parse(concat('&lt;root&gt;', $html, '&lt;/root&gt;'))" as="document-node()*"/>
+            <xsl:variable name="unescapedContent">
+            	<xsl:value-of disable-output-escaping="yes" select="exslt:node-set(concat('&lt;root&gt;', $html, '&lt;/root&gt;'))"/>
+            	</xsl:variable>
             <xsl:if test="count($unescapedContent) > 0">
                 <!--xsl:message select="concat('unescapedContent ', $unescapedContent)"/-->
                 <xsl:for-each select="$unescapedContent/root/p">
