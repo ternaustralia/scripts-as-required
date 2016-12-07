@@ -7,6 +7,7 @@ import traceback
 import getopt
 import numbers
 import codecs
+import os
 import exceptions
 from xml.dom.minidom import parseString, Document, DOMImplementation
 
@@ -98,9 +99,7 @@ def writeXmlFromJson(dataSetUri, outFileName):
     try:
 
         print("About to create file "+outFileName)
-        obj_StreamReaderWriter = codecs.open(outFileName, 'w+', 'utf-8')
-        print("obj_StreamReaderWriter:  " + obj_StreamReaderWriter.__class__.__name__)
-
+        outputFile = open(outFileName, 'w+')
 
         while(count > (rows+start-100)):
 
@@ -152,12 +151,12 @@ def writeXmlFromJson(dataSetUri, outFileName):
         print "Exception - ", sys.exc_info()[0]
         traceback.print_exc(file=sys.stdout)
 
-    obj_StreamReaderWriter.write(obj_xml_rootDocument.toprettyxml())
+    outputFile.write(obj_xml_rootDocument.toprettyxml(encoding='utf-8', indent=' '))
 
     print("Output written to %s" % outFileName)
 
-    if obj_StreamReaderWriter is not None:
-        obj_StreamReaderWriter.close()
+    if outputFile is not None:
+        outputFile.close()
 
   
 
