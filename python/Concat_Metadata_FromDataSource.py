@@ -18,13 +18,16 @@
 ###############################################################################################################################
 
 from optparse import OptionParser
-from xml.dom.minidom import parse, Document, Node
+from xml.dom.minidom import parseString, Document, Node
 import codecs
-import urllib2
+import urllib3
 import sys
 import os
 import string
 import shutil
+
+import urllib3.contrib.pyopenssl
+urllib3.contrib.pyopenssl.inject_into_urllib3()
 
 ###############################################################################################################################
 #
@@ -38,13 +41,9 @@ def retrieveXML(count, filePath, uri):
   
   print (count)
   try:
-    proxy_handler = urllib2.ProxyHandler({})
-    opener = urllib2.build_opener(proxy_handler)
-    print("Opening uri: %s" % uri)
-    req = urllib2.Request(uri)
-    req.add_header('Accept-Language', 'en-gb')
-    req.add_header('Accept', 'application/xml')
-    result = urllib2.urlopen(req)
+    http = urllib3.PoolManager()
+    r = http.request('GET', uri)
+    result = r.data
   except Exception as e:
       print("Unable to open uri %s - exception: %s" % (uri, e))
       sys.exit(-1)
@@ -52,7 +51,8 @@ def retrieveXML(count, filePath, uri):
   assert(result != 0)
 
   try:
-    doc = parse(result)
+    doc = parseString(result)
+    assert (result != 0)
   except Exception as e:
     print("Error: Unable to parse xml at uri %s - exception: %s" % (uri, e))
     return None
@@ -82,6 +82,7 @@ def retrieveXML(count, filePath, uri):
         print("Resumption token data: %s" % resumptionTokenList.item(0).firstChild.data)
         return resumptionTokenList.item(0).firstChild.data
 
+  print("No resumption token provided - end of records")
   return None
   
 # Copied from http://code.activestate.com/recipes/541096-prompt-the-user-for-confirmation/
@@ -211,7 +212,10 @@ count=0
 requestURI = requestURI(dataSourceURI, subset, metadataPrefix)
 
 resumptionToken = retrieveXML(count, filePath, requestURI)
-   
+
+
+
+
 while resumptionToken is not None:
   assert(len(resumptionToken) > 1)
   count=count+1
