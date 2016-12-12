@@ -524,7 +524,7 @@
                         </rights>
                     </xsl:if>
                     
-                    <xsl:if test="contains(gml:identifier, 'CC-BY')">
+                    <xsl:if test="gml:identifier = 'CC-BY'">
                         <rights>
                             <accessRights type="open"/>
                         </rights>                
