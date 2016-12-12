@@ -50,13 +50,13 @@
                 
                 <xsl:apply-templates select="fields/field[@name='doi'][string-length(.) > 0]" mode="collection_identifier_doi"/>
                 
+                <xsl:apply-templates select="title[string-length(.) > 0]" mode="collection_name"/>
+                
                 <xsl:apply-templates select="coverpage-url[string-length(.) > 0]" mode="collection_location"/>
                 
                 <xsl:if test="string-length(coverpage-url) = 0">
                     <xsl:apply-templates select="submission-path[(string-length(.) > 0)]" mode="collection_location"/>
                 </xsl:if>
-                
-                <xsl:apply-templates select="title[string-length(.) > 0]" mode="collection_name"/>
                 
                 <xsl:apply-templates select="authors/author[(string-length(fname) > 0) or (string-length(lname) > 0)]" mode="collection_relatedObject_individual"/>
                
@@ -64,6 +64,12 @@
                
                 <xsl:apply-templates select="keywords/keyword[string-length(.) > 0]" mode="collection_subject"/>
                 
+                <xsl:apply-templates select="abstract[string-length(.) > 0]" mode="collection_description_full"/>
+                
+                <xsl:apply-templates select="fields/field[@name='geolocate'][string-length(.) > 0]" mode="collection_coverage_spatial_text"/>
+               
+                <xsl:apply-templates select="." mode="collection_coverage_spatial_point"/>
+               
                 <xsl:apply-templates select="fields/field[@name='orcid_id'][string-length(.) > 0]" mode="collection_relatedInfo"/>
                 
                 <xsl:apply-templates select="fields/field[@name='grantid'][string-length(.) > 0]" mode="collection_relatedInfo"/>
@@ -72,8 +78,6 @@
                 
                 <xsl:apply-templates select="fields/field[@name='comments'][string-length(.) > 0]" mode="collection_rights_statement"/>
                 
-                <xsl:apply-templates select="abstract[string-length(.) > 0]" mode="collection_description_full"/>
-               
                 <xsl:apply-templates select="submission-date[string-length(.) > 0]" mode="collection_dates_submitted"/> 
                 
                 <xsl:apply-templates select="fields/field[@name='embargo_date'][string-length(.) > 0]" mode="collection_dates_available"/>
@@ -182,6 +186,24 @@
             <xsl:value-of select="normalize-space(.)"/>
         </subject>
     </xsl:template>
+   
+   <xsl:template match="field[@name='geolocate']" mode="collection_coverage_spatial_text">
+        <coverage>
+            <spatial type="text">
+                <xsl:value-of select="normalize-space(.)"/>
+            </spatial>
+        </coverage>
+   </xsl:template>
+   
+   <xsl:template match="document" mode="collection_coverage_spatial_point">
+        <xsl:if test="(string-length(fields/field[@name='latitude']) > 0) and (string-length(fields/field[@name='longitude']) > 0)">
+            <coverage>
+                <spatial type="dcmiPoint​">
+                    <xsl:value-of select="concat(normalize-space(fields/field[@name='longitude']), ',', normalize-space(fields/field[@name='latitude']))"/>
+                </spatial>
+            </coverage>
+        </xsl:if>
+   </xsl:template>
    
    <xsl:template match="field[@name='orcid_id']" mode="collection_relatedInfo">
         <relatedInfo type="party">
