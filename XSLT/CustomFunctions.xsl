@@ -132,6 +132,19 @@
         </xsl:choose>
     </xsl:function>
     
+         
+         <xsl:function name="custom:registryObjectKeyFromString" as="xs:string">
+            <xsl:param name="input" as="xs:string"/>
+            <xsl:variable name="codePoint_sequence" select="fn:string-to-codepoints($input)" as="xs:integer*"/>
+            <xsl:message select="concat('count code point sequence :', count($codePoint_sequence))"/>
+            <xsl:variable name="key">
+                <xsl:for-each select="$codePoint_sequence">
+                    <xsl:value-of select="string(.)"/>
+                </xsl:for-each>
+            </xsl:variable>
+            <xsl:value-of select="substring($key, 50)"/>
+         </xsl:function>
+    
     
         
 </xsl:stylesheet>
