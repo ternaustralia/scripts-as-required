@@ -16,6 +16,7 @@
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xmlns:custom="http://custom.nowhere.yet"
     xmlns:fn="http://www.w3.org/2005/xpath-functions"
+    xmlns:local="http://local.here.org"
     xmlns:exslt="http://exslt.org/common"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">
     <xsl:import href="CustomFunctions.xsl"/>
@@ -115,12 +116,11 @@
         <xsl:variable name="class" select="'collection'"/>
         
         <xsl:message select="concat('mapped type: ', $type)"/>
-        <xsl:variable name="key" select="concat($global_baseURI, ':', fn:generate-id(.))"/>
         
         <registryObject>
             <xsl:attribute name="group" select="$global_group"/>
             <key>
-                <xsl:value-of select="$key"/>
+                <xsl:value-of select="custom:registryObjectKeyFromString(*/rdfs:label)"/>
             </key>
             <originatingSource>
                 <xsl:value-of select="$global_originatingSource"/>
@@ -142,6 +142,8 @@
                 <xsl:apply-templates select="*/rdfs:label[string-length(.) > 0]" mode="collection_name"/>
                 
                 <xsl:apply-templates select="vivo:Authorship/vivo:relates/vcard:Individual/obo:ARG_2000029/foaf:Person" mode="collection_relatedInfo"/>
+                
+                <xsl:apply-templates select="vivo:Authorship/vivo:relates/vcard:Individual/vcard:hasName" mode="collection_relatedInfo"/>
                 
                 <xsl:apply-templates select="vcard:Name" mode="collection_relatedObject"/>
                
@@ -219,6 +221,27 @@
         </location> 
     </xsl:template>
     
+    <xsl:template match="vcard:hasName" mode="collection_relatedInfo">
+        <xsl:message select="concat('@rdf:resource [', @rdf:resource, ']')"/>
+        <xsl:if test="string-length(normalize-space(@rdf:resource)) > 0">
+            <xsl:variable name="currentUnifiedURL" select="local:unifyAuthorURL(@rdf:resource)"/>
+                            
+            <relatedInfo type='party'>
+                <identifier type="uri">
+                    <xsl:value-of select="local:unifyAuthorURL(@rdf:resource)"/>
+                </identifier>
+                <xsl:for-each select="ancestor::rdf:RDF/vcard:Name">
+                    <xsl:if test="(string-length(@rdf:about) > 0) and (local:unifyAuthorURL(@rdf:about) = $currentUnifiedURL)">
+                        <title>
+                            <xsl:value-of select="normalize-space(concat(vcard:givenName, ' ', vcard:familyName))"/>
+                        </title>
+                    </xsl:if>
+                </xsl:for-each>
+                <relation type="hasCollector"/>
+            </relatedInfo>
+        </xsl:if>
+    </xsl:template>
+    
     <xsl:template match="foaf:Person" mode="collection_relatedInfo">
         <xsl:message select="concat('vivo:orcidId : ', vivo:orcidId/@rdf:resource)"/>
                             
@@ -235,20 +258,14 @@
                 <relation type="hasCollector"/>
             </relatedInfo>
         </xsl:if>
+        
     </xsl:template>
     
     <xsl:template match="vcard:Name" mode="collection_relatedObject">
-        <xsl:if test="string-length(vcard:familyName) > 0">
+        <xsl:if test="string-length(@rdf:about) > 0">
             <relatedObject>
                 <key>
-                    <xsl:choose>
-                        <xsl:when test="string-length(vcard:givenName) > 0">  
-                            <xsl:value-of select="custom:formatKey(concat(vcard:givenName, vcard:familyName))"/> 
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <xsl:value-of select="custom:formatKey(vcard:familyName)"/> 
-                        </xsl:otherwise>   
-                    </xsl:choose>
+                    <xsl:value-of select="custom:registryObjectKeyFromString(local:unifyAuthorURL(@rdf:about))"/>
                 </key>
                 <relation type="hasCollector"/>
             </relatedObject>
@@ -270,7 +287,7 @@
     <xsl:template match="oai:setSpec" mode="collection_subject">
         <xsl:variable name="categoryId" select="substring-after(., 'category_')" as="xs:string"/>
         <xsl:variable name="mappedValue" select="$categoryCodeList/root/row[id = $categoryId]/title"/>
-        <xsl:message select="concat('$mappedValue: ', $mappedValue)"/>
+        <xsl:message select="concat('categoryId [', $categoryId, '] mapped to [', $mappedValue, ']')"/>
             
         <subject type="anzsrc-for">
             <xsl:value-of select="$mappedValue"/>
@@ -305,29 +322,26 @@
             
             <xsl:variable name="name" select="normalize-space(.)"/>
             
-            <xsl:if test="(string-length(vcard:familyName) > 0)">
+            <xsl:if test="(string-length(@rdf:about) > 0)">
             
                    <xsl:if test="string-length(normalize-space(.)) > 0">
                      <registryObject group="{$global_group}">
-                         <key>
-                           <xsl:choose>
-                                <xsl:when test="string-length(vcard:givenName) > 0">  
-                                    <xsl:value-of select="custom:formatKey(concat(vcard:givenName, vcard:familyName))"/> 
-                                </xsl:when>
-                                <xsl:otherwise>
-                                    <xsl:value-of select="custom:formatKey(vcard:familyName)"/> 
-                                </xsl:otherwise>   
-                            </xsl:choose> 
-                        </key>
+                        <key>
+                            <xsl:value-of select="custom:registryObjectKeyFromString(local:unifyAuthorURL(@rdf:about))"/>
+                        </key> 
                         <originatingSource>
                              <xsl:value-of select="$global_originatingSource"/>
                         </originatingSource>
                         
                          <party>
                             <xsl:attribute name="type" select="'person'"/>
+                           
+                            <identifier type="uri">
+                                <xsl:value-of select="local:unifyAuthorURL(@rdf:about)"/> 
+                            </identifier>  
                              
                             <xsl:variable name="currentPersonURL" select="@rdf:about"/>
-                            <xsl:for-each select="../vivo:Authorship/vivo:relates/vcard:Individual/obo:ARG_2000029/foaf:Person[contains($currentPersonURL, @rdf:about)]">
+                            <xsl:for-each select="ancestor::rdf:RDF/vivo:Authorship/vivo:relates/vcard:Individual/obo:ARG_2000029/foaf:Person[contains($currentPersonURL, @rdf:about)]">
                                 <xsl:for-each select="vivo:orcidId[string-length(@rdf:resource) > 0]">
                                     <identifier type="orcid">
                                         <xsl:value-of select="@rdf:resource"/>
@@ -342,31 +356,21 @@
                                      <xsl:value-of select="vcard:familyName"/>
                                  </namePart>
                              </name>
-                         </party>
+                        </party>
                      </registryObject>
                    </xsl:if>
                 </xsl:if>
             </xsl:for-each>
         </xsl:template>
-                   
-             
-    
-    <xsl:function name="custom:formatKey">
-        <xsl:param name="input"/>
-        <xsl:variable name="raw" select="translate(normalize-space($input), ' ', '')"/>
-        <xsl:variable name="temp">
-            <xsl:choose>
-                <xsl:when test="substring($raw, string-length($raw), 1) = '.'">
-                    <xsl:value-of select="substring($raw, 0, string-length($raw))"/>
-                </xsl:when>
-                <xsl:otherwise>
-                    <xsl:value-of select="$raw"/>
-                </xsl:otherwise>
-            </xsl:choose>
-        </xsl:variable>
-        <xsl:value-of select="concat($global_baseURI, '/', $temp)"/>
-    </xsl:function>
+        
+        
+        <xsl:function name="local:unifyAuthorURL" as="xs:string">
+            <xsl:param name="authorURL" as="xs:string"/>
+            <xsl:value-of select="fn:replace(substring-before(normalize-space($authorURL), '-name'), '[a-zA-Z]*[_+][a-zA-Z]*', '_')"/>
+        </xsl:function>
+       
    
-    
+         
+ 
 
 </xsl:stylesheet>
