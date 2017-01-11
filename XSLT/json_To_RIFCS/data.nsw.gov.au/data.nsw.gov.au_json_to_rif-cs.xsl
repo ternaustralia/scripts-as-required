@@ -135,7 +135,6 @@
 
                 <!--xsl:apply-templates select="." mode="collection_relatedInfo"/-->
 
-
                 <!--xsl:apply-templates select="" 
                     mode="collection_relatedInfo"/-->
 
