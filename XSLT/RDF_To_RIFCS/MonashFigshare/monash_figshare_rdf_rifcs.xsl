@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet 
+    xmlns="http://ands.org.au/standards/rif-cs/registryObjects" 
     xmlns:oai="http://www.openarchives.org/OAI/2.0/" 
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:dc="http://purl.org/dc/terms/" 
@@ -18,7 +19,8 @@
     xmlns:fn="http://www.w3.org/2005/xpath-functions"
     xmlns:local="http://local.here.org"
     xmlns:exslt="http://exslt.org/common"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0"
+    exclude-result-prefixes="oai dc bibo datacite fabio foaf literal obo rdf rdfs vcard vivo xs custom fn local exslt">
     <xsl:import href="CustomFunctions.xsl"/>
     
     <xsl:variable name="categoryCodeList" select="document('api.figshare.com_v2_categories.xml')"/>
@@ -33,8 +35,7 @@
     <xsl:template match="/">
         <registryObjects xmlns="http://ands.org.au/standards/rif-cs/registryObjects" 
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-            xsi:schemaLocation="http://ands.org.au/standards/rif-cs/registryObjects 
-            http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd">
+            xsi:schemaLocation="http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd">
           
             <xsl:message select="concat('name(oai:OAI-PMH): ', name(oai:OAI-PMH))"/>
             <xsl:apply-templates select="oai:OAI-PMH/*/oai:record"/>
@@ -289,7 +290,7 @@
         <xsl:variable name="mappedValue" select="$categoryCodeList/root/row[id = $categoryId]/title"/>
         <xsl:message select="concat('categoryId [', $categoryId, '] mapped to [', $mappedValue, ']')"/>
             
-        <subject type="anzsrc-for">
+        <subject type="local">
             <xsl:value-of select="$mappedValue"/>
         </subject>
     </xsl:template>
