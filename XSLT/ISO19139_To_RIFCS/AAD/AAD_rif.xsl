@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet version="2.0" xmlns:gmd="http://www.isotc211.org/2005/gmd"
-    xmlns:srv="http://www.isotc211.org/2005/srv" xmlns:gco="http://www.isotc211.org/2005/gco"
+<xsl:stylesheet version="2.0" 
+	xmlns:gmd="http://www.isotc211.org/2005/gmd"
+    xmlns:srv="http://www.isotc211.org/2005/srv" 
+    xmlns:gco="http://www.isotc211.org/2005/gco"
     xmlns:gts="http://www.isotc211.org/2005/gts" xmlns:geonet="http://www.fao.org/geonetwork"
     xmlns:gmx="http://www.isotc211.org/2005/gmx" xmlns:gml="http://www.opengis.net/gml"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
@@ -31,12 +33,12 @@
         <!--xsl:attribute name="xsi:schemaLocation">
                 <xsl:text>http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd</xsl:text>
             </xsl:attribute-->
-        <xsl:apply-templates select="//*:MD_Metadata" mode="AAD"/>
+        <xsl:apply-templates select="gmd:MD_Metadata" mode="AAD"/>
         <!--/registryObjects-->
     </xsl:template>
 
     
-    <xsl:template match="*:MD_Metadata" mode="AAD">
+    <xsl:template match="gmd:MD_Metadata" mode="AAD">
         <xsl:param name="aggregatingGroup"/>
         
         <xsl:apply-templates select="." mode="AAD_collection"/>
@@ -48,7 +50,7 @@
     <!-- Collection RegistryObject Template          -->
     <!-- =========================================== -->
 
-    <xsl:template match="*:MD_Metadata" mode="AAD_collection">
+    <xsl:template match="gmd:MD_Metadata" mode="AAD_collection">
 
         <!-- construct parameters for values that are required in more than one place in the output xml-->
         <xsl:param name="dataSetURI"
@@ -136,7 +138,7 @@
                     select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:topicCategory/gmd:MD_TopicCategoryCode"
                     mode="AAD_collection_subject"/>
 
-                <xsl:apply-templates select="gmd:identificationInfo/gmd:MD_DataIdentification"
+                <xsl:apply-templates select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:descriptiveKeywords/gmd:MD_Keywords"
                     mode="AAD_collection_subject"/>
 
                 <xsl:apply-templates
@@ -194,7 +196,7 @@
     <!-- Party RegistryObject Template          -->
     <!-- =========================================== -->
 
-    <xsl:template match="*:MD_Metadata" mode="AAD_party">
+    <xsl:template match="gmd:MD_Metadata" mode="AAD_party">
 
         <xsl:for-each-group
             select="gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName)) > 0) and 
@@ -295,7 +297,7 @@
                     <xsl:value-of select="substring-after(., 'doi:')"/>
                 </xsl:when>
                 <xsl:otherwise>
-                    <xsl:value-of select="."/>
+                    <xsl:value-of select="normalize-space(.)"/>
                 </xsl:otherwise>
             </xsl:choose>
         </identifier>
@@ -424,16 +426,27 @@
 
     <!-- Collection - Subject Element -->
 
-    <xsl:template match="gmd:MD_DataIdentification" mode="AAD_collection_subject">
+    <xsl:template match="gmd:MD_Keywords" mode="AAD_collection_subject">
         <xsl:message>gmd:MD_Keywords</xsl:message>
 
-        <xsl:for-each select="gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword">
-            <subject type="local">
-                <xsl:value-of select="normalize-space(.)"/>
+		<xsl:variable name="subjectType">
+			<xsl:choose>
+				<xsl:when test="gmd:thesaurusName/gmd:CI_Citation/gmd:title/gco:CharacterString = 'NASA/GCMD Earth Science Keywords'">
+		    		<xsl:text>gcmd</xsl:text>
+		       	</xsl:when>
+		  		<xsl:otherwise>
+	       			<xsl:text>local</xsl:text>
+	       		</xsl:otherwise>
+	       	</xsl:choose>
+		</xsl:variable>
+
+        <xsl:for-each select="gmd:keyword">
+        	<subject type="{$subjectType}">
+        		<xsl:value-of select="normalize-space(.)"/>
             </subject>
         </xsl:for-each>
 
-        <xsl:for-each select="gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword">
+        <xsl:for-each select="gmd:keyword">
             <xsl:message select="lower-case(normalize-space(.))"/>
             <xsl:variable name="code"
                 select="(normalize-space($anzsrcCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='ANZSRCCode']/gmx:codeEntry/gmx:CodeDefinition/gml:identifier[lower-case(following-sibling::gml:name) = lower-case(normalize-space(.))]))[1]"/>
