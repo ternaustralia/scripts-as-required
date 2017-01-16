@@ -1,3 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<session version="1.0">&#x0A;<refactoring comment="Delete 2 resources" deleteContents="false" description="Delete 2 resources" element1="/AIMS Input Output/9793add6-c663-4bff-a2af-4f0d0f2a062b.xml" element2="/AIMS Input Output/9d227bd4-0255-4b8b-a6a3-cea8cf2e52f2.xml" flags="7" id="org.eclipse.ltk.core.refactoring.delete.resources" resources="2" stamp="1477886103238"/>&#x0A;<refactoring comment="Rename resource &apos;IMOS&apos; to &apos;IMOS Input Output&apos;" description="Rename resource &apos;IMOS&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="/IMOS" name="IMOS Input Output" stamp="1477886663117" updateReferences="true"/>
-</session>

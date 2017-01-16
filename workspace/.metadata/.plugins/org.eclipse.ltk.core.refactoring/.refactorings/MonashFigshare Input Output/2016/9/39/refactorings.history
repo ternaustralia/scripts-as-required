@@ -1,3 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<session version="1.0">&#x0A;<refactoring comment="Move &apos;MonashFigshareInput.out.xml, MonashFigshareInput.xml&apos; to &apos;Input&apos;" description="Move 2 resources to &apos;Input&apos;" destination="Input" element1="MonashFigshareInput.out.xml" element2="MonashFigshareInput.xml" flags="7" id="org.eclipse.ltk.core.refactoring.move.resources" resources="2" stamp="1474332728819" updateReferences="true"/>&#x0A;<refactoring comment="Rename resource &apos;MonashFigshare/Input&apos; to &apos;InputOutput&apos;" description="Rename resource &apos;Input&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="Input" name="InputOutput" stamp="1474332758341" updateReferences="true"/>
-</session>
