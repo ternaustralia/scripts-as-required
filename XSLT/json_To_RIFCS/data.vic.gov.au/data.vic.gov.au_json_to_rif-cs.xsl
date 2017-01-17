@@ -103,7 +103,9 @@
 
                 <xsl:apply-templates select="tags" mode="collection_subject"/>
 
-                <xsl:apply-templates select="notes" mode="collection_description"/>
+                <xsl:apply-templates select="notes" mode="collection_description_brief"/>
+                
+                <xsl:apply-templates select="." mode="collection_description_full"/>
 
                 <xsl:apply-templates select="spatial_coverage" mode="collection_coverage_spatial"/>
 
@@ -291,13 +293,25 @@
     </xsl:template>
 
     <!-- Collection - Decription (brief) Element -->
-    <xsl:template match="notes" mode="collection_description">
+    <xsl:template match="notes" mode="collection_description_brief">
         <xsl:if test="string-length(normalize-space(.))">
             <description type="brief">
-                <xsl:value-of select="normalize-space(.)"/>
+                <xsl:value-of select="."/>
             </description>
         </xsl:if>
     </xsl:template>
+    
+     <!-- Collection - Decription (full) Element -->
+    <xsl:template match="result" mode="collection_description_full">
+        <description type="full">
+             <xsl:for-each select="resources">
+                <xsl:if test="string-length(normalize-space(name)) > 0">
+                    <xsl:value-of select="concat(normalize-space(name), '&lt;br/&gt;')"/>
+                </xsl:if>
+            </xsl:for-each>
+        </description>
+    </xsl:template>
+
 
     <xsl:template match="isopen" mode="collection_rights_accessRights">
         <xsl:if test="contains(lower-case(.), 'true')">

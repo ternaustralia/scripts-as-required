@@ -28,12 +28,10 @@
   
     <xsl:template match="document" mode="collection">
        
-        <xsl:variable name="key" select="concat($global_baseURI, ':', fn:generate-id(.))"/>
-       
         <registryObject>
             <xsl:attribute name="group" select="$global_group"/>
             <key>
-                <xsl:value-of select="$key"/>
+                <xsl:value-of select="custom:registryObjectKeyFromString(concat(title, articleid, context-key))"/>
             </key>
             <originatingSource>
                 <xsl:value-of select="$global_originatingSource"/>
@@ -58,12 +56,14 @@
                     <xsl:apply-templates select="submission-path[(string-length(.) > 0)]" mode="collection_location"/>
                 </xsl:if>
                 
-                <xsl:apply-templates select="authors/author[(string-length(fname) > 0) or (string-length(lname) > 0)]" mode="collection_relatedObject_individual"/>
+        <xsl:apply-templates select="authors/author[(string-length(fname) > 0) or (string-length(lname) > 0)]" mode="collection_relatedObject_individual"/>
                
                 <xsl:apply-templates select="authors/author[(string-length(organization) > 0)]" mode="collection_relatedObject_organization"/>
                
                 <xsl:apply-templates select="keywords/keyword[string-length(.) > 0]" mode="collection_subject"/>
                 
+                <xsl:apply-templates select="fields/field[@name='for'][string-length(.) > 0]" mode="collection_subject_for"/>
+               
                 <xsl:apply-templates select="abstract[string-length(.) > 0]" mode="collection_description_full"/>
                 
                 <xsl:apply-templates select="fields/field[@name='geolocate'][string-length(.) > 0]" mode="collection_coverage_spatial_text"/>
@@ -74,9 +74,10 @@
                 
                 <xsl:apply-templates select="fields/field[@name='grantid'][string-length(.) > 0]" mode="collection_relatedInfo"/>
                 
+                <xsl:apply-templates select="fields/field[@name='access'][string-length(.) > 0]" mode="collection_rights_statement"/>
+                
                 <xsl:apply-templates select="fields/field[@name='access'][string-length(.) > 0]" mode="collection_rights_access"/>
                 
-                <xsl:apply-templates select="fields/field[@name='comments'][string-length(.) > 0]" mode="collection_rights_statement"/>
                 
                 <xsl:apply-templates select="submission-date[string-length(.) > 0]" mode="collection_dates_submitted"/> 
                 
@@ -162,22 +163,22 @@
     </xsl:template>
     
    <xsl:template match="author" mode="collection_relatedObject_individual">
-        <xsl:variable name="nameFormatted" select="concat(fname, ' ', lname)"/>
-            
-        <relatedObject>
-            <key>
-                <xsl:value-of select="custom:formatKey($nameFormatted)"/> 
-            </key>
-            <relation type="hasCollector"/>
-        </relatedObject>
+        <xsl:if test="(string-length(fname) > 0) or (string-length(lname) > 0)">
+            <relatedObject>
+                <key>
+                    <xsl:value-of select="custom:registryObjectKeyFromString(concat(fname, lname))"/> 
+                </key>
+                <relation type="hasCollector"/>
+            </relatedObject>
+        </xsl:if>
     </xsl:template>
     
     <xsl:template match="author" mode="collection_relatedObject_organization">
         <relatedObject>
             <key>
-                <xsl:value-of select="custom:formatKey(custom:formatName(organization))"/> 
+                <xsl:value-of select="custom:registryObjectKeyFromString(organization)"/> 
             </key>
-            <relation type="hasCollector"/>
+            <relation type="hasAssociationWith"/>
         </relatedObject>
         </xsl:template>
     
@@ -186,6 +187,23 @@
             <xsl:value-of select="normalize-space(.)"/>
         </subject>
     </xsl:template>
+    
+    <xsl:template match="field[@name='for']" mode="collection_subject_for">
+        <xsl:for-each select="value">
+            <xsl:variable name="code">
+                <xsl:analyze-string select="normalize-space(.)" regex="[0-9]">
+                    <xsl:matching-substring>
+                        <xsl:value-of select="regex-group(0)"/>       
+                    </xsl:matching-substring>
+                </xsl:analyze-string>
+            </xsl:variable>
+            <xsl:if test="string-length($code) > 0">
+                <subject type="anzsrc-for">
+                    <xsl:value-of select="$code"/>
+                </subject>
+            </xsl:if>
+        </xsl:for-each>
+   </xsl:template>
    
    <xsl:template match="field[@name='geolocate']" mode="collection_coverage_spatial_text">
         <coverage>
@@ -198,7 +216,7 @@
    <xsl:template match="document" mode="collection_coverage_spatial_point">
         <xsl:if test="(string-length(fields/field[@name='latitude']) > 0) and (string-length(fields/field[@name='longitude']) > 0)">
             <coverage>
-                <spatial type="dcmiPoint​">
+                <spatial type="kmlPolyCoords">
                     <xsl:value-of select="concat(normalize-space(fields/field[@name='longitude']), ',', normalize-space(fields/field[@name='latitude']))"/>
                 </spatial>
             </coverage>
@@ -221,21 +239,26 @@
             <relation type="isOutputOf"/>
         </relatedInfo>
    </xsl:template>
-   
+  
    <xsl:template match="field[@name='access']" mode="collection_rights_access">
-        
         <rights>
             <accessRights>
-                <xsl:if test="contains(lower-case(.), 'open access')">
-                    <xsl:attribute name="type" select="'open'"/>
+                <xsl:choose>
+                    <xsl:when test="contains(lower-case(.), 'open access')">
+                        <xsl:attribute name="type" select="'open'"/>
+                    </xsl:when>
+                    <xsl:when test="contains(lower-case(.), 'mediated')">
+                        <xsl:attribute name="type" select="'conditional'"/>
+                    </xsl:when>
+                </xsl:choose>
+                <xsl:if test="string-length(../field[@name='comments'])">
+                    <xsl:value-of select="normalize-space(../field[@name='comments'])"/>
                 </xsl:if>
-                <xsl:value-of select="normalize-space(.)"/>
             </accessRights>
-               
         </rights>
     </xsl:template>
     
-    <xsl:template match="field[@name='comments']" mode="collection_rights_statement">
+    <xsl:template match="field[@name='access']" mode="collection_rights_statement">
         <rights>
             <rightsStatement>
                 <xsl:value-of select="normalize-space(.)"/>
@@ -283,15 +306,10 @@
     
     <xsl:template match="author" mode="party_individual">
        
-            <xsl:variable name="firstName" select="fname"/>
-            <xsl:variable name="lastName" select="lname"/>
-            
-            <xsl:variable name="nameFormatted" select="concat($firstName, ' ', $lastName)"/>
-            
             <registryObject>
                  <xsl:attribute name="group"><xsl:value-of select="$global_group"/></xsl:attribute>
                  <key>
-                     <xsl:value-of select="custom:formatKey($nameFormatted)"/>
+                      <xsl:value-of select="custom:registryObjectKeyFromString(concat(fname, lname))"/>
                  </key>
                  <originatingSource><xsl:value-of select="$global_originatingSource"/></originatingSource>
                  <party>
@@ -299,14 +317,14 @@
                      <xsl:attribute name="type" select="'person'"/>
                      
                      <name type="primary">
-                         <xsl:if test="string-length($firstName)> 0">
+                         <xsl:if test="string-length(fname)> 0">
                              <namePart type="given">
-                                 <xsl:value-of select="$firstName"/>
+                                 <xsl:value-of select="fname"/>
                              </namePart> 
                          </xsl:if>
-                         <xsl:if test="string-length($lastName)> 0">
+                         <xsl:if test="string-length(lname)> 0">
                              <namePart type="family">
-                                 <xsl:value-of select="$lastName"/>
+                                 <xsl:value-of select="lname"/>
                              </namePart> 
                          </xsl:if>
                      </name>
@@ -326,7 +344,7 @@
                      <xsl:if test="string-length(institution) > 0">
                            <relatedObject>
                                <key>
-                                    <xsl:value-of select="custom:formatKey(custom:formatName(institution))"/> 
+                                    <xsl:value-of select="custom:registryObjectKeyFromString(institution)"/>
                                </key>
                                <relation type="isMemberOf"/>
                            </relatedObject>
@@ -353,7 +371,7 @@
              <registryObject>
                  <xsl:attribute name="group"><xsl:value-of select="$global_group"/></xsl:attribute>
                  <key>
-                     <xsl:value-of select="custom:formatKey(organization)"/>
+                     <xsl:value-of select="custom:registryObjectKeyFromString(organization)"/>
                  </key>
                  <originatingSource><xsl:value-of select="$global_originatingSource"/></originatingSource>
                  <party>
@@ -386,7 +404,7 @@
              <registryObject>
                  <xsl:attribute name="group"><xsl:value-of select="$global_group"/></xsl:attribute>
                  <key>
-                     <xsl:value-of select="custom:formatKey(institution)"/>
+                    <xsl:value-of select="custom:registryObjectKeyFromString(institution)"/>
                  </key>
                  <originatingSource><xsl:value-of select="$global_originatingSource"/></originatingSource>
                  <party>

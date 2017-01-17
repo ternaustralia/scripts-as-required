@@ -119,8 +119,10 @@
 
                 <xsl:apply-templates select="tags" mode="collection_subject"/>
 
-                <xsl:apply-templates select="notes" mode="collection_description"/>
+                <xsl:apply-templates select="notes" mode="collection_description_brief"/>
 
+                <xsl:apply-templates select="." mode="collection_description_full"/>
+                
                 <xsl:apply-templates select="spatial_coverage" mode="collection_coverage_spatial"/>
 
                 <xsl:apply-templates select="isopen" mode="collection_rights_accessRights"/>
@@ -132,7 +134,6 @@
                 </xsl:call-template>
 
                 <!--xsl:apply-templates select="." mode="collection_relatedInfo"/-->
-
 
                 <!--xsl:apply-templates select="" 
                     mode="collection_relatedInfo"/-->
@@ -306,12 +307,23 @@
     </xsl:template>
 
     <!-- Collection - Decription (brief) Element -->
-    <xsl:template match="notes" mode="collection_description">
+    <xsl:template match="notes" mode="collection_description_brief">
         <xsl:if test="string-length(normalize-space(.))">
             <description type="brief">
-                <xsl:value-of select="normalize-space(.)"/>
+                <xsl:value-of select="custom:reformatHyperlinks(normalize-space(.))"/>
             </description>
         </xsl:if>
+    </xsl:template>
+    
+    <!-- Collection - Decription (full) Element -->
+    <xsl:template match="result" mode="collection_description_full">
+        <description type="full">
+             <xsl:for-each select="resources">
+                <xsl:if test="string-length(normalize-space(name)) > 0">
+                    <xsl:value-of select="concat(normalize-space(name), '&lt;br/&gt;')"/>
+                </xsl:if>
+            </xsl:for-each>
+        </description>
     </xsl:template>
 
     <xsl:template match="isopen" mode="collection_rights_accessRights">
@@ -658,7 +670,7 @@
                             <xsl:attribute name="type">
                                 <xsl:text>brief</xsl:text>
                             </xsl:attribute>
-                            <xsl:value-of select="normalize-space(description)"/>
+                            <xsl:value-of select="custom:reformatHyperlinks(normalize-space(description))"/>
                         </description>
                     </xsl:if>
                     <!--xsl:for-each select="../resources">
@@ -959,6 +971,27 @@
                 <xsl:copy-of select="true()"/>
             </xsl:if>
         </xsl:for-each>
+    </xsl:function>
+    
+    <!-- Change input from:
+            [link-text](http://link)
+         to:
+            <a href="http://link">link-text</a>  
+    -->
+    <xsl:function name="custom:reformatHyperlinks">
+        <xsl:param name="input"/>
+        <xsl:analyze-string regex="(\[[^\]]*\])(\([^\)]*\))" select="$input">
+            <xsl:matching-substring>
+                <xsl:variable name="text" select="regex-group(1)"/>
+                <xsl:variable name="link" select="regex-group(2)"/>
+                <xsl:if test="(string-length($text) > 0) and (string-length($link) > 0)">
+                    <xsl:value-of select="concat('&lt;a href=&quot;', substring($link, 2, string-length($link)-2), '&quot;&gt;', substring($text, 2, string-length($text)-2), '&lt;/a&gt;')"/>
+                </xsl:if>
+            </xsl:matching-substring>
+            <xsl:non-matching-substring>
+                <xsl:copy-of select="."/>  
+            </xsl:non-matching-substring> 
+        </xsl:analyze-string>
     </xsl:function>
 
     <xsl:function name="custom:getServiceUrl">

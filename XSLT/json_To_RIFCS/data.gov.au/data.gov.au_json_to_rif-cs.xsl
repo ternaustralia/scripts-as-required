@@ -3,9 +3,10 @@
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:fn = "http://www.w3.org/2005/xpath-functions"
-    xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:custom="http://custom.nowhere.yet"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+    xmlns:custom="http://custom.nowhere.yet"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
-    exclude-result-prefixes="fn custom">
+    exclude-result-prefixes="xsl xsi fn xs custom">
     <!-- stylesheet to convert data.gov.au xml (transformed from json with python script) to RIF-CS -->
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
@@ -35,22 +36,30 @@
                 <xsl:text>http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd</xsl:text>
             </xsl:attribute>
         
-            <xsl:apply-templates select="datasets/result/results" mode="constructObjects"/>
+            <xsl:choose>
+                <xsl:when test="count(datasets/result/results) > 0">
+                    <xsl:apply-templates select="datasets/result/results" mode="constructObjects"/>
+                </xsl:when>
+                <xsl:otherwise>    
+                    <xsl:apply-templates select="datasets/result" mode="constructObjects"/>
+                </xsl:otherwise>
+            </xsl:choose>
             
         </registryObjects>
             
     </xsl:template>
     
     
-    <xsl:template match="results" mode="constructObjects">
+    <xsl:template match="*" mode="constructObjects">
+        <xsl:message select="'constructObjects'"/>
         <xsl:if test="boolean(custom:proceedWithHarvest(.)) = true()">   
                 <xsl:apply-templates select="." mode="collection"/>
                 <xsl:apply-templates select="." mode="party"/>
                 <!--xsl:apply-templates select="." mode="service"/-->
         </xsl:if>
     </xsl:template>
-
-    <xsl:template match="results" mode="collection">
+    
+    <xsl:template match="*" mode="collection">
         
         <xsl:variable name="metadataURL">
             <xsl:variable name="name" select="normalize-space(name)"/>
@@ -145,8 +154,10 @@
  
                  <xsl:apply-templates select="tags" mode="collection_subject"/>
  
-                 <xsl:apply-templates select="notes" mode="collection_description"/>
- 
+                 <xsl:apply-templates select="notes" mode="collection_description_brief"/>
+                
+                 <xsl:apply-templates select="." mode="collection_description_full"/>
+
                  <xsl:apply-templates select="spatial_coverage" mode="collection_coverage_spatial"/>
  
                  <xsl:apply-templates select="isopen" mode="collection_rights_accessRights"/>
@@ -181,7 +192,7 @@
     <!-- Party RegistryObject Template          -->
     <!-- =========================================== -->
 
-    <xsl:template match="results" mode="party">
+    <xsl:template match="*" mode="party">
 
         <xsl:apply-templates select="organization"/>
 
@@ -375,12 +386,23 @@
     </xsl:template>
 
     <!-- Collection - Decription (brief) Element -->
-    <xsl:template match="notes" mode="collection_description">
+    <xsl:template match="notes" mode="collection_description_brief">
         <xsl:if test="string-length(normalize-space(.))">
             <description type="brief">
-                <xsl:value-of select="normalize-space(.)"/>
+                <xsl:value-of select="."/>
             </description>
         </xsl:if>
+    </xsl:template>
+    
+     <!-- Collection - Decription (full) Element -->
+    <xsl:template match="*" mode="collection_description_full">
+        <description type="full">
+             <xsl:for-each select="resources">
+                <xsl:if test="string-length(normalize-space(name)) > 0">
+                    <xsl:value-of select="concat(normalize-space(name), '&lt;br/&gt;')"/>
+                </xsl:if>
+            </xsl:for-each>
+        </description>
     </xsl:template>
 
     <xsl:template match="isopen" mode="collection_rights_accessRights">
@@ -438,7 +460,7 @@
     </xsl:template>
 
     <!-- Collection - Related Info Element - Services -->
-    <!--xsl:template match="results" mode="collection_relatedInfo">
+    <!--xsl:template match="*" mode="collection_relatedInfo">
         <xsl:variable name="organizationTitle" select="organization/title"/>
         <xsl:for-each select="resources">
             <xsl:variable name="url" select="normalize-space(url)"/>
@@ -736,7 +758,7 @@
     </xsl:template>
 
     <!-- Party Registry Object (Individuals (person) and Organisations (group)) -->
-    <!--xsl:template match="results" mode="party_author">
+    <!--xsl:template match="*" mode="party_author">
         <xsl:variable name="name" select="author"/>
         <xsl:if test="string-length($name) > 0">
             <registryObject group="{$global_group}">
@@ -801,7 +823,7 @@
     <!-- ====================================== -->
 
     <!-- Service Registry Object -->
-    <!--xsl:template match="results" mode="service">
+    <!--xsl:template match="*" mode="service">
         <xsl:variable name="organizationTitle" select="normalize-space(organization/title)"/>
         <xsl:variable name="organizationName" select="normalize-space(organization/name)"/>
         <xsl:variable name="organizationDescription"
@@ -1053,10 +1075,10 @@
     -->
     
     <xsl:function name="custom:locallyStored" as="xs:boolean">
-        <xsl:param name="result" as="node()"/>
+        <xsl:param name="content" as="node()"/>
         
         <xsl:variable name="true_sequence" as="xs:boolean*">
-            <xsl:for-each select="$result/resources/url_type">
+            <xsl:for-each select="$content/resources/url_type">
                 <xsl:if test="contains(., $globalLocalIndicator)">
                     <xsl:value-of select="true()"/>
                 </xsl:if>
@@ -1067,13 +1089,13 @@
     </xsl:function>
     
     <xsl:function name="custom:proceedWithHarvest" as="xs:boolean">
-        <xsl:param name="results" as="node()"/>
+        <xsl:param name="content" as="node()"/>
         
         <xsl:choose>
-             <xsl:when test="$results/type = 'harvest'">
+             <xsl:when test="$content/type = 'harvest'">
                  <!-- This is a harvest source - only accept it if it is a known and acceptable harvest source -->
                  <xsl:choose>
-                     <xsl:when test="custom:status($results/id)[1] = true()">
+                     <xsl:when test="custom:status($content/id)[1] = true()">
                         <xsl:value-of select="true()"/>
                      </xsl:when>
                      <xsl:otherwise>
@@ -1083,9 +1105,9 @@
             </xsl:when> 
             <xsl:otherwise> <!-- This is not a harvest entity -->
                 <xsl:choose>
-                    <xsl:when test="count($results/harvest_source_id) > 0"> <!-- When we have a harvest source id -->
+                    <xsl:when test="count($content/harvest_source_id) > 0"> <!-- When we have a harvest source id -->
                         <xsl:variable name="proceed_sequence" as="xs:boolean*">
-                            <xsl:for-each select="$results/harvest_source_id">
+                            <xsl:for-each select="$content/harvest_source_id">
                                 <xsl:if test="custom:status(.) = true()">
                                     <xsl:value-of select="true()"/> <!-- Accept if the harvest source is known and acceptable -->
                                 </xsl:if> 
@@ -1095,7 +1117,7 @@
                     </xsl:when>
                     <xsl:otherwise> <!-- Not a harvest source, and not indicated as harvested, so return true() unless there are exceptions -->
                         <xsl:choose>
-                            <xsl:when test="custom:exceptions($results) = true()">
+                            <xsl:when test="custom:exceptions($content) = true()">
                                 <xsl:value-of select="false()"/>
                             </xsl:when>
                             <xsl:otherwise>
@@ -1109,12 +1131,33 @@
     </xsl:function>
     
     <xsl:function name="custom:exceptions" as="xs:boolean">
-        <xsl:param name="results" as="node()"/>
+        <xsl:param name="content" as="node()"/>
         <xsl:choose>
-            <xsl:when test="$results/organization/name = 'australianantarcticdivision'">
+            <xsl:when test="$content/organization/name = 'australianantarcticdivision'">
                 <xsl:value-of select="true()"/>
             </xsl:when>
-            <xsl:when test="$results/organization/name = 'australian-institute-of-marine-science'">
+            <xsl:when test="$content/organization/name = 'australian-institute-of-marine-science'">
+                <xsl:value-of select="true()"/>
+            </xsl:when>
+            <xsl:when test="$content/organization/name = 'csiro-land-and-water-flagship'">
+                <xsl:value-of select="true()"/>
+            </xsl:when>
+            <xsl:when test="$content/organization/name = 'csiro-oceans-atmosphere-hobart'">
+                <xsl:value-of select="true()"/>
+            </xsl:when>
+            <xsl:when test="$content/organization/name = 'marine-and-atmospheric-research-commonwealth-scientific-and-industrial-research-organisation-csiro'">
+                <xsl:value-of select="true()"/>
+            </xsl:when>
+            <xsl:when test="$content/organization/name = 'land-and-water-commonwealth-scientific-and-industrial-research-organisation-csiro'">
+                <xsl:value-of select="true()"/>
+            </xsl:when>
+            <xsl:when test="$content/organization/name = 'ecosystem-sciences-commonwealth-scientific-and-industrial-research-organisation-csiro'">
+                <xsl:value-of select="true()"/>
+            </xsl:when>
+            <xsl:when test="$content/organization/name = 'integrated-marine-observing-system-imos'">
+                <xsl:value-of select="true()"/>
+            </xsl:when>
+            <xsl:when test="$content/organization/name = 'geoscienceaustralia'">
                 <xsl:value-of select="true()"/>
             </xsl:when>
             <xsl:otherwise>
@@ -1125,6 +1168,7 @@
     
     <xsl:function name="custom:status" as="xs:boolean*">
         <xsl:param name="id"/>
+        <xsl:message select="concat('id [', $id, ']')"/>
         <xsl:choose>
             <xsl:when test="$id = '3dcd004f-b835-481c-bb36-d792f15b34d8'">
                 <xsl:value-of select="false()"/> <!-- National Environmental Information Infrastructure -->

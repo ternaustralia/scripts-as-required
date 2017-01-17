@@ -4,6 +4,7 @@
     xmlns:srv="http://www.isotc211.org/2005/srv"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:fn="http://www.w3.org/2005/xpath-functions"
     xmlns:custom="http://custom.nowhere.yet"
     exclude-result-prefixes="custom">
     
@@ -51,6 +52,12 @@
             </xsl:otherwise>
         </xsl:choose>
         
+    </xsl:function>
+    
+    <xsl:function name="custom:convertLongitude">
+        <xsl:param name="input" as="xs:decimal"/>
+        <!--Convert Longitude 0-360 to -180 to 180 or 180W-180E -->
+        <xsl:value-of select="(($input+180) mod 360)-180"/>
     </xsl:function>
     
     <xsl:function name="custom:getIdentifierType" as="xs:string">
@@ -131,7 +138,17 @@
             </xsl:otherwise>
         </xsl:choose>
     </xsl:function>
-    
-    
-        
+         
+    <xsl:function name="custom:registryObjectKeyFromString" as="xs:string">
+        <xsl:param name="input" as="xs:string"/>
+        <xsl:variable name="buffer" select="string-join(for $n in fn:string-to-codepoints($input) return string($n), '')"/>
+        <xsl:choose>
+            <xsl:when test="string-length($buffer) &gt; 50">
+                <xsl:value-of select="substring($buffer, string-length($buffer)-50, 50)"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="$buffer"/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:function>
 </xsl:stylesheet>

@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+<xsl:stylesheet version="2.0" exclude-result-prefixes="xsl xsi xs custom"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:custom="http://custom.nowhere.yet"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+    xmlns:custom="http://custom.nowhere.yet"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects">
     <!-- stylesheet to convert data.qld.gov.au xml (transformed from json with python script) to RIF-CS -->
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
@@ -25,14 +27,15 @@
     <!-- =========================================== -->
 
     <xsl:template match="datasets">
-        <registryObjects>
+        <!-- registryObjects>
             <xsl:attribute name="xsi:schemaLocation">
                 <xsl:text>http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd</xsl:text>
             </xsl:attribute>
             <xsl:apply-templates select="result" mode="collection"/>
             <xsl:apply-templates select="result" mode="party"/>
-            <!--xsl:apply-templates select="result" mode="service"/-->
-        </registryObjects>
+        </registryObjects-->
+        <xsl:apply-templates select="result" mode="collection"/>
+            <xsl:apply-templates select="result" mode="party"/>
     </xsl:template>
 
     <xsl:template match="result" mode="collection">
@@ -103,8 +106,10 @@
 
                 <xsl:apply-templates select="tags" mode="collection_subject"/>
 
-                <xsl:apply-templates select="notes" mode="collection_description"/>
-
+                <xsl:apply-templates select="notes" mode="collection_description_brief"/>
+                
+                <xsl:apply-templates select="." mode="collection_description_full"/>
+                
                 <xsl:apply-templates select="spatial_coverage" mode="collection_coverage_spatial"/>
 
                 <xsl:apply-templates select="isopen" mode="collection_rights_accessRights"/>
@@ -291,12 +296,23 @@
     </xsl:template>
 
     <!-- Collection - Decription (brief) Element -->
-    <xsl:template match="notes" mode="collection_description">
+    <xsl:template match="notes" mode="collection_description_brief">
         <xsl:if test="string-length(normalize-space(.))">
             <description type="brief">
-                <xsl:value-of select="normalize-space(.)"/>
+                <xsl:value-of select="."/>
             </description>
         </xsl:if>
+    </xsl:template>
+    
+     <!-- Collection - Decription (full) Element -->
+    <xsl:template match="result" mode="collection_description_full">
+        <description type="full">
+             <xsl:for-each select="resources">
+                <xsl:if test="string-length(normalize-space(name)) > 0">
+                    <xsl:value-of select="concat(normalize-space(name), '&lt;br/&gt;')"/>
+                </xsl:if>
+            </xsl:for-each>
+        </description>
     </xsl:template>
 
     <xsl:template match="isopen" mode="collection_rights_accessRights">
