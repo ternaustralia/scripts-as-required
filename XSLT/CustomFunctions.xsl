@@ -30,7 +30,7 @@
         </xsl:choose>
         
     </xsl:function>
-    
+
     <xsl:function name="custom:sequenceContainsExact" as="xs:boolean">
         <xsl:param name="sequence" as="xs:string*"/>
         <xsl:param name="str" as="xs:string"/>
@@ -127,6 +127,58 @@
         <!--xsl:value-of select="substring-before(substring-before((substring-after($url, '://')), '/'), ':')"/-->
     </xsl:function>
     
+    <xsl:function name="custom:convertCoordinatesLatLongToLongLat" as="xs:string">
+        <xsl:param name="coordinates" as="xs:string"/>
+        <!--  (?![\s|^|,])[\d\.-]+-->
+        <xsl:variable name="coordinateSequence" as="xs:string*">
+            <xsl:analyze-string select="$coordinates" regex="[\d\.-]+">
+                <xsl:matching-substring>
+                    <xsl:value-of select="regex-group(0)"/>
+                    <xsl:message select="concat('match: ', regex-group(0))"/>
+                </xsl:matching-substring>
+            </xsl:analyze-string>
+        </xsl:variable>
+        
+        <xsl:variable name="latCoords" as="xs:string*">
+            <xsl:for-each select="$coordinateSequence">
+                <xsl:if test="(position() mod 2) > 0">
+                    <xsl:value-of select="."/>    
+                </xsl:if>
+            </xsl:for-each>
+        </xsl:variable>
+        
+        <xsl:variable name="longCoords" as="xs:string*">
+            <xsl:for-each select="$coordinateSequence">
+                <xsl:if test="(position() mod 2) = 0">
+                    <xsl:value-of select="."/>    
+                </xsl:if>
+            </xsl:for-each>
+        </xsl:variable>
+        
+        <xsl:message select="concat('longCoords ', string-join(for $i in $longCoords return $i, ' '))"/>
+        <xsl:message select="concat('latCoords ', string-join(for $i in $latCoords return $i, ' '))"/>
+        
+        <xsl:variable name="coordinatePair_sequence" as="xs:string*">
+            <xsl:for-each select="$longCoords">
+                <xsl:if test="count($latCoords) > position()">
+                    <xsl:variable name="index" select="position()" as="xs:integer"/>
+                    <xsl:value-of select="concat(., ',', normalize-space($latCoords[$index]))"/>
+                </xsl:if>
+            </xsl:for-each> 
+        </xsl:variable>
+        
+        <xsl:choose>    
+            <xsl:when test="count($coordinatePair_sequence) > 0"> 
+                <xsl:message select="concat('finalstring ', string-join(for $i in $coordinatePair_sequence return $i, ' '))"/>
+                <xsl:value-of select="string-join(for $i in $coordinatePair_sequence return $i, ' ')"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="''"/>
+            </xsl:otherwise>
+        </xsl:choose>
+        
+    </xsl:function>
+    
     <xsl:function name="custom:formatName">
         <xsl:param name="name"/>
         <xsl:choose>
@@ -151,4 +203,5 @@
             </xsl:otherwise>
         </xsl:choose>
     </xsl:function>
+    
 </xsl:stylesheet>

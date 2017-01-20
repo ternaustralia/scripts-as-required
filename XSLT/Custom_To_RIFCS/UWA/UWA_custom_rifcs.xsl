@@ -7,11 +7,9 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xmlns:fn="http://www.w3.org/2005/xpath-functions"
-    xmlns:custom="http://custom.nowhere.yet"
     xmlns:organisation-template="http://atira.dk/schemas/pure4/model/template/abstractorganisation/current" 
     xmlns:person-template="http://atira.dk/schemas/pure4/model/template/abstractperson/current"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0"> 
-    <xsl:import href="CustomFunctions.xsl"/>
     
     <xsl:param name="global_originatingSource" select="'University of Western Australia'"/>
     <xsl:param name="global_baseURI" select="'research-repository.uwa.edu.au'"/>
@@ -94,15 +92,15 @@
                
                 <xsl:apply-templates select="." mode="collection_coverage_temporal"/>
                 
-                <xsl:apply-templates select="*:geographicalCoverage" mode="collection_coverage_spatial_text"/>
+                <xsl:apply-templates select="*:geographicalCoverage[string-length(.) > 0]" mode="collection_coverage_spatial_text"/>
                 
-                <xsl:apply-templates select="*:geoLocation/*:point" mode="collection_coverage_spatial_point"/>
+                <xsl:apply-templates select="*:geoLocation/*:point[string-length(.) > 0]" mode="collection_coverage_spatial_point"/>
                 
-                <xsl:apply-templates select="*:geoLocation/*:polygon" mode="collection_coverage_spatial_polygon"/>
+                <xsl:apply-templates select="*:geoLocation/*:polygon[string-length(.) > 0]" mode="collection_coverage_spatial_polygon"/>
                 
                 <!-- xsl:apply-templates select="*:documents/*:document/*:documentLicense/core:uri[string-length(.) > 0]" mode="collection_rights_licence"/-->
                 
-                <xsl:apply-templates select="*:openAccessPermission" mode="collection_rights_accessRights"/>
+                <xsl:apply-templates select="*:openAccessPermission[string-length(.) > 0]" mode="collection_rights_accessRights"/>
                 
                 <xsl:apply-templates select="." mode="collection_citationInfo"/>
                 
@@ -178,43 +176,6 @@
             </address>
         </location> 
     </xsl:template>
-    
-    <!-- xsl:template match="*:managedBy" mode="collection_relatedInfo">
-        <xsl:message select="concat('@uuid : ', @uuid)"/>
-                            
-        <xsl:if test="(string-length(@uuid) > 0)">
-            <relatedInfo type="party">
-                <identifier type="{custom:getIdentifierType(@uuid)}">
-                    <xsl:value-of select="@uuid"/>
-                </identifier>
-                <xsl:if test="string-length(organisation-template:name) > 0">   
-                    <title>
-                        <xsl:value-of select="normalize-space(organisation-template:name)"/>
-                    </title>
-                </xsl:if>
-                <relation type="isManagedBy"/>
-            </relatedInfo>
-        </xsl:if>
-    </xsl:template-->
-    
-     <!-- xsl:template match="*:dataSetPersonAssociation" mode="collection_relatedInfo">
-        <xsl:message select="concat('person-template:person/@uuid : ', person-template:person/@uuid)"/>
-                            
-        <xsl:if test="(string-length(person-template:person/@uuid) > 0)">
-            <relatedInfo type="party">
-                <identifier type="{custom:getIdentifierType(person-template:person/@uuid)}">
-                    <xsl:value-of select="person-template:person/@uuid"/>
-                </identifier>
-                <xsl:variable name="personName" select="concat(person-template:person/person-template:name/core:firstName, ' ', person-template:person/person-template:name/core:lastName))"/>
-                <xsl:if test="string-length($personName) > 0">   
-                    <title>
-                        <xsl:value-of select="$personName"/>
-                    </title>
-                </xsl:if>
-                <xsl:apply-templates select="person-template:personRole" mode="relation"/>
-             </relatedInfo>
-        </xsl:if>
-    </xsl:template-->
     
     <xsl:template match="person-template:personRole" mode="relation">
         <xsl:variable name="uriValue_sequence" select="tokenize(core:uri, '/')" as="xs:string*"/>
@@ -312,19 +273,35 @@
     </xsl:template>
     
     <xsl:template match="*:point" mode="collection_coverage_spatial_point">
-        <coverage>
-            <spatial type="gmlKmlPolyCoords​">
-                <xsl:value-of select="normalize-space(.)"/>
-            </spatial>
-        </coverage>
+        <xsl:variable name="coordsLongLat" select="local:convertCoordinatesLatLongToLongLat(normalize-space(.))"/>
+        <xsl:if test="string-length($coordsLongLat) > 0">
+            <coverage>
+                <spatial type="gmlKmlPolyCoords">
+                    <xsl:value-of select="$coordsLongLat"/>
+                </spatial>
+            </coverage>
+            <coverage>    
+                <spatial type="text">
+                    <xsl:value-of select="$coordsLongLat"/>
+                </spatial>
+            </coverage>
+        </xsl:if>
     </xsl:template>
    
     <xsl:template match="*:polygon" mode="collection_coverage_spatial_polygon">
-        <coverage>
-            <spatial type="gmlKmlPolyCoords​">
-                <xsl:value-of select="normalize-space(.)"/>
-            </spatial>
-        </coverage>
+        <xsl:variable name="coordsLongLat" select="local:convertCoordinatesLatLongToLongLat(normalize-space(.))"/>
+        <xsl:if test="string-length($coordsLongLat) > 0">
+            <coverage>
+                <spatial type="gmlKmlPolyCoords">
+                    <xsl:value-of select="$coordsLongLat"/>
+                </spatial>
+            </coverage>
+            <coverage>
+                <spatial type="text">
+                    <xsl:value-of select="$coordsLongLat"/>
+                </spatial>
+            </coverage>
+        </xsl:if>
     </xsl:template>
   
     <!-- xsl:template match="core:uri" mode="collection_rights_licence">
@@ -498,22 +475,56 @@
         <xsl:value-of  select="string-join($datePart_sequence, '-')"/>   
     </xsl:function>
  
-    <!-- xsl:function name="local:formatKey">
-        <xsl:param name="input"/>
-        <xsl:variable name="raw" select="translate(normalize-space($input), ' ', '')"/>
-        <xsl:variable name="temp">
-            <xsl:choose>
-                <xsl:when test="substring($raw, string-length($raw), 1) = '.'">
-                    <xsl:value-of select="substring($raw, 0, string-length($raw))"/>
-                </xsl:when>
-                <xsl:otherwise>
-                    <xsl:value-of select="$raw"/>
-                </xsl:otherwise>
-            </xsl:choose>
+    <xsl:function name="local:convertCoordinatesLatLongToLongLat" as="xs:string">
+        <xsl:param name="coordinates" as="xs:string"/>
+        <!--  (?![\s|^|,])[\d\.-]+-->
+        <xsl:variable name="coordinateSequence" as="xs:string*">
+            <xsl:analyze-string select="$coordinates" regex="[\d\.-]+">
+                <xsl:matching-substring>
+                    <xsl:value-of select="regex-group(0)"/>
+                    <xsl:message select="concat('match: ', regex-group(0))"/>
+                </xsl:matching-substring>
+            </xsl:analyze-string>
         </xsl:variable>
-        <xsl:value-of select="concat($global_baseURI, '/', $temp)"/>
-    </xsl:function-->
-   
+        
+        <xsl:variable name="latCoords" as="xs:string*">
+            <xsl:for-each select="$coordinateSequence">
+                <xsl:if test="(position() mod 2) > 0">
+                    <xsl:value-of select="."/>    
+                </xsl:if>
+            </xsl:for-each>
+        </xsl:variable>
+        
+        <xsl:variable name="longCoords" as="xs:string*">
+            <xsl:for-each select="$coordinateSequence">
+                <xsl:if test="(position() mod 2) = 0">
+                    <xsl:value-of select="."/>    
+                </xsl:if>
+            </xsl:for-each>
+        </xsl:variable>
+        
+        <xsl:message select="concat('longCoords ', string-join(for $i in $longCoords return $i, ' '))"/>
+        <xsl:message select="concat('latCoords ', string-join(for $i in $latCoords return $i, ' '))"/>
+        
+        <xsl:variable name="coordinatePair_sequence" as="xs:string*">
+            <xsl:for-each select="$longCoords">
+                <xsl:if test="count($latCoords) > position()">
+                    <xsl:variable name="index" select="position()" as="xs:integer"/>
+                    <xsl:value-of select="concat(., ',', normalize-space($latCoords[$index]))"/>
+                </xsl:if>
+            </xsl:for-each> 
+        </xsl:variable>
+        
+        <xsl:choose>    
+            <xsl:when test="count($coordinatePair_sequence) > 0"> 
+                <xsl:value-of select="string-join(for $i in $coordinatePair_sequence return $i, ' ')"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="''"/>
+            </xsl:otherwise>
+        </xsl:choose>
+        
+    </xsl:function>
     
 
 </xsl:stylesheet>
