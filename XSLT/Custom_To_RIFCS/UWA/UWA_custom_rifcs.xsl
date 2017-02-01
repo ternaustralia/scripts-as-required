@@ -272,33 +272,35 @@
         </coverage>
     </xsl:template>
     
+    
     <xsl:template match="*:point" mode="collection_coverage_spatial_point">
-        <xsl:variable name="coordsLongLat" select="local:convertCoordinatesLatLongToLongLat(normalize-space(.))"/>
-        <xsl:if test="string-length($coordsLongLat) > 0">
+        <xsl:variable name="coordsAsProvided" select="local:formatCoordinatesFromString(normalize-space(.))"/>
+        <xsl:if test="string-length($coordsAsProvided) > 0">
             <coverage>
                 <spatial type="gmlKmlPolyCoords">
-                    <xsl:value-of select="$coordsLongLat"/>
+                    <xsl:value-of select="$coordsAsProvided"/>
                 </spatial>
             </coverage>
             <coverage>    
                 <spatial type="text">
-                    <xsl:value-of select="$coordsLongLat"/>
+                    <xsl:value-of select="$coordsAsProvided"/>
                 </spatial>
             </coverage>
         </xsl:if>
-    </xsl:template>
+        
+     </xsl:template>
    
     <xsl:template match="*:polygon" mode="collection_coverage_spatial_polygon">
-        <xsl:variable name="coordsLongLat" select="local:convertCoordinatesLatLongToLongLat(normalize-space(.))"/>
-        <xsl:if test="string-length($coordsLongLat) > 0">
+        <xsl:variable name="coordsAsProvided" select="local:formatCoordinatesFromString(normalize-space(.))"/>
+        <xsl:if test="string-length($coordsAsProvided) > 0">
             <coverage>
                 <spatial type="gmlKmlPolyCoords">
-                    <xsl:value-of select="$coordsLongLat"/>
+                    <xsl:value-of select="$coordsAsProvided"/>
                 </spatial>
             </coverage>
-            <coverage>
+            <coverage>    
                 <spatial type="text">
-                    <xsl:value-of select="$coordsLongLat"/>
+                    <xsl:value-of select="$coordsAsProvided"/>
                 </spatial>
             </coverage>
         </xsl:if>
@@ -317,19 +319,25 @@
     </xsl:template>
       
     <xsl:template match="core:content" mode="collection_dates">
-        <dates type="issued">
-            <date type="dateFrom" dateFormat="W3CDTF">
-                <xsl:value-of select="local:formatDate(*:dateMadeAvailable)"/>
-            </date>
-        </dates>
+        <xsl:for-each select="*:dateMadeAvailable">
+            <dates type="issued">
+                <date type="dateFrom" dateFormat="W3CDTF">
+                    <xsl:value-of select="local:formatDate(.)"/>
+                </date>
+            </dates>
+        </xsl:for-each>
         
         <dates type="created">
-            <date type="dateFrom" dateFormat="W3CDTF">
-                <xsl:value-of select="local:formatDate(*:dateOfDataProduction)"/>
-            </date>
-            <date type="dateTo" dateFormat="W3CDTF">
-                <xsl:value-of select="local:formatDate(*:endDateOfDataProduction)"/>
-            </date>
+            <xsl:for-each select="*:dateOfDataProduction">
+                <date type="dateFrom" dateFormat="W3CDTF">
+                    <xsl:value-of select="local:formatDate(.)"/>
+                </date>
+            </xsl:for-each>
+            <xsl:for-each select="*:endDateOfDataProduction">
+                <date type="dateTo" dateFormat="W3CDTF">
+                    <xsl:value-of select="local:formatDate(.)"/>
+                </date>
+            </xsl:for-each>
         </dates>
         
     </xsl:template>  
@@ -474,11 +482,34 @@
         </xsl:variable>
         <xsl:value-of  select="string-join($datePart_sequence, '-')"/>   
     </xsl:function>
- 
-    <xsl:function name="local:convertCoordinatesLatLongToLongLat" as="xs:string">
+    
+    <xsl:function name="local:getEvenCoordSequence" as="xs:string*">
         <xsl:param name="coordinates" as="xs:string"/>
+        
+        <xsl:for-each select="local:getAllCoordsSequence($coordinates)">
+            <xsl:if test="(position() mod 2) = 0">
+                <xsl:value-of select="."/>    
+            </xsl:if>
+        </xsl:for-each>
+    </xsl:function>
+    
+    <xsl:function name="local:getOddCoordSequence" as="xs:string*">
+        <xsl:param name="coordinates" as="xs:string"/>
+        
+        <xsl:for-each select="local:getAllCoordsSequence($coordinates)">
+            <xsl:if test="(position() mod 2) > 0">
+                <xsl:value-of select="."/>    
+            </xsl:if>
+        </xsl:for-each>
+    </xsl:function>
+    
+     <xsl:function name="local:getAllCoordsSequence" as="xs:string*">
+        <xsl:param name="coordinates" as="xs:string"/>
+        
+        <xsl:message select="concat('coordinates ', $coordinates)"/>
+        
         <!--  (?![\s|^|,])[\d\.-]+-->
-        <xsl:variable name="coordinateSequence" as="xs:string*">
+        <xsl:variable name="coordinate_sequence" as="xs:string*">
             <xsl:analyze-string select="$coordinates" regex="[\d\.-]+">
                 <xsl:matching-substring>
                     <xsl:value-of select="regex-group(0)"/>
@@ -487,30 +518,45 @@
             </xsl:analyze-string>
         </xsl:variable>
         
-        <xsl:variable name="latCoords" as="xs:string*">
-            <xsl:for-each select="$coordinateSequence">
-                <xsl:if test="(position() mod 2) > 0">
-                    <xsl:value-of select="."/>    
-                </xsl:if>
-            </xsl:for-each>
-        </xsl:variable>
+       <xsl:copy-of select="$coordinate_sequence"/>
+    </xsl:function>
+       
+    <xsl:function name="local:convertCoordinatesLatLongToLongLat" as="xs:string">
+        <xsl:param name="coordinates" as="xs:string"/>
         
-        <xsl:variable name="longCoords" as="xs:string*">
-            <xsl:for-each select="$coordinateSequence">
-                <xsl:if test="(position() mod 2) = 0">
-                    <xsl:value-of select="."/>    
-                </xsl:if>
-            </xsl:for-each>
-        </xsl:variable>
+        <xsl:variable name="latCoords_sequence" select="local:getOddCoordSequence($coordinates)" as="xs:string*"/>
+        <xsl:variable name="longCoords_sequence" select="local:getEvenCoordSequence($coordinates)" as="xs:string*"/>
         
-        <xsl:message select="concat('longCoords ', string-join(for $i in $longCoords return $i, ' '))"/>
-        <xsl:message select="concat('latCoords ', string-join(for $i in $latCoords return $i, ' '))"/>
+        <xsl:message select="concat('longCoords ', string-join(for $i in $longCoords_sequence return $i, ' '))"/>
+        <xsl:message select="concat('latCoords ', string-join(for $i in $latCoords_sequence return $i, ' '))"/>
+        
+        <xsl:value-of select="local:formatCoordinatesFromSequences($longCoords_sequence, $latCoords_sequence)"/>
+    </xsl:function>
+    
+    <xsl:function name="local:formatCoordinatesFromString" as="xs:string">
+        <xsl:param name="coordinates" as="xs:string"/>
+        
+        <xsl:variable name="latCoords_sequence" select="local:getEvenCoordSequence($coordinates)" as="xs:string*"/>
+        <xsl:variable name="longCoords_sequence" select="local:getOddCoordSequence($coordinates)" as="xs:string*"/>
+        
+        <xsl:message select="concat('longCoords ', string-join(for $i in $longCoords_sequence return $i, ' '))"/>
+        <xsl:message select="concat('latCoords ', string-join(for $i in $latCoords_sequence return $i, ' '))"/>
+        
+        <xsl:value-of select="local:formatCoordinatesFromSequences($longCoords_sequence, $latCoords_sequence)"/>
+    </xsl:function>
+    
+    <xsl:function name="local:formatCoordinatesFromSequences" as="xs:string">
+        <xsl:param name="longCoords_sequence" as="xs:string*"/>
+        <xsl:param name="latCoords_sequence" as="xs:string*"/>
+         
+        <xsl:message select="concat('longCoords ', string-join(for $i in $longCoords_sequence return $i, ' '))"/>
+        <xsl:message select="concat('latCoords ', string-join(for $i in $latCoords_sequence return $i, ' '))"/>
         
         <xsl:variable name="coordinatePair_sequence" as="xs:string*">
-            <xsl:for-each select="$longCoords">
-                <xsl:if test="count($latCoords) > position()">
+            <xsl:for-each select="$longCoords_sequence">
+                <xsl:if test="count($latCoords_sequence) > position()">
                     <xsl:variable name="index" select="position()" as="xs:integer"/>
-                    <xsl:value-of select="concat(., ',', normalize-space($latCoords[$index]))"/>
+                    <xsl:value-of select="concat(., ',', normalize-space($latCoords_sequence[$index]))"/>
                 </xsl:if>
             </xsl:for-each> 
         </xsl:variable>
@@ -525,6 +571,5 @@
         </xsl:choose>
         
     </xsl:function>
-    
 
 </xsl:stylesheet>
