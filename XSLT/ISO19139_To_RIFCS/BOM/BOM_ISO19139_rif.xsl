@@ -133,6 +133,12 @@ xmlns:gco="http://www.isotc211.org/2005/gco"
                      
                     <xsl:apply-templates select="gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:source/gmd:LI_Source[string-length(gmd:sourceCitation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier/gmd:code) > 0]"
                          mode="registryObject_relatedInfo"/>
+                         
+                    <xsl:apply-templates select="gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:statement[string-length(.) > 0]"
+                        mode="registryObject_description_lineage"/>
+             
+                    <xsl:apply-templates select="gmd:metadataConstraints/gmd:MD_LegalConstraints/gmd:otherConstraints[string-length(.) > 0]"
+                        mode="registryObject_description_notes"/>
                      
                     <xsl:apply-templates select="gmd:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="registryObject">
                              <xsl:with-param name="originatingSourceOrganisation" select="$originatingSourceOrganisation"/>
@@ -197,18 +203,18 @@ xmlns:gco="http://www.isotc211.org/2005/gco"
         
          <xsl:apply-templates
             select="gmd:abstract[string-length(.) > 0]"
-            mode="registryObject_description_brief"/>
+            mode="registryObject_description_full"/>
         
         <xsl:apply-templates
             select="gmd:purpose[string-length(.) > 0]"
             mode="registryObject_description_notes"/>
-        
+            
         <xsl:apply-templates
             select="gmd:credit[string-length(.) > 0]"
             mode="registryObject_description_notes"/>
-        
-   <xsl:apply-templates select="gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_GeographicBoundingBox" mode="registryObject_coverage_spatial"/>
-       <xsl:apply-templates select="gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_BoundingPolygon/gmd:polygon" mode="registryObject_coverage_spatial"/>
+             
+        <xsl:apply-templates select="gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_GeographicBoundingBox" mode="registryObject_coverage_spatial"/>
+        <xsl:apply-templates select="gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_BoundingPolygon/gmd:polygon" mode="registryObject_coverage_spatial"/>
        
         <xsl:apply-templates
             select="gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent"
@@ -473,28 +479,40 @@ xmlns:gco="http://www.isotc211.org/2005/gco"
             </subject>
     </xsl:template>
 
-    <!-- RegistryObject - Decription Element -->
-    <xsl:template match="gmd:abstract" mode="registryObject_description_brief">
-            <description type="brief">
+    <!-- RegistryObject - Description Element -->
+    <xsl:template match="gmd:abstract" mode="registryObject_description_full">
+            <description type="full">
                 <xsl:value-of select="."/>
             </description>
     </xsl:template>
     
-    <!-- RegistryObject - Decription Element -->
+    <!-- RegistryObject - Description Element -->
     <xsl:template match="gmd:purpose" mode="registryObject_description_notes">
             <description type="notes">
                 <xsl:value-of select="."/>
             </description>
     </xsl:template>
     
-    <!-- RegistryObject - Decription Element -->
+    <!-- RegistryObject - Description Element -->
     <xsl:template match="gmd:credit" mode="registryObject_description_notes">
             <description type="notes">
                 <xsl:value-of select="."/>
             </description>
     </xsl:template>
-
-
+    
+    <!-- RegistryObject - Description Element -->
+    <xsl:template match="gmd:statement" mode="registryObject_description_lineage">
+        <description type="lineage">
+            <xsl:value-of select="."/>
+        </description>
+    </xsl:template>
+    
+    <!-- RegistryObject - Description Element -->
+    <xsl:template match="gmd:otherConstraints" mode="registryObject_description_notes">
+        <description type="notes">
+            <xsl:value-of select="."/>
+        </description>
+    </xsl:template>
 
     <!-- RegistryObject - Coverage Spatial Element -->
     <xsl:template match="gmd:EX_GeographicBoundingBox" mode="registryObject_coverage_spatial">
@@ -887,18 +905,16 @@ xmlns:gco="http://www.isotc211.org/2005/gco"
     
     <xsl:template match="gmd:otherConstraints" mode="rights_licence_type">
         <xsl:variable name="inputTransformed" select="normalize-space(replace(replace(., 'icence', 'icense', 'i'), 'https', 'http', 'i'))"/>
-                <xsl:message select="concat('Input transformed: ', $inputTransformed)"/>
                 
-                <xsl:variable name="codeDefinition_sequence" select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCodeAustralia']/gmx:codeEntry/gmx:CodeDefinition[contains($inputTransformed, normalize-space(replace(gml:remarks, '\{n\}', '')))]" as="node()*"/>
-                <xsl:message select="concat('Count found: ', count($codeDefinition_sequence))"/>
-                
-                <xsl:for-each select="$codeDefinition_sequence">
-                    <xsl:if test="string-length(gml:identifier) > 0">
-                        <xsl:attribute name="type">
-                            <xsl:value-of select="gml:identifier"/>
-                        </xsl:attribute>
-                    </xsl:if>
-                </xsl:for-each>
+        <xsl:variable name="codeDefinition_sequence" select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCodeAustralia']/gmx:codeEntry/gmx:CodeDefinition[contains($inputTransformed, normalize-space(replace(gml:remarks, '\{n\}', '')))]" as="node()*"/>
+        
+        <xsl:for-each select="$codeDefinition_sequence">
+            <xsl:if test="string-length(gml:identifier) > 0">
+                <xsl:attribute name="type">
+                    <xsl:value-of select="gml:identifier"/>
+                </xsl:attribute>
+            </xsl:if>
+        </xsl:for-each>
     </xsl:template>
 
                     
