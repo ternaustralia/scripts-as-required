@@ -183,14 +183,14 @@
         <xsl:param name="name"/>
         <xsl:choose>
             <xsl:when test="contains($name, ', ')">
-                <xsl:value-of select="concat(normalize-space(substring-after($name, ',')), ' ', normalize-space(substring-before($name, ',')))"/>
+                <xsl:value-of select="concat(normalize-space(substring-after(substring-before($name, '.'), ',')), ' ', normalize-space(substring-before($name, ',')))"/>
             </xsl:when>
             <xsl:otherwise>
                 <xsl:value-of select="$name"/>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:function>
-         
+    
     <xsl:function name="custom:registryObjectKeyFromString" as="xs:string">
         <xsl:param name="input" as="xs:string"/>
         <xsl:variable name="buffer" select="string-join(for $n in fn:string-to-codepoints($input) return string($n), '')"/>
