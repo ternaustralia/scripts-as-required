@@ -22,7 +22,7 @@
     <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>
     
 
-  <xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes"/>
+    <xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes"/>
 
     <xsl:template match="/">
         <registryObjects xmlns="http://ands.org.au/standards/rif-cs/registryObjects" 
@@ -96,6 +96,8 @@
                 <xsl:apply-templates select="dc:description[string-length(.) > 0]" mode="collection_description_full"/>
                
                 <xsl:apply-templates select="dc:date[string-length(.) > 0]" mode="collection_dates_issued"/>  
+                
+                <xsl:apply-templates select="dc:source[string-length(.) > 0]" mode="collection_citation_info"/>  
              
             </xsl:element>
         </registryObject>
@@ -225,6 +227,14 @@
                 <xsl:value-of select="substring-after(., 'http://openvivo.org/a/date')"/>
             </date>
         </dates>
+    </xsl:template>  
+    
+    <xsl:template match="dc:source" mode="collection_citation_info">
+        <citationInfo>
+           <fullCitation>
+                <xsl:value-of select="normalize-space(.)"/>
+            </fullCitation>
+        </citationInfo>
     </xsl:template>  
              
      <xsl:template match="oai_dc:dc" mode="party">
