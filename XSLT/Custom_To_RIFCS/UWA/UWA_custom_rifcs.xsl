@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet  
+    xmlns="http://ands.org.au/standards/rif-cs/registryObjects"     
     xmlns:todo="http://yettodo" 
     xmlns:local="http://local.to.here"
     xmlns:dataset="http://atira.dk/schemas/pure4/wsdl/template/dataset/current" 
@@ -9,24 +10,26 @@
     xmlns:fn="http://www.w3.org/2005/xpath-functions"
     xmlns:organisation-template="http://atira.dk/schemas/pure4/model/template/abstractorganisation/current" 
     xmlns:person-template="http://atira.dk/schemas/pure4/model/template/abstractperson/current"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0"> 
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0"
+    exclude-result-prefixes="todo local dataset core xsi xs fn organisation-template person-template xsl">
+     
     
     <xsl:param name="global_originatingSource" select="'University of Western Australia'"/>
     <xsl:param name="global_baseURI" select="'research-repository.uwa.edu.au'"/>
     <xsl:param name="global_group" select="'University of Western Australia (PURE)'"/>
     <xsl:param name="global_publisherName" select="'University of Western Australia'"/>
 
-  <xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes"/>
+  <xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes" omit-xml-declaration="yes"/>
 
     <xsl:template match="/">
-        <registryObjects xmlns="http://ands.org.au/standards/rif-cs/registryObjects" 
+        <!-- registryObjects xmlns="http://ands.org.au/standards/rif-cs/registryObjects" 
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
             xsi:schemaLocation="http://ands.org.au/standards/rif-cs/registryObjects 
-            http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd">
+            http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd"-->
           
             <xsl:apply-templates select="//core:result/core:content"/>
             
-        </registryObjects>
+        <!-- /registryObjects-->
     </xsl:template>
    
     <xsl:template match="core:content">
