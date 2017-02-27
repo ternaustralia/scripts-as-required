@@ -29,42 +29,42 @@
 			<gmx:codeEntry>
 				<gmx:CodeDefinition gml:id="LicenseCode_CC-BY_Australia">
 					<gml:identifier codeSpace="http://not.yet.defined">CC-BY</gml:identifier>
-					<gml:name codeSpace="http://not.yet.defined">Creative Commons Attribution {n} Australia License</gml:name>
+					<gml:name codeSpace="http://not.yet.defined">Creative Commons Attribution {n} Australia</gml:name>
 					<gml:remarks>http://creativecommons.org/licenses/by/{n}</gml:remarks>
 				</gmx:CodeDefinition>
 			</gmx:codeEntry>
 			<gmx:codeEntry>
 				<gmx:CodeDefinition gml:id="LicenseCode_CC-BY-ND_Australia">
 					<gml:identifier codeSpace="http://not.yet.defined">CC-BY-ND</gml:identifier>
-					<gml:name codeSpace="http://not.yet.defined">Creative Commons Attribution-NoDerivs {n} Australia License</gml:name>
+					<gml:name codeSpace="http://not.yet.defined">Creative Commons Attribution-NoDerivs {n} Australia</gml:name>
 					<gml:remarks>http://creativecommons.org/licenses/by-nd/{n}</gml:remarks>
 				</gmx:CodeDefinition>
 			</gmx:codeEntry>
 			<gmx:codeEntry>
 				<gmx:CodeDefinition gml:id="LicenseCode_CC-BY-NC-SA_Australia">
 					<gml:identifier codeSpace="http://not.yet.defined">CC-BY-NC-SA</gml:identifier>
-					<gml:name codeSpace="http://not.yet.defined">Creative Commons Attribution-NonCommercial-ShareAlike {n} Australia License</gml:name>
+					<gml:name codeSpace="http://not.yet.defined">Creative Commons Attribution-NonCommercial-ShareAlike {n} Australia</gml:name>
 					<gml:remarks>http://creativecommons.org/licenses/by-nc-sa/{n}</gml:remarks>
 				</gmx:CodeDefinition>
 			</gmx:codeEntry>
 			<gmx:codeEntry>
 				<gmx:CodeDefinition gml:id="LicenseCode_CC-BY-SA_Australia">
 					<gml:identifier codeSpace="http://not.yet.defined">CC-BY-SA</gml:identifier>
-					<gml:name codeSpace="http://not.yet.defined">Creative Commons Attribution-ShareAlike {n} Australia License</gml:name>
+					<gml:name codeSpace="http://not.yet.defined">Creative Commons Attribution-ShareAlike {n} Australia</gml:name>
 					<gml:remarks>http://creativecommons.org/licenses/by-sa/{n}</gml:remarks>
 				</gmx:CodeDefinition>
 			</gmx:codeEntry>
 			<gmx:codeEntry>
 				<gmx:CodeDefinition gml:id="LicenseCode_CC-BY-NC_Australia">
 					<gml:identifier codeSpace="http://not.yet.defined">CC-BY-NC</gml:identifier>
-					<gml:name codeSpace="http://not.yet.defined">Creative Commons Attribution-NonCommercial {n} Australia License</gml:name>
+					<gml:name codeSpace="http://not.yet.defined">Creative Commons Attribution-NonCommercial {n} Australia</gml:name>
 					<gml:remarks>http://creativecommons.org/licenses/by-nc/{n}</gml:remarks>
 				</gmx:CodeDefinition>
 			</gmx:codeEntry>
 			<gmx:codeEntry>
 				<gmx:CodeDefinition gml:id="LicenseCode_CC-BY-NC-ND_Australia">
 					<gml:identifier codeSpace="http://not.yet.defined">CC-BY-NC-ND</gml:identifier>
-					<gml:name codeSpace="http://not.yet.defined">Creative Commons Attribution-NonCommercial-NoDerivs {n} Australia License</gml:name>
+					<gml:name codeSpace="http://not.yet.defined">Creative Commons Attribution-NonCommercial-NoDerivs {n} Australia</gml:name>
 					<gml:remarks>http://creativecommons.org/licenses/by-nc-nd/{n}</gml:remarks>
 				</gmx:CodeDefinition>
 			</gmx:codeEntry>
@@ -83,42 +83,42 @@
 			<gmx:codeEntry>
 				<gmx:CodeDefinition gml:id="LicenseCode_CC-BY_International">
 					<gml:identifier codeSpace="http://not.yet.defined">CC-BY</gml:identifier>
-					<gml:name codeSpace="http://not.yet.defined">Creative Commons Attribution {n} International License</gml:name>
+					<gml:name codeSpace="http://not.yet.defined">Creative Commons Attribution {n} International</gml:name>
 					<gml:remarks>http://creativecommons.org/licenses/by/{n}</gml:remarks>
 				</gmx:CodeDefinition>
 			</gmx:codeEntry>
 			<gmx:codeEntry>
 				<gmx:CodeDefinition gml:id="LicenseCode_CC-BY-ND_International">
 					<gml:identifier codeSpace="http://not.yet.defined">CC-BY-ND</gml:identifier>
-					<gml:name codeSpace="http://not.yet.defined">Creative Commons Attribution-NoDerivs {n} International License</gml:name>
+					<gml:name codeSpace="http://not.yet.defined">Creative Commons Attribution-NoDerivs {n} International</gml:name>
 					<gml:remarks>http://creativecommons.org/licenses/by-nd/{n}</gml:remarks>
 				</gmx:CodeDefinition>
 			</gmx:codeEntry>
 			<gmx:codeEntry>
 				<gmx:CodeDefinition gml:id="LicenseCode_CC-BY-NC-SA_International">
 					<gml:identifier codeSpace="http://not.yet.defined">CC-BY-NC-SA</gml:identifier>
-					<gml:name codeSpace="http://not.yet.defined">Creative Commons Attribution-NonCommercial-ShareAlike {n} International License</gml:name>
+					<gml:name codeSpace="http://not.yet.defined">Creative Commons Attribution-NonCommercial-ShareAlike {n} International</gml:name>
 					<gml:remarks>http://creativecommons.org/licenses/by-nc-sa/{n}</gml:remarks>
 				</gmx:CodeDefinition>
 			</gmx:codeEntry>
 			<gmx:codeEntry>
 				<gmx:CodeDefinition gml:id="LicenseCode_CC-BY-SA_International">
 					<gml:identifier codeSpace="http://not.yet.defined">CC-BY-SA</gml:identifier>
-					<gml:name codeSpace="http://not.yet.defined">Creative Commons Attribution-ShareAlike {n} International License</gml:name>
+					<gml:name codeSpace="http://not.yet.defined">Creative Commons Attribution-ShareAlike {n} International</gml:name>
 					<gml:remarks>http://creativecommons.org/licenses/by-sa/{n}</gml:remarks>
 				</gmx:CodeDefinition>
 			</gmx:codeEntry>
 			<gmx:codeEntry>
 				<gmx:CodeDefinition gml:id="LicenseCode_CC-BY-NC_International">
 					<gml:identifier codeSpace="http://not.yet.defined">CC-BY-NC</gml:identifier>
-					<gml:name codeSpace="http://not.yet.defined">Creative Commons Attribution-NonCommercial {n} International License</gml:name>
+					<gml:name codeSpace="http://not.yet.defined">Creative Commons Attribution-NonCommercial {n} International</gml:name>
 					<gml:remarks>http://creativecommons.org/licenses/by-nc/{n}</gml:remarks>
 				</gmx:CodeDefinition>
 			</gmx:codeEntry>
 			<gmx:codeEntry>
 				<gmx:CodeDefinition gml:id="LicenseCode_CC-BY-NC-ND_International">
 					<gml:identifier codeSpace="http://not.yet.defined">CC-BY-NC-ND</gml:identifier>
-					<gml:name codeSpace="http://not.yet.defined">Creative Commons Attribution-NonCommercial-NoDerivs {n} International License</gml:name>
+					<gml:name codeSpace="http://not.yet.defined">Creative Commons Attribution-NonCommercial-NoDerivs {n} International</gml:name>
 					<gml:remarks>http://creativecommons.org/licenses/by-nc-nd/{n}</gml:remarks>
 				</gmx:CodeDefinition>
 			</gmx:codeEntry>

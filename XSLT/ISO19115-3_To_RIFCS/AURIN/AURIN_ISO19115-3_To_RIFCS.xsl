@@ -197,7 +197,7 @@
             mode="registryObject_coverage_temporal"/>
          
         <xsl:apply-templates
-            select="mri:resourceConstraints/mco:MD_LegalConstraints[mco:useConstraints/mco:MD_RestrictionCode/@codeListValue = 'license']"
+            select="mri:resourceConstraints/mco:MD_LegalConstraints[(mco:useConstraints/mco:MD_RestrictionCode/@codeListValue = 'license') or (mco:useConstraints/mco:MD_RestrictionCode/@codeListValue = 'licence')]"
             mode="registryObject_rights_license"/>
        
        <xsl:apply-templates
@@ -492,7 +492,7 @@
                    
                 <xsl:for-each select="$codeDefinition_sequence">
                     <xsl:variable name="codeDefinition" select="." as="node()"/>
-                    <xsl:variable name="licenceVersion" as="xs:string*">
+                    <xsl:variable name="licenceVersion_sequence" as="xs:string*">
                         <xsl:analyze-string select="normalize-space($otherConstraints)"
                             regex="[\d.]+">
                             <xsl:matching-substring>
@@ -500,28 +500,30 @@
                             </xsl:matching-substring>
                         </xsl:analyze-string>
                      </xsl:variable>
+                    
+                    <xsl:if test="count($licenceVersion_sequence) > 0">
+                        <xsl:variable name="licenceURI">
+                            <xsl:value-of select="replace($codeDefinition/gml:remarks, '\{n\}', $licenceVersion_sequence[1])"/>
+                        </xsl:variable>
+                        
+                        <xsl:message select="concat('licenceURI : ', $licenceURI)"/>
                      
-                    <xsl:variable name="licenceURI">
-                        <xsl:value-of select="replace($codeDefinition/gml:remarks, '\{n\}', $licenceVersion)"/>
-                    </xsl:variable>
-        
-                    <xsl:message select="concat('licenceURI : ', $licenceURI)"/>
-                     
-                    <xsl:if test="string-length($licenceURI) and count($licenceVersion) > 0">
-                        <rights>
-                            <licence>   
-                                 <xsl:attribute name="rightsUri">
-                                     <xsl:value-of select="$licenceURI"/>
-                                 </xsl:attribute>
-                                 
-                                 <xsl:if test="string-length(gml:identifier) > 0">
-                                     <xsl:attribute name="type">
-                                         <xsl:value-of select="gml:identifier"/>
+                        <xsl:if test="string-length($licenceURI) > 0">
+                            <rights>
+                                <licence>   
+                                     <xsl:attribute name="rightsUri">
+                                         <xsl:value-of select="$licenceURI"/>
                                      </xsl:attribute>
-                                 </xsl:if>
-                                 
-                            </licence>
-                        </rights>
+                                     
+                                     <xsl:if test="string-length(gml:identifier) > 0">
+                                         <xsl:attribute name="type">
+                                             <xsl:value-of select="gml:identifier"/>
+                                         </xsl:attribute>
+                                     </xsl:if>
+                                     
+                                </licence>
+                            </rights>
+                        </xsl:if>
                     </xsl:if>
                     
                     <xsl:if test="gml:identifier = 'CC-BY'">
