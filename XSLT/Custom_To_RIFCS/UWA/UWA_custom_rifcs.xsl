@@ -87,16 +87,20 @@
                 
                 <xsl:apply-templates select="*:persons/*:dataSetPersonAssociation[(string-length(person-template:person/@uuid) > 0) and (string-length(person-template:person/core:family) > 0)]" mode="collection_relatedObject"/>
                 
-                <xsl:apply-templates select="*/todo:freetextKeyword[string-length(.) > 0]" mode="collection_subject"/>
+                <xsl:apply-templates select="*:keywordGroups/*:keywordGroup/*:keyword/*:userDefinedKeyword/*:freeKeyword[string-length(.) > 0]" mode="collection_subject"/>
                 
-                <xsl:apply-templates select="todo:todo" mode="collection_subject"/>
+                <xsl:apply-templates select="*:keywordGroups/*:keywordGroup/*:keyword[string-length(*:target/*:term) > 0]" mode="collection_subject"/>
                
                 <xsl:apply-templates select="*:descriptions/*:classificationDefinedField/*:value[string-length(.) > 0]" mode="collection_description_full"/>
-               
+                
+                <xsl:apply-templates select="*:links/*:link" mode="collection_relatedInfo"/>
+                
+                <xsl:apply-templates select="*:associatedContent/*:relatedContent" mode="collection_relatedInfo"/>
+                
                 <xsl:apply-templates select="." mode="collection_coverage_temporal"/>
                 
                 <xsl:apply-templates select="*:geographicalCoverage[string-length(.) > 0]" mode="collection_coverage_spatial_text"/>
-                
+             
                 <xsl:apply-templates select="*:geoLocation/*:point[string-length(.) > 0]" mode="collection_coverage_spatial_point"/>
                 
                 <xsl:apply-templates select="*:geoLocation/*:polygon[string-length(.) > 0]" mode="collection_coverage_spatial_polygon"/>
@@ -104,6 +108,8 @@
                 <!-- xsl:apply-templates select="*:documents/*:document/*:documentLicense/core:uri[string-length(.) > 0]" mode="collection_rights_licence"/-->
                 
                 <xsl:apply-templates select="*:openAccessPermission[string-length(.) > 0]" mode="collection_rights_accessRights"/>
+                
+                <xsl:apply-templates select="*:legalConditions/*:legalCondition" mode="collection_rights_rightsStatement"/>
                 
                 <xsl:apply-templates select="." mode="collection_citationInfo"/>
                 
@@ -232,15 +238,37 @@
         </xsl:if>
     </xsl:template>
     
-    <xsl:template match="todo:freetextKeyword" mode="collection_subject">
+    <xsl:template match="*:freeKeyword" mode="collection_subject">
         <subject type="local">
             <xsl:value-of select="."/>
         </subject>
     </xsl:template>
     
-    <xsl:template match="todo:todo" mode="collection_subject">
-        <subject type="local">
-            <xsl:value-of select="."/>
+    <xsl:template match="*:keyword" mode="collection_subject">
+        <subject>
+            <xsl:attribute name="type">
+                <xsl:choose>
+                    <xsl:when test="contains(lower-case(*:target/*:uri), 'fieldofresearch')">
+                        <xsl:text>anzsrc-for</xsl:text>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:text>local</xsl:text>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:attribute>
+            <xsl:choose>
+                <xsl:when test="fn:matches(*:target/*:term, '[\d]+')">
+                    <xsl:analyze-string select="*:target/*:term" regex="[\d]+">
+                        <xsl:matching-substring>
+                            <xsl:value-of select="regex-group(0)"/>
+                        </xsl:matching-substring>
+                    </xsl:analyze-string>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="*:target/*:term"/>
+                </xsl:otherwise>
+            </xsl:choose>
+            
         </subject>
     </xsl:template>
     
@@ -248,6 +276,54 @@
         <description type="full">
             <xsl:value-of select="."/>
         </description>
+    </xsl:template>
+    
+    <xsl:template match="*:link" mode="collection_relatedInfo">
+        <relatedInfo type="website">
+            <xsl:if test="string-length(*:url) > 0">
+                <identifier type="uri">
+                    <xsl:value-of select="*:url"/>
+                </identifier>
+            </xsl:if>
+            <xsl:if test="string-length(*:description) > 0">
+                <title>
+                    <xsl:value-of select="*:description"/>
+                </title>
+            </xsl:if>
+        </relatedInfo>
+    </xsl:template>
+    
+    <xsl:template match="*:relatedContent" mode="collection_relatedInfo">
+        <relatedInfo>
+            <xsl:attribute name="type">
+                <xsl:choose>
+                    <xsl:when test="contains(lower-case(*:typeClassification), 'dataset')">
+                        <xsl:text>collection</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="contains(lower-case(*:typeClassification), 'article')">
+                        <xsl:text>publication</xsl:text>
+                    </xsl:when>
+                </xsl:choose>
+            </xsl:attribute>
+            <xsl:choose>
+                <xsl:when test="contains(lower-case(*:typeClassification), 'dataset') or (string-length(*:portalUrl) = 0)">
+                    <identifier type="global">
+                        <xsl:value-of select="@uuid"/>
+                    </identifier>
+                </xsl:when>
+                <xsl:otherwise>
+                    <identifier type="uri">
+                        <xsl:value-of select="*:portalUrl"/>
+                    </identifier>
+                </xsl:otherwise>
+            </xsl:choose>
+            
+            <xsl:if test="string-length(*:title) > 0">
+                <title>
+                    <xsl:value-of select="*:title"/>
+                </title>
+            </xsl:if>
+        </relatedInfo>
     </xsl:template>
     
     <xsl:template match="core:content" mode="collection_coverage_temporal">
@@ -277,7 +353,9 @@
     
     
     <xsl:template match="*:point" mode="collection_coverage_spatial_point">
-        <xsl:variable name="coordsAsProvided" select="local:formatCoordinatesFromString(normalize-space(.))"/>
+        <xsl:message select="concat('processing point coordinates input: ', normalize-space(.))"/>
+        <xsl:variable name="coordsAsProvided" select="local:convertCoordinatesLatLongToLongLat(normalize-space(.))" as="xs:string"/>
+        <xsl:message select="concat('processing point coordinates determined: ', $coordsAsProvided)"/>
         <xsl:if test="string-length($coordsAsProvided) > 0">
             <coverage>
                 <spatial type="gmlKmlPolyCoords">
@@ -294,7 +372,9 @@
      </xsl:template>
    
     <xsl:template match="*:polygon" mode="collection_coverage_spatial_polygon">
-        <xsl:variable name="coordsAsProvided" select="local:formatCoordinatesFromString(normalize-space(.))"/>
+        <xsl:message select="'processing polygon coordinates'"/>
+        <xsl:variable name="coordsAsProvided" select="local:convertCoordinatesLatLongToLongLat(normalize-space(.))"/>
+        
         <xsl:if test="string-length($coordsAsProvided) > 0">
             <coverage>
                 <spatial type="gmlKmlPolyCoords">
@@ -343,7 +423,48 @@
             </xsl:for-each>
         </dates>
         
-    </xsl:template>  
+    </xsl:template> 
+    
+    <xsl:template match="*:legalCondition" mode="collection_rights_rightsStatement">
+        
+        <rights>
+            <accessRights>   
+                <xsl:attribute name="type">
+                    <xsl:choose>
+                        <xsl:when test="contains(lower-case(*:typeClassification/*:term), 'data protection')">
+                            <xsl:text>restricted</xsl:text>
+                        </xsl:when>
+                        <xsl:when test="contains(lower-case(*:typeClassification/*:term), 'ethical approval')">
+                            <xsl:text>conditional</xsl:text>
+                        </xsl:when>
+                        <xsl:when test="contains(lower-case(*:typeClassification/*:term), 'sensitive')">
+                            <xsl:text>restricted</xsl:text>
+                        </xsl:when>
+                        <xsl:when test="contains(lower-case(*:typeClassification/*:term), 'restricted')">
+                            <xsl:text>restricted</xsl:text>
+                        </xsl:when>
+                    </xsl:choose>
+                </xsl:attribute> 
+            </accessRights>
+        </rights>
+        
+        <rights>
+            <rightsStatement>
+                <xsl:if test="string-length(*:typeClassification/*:term) > 0">
+                    <xsl:value-of select="*:typeClassification/*:term"/>
+                </xsl:if>    
+                
+                <xsl:if test="(string-length(*:typeClassification/*:term) > 0) and (string-length(*:description) > 0)">
+                    <xsl:text> - </xsl:text>
+                </xsl:if>    
+                
+                <xsl:if test="string-length(*:description) > 0">
+                    <xsl:value-of select="*:description"/>
+                </xsl:if>   
+            </rightsStatement>
+        </rights> 
+    
+    </xsl:template>
     
     
     <xsl:template match="core:content" mode="collection_citationInfo">
@@ -511,9 +632,10 @@
         
         <xsl:message select="concat('coordinates ', $coordinates)"/>
         
-        <!--  (?![\s|^|,])[\d\.-]+-->
+        <!--  (?![\s|^|,])[\d\.-]+ -->
+        <!--  [\d\.-]+  -->
         <xsl:variable name="coordinate_sequence" as="xs:string*">
-            <xsl:analyze-string select="$coordinates" regex="[\d\.-]+">
+            <xsl:analyze-string select="$coordinates" regex="[-]*[\d]+[\.]*[\d]*">
                 <xsl:matching-substring>
                     <xsl:value-of select="regex-group(0)"/>
                     <xsl:message select="concat('match: ', regex-group(0))"/>
@@ -539,8 +661,8 @@
     <xsl:function name="local:formatCoordinatesFromString" as="xs:string">
         <xsl:param name="coordinates" as="xs:string"/>
         
-        <xsl:variable name="latCoords_sequence" select="local:getEvenCoordSequence($coordinates)" as="xs:string*"/>
-        <xsl:variable name="longCoords_sequence" select="local:getOddCoordSequence($coordinates)" as="xs:string*"/>
+        <xsl:variable name="latCoords_sequence" select="local:getOddCoordSequence($coordinates)" as="xs:string*"/>
+        <xsl:variable name="longCoords_sequence" select="local:getEvenCoordSequence($coordinates)" as="xs:string*"/>
         
         <xsl:message select="concat('longCoords ', string-join(for $i in $longCoords_sequence return $i, ' '))"/>
         <xsl:message select="concat('latCoords ', string-join(for $i in $latCoords_sequence return $i, ' '))"/>
@@ -557,7 +679,7 @@
         
         <xsl:variable name="coordinatePair_sequence" as="xs:string*">
             <xsl:for-each select="$longCoords_sequence">
-                <xsl:if test="count($latCoords_sequence) > position()">
+                <xsl:if test="count($latCoords_sequence) > position()-1">
                     <xsl:variable name="index" select="position()" as="xs:integer"/>
                     <xsl:value-of select="concat(., ',', normalize-space($latCoords_sequence[$index]))"/>
                 </xsl:if>
