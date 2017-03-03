@@ -51,15 +51,21 @@
                 
                 <xsl:apply-templates select="fields/field[@name='doi'][string-length(.) > 0]" mode="collection_identifier_doi"/>
                 
-                <xsl:apply-templates select="title[string-length(.) > 0]" mode="collection_name"/>
-                
-                <xsl:apply-templates select="coverpage-url[string-length(.) > 0]" mode="collection_location"/>
+                <xsl:apply-templates select="coverpage-url[string-length(.) > 0]" mode="collection_identifier_landingpage"/>
                 
                 <xsl:if test="string-length(coverpage-url) = 0">
+                    <xsl:apply-templates select="submission-path[(string-length(.) > 0)]" mode="collection_identifier_landingpage"/>
                     <xsl:apply-templates select="submission-path[(string-length(.) > 0)]" mode="collection_location"/>
                 </xsl:if>
                 
-        <xsl:apply-templates select="authors/author[(string-length(fname) > 0) or (string-length(lname) > 0)]" mode="collection_relatedObject_individual"/>
+                
+                <xsl:apply-templates select="coverpage-url[string-length(.) > 0]" mode="collection_location"/>
+                
+                <xsl:apply-templates select="supplemental-files/file" mode="collection_location"/>
+                
+                <xsl:apply-templates select="title[string-length(.) > 0]" mode="collection_name"/>
+                
+                <xsl:apply-templates select="authors/author[(string-length(fname) > 0) or (string-length(lname) > 0)]" mode="collection_relatedObject_individual"/>
                
                 <xsl:apply-templates select="authors/author[(string-length(organization) > 0)]" mode="collection_relatedObject_organization"/>
                
@@ -76,6 +82,8 @@
                 <xsl:apply-templates select="fields/field[@name='date_range'][string-length(.) > 0]" mode="collection_coverage_temporal_text"/>
                
                 <xsl:apply-templates select="." mode="collection_coverage_spatial_point"/>
+               
+                <xsl:apply-templates select="fields/field[@name='related_publications'][string-length(.) > 0]" mode="collection_relatedInfo"/>
                
                 <xsl:apply-templates select="fields/field[@name='orcid_id'][string-length(.) > 0]" mode="collection_relatedInfo"/>
                 
@@ -124,16 +132,32 @@
     
     <xsl:template match="field[@name='doi']" mode="collection_identifier_doi">
          <xsl:for-each select="value">
-            <xsl:analyze-string select="." regex="(http|https).+">
-                <xsl:matching-substring>
-                    <identifier type="{custom:getIdentifierType(regex-group(0))}">
-                        <xsl:value-of select="regex-group(0)"/>
-                    </identifier>
-                </xsl:matching-substring>
-            </xsl:analyze-string>
+            <identifier type="doi">
+                <xsl:choose>
+                    <xsl:when test="starts-with(. , '10.')">
+                        <xsl:value-of select="concat('http://doi.org/', .)"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:value-of select="normalize-space(.)"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </identifier>
         </xsl:for-each>
     </xsl:template>
     
+     <xsl:template match="coverpage-url" mode="collection_identifier_landingpage">
+        <identifier type="url">
+            <xsl:value-of select="normalize-space(.)"/> 
+        </identifier>
+     </xsl:template>
+     
+     <xsl:template match="submission-path" mode="collection_identifier_landingpage">
+        <identifier type="url">
+            <xsl:value-of select="concat('http://', $global_baseURI, '/', normalize-space(.))"/>
+        </identifier>
+     </xsl:template>
+     
+     
      <xsl:template match="coverpage-url" mode="collection_location">
         <location>
             <address>
@@ -153,12 +177,31 @@
         </location> 
     </xsl:template>
     
+    <xsl:template match="file" mode="collection_location">
+        <location>
+            <address>
+                <electronic type="url" target="directDownload">
+                    <value>
+                        <xsl:value-of select="url"/>
+                    </value>
+                    <title>
+                        <xsl:value-of select="upload-name"/>
+                    </title>
+                    <mediaType>
+                        <xsl:value-of select="mime-type"/>
+                    </mediaType>
+                    <!--byteSize>5 MB</byteSize-->
+                </electronic>
+            </address>
+        </location>
+    </xsl:template>
+    
     <xsl:template match="submission-path" mode="collection_location">
         <location>
             <address>
                 <electronic type="url" target="landingPage">
                     <value>
-                        <xsl:value-of select="concat($global_baseURI, normalize-space(.))"/>
+                        <xsl:value-of select="concat('http://', $global_baseURI, '/', normalize-space(.))"/>
                     </value>
                 </electronic>
             </address>
@@ -248,6 +291,28 @@
                 </spatial>
             </coverage>
         </xsl:if>
+   </xsl:template>
+   
+   <xsl:template match="field[@name='related_publications']" mode="collection_relatedInfo">
+        <relatedInfo type="collection">
+            <xsl:analyze-string select="." regex="href=&quot;(http.+?)/&quot;">
+                <xsl:matching-substring>
+                 <identifier>
+                     <xsl:attribute name="type">
+                         <xsl:choose>
+                             <xsl:when test="contains(lower-case(.), 'doi') or starts-with(. , '10.')">
+                                 <xsl:text>doi</xsl:text>
+                             </xsl:when>
+                             <xsl:otherwise>
+                                 <xsl:text>url</xsl:text>
+                             </xsl:otherwise>
+                         </xsl:choose>
+                     </xsl:attribute>
+                     <xsl:value-of select="regex-group(1)"/>
+                 </identifier>
+                </xsl:matching-substring>
+            </xsl:analyze-string>
+        </relatedInfo>
    </xsl:template>
    
    <xsl:template match="field[@name='orcid_id']" mode="collection_relatedInfo">
