@@ -195,12 +195,16 @@ def requestURI(dataSourceURI, subset, metadataPrefix):
 # 
 ###############################################################################################################################
 
+#if os.path.exists(outputDirectory):
+  #    if(confirm("Remove and recreate directory "+outputDirectory+" and all of its contents")):
+  #    shutil.rmtree(outputDirectory)
+  #else:
+#    sys.exit(-1)
+
 if os.path.exists(outputDirectory):
-  if(confirm("Remove and recreate directory "+outputDirectory+" and all of its contents")):
+    print("Removing existing directory " + outputDirectory)
     shutil.rmtree(outputDirectory)
-  else:
-    sys.exit(-1)
-    
+
 print("Constructing directory "+outputDirectory)
 os.makedirs(outputDirectory)
 
