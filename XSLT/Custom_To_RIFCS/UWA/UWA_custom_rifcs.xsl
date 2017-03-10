@@ -33,7 +33,7 @@
     </xsl:template>
    
     <xsl:template match="core:content">
-        <xsl:message select="concat('name(.): ', name(.))"/>
+        <!-- xsl:message select="concat('name(.): ', name(.))"/-->
         
         <!-- include dataset for now -->
         
@@ -49,7 +49,7 @@
         <xsl:param name="type" as="xs:string"/>
         <xsl:variable name="class" select="'collection'"/>
         
-        <xsl:message select="concat('mapped type: ', $type)"/>
+        <!-- xsl:message select="concat('mapped type: ', $type)"/-->
         
         <registryObject>
             <xsl:attribute name="group" select="$global_group"/>
@@ -83,6 +83,10 @@
                 
                 <xsl:apply-templates select="*:managedBy[(string-length(@uuid) > 0) and (string-length(core:family) > 0)]" mode="collection_relatedObject"/>
                 
+                <xsl:apply-templates select="*:organisations/*:organisation[(string-length(@uuid) > 0) and (string-length(core:family) > 0)]" mode="collection_relatedObject"/>
+        
+                <xsl:apply-templates select="*:externalOrganisations" mode="collection_description_notes"/>
+                        
                 <!-- xsl:apply-templates select="*:persons/*:dataSetPersonAssociation[(string-length(person-template:person/@uuid) > 0) and (string-length(person-template:person/core:family) > 0)]" mode="collection_relatedInfo"/-->
                 
                 <xsl:apply-templates select="*:persons/*:dataSetPersonAssociation[(string-length(person-template:person/@uuid) > 0) and (string-length(person-template:person/core:family) > 0)]" mode="collection_relatedObject"/>
@@ -107,9 +111,7 @@
                 
                 <!-- xsl:apply-templates select="*:documents/*:document/*:documentLicense/core:uri[string-length(.) > 0]" mode="collection_rights_licence"/-->
                 
-                <xsl:apply-templates select="*:openAccessPermission[string-length(.) > 0]" mode="collection_rights_accessRights"/>
-                
-                <xsl:apply-templates select="*:legalConditions/*:legalCondition" mode="collection_rights_rightsStatement"/>
+                <xsl:apply-templates select="." mode="collection_rights"/>
                 
                 <xsl:apply-templates select="." mode="collection_citationInfo"/>
                 
@@ -214,7 +216,7 @@
     
     <xsl:template match="*:dataSetPersonAssociation" mode="collection_relatedObject">
         <xsl:variable name="personName" select="concat(normalize-space(person-template:person/person-template:name/core:firstName), ' ', normalize-space(person-template:person/person-template:name/core:lastName))"/>
-        <xsl:message select="concat('personName for relatedObject: ', $personName)"/>
+        <!-- xsl:message select="concat('personName for relatedObject: ', $personName)"/-->
         <xsl:if test="string-length($personName) > 0">
             <relatedObject>
                 <key>
@@ -226,6 +228,17 @@
         </xsl:if>   
     </xsl:template>
     
+    
+    <xsl:template match="*:organisation" mode="collection_relatedObject">
+        <xsl:if test="string-length(@uuid) > 0">
+            <relatedObject>
+                <key>
+                   <xsl:value-of select="concat(normalize-space(core:family), ':', normalize-space(@uuid))"/> 
+                </key>
+                <relation type="isAssociatedWith"/>
+            </relatedObject>
+        </xsl:if>
+    </xsl:template>
     
     <xsl:template match="*:managedBy" mode="collection_relatedObject">
         <xsl:if test="string-length(@uuid) > 0">
@@ -300,7 +313,7 @@
                     <xsl:when test="contains(lower-case(*:typeClassification), 'dataset')">
                         <xsl:text>collection</xsl:text>
                     </xsl:when>
-                    <xsl:when test="contains(lower-case(*:typeClassification), 'article')">
+                    <xsl:when test="contains(lower-case(*:typeClassification), 'article') or contains(lower-case(*:typeClassification), 'publication')">
                         <xsl:text>publication</xsl:text>
                     </xsl:when>
                 </xsl:choose>
@@ -353,9 +366,9 @@
     
     
     <xsl:template match="*:point" mode="collection_coverage_spatial_point">
-        <xsl:message select="concat('processing point coordinates input: ', normalize-space(.))"/>
+        <!-- xsl:message select="concat('processing point coordinates input: ', normalize-space(.))"/-->
         <xsl:variable name="coordsAsProvided" select="local:convertCoordinatesLatLongToLongLat(normalize-space(.))" as="xs:string"/>
-        <xsl:message select="concat('processing point coordinates determined: ', $coordsAsProvided)"/>
+        <!-- xsl:message select="concat('processing point coordinates determined: ', $coordsAsProvided)"/-->
         <xsl:if test="string-length($coordsAsProvided) > 0">
             <coverage>
                 <spatial type="gmlKmlPolyCoords">
@@ -372,7 +385,7 @@
      </xsl:template>
    
     <xsl:template match="*:polygon" mode="collection_coverage_spatial_polygon">
-        <xsl:message select="'processing polygon coordinates'"/>
+        <!-- xsl:message select="'processing polygon coordinates'"/-->
         <xsl:variable name="coordsAsProvided" select="local:convertCoordinatesLatLongToLongLat(normalize-space(.))"/>
         
         <xsl:if test="string-length($coordsAsProvided) > 0">
@@ -395,12 +408,6 @@
         </rights>
     </xsl:template-->
     
-    <xsl:template match="*:openAccessPermission" mode="collection_rights_accessRights">
-        <rights>
-            <accessRights type="{substring-after(normalize-space(core:uri), '/dk/atira/pure/core/openaccesspermission/')}"/>
-        </rights>
-    </xsl:template>
-      
     <xsl:template match="core:content" mode="collection_dates">
         <xsl:for-each select="*:dateMadeAvailable">
             <dates type="issued">
@@ -425,22 +432,32 @@
         
     </xsl:template> 
     
-    <xsl:template match="*:legalCondition" mode="collection_rights_rightsStatement">
+    <xsl:template match="*:content" mode="collection_rights">
+    
+        <xsl:variable name="openAccessPermission" select="*:openAccessPermission/*:term"/>
+        <!-- xsl:message select="concat('openAccessPermission: ', *:openAccessPermission/*:term)"/-->
+        
+        <xsl:variable name="visibility" select="*:limitedVisibility/*:visibility"/>
+        <!-- xsl:message select="concat('visibility: ', *:limitedVisibility/*:visibility)"/-->
         
         <rights>
             <accessRights>   
                 <xsl:attribute name="type">
                     <xsl:choose>
-                        <xsl:when test="contains(lower-case(*:typeClassification/*:term), 'data protection')">
-                            <xsl:text>restricted</xsl:text>
+                        <xsl:when test="contains(lower-case($openAccessPermission), 'open') and 
+                            (contains(lower-case($visibility), 'public') or (string-length(normalize-space($visibility)) = 0))">
+                            <xsl:text>open</xsl:text>
                         </xsl:when>
-                        <xsl:when test="contains(lower-case(*:typeClassification/*:term), 'ethical approval')">
+                        <xsl:when test="contains(lower-case($openAccessPermission), 'open')"> <!--  and all visibilities other than included above -->
                             <xsl:text>conditional</xsl:text>
                         </xsl:when>
-                        <xsl:when test="contains(lower-case(*:typeClassification/*:term), 'sensitive')">
+                        <xsl:when test="contains(lower-case($openAccessPermission), 'embargoed')"> 
+                            <xsl:text>conditional</xsl:text>
+                        </xsl:when>
+                        <xsl:when test="contains(lower-case($openAccessPermission), 'restricted')"> 
                             <xsl:text>restricted</xsl:text>
                         </xsl:when>
-                        <xsl:when test="contains(lower-case(*:typeClassification/*:term), 'restricted')">
+                        <xsl:when test="contains(lower-case($openAccessPermission), 'closed')"> 
                             <xsl:text>restricted</xsl:text>
                         </xsl:when>
                     </xsl:choose>
@@ -450,16 +467,16 @@
         
         <rights>
             <rightsStatement>
-                <xsl:if test="string-length(*:typeClassification/*:term) > 0">
-                    <xsl:value-of select="*:typeClassification/*:term"/>
+                <xsl:if test="string-length(*:legalConditions/*:legalCondition/*:typeClassification/*:term) > 0">
+                    <xsl:value-of select="*:legalConditions/*:legalCondition/*:typeClassification/*:term"/>
                 </xsl:if>    
                 
-                <xsl:if test="(string-length(*:typeClassification/*:term) > 0) and (string-length(*:description) > 0)">
+                <xsl:if test="(string-length(*:legalConditions/*:legalCondition/*:typeClassification/*:term) > 0) and (string-length(*:description) > 0)">
                     <xsl:text> - </xsl:text>
                 </xsl:if>    
                 
-                <xsl:if test="string-length(*:description) > 0">
-                    <xsl:value-of select="*:description"/>
+                <xsl:if test="string-length(*:legalConditions/*:legalCondition/*:description) > 0">
+                    <xsl:value-of select="*:legalConditions/*:legalCondition/*:description"/>
                 </xsl:if>   
             </rightsStatement>
         </rights> 
@@ -521,6 +538,7 @@
     <xsl:template match="core:content" mode="party">
     
         <xsl:apply-templates select="*:managedBy[(string-length(@uuid) > 0) and (string-length(core:family) > 0)]" mode="party_managing_organisation"/>
+        <xsl:apply-templates select="*:organisations/*:organisation[(string-length(@uuid) > 0) and (string-length(core:family) > 0)]" mode="party_organisation"/>
         <xsl:apply-templates select="*:persons/*:dataSetPersonAssociation[(string-length(person-template:person/@uuid) > 0) and (string-length(person-template:person/core:family) > 0)]" mode="party_people"/>
     
     </xsl:template>
@@ -528,7 +546,7 @@
      <xsl:template match="*:dataSetPersonAssociation" mode="party_people">
            
             <xsl:variable name="personName" select="concat(normalize-space(person-template:person/person-template:name/core:firstName), ' ', normalize-space(person-template:person/person-template:name/core:lastName))"/>
-            <xsl:message select="concat('personName : ', $personName    )"/>
+            <!-- xsl:message select="concat('personName : ', $personName    )"/-->
         
             <xsl:if test="(string-length($personName) > 0)">
             
@@ -564,9 +582,25 @@
             
         </xsl:template>
         
-    <xsl:template match="*:managedBy" mode="party_managing_organisation">
+        
+        <xsl:template match="*:externalOrganisations" mode="collection_description_notes">
+        
+            <description type="notes">
+                <xsl:text>&lt;b&gt;External Organisations&lt;/b&gt;</xsl:text>
+                <xsl:text>&lt;br/&gt;</xsl:text>
+                <xsl:for-each select="*:externalOrganisation[(string-length(@uuid) > 0) and (string-length(*:name) > 0)]">
+                    <xsl:if test="position() > 1">
+                        <xsl:text>; </xsl:text>
+                    </xsl:if>    
+                    <xsl:value-of select="normalize-space(*:name)"/>
+                </xsl:for-each>
+            </description>
+        </xsl:template>
+        
+        
+        
+        <xsl:template match="*:managedBy" mode="party_managing_organisation">
            
-            <xsl:if test="(string-length(@uuid) > 0)">
             
                      <registryObject group="{$global_group}">
                         <key>
@@ -591,10 +625,34 @@
                              </name>
                          </party>
                      </registryObject>
-                   
-                </xsl:if>
-            
         </xsl:template>
+        
+        <xsl:template match="*:organisation" mode="party_organisation">
+           
+                     <registryObject group="{$global_group}">
+                        <key>
+                           <xsl:value-of select="concat(normalize-space(core:family), ':', normalize-space(@uuid))"/> 
+                        </key>       
+                        <originatingSource>
+                             <xsl:value-of select="$global_originatingSource"/>
+                        </originatingSource>
+                        
+                         <party>
+                            <xsl:attribute name="type" select="'group'"/>
+                             
+                            <xsl:if test="string-length(@uuid) > 0">
+                                <identifier type="global">
+                                    <xsl:value-of select="@uuid"/>
+                                </identifier>
+                            </xsl:if>
+                             <name type="primary">
+                                 <namePart>
+                                    <xsl:value-of select="normalize-space(organisation-template:name)"/>
+                                 </namePart>    
+                             </name>
+                         </party>
+                     </registryObject>
+         </xsl:template>
              
      <xsl:function name="local:formatDate">
         <xsl:param name="currentNode" as="node()"/>
@@ -630,7 +688,7 @@
      <xsl:function name="local:getAllCoordsSequence" as="xs:string*">
         <xsl:param name="coordinates" as="xs:string"/>
         
-        <xsl:message select="concat('coordinates ', $coordinates)"/>
+        <!-- xsl:message select="concat('coordinates ', $coordinates)"/-->
         
         <!--  (?![\s|^|,])[\d\.-]+ -->
         <!--  [\d\.-]+  -->
@@ -638,7 +696,7 @@
             <xsl:analyze-string select="$coordinates" regex="[-]*[\d]+[\.]*[\d]*">
                 <xsl:matching-substring>
                     <xsl:value-of select="regex-group(0)"/>
-                    <xsl:message select="concat('match: ', regex-group(0))"/>
+                    <!-- xsl:message select="concat('match: ', regex-group(0))"/-->
                 </xsl:matching-substring>
             </xsl:analyze-string>
         </xsl:variable>
@@ -652,8 +710,8 @@
         <xsl:variable name="latCoords_sequence" select="local:getOddCoordSequence($coordinates)" as="xs:string*"/>
         <xsl:variable name="longCoords_sequence" select="local:getEvenCoordSequence($coordinates)" as="xs:string*"/>
         
-        <xsl:message select="concat('longCoords ', string-join(for $i in $longCoords_sequence return $i, ' '))"/>
-        <xsl:message select="concat('latCoords ', string-join(for $i in $latCoords_sequence return $i, ' '))"/>
+        <!-- xsl:message select="concat('longCoords ', string-join(for $i in $longCoords_sequence return $i, ' '))"/-->
+        <!-- xsl:message select="concat('latCoords ', string-join(for $i in $latCoords_sequence return $i, ' '))"/-->
         
         <xsl:value-of select="local:formatCoordinatesFromSequences($longCoords_sequence, $latCoords_sequence)"/>
     </xsl:function>
@@ -664,8 +722,8 @@
         <xsl:variable name="latCoords_sequence" select="local:getOddCoordSequence($coordinates)" as="xs:string*"/>
         <xsl:variable name="longCoords_sequence" select="local:getEvenCoordSequence($coordinates)" as="xs:string*"/>
         
-        <xsl:message select="concat('longCoords ', string-join(for $i in $longCoords_sequence return $i, ' '))"/>
-        <xsl:message select="concat('latCoords ', string-join(for $i in $latCoords_sequence return $i, ' '))"/>
+        <!-- xsl:message select="concat('longCoords ', string-join(for $i in $longCoords_sequence return $i, ' '))"/-->
+        <!-- xsl:message select="concat('latCoords ', string-join(for $i in $latCoords_sequence return $i, ' '))"/-->
         
         <xsl:value-of select="local:formatCoordinatesFromSequences($longCoords_sequence, $latCoords_sequence)"/>
     </xsl:function>
@@ -674,8 +732,8 @@
         <xsl:param name="longCoords_sequence" as="xs:string*"/>
         <xsl:param name="latCoords_sequence" as="xs:string*"/>
          
-        <xsl:message select="concat('longCoords ', string-join(for $i in $longCoords_sequence return $i, ' '))"/>
-        <xsl:message select="concat('latCoords ', string-join(for $i in $latCoords_sequence return $i, ' '))"/>
+        <!-- xsl:message select="concat('longCoords ', string-join(for $i in $longCoords_sequence return $i, ' '))"/-->
+        <!-- xsl:message select="concat('latCoords ', string-join(for $i in $latCoords_sequence return $i, ' '))"/-->
         
         <xsl:variable name="coordinatePair_sequence" as="xs:string*">
             <xsl:for-each select="$longCoords_sequence">
