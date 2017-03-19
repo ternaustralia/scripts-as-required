@@ -29,13 +29,16 @@
 ###############################################################################################################################
 
 from optparse import OptionParser
-from xml.dom.minidom import parse, Document, Node
+from xml.dom.minidom import parseString, Document, Node
 import codecs
-import urllib2
+import urllib3
 import sys
 import os
 import string
 import shutil
+
+import urllib3.contrib.pyopenssl
+urllib3.contrib.pyopenssl.inject_into_urllib3()
 
 
 ###############################################################################################################################
@@ -47,15 +50,11 @@ import shutil
 def retrieveXML(count, filePath, uri):
     assert (uri is not None)
 
-    print (count)
     try:
-        proxy_handler = urllib2.ProxyHandler({})
-        opener = urllib2.build_opener(proxy_handler)
-        print("Opening uri: %s" % uri)
-        req = urllib2.Request(uri)
-        req.add_header('Accept-Language', 'en-gb')
-        req.add_header('Accept', 'application/xml')
-        result = urllib2.urlopen(req)
+        http = urllib3.PoolManager()
+        print("Opening uri %s" % uri)
+        r = http.request('GET', uri)
+        result = r.data
     except Exception as e:
         print("Unable to open uri %s - exception: %s" % (uri, e))
         sys.exit(-1)
@@ -63,7 +62,9 @@ def retrieveXML(count, filePath, uri):
     assert (result != 0)
 
     try:
-        doc = parse(result)
+        assert (result != 0)
+        doc = parseString(result)
+        assert (doc != 0)
     except Exception as e:
         print("Error: Unable to parse xml at uri %s - exception: %s" % (uri, e))
         return None
@@ -89,9 +90,11 @@ def retrieveXML(count, filePath, uri):
     assert (searchResults.length <= 1)
     print("Search Results length: %d" % searchResults.length)
     if (searchResults.length == 1):
-        if (searchResults.item(0).getAttribute('numberOfRecordsMatched') != None):
-            print("numberOfRecordsMatched: %s" % searchResults.item(0).getAttribute('numberOfRecordsMatched'))
-            return int(searchResults.item(0).getAttribute('numberOfRecordsMatched'))
+        resultsDict = {}
+        resultsDict['numberOfRecordsMatched'] = int(searchResults.item(0).getAttribute('numberOfRecordsMatched'))
+        resultsDict['numberOfRecordsReturned'] = int(searchResults.item(0).getAttribute('numberOfRecordsReturned'))
+        resultsDict['nextRecord'] = int(searchResults.item(0).getAttribute('nextRecord'))
+        return resultsDict
 
     return None
 
@@ -193,19 +196,26 @@ os.makedirs(outputDirectory)
 outFileName = ('ConcatMetadataTree')
 filePath = outputDirectory + '/' + outFileName
 
-count = 0
 
+count = 1
+nextRecord = 1
+numberOfRecordsReturned = None
+numberOfRecordsMatched = None
 
-startPosition = 1
-maxRecords = 1
+while (numberOfRecordsReturned != 0):
+    resultsDict = retrieveXML(count, filePath,
+                            dataSourceURI + "&startPosition=" + str(nextRecord))
 
-while startPosition <= maxRecords:
+    numberOfRecordsMatched = resultsDict['numberOfRecordsMatched']
+    print("numberOfRecordsMatched: %s" % resultsDict['numberOfRecordsMatched'])
+
+    numberOfRecordsReturned = resultsDict['numberOfRecordsReturned']
+    print("numberOfRecordsReturned: %s" % resultsDict['numberOfRecordsReturned'])
+
+    nextRecord = resultsDict['nextRecord']
+    print("nextRecord: %s" % resultsDict['nextRecord'])
+
     count = count + 1
-    maxRecords = retrieveXML(count, filePath,
-                                  dataSourceURI + "?request=GetRecords&service=CSW&version=2.0.2&namespace=xmlns%28csw=http://www.opengis.net/cat/csw%29&resultType=results&outputSchema=http://www.isotc211.org/2005/gmd&outputFormat=application/xml&maxRecords=10&typeNames=csw:Record&elementSetName=full&constraintLanguage=CQL_TEXT&constraint_language_version=1.1.0&maxRecords=100&startPosition=" + str(startPosition))
-
-    startPosition = startPosition + 100
-
 
 print("Output files written to directory %s" % outputDirectory)
 
