@@ -3,7 +3,7 @@
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects" 
     xmlns:oai="http://www.openarchives.org/OAI/2.0/" 
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:dc="http://purl.org/dc/terms/" 
+    xmlns:dc="http://purl.org/dc/elements/1.1/" 
     xmlns:bibo="http://purl.org/ontology/bibo/" 
     xmlns:datacite="http://purl.org/spar/datacite/" 
     xmlns:fabio="http://purl.org/spar/fabio/" 
@@ -108,7 +108,7 @@
                 <xsl:with-param name="type" select="$type"/>
             </xsl:apply-templates>
             <!-- xsl:apply-templates select="oai:metadata/rdf:RDF/dc:funding" mode="funding_party"/ -->
-            <xsl:apply-templates select="oai:metadata/rdf:RDF" mode="party"/>
+            <!-- xsl:apply-templates select="oai:metadata/rdf:RDF" mode="party"/-->
     </xsl:if>
     </xsl:template>
     
@@ -146,7 +146,7 @@
                 
                 <xsl:apply-templates select="vivo:Authorship/vivo:relates/vcard:Individual/vcard:hasName" mode="collection_relatedInfo"/>
                 
-                <xsl:apply-templates select="vcard:Name" mode="collection_relatedObject"/>
+                <!--xsl:apply-templates select="vcard:Name" mode="collection_relatedObject"/-->
                
                 <xsl:apply-templates select="*/bibo:freetextKeyword[string-length(.) > 0]" mode="collection_subject"/>
                 
@@ -262,7 +262,7 @@
         
     </xsl:template>
     
-    <xsl:template match="vcard:Name" mode="collection_relatedObject">
+    <!--xsl:template match="vcard:Name" mode="collection_relatedObject">
         <xsl:if test="string-length(@rdf:about) > 0">
             <relatedObject>
                 <key>
@@ -271,7 +271,7 @@
                 <relation type="hasCollector"/>
             </relatedObject>
         </xsl:if>
-    </xsl:template>
+    </xsl:template-->
     
     <xsl:template match="bibo:freetextKeyword" mode="collection_subject">
         <subject type="local">
@@ -280,9 +280,21 @@
     </xsl:template>
    
     <xsl:template match="dc:rights" mode="collection_rights_access">
-        <rights>
-            <accessRights type="{.}"/>
-        </rights>
+        <xsl:choose>
+            <xsl:when test="contains(., 'CC BY')">
+                <rights>
+                    <licence type="{replace(., 'CC BY', 'CC-BY')}"/>
+                </rights>   
+            </xsl:when>
+            <xsl:otherwise>
+                <rights>
+                    <rightsStatement>
+                        <xsl:value-of select="."/>
+                    </rightsStatement>
+                </rights>
+            </xsl:otherwise>
+        </xsl:choose>
+        
     </xsl:template>
     
     <xsl:template match="oai:setSpec" mode="collection_subject">
@@ -317,7 +329,7 @@
         </dates>    
     </xsl:template>
     
-    <xsl:template match="rdf:RDF" mode="party">
+    <!--xsl:template match="rdf:RDF" mode="party">
         
         <xsl:for-each select="vcard:Name">
             
@@ -362,12 +374,12 @@
                    </xsl:if>
                 </xsl:if>
             </xsl:for-each>
-        </xsl:template>
+        </xsl:template-->
         
         
         <xsl:function name="local:unifyAuthorURL" as="xs:string">
             <xsl:param name="authorURL" as="xs:string"/>
-            <xsl:value-of select="fn:replace(substring-before(normalize-space($authorURL), '-name'), '[a-zA-Z]*[_+][a-zA-Z]*', '_')"/>
+            <xsl:value-of select="fn:replace(substring-before(normalize-space($authorURL), '-name'), '[a-zA-Z-]*[_+][a-zA-Z-]*', '_')"/>
         </xsl:function>
        
    

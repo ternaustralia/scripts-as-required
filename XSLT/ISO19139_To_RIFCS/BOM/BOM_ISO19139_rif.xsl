@@ -5,7 +5,7 @@
     xmlns:srv="http://www.isotc211.org/2005/srv"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
     xmlns:gml="http://www.opengis.net/gml"
-    xmlns:gco="http://www.isotc211.org/2005/gco" 
+xmlns:gco="http://www.isotc211.org/2005/gco" 
     xmlns:gts="http://www.isotc211.org/2005/gts"
     xmlns:geonet="http://www.fao.org/geonetwork" 
     xmlns:gmx="http://www.isotc211.org/2005/gmx"
@@ -133,6 +133,12 @@
                      
                     <xsl:apply-templates select="gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:source/gmd:LI_Source[string-length(gmd:sourceCitation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier/gmd:code) > 0]"
                          mode="registryObject_relatedInfo"/>
+                         
+                    <xsl:apply-templates select="gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:statement[string-length(.) > 0]"
+                        mode="registryObject_description_lineage"/>
+             
+                    <xsl:apply-templates select="gmd:metadataConstraints/gmd:MD_LegalConstraints/gmd:otherConstraints[string-length(.) > 0]"
+                        mode="registryObject_description_notes"/>
                      
                     <xsl:apply-templates select="gmd:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="registryObject">
                              <xsl:with-param name="originatingSourceOrganisation" select="$originatingSourceOrganisation"/>
@@ -197,18 +203,18 @@
         
          <xsl:apply-templates
             select="gmd:abstract[string-length(.) > 0]"
-            mode="registryObject_description_brief"/>
+            mode="registryObject_description_full"/>
         
         <xsl:apply-templates
             select="gmd:purpose[string-length(.) > 0]"
             mode="registryObject_description_notes"/>
-        
+            
         <xsl:apply-templates
             select="gmd:credit[string-length(.) > 0]"
             mode="registryObject_description_notes"/>
-        
-   <xsl:apply-templates select="gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_GeographicBoundingBox" mode="registryObject_coverage_spatial"/>
-       <xsl:apply-templates select="gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_BoundingPolygon/gmd:polygon" mode="registryObject_coverage_spatial"/>
+             
+        <xsl:apply-templates select="gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_GeographicBoundingBox" mode="registryObject_coverage_spatial"/>
+        <xsl:apply-templates select="gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_BoundingPolygon/gmd:polygon" mode="registryObject_coverage_spatial"/>
        
         <xsl:apply-templates
             select="gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent"
@@ -217,23 +223,6 @@
         <xsl:apply-templates
             select="gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent"
             mode="registryObject_coverage_temporal_period"/>
-        
-        
-        <xsl:apply-templates
-            select="gmd:resourceConstraints/gmd:MD_CreativeCommons[exists(gmd:licenseLink)]"
-            mode="registryObject_rights_licence_creative"/>
-        
-        <xsl:apply-templates
-            select="gmd:resourceConstraints/gmd:MD_CreativeCommons"
-            mode="registryObject_rights_rightsStatement_creative"/>
-        
-        <xsl:apply-templates
-            select="gmd:resourceConstraints/gmd:MD_Commons[exists(gmd:licenseLink)]"
-            mode="registryObject_rights_licence_creative"/>
-        
-        <xsl:apply-templates
-            select="gmd:resourceConstraints/gmd:MD_Commons"
-            mode="registryObject_rights_rightsStatement_creative"/>
         
         <xsl:apply-templates
             select="gmd:resourceConstraints/gmd:MD_LegalConstraints"
@@ -490,28 +479,40 @@
             </subject>
     </xsl:template>
 
-    <!-- RegistryObject - Decription Element -->
-    <xsl:template match="gmd:abstract" mode="registryObject_description_brief">
-            <description type="brief">
+    <!-- RegistryObject - Description Element -->
+    <xsl:template match="gmd:abstract" mode="registryObject_description_full">
+            <description type="full">
                 <xsl:value-of select="."/>
             </description>
     </xsl:template>
     
-    <!-- RegistryObject - Decription Element -->
+    <!-- RegistryObject - Description Element -->
     <xsl:template match="gmd:purpose" mode="registryObject_description_notes">
             <description type="notes">
                 <xsl:value-of select="."/>
             </description>
     </xsl:template>
     
-    <!-- RegistryObject - Decription Element -->
+    <!-- RegistryObject - Description Element -->
     <xsl:template match="gmd:credit" mode="registryObject_description_notes">
             <description type="notes">
                 <xsl:value-of select="."/>
             </description>
     </xsl:template>
-
-
+    
+    <!-- RegistryObject - Description Element -->
+    <xsl:template match="gmd:statement" mode="registryObject_description_lineage">
+        <description type="lineage">
+            <xsl:value-of select="."/>
+        </description>
+    </xsl:template>
+    
+    <!-- RegistryObject - Description Element -->
+    <xsl:template match="gmd:otherConstraints" mode="registryObject_description_notes">
+        <description type="notes">
+            <xsl:value-of select="."/>
+        </description>
+    </xsl:template>
 
     <!-- RegistryObject - Coverage Spatial Element -->
     <xsl:template match="gmd:EX_GeographicBoundingBox" mode="registryObject_coverage_spatial">
@@ -836,75 +837,87 @@
             </xsl:if>
         </xsl:for-each-->
     </xsl:template>
-
-    <!-- RegistryObject - Rights RightsStatement - From CreativeCommons -->
-    <xsl:template match="gmd:MD_CreativeCommons" mode="registryObject_rights_rightsStatement_creative">
-        <xsl:for-each select="gmd:attributionConstraints">
-            <!-- If there is text in other contraints, use this; otherwise, do nothing -->
-            <xsl:if test="string-length(normalize-space(.)) > 0">
+    
+    <xsl:template match="gmd:resourceConstraint" mode="registryObject_rights_rights">
+        <xsl:apply-templates select="gmd:MD_LegalConstraints" mode="registryObject_rights_rights"/>
+        <xsl:apply-templates select="gmd:MD_Constraints" mode="registryObject_rights_rights"/>
+    </xsl:template>
+    
+    <!-- RegistryObject - RightsStatement -->
+    <xsl:template match="gmd:MD_LegalConstraints | gmd:MD_Constraints" mode="registryObject_rights_rights">
+       
+        <xsl:for-each select="gmd:useLimitation">
+            <xsl:variable name="useLimitation" select="normalize-space(.)"/>
+            <!-- If there is text in other constraints, use this; otherwise, do nothing -->
+            <xsl:if test="string-length($useLimitation) > 0">
                 <rights>
                     <rightsStatement>
-                        <xsl:value-of select="normalize-space(.)"/>
+                        <xsl:value-of select="$useLimitation"/>
                     </rightsStatement>
                 </rights>
             </xsl:if>
         </xsl:for-each>
+        <xsl:for-each select="gmd:otherConstraints">
+            <xsl:variable name="otherConstraints" select="normalize-space(.)"/>
+            <!-- If there is text in other constraints, use this; otherwise, do nothing -->
+            <xsl:if test="string-length($otherConstraints) > 0">
+                <xsl:choose>
+                    <xsl:when test="contains(lower-case(.), 'copyright')">
+                        <rights>
+                            <rightsStatement>
+                                <xsl:value-of select="$otherConstraints"/>
+                            </rightsStatement>
+                        </rights>
+                    </xsl:when>
+                    <xsl:when test="contains(lower-case($otherConstraints), 'licence') or 
+                        contains(lower-case($otherConstraints), 'license')">
+                        <rights>
+                            <licence>
+                                <xsl:apply-templates select="." mode="rights_licence_type"/> 
+                                <xsl:value-of select="$otherConstraints"/>
+                            </licence>
+                        </rights>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <rights>
+                            <rightsStatement>
+                                <xsl:value-of select="$otherConstraints"/>
+                            </rightsStatement>
+                        </rights>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:if>
+           </xsl:for-each>
+           
+           <xsl:if test="count(gmd:accessConstraints[contains(lower-case(gmd:MD_RestrictionCode/@codeListValue), 'copyright')]) > 0">
+                <rights>
+                    <xsl:choose>
+                        <xsl:when test="count(gmd:accessConstraints[contains(lower-case(gmd:MD_RestrictionCode/@codeListValue), 'otherrestrictions')]) > 0">
+                            <accessRights type="restricted"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <accessRights type="open"/>   
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </rights>
+           </xsl:if>
     </xsl:template>
     
-    <!-- RegistryObject - Rights Licence - From CreativeCommons -->
-    <xsl:template match="gmd:MD_Commons" mode="registryObject_rights_licence_creative">
-        <xsl:variable name="licenseLink" select="normalize-space(gmd:licenseLink/gmd:URL)"/>
-        <xsl:for-each
-            select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCode']/gmx:codeEntry/gmx:CodeDefinition">
-            <xsl:if test="string-length(normalize-space(gml:remarks)) > 0">
-                <xsl:if test="contains(lower-case($licenseLink), lower-case(gml:remarks))">
-                    <rights>
-                        <licence>
-                            <xsl:attribute name="type" select="gml:identifier"/>
-                            <xsl:attribute name="rightsUri" select="$licenseLink"/>
-                            <xsl:if test="string-length(normalize-space(gml:name)) > 0">
-                                <xsl:value-of select="normalize-space(gml:name)"/>
-                            </xsl:if>
-                        </licence>
-                    </rights>
-                </xsl:if>
-            </xsl:if>
-        </xsl:for-each>
+    <xsl:template match="gmd:otherConstraints" mode="rights_licence_type">
+        <xsl:variable name="inputTransformed" select="normalize-space(replace(replace(., 'icence', 'icense', 'i'), 'https', 'http', 'i'))"/>
+                
+        <xsl:variable name="codeDefinition_sequence" select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCodeAustralia']/gmx:codeEntry/gmx:CodeDefinition[contains($inputTransformed, normalize-space(replace(gml:remarks, '\{n\}', '')))]" as="node()*"/>
         
-        <!--xsl:for-each select="gmd:otherConstraints">
-            <xsl:if test="string-length(normalize-space(.)) > 0">
-            <rights>
-            <licence>
-            <xsl:value-of select='normalize-space(.)'/>
-            </licence>
-            </rights>
-            </xsl:if>
-            </xsl:for-each-->
-    </xsl:template>
-    
-    <!-- RegistryObject - Rights RightsStatement - From CreativeCommons -->
-    <xsl:template match="gmd:MD_Commons" mode="registryObject_rights_rightsStatement_creative">
-        <xsl:for-each select="gmd:attributionConstraints">
-            <!-- If there is text in other contraints, use this; otherwise, do nothing -->
-            <xsl:if test="string-length(normalize-space(.)) > 0">
-                <rights>
-                    <rightsStatement>
-                        <xsl:value-of select="normalize-space(.)"/>
-                    </rightsStatement>
-                </rights>
+        <xsl:for-each select="$codeDefinition_sequence">
+            <xsl:if test="string-length(gml:identifier) > 0">
+                <xsl:attribute name="type">
+                    <xsl:value-of select="gml:identifier"/>
+                </xsl:attribute>
             </xsl:if>
         </xsl:for-each>
     </xsl:template>
 
-    <!-- RegistryObject - RightsStatement -->
-    <xsl:template match="gmd:MD_Constraints" mode="registryObject_rights_rights">
-       <xsl:copy-of select="bomFunc:rights(.)"/>
-    </xsl:template>
-    
-    <!-- RegistryObject - RightsStatement -->
-    <xsl:template match="gmd:MD_LegalConstraints" mode="registryObject_rights_rights">
-       <xsl:copy-of select="bomFunc:rights(.)"/>
-    </xsl:template>
+                    
     
     <!-- RegistryObject - CitationInfo Element -->
     <xsl:template match="gmd:CI_Citation" mode="registryObject_citationMetadata_citationInfo">
@@ -1413,50 +1426,7 @@
     </xsl:template>
     
        
-   <xsl:function name="bomFunc:rights">
-        <xsl:param name="currentNode" as="node()"/>
-        <xsl:for-each select="$currentNode/gmd:useLimitation">
-            <xsl:variable name="useLimitation" select="normalize-space(.)"/>
-            <!-- If there is text in other contraints, use this; otherwise, do nothing -->
-            <xsl:if test="string-length($useLimitation) > 0">
-                <rights>
-                    <rightsStatement>
-                        <xsl:value-of select="$useLimitation"/>
-                    </rightsStatement>
-                </rights>
-            </xsl:if>
-        </xsl:for-each>
-        <xsl:for-each select="$currentNode/gmd:otherConstraints">
-            <xsl:variable name="otherConstraints" select="normalize-space(.)"/>
-            <!-- If there is text in other contraints, use this; otherwise, do nothing -->
-            <xsl:if test="string-length($otherConstraints) > 0">
-                <xsl:choose>
-                    <xsl:when test="contains(lower-case($otherConstraints), 'copyright')">
-                        <rights>
-                            <rightsStatement>
-                                <xsl:value-of select="$otherConstraints"/>
-                            </rightsStatement>
-                        </rights>
-                    </xsl:when>
-                    <xsl:when test="contains(lower-case($otherConstraints), 'licence') or 
-                        contains(lower-case($otherConstraints), 'license')">
-                        <rights>
-                            <licence>
-                                <xsl:value-of select="$otherConstraints"/>
-                            </licence>
-                        </rights>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <rights>
-                            <rightsStatement>
-                                <xsl:value-of select="$otherConstraints"/>
-                            </rightsStatement>
-                        </rights>
-                    </xsl:otherwise>
-                </xsl:choose>
-            </xsl:if>
-           </xsl:for-each>
-    </xsl:function>
+   
     
     <xsl:function name="bomFunc:registryObjectClass" as="xs:string">
         <xsl:param name="scopeCode_sequence" as="xs:string*"/>

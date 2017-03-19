@@ -2,10 +2,11 @@
 <xsl:stylesheet version="2.0"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects" 
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:cquFunc="http://bom.nowhere.yet"
+    xmlns:custom="http://custom.nowhere.yet"
     xmlns:dc="http://purl.org/dc/elements/1.1/" 
     xmlns:oai="http://www.openarchives.org/OAI/2.0/" 
     xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" 
-    xmlns:custom="http://custom.nowhere.yet"
     xmlns:fn="http://www.w3.org/2005/xpath-functions"
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -17,8 +18,11 @@
     <xsl:param name="global_baseURI" select="'http://acquire.cqu.edu.au:8080/fedora'"/>
     <xsl:param name="global_group" select="'Central Queensland University'"/>
     <xsl:param name="global_publisherName" select="'Central Queensland University'"/>
+    
+    <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>
+    
 
-  <xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes"/>
+    <xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes"/>
 
     <xsl:template match="/">
         <registryObjects xmlns="http://ands.org.au/standards/rif-cs/registryObjects" 
@@ -92,6 +96,8 @@
                 <xsl:apply-templates select="dc:description[string-length(.) > 0]" mode="collection_description_full"/>
                
                 <xsl:apply-templates select="dc:date[string-length(.) > 0]" mode="collection_dates_issued"/>  
+                
+                <xsl:apply-templates select="dc:source[string-length(.) > 0]" mode="collection_citation_info"/>  
              
             </xsl:element>
         </registryObject>
@@ -161,7 +167,7 @@
     <xsl:template match="dc:creator" mode="collection_relatedObject">
             <relatedObject>
                 <key>
-                    <xsl:value-of select="custom:formatKey(custom:formatName(.))"/> 
+                    <xsl:value-of select="cquFunc:formatKey(cquFunc:formatName(.))"/> 
                 </key>
                 <relation type="hasCollector"/>
             </relatedObject>
@@ -174,11 +180,39 @@
     </xsl:template>
    
     <xsl:template match="dc:rights" mode="collection_rights_rightsStatement">
-        <rights>
-            <rightsStatement>
-                <xsl:value-of select="normalize-space(.)"/>
-            </rightsStatement>
-        </rights>
+        <xsl:if test="contains(lower-case(.), 'open access')">
+            <rights>
+                <accessRights type="open"/>
+            </rights>
+        </xsl:if>
+        
+        <xsl:variable name="currentValue" select="normalize-space(.)"/>
+        
+        <xsl:variable name="codeDefinition_sequence" select="$licenseCodelist/custom:CT_CodelistCatalogue/custom:codelistItem/custom:CodeListDictionary[@custom:id='LicenseCodeAustralia']/custom:codeEntry/custom:CodeDefinition[contains($currentValue, normalize-space(replace(custom:remarks, '\{n\}', '')))]" as="node()*"/>
+        
+        <xsl:choose>
+            <xsl:when test="count($codeDefinition_sequence) > 0">
+                <xsl:for-each select="$codeDefinition_sequence">
+                    <xsl:if test="string-length(custom:identifier) > 0">
+                        <rights>
+                            <licence>
+                                <xsl:attribute name="type">
+                                    <xsl:value-of select="custom:identifier"/>
+                                    <xsl:message select="concat('Match found for ', $currentValue, ' so using custom:identifier: ', custom:identifier)"/>
+                                </xsl:attribute>
+                            </licence>
+                        </rights>
+                    </xsl:if>
+                </xsl:for-each>
+            </xsl:when>
+            <xsl:otherwise>
+                <rights>
+                    <rightsStatement>
+                        <xsl:value-of select="normalize-space(.)"/>
+                    </rightsStatement>
+                </rights>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:template>
     
     <xsl:template match="dc:description" mode="collection_description_full">
@@ -194,6 +228,14 @@
             </date>
         </dates>
     </xsl:template>  
+    
+    <xsl:template match="dc:source" mode="collection_citation_info">
+        <citationInfo>
+           <fullCitation>
+                <xsl:value-of select="normalize-space(.)"/>
+            </fullCitation>
+        </citationInfo>
+    </xsl:template>  
              
      <xsl:template match="oai_dc:dc" mode="party">
         
@@ -206,7 +248,7 @@
                    <xsl:if test="string-length(normalize-space(.)) > 0">
                      <registryObject group="{$global_group}">
                         <key>
-                            <xsl:value-of select="custom:formatKey(custom:formatName(.))"/> 
+                            <xsl:value-of select="cquFunc:formatKey(cquFunc:formatName(.))"/> 
                         </key>
                         <originatingSource>
                              <xsl:value-of select="$global_originatingSource"/>
@@ -217,7 +259,7 @@
                              
                              <name type="primary">
                                  <namePart>
-                                     <xsl:value-of select="custom:formatName(normalize-space(.))"/>
+                                     <xsl:value-of select="cquFunc:formatName(normalize-space(.))"/>
                                  </namePart>   
                              </name>
                          </party>
@@ -227,9 +269,43 @@
             </xsl:for-each>
         </xsl:template>
                    
-             
+    <xsl:function name="cquFunc:formatName">
+        <xsl:param name="name"/>
+        
+        <xsl:variable name="namePart_sequence" as="xs:string*">
+            <xsl:analyze-string select="$name" regex="[A-Za-z()-]+">
+                <xsl:matching-substring>
+                    <xsl:if test="regex-group(0) != '-'">
+                        <xsl:value-of select="regex-group(0)"/>
+                    </xsl:if>
+                </xsl:matching-substring>
+            </xsl:analyze-string>
+        </xsl:variable>
+        
+        <xsl:choose>
+            <xsl:when test="count($namePart_sequence) = 0">
+                <xsl:value-of select="$name"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:variable name="orderedNamePart_sequence" as="xs:string*">
+                    <!--  we are going to presume that we have surnames first - otherwise, it's not possible to determine by being
+                            prior to a comma because we get:  "surname, firstname, 1924-" sort of thing -->
+                    <!-- all names except surname -->
+                    <xsl:for-each select="$namePart_sequence">
+                        <xsl:if test="position() > 1">
+                            <xsl:value-of select="."/>
+                        </xsl:if>
+                    </xsl:for-each>
+                    <xsl:value-of select="$namePart_sequence[1]"/>
+                </xsl:variable>
+                <xsl:message select="concat('formatName returning: ', string-join(for $i in $orderedNamePart_sequence return $i, ' '))"/>
+                <xsl:value-of select="string-join(for $i in $orderedNamePart_sequence return $i, ' ')"/>
     
-    <xsl:function name="custom:formatKey">
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:function>
+    
+    <xsl:function name="cquFunc:formatKey">
         <xsl:param name="input"/>
         <xsl:variable name="raw" select="translate(normalize-space($input), ' ', '')"/>
         <xsl:variable name="temp">
@@ -244,8 +320,6 @@
         </xsl:variable>
         <xsl:value-of select="concat($global_baseURI, '/', $temp)"/>
     </xsl:function>
-   
     
-
 </xsl:stylesheet>
     
