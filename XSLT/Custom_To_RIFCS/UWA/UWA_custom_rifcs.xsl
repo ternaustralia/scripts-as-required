@@ -11,14 +11,17 @@
     xmlns:organisation-template="http://atira.dk/schemas/pure4/model/template/abstractorganisation/current"
     xmlns:externalperson-template="http://atira.dk/schemas/pure4/model/template/abstractexternalperson/current" 
     xmlns:person-template="http://atira.dk/schemas/pure4/model/template/abstractperson/current"
+    xmlns:custom="http://custom.nowhere.yet"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0"
     exclude-result-prefixes="todo local dataset core xsi xs fn organisation-template person-template xsl">
-     
+    
+    <xsl:import href="CustomFunctions.xsl"/> 
     
     <xsl:param name="global_originatingSource" select="'University of Western Australia'"/>
     <xsl:param name="global_baseURI" select="'research-repository.uwa.edu.au'"/>
     <xsl:param name="global_group" select="'University of Western Australia (Research Repository)'"/>
     <xsl:param name="global_publisherName" select="'University of Western Australia'"/>
+    
 
   <xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes" omit-xml-declaration="yes"/>
 
@@ -112,7 +115,7 @@
                 
                 <xsl:apply-templates select="*:geoLocation/*:polygon[string-length(.) > 0]" mode="collection_coverage_spatial_polygon"/>
                 
-                <!-- xsl:apply-templates select="*:documents/*:document/*:documentLicense/core:uri[string-length(.) > 0]" mode="collection_rights_licence"/-->
+                <xsl:apply-templates select="*:documents" mode="collection_rights_licence"/>
                 
                 <xsl:apply-templates select="." mode="collection_rights"/>
                 
@@ -418,11 +421,24 @@
         </xsl:if>
     </xsl:template>
   
-    <!-- xsl:template match="core:uri" mode="collection_rights_licence">
-        <rights>
-            <licence type="{substring-after(., '/dk/atira/pure/dataset/documentlicenses/')}"/>
-        </rights>
-    </xsl:template-->
+    <xsl:template match="*:documents" mode="collection_rights_licence">
+        <xsl:variable name="fileLicense_sequence" select="*:document/*:documentLicense/core:uri[string-length(.) > 0]"/>
+        <xsl:choose>
+            <xsl:when test="(count($fileLicense_sequence) > 0) and (custom:sequenceContainsSameValuesCaseInsensitive($fileLicense_sequence))">
+                    <rights>
+                        <xsl:message select="concat('license to apply: ', substring-after($fileLicense_sequence[1], '/dk/atira/pure/dataset/documentlicenses/'))"/>   
+                        <licence type="{substring-after($fileLicense_sequence[1], '/dk/atira/pure/dataset/documentlicenses/')}"/>
+                    </rights>
+             </xsl:when>
+             <xsl:otherwise>
+                    <rights>
+                        <licence>
+                            <xsl:text>Licences for items within this collection vary. See individual items for the licences that apply to them.</xsl:text>
+                        </licence>
+                    </rights>
+             </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
     
     <xsl:template match="core:content" mode="collection_dates">
         <xsl:for-each select="*:dateMadeAvailable">
