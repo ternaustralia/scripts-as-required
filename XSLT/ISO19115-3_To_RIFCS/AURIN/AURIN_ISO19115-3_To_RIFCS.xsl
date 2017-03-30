@@ -48,12 +48,12 @@
     <!-- =========================================== -->
     
     <xsl:template match="/">
-        <registryObjects>
+        <!-->registryObjects>
             <xsl:attribute name="xsi:schemaLocation">
                 <xsl:text>http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd</xsl:text>
-            </xsl:attribute>
+            </xsl:attribute-->
             <xsl:apply-templates select="//mdb:MD_Metadata"/>
-        </registryObjects>
+        <!-- >/registryObjects-->
     </xsl:template>
     
     <xsl:template match="node()"/>
