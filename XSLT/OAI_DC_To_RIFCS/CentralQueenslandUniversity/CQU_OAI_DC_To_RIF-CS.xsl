@@ -91,11 +91,13 @@
                
                 <xsl:apply-templates select="dc:subject[string-length(.) > 0]" mode="collection_subject"/>
                 
+                <xsl:apply-templates select="dc:coverage[string-length(.) > 0]" mode="collection_spatial_coverage"/>
+                
                 <xsl:apply-templates select="dc:rights[string-length(.) > 0]" mode="collection_rights_rightsStatement"/>
                 
                 <xsl:apply-templates select="dc:description[string-length(.) > 0]" mode="collection_description_full"/>
                
-                <xsl:apply-templates select="dc:date[string-length(.) > 0]" mode="collection_dates_issued"/>  
+                <xsl:apply-templates select="dc:date[string-length(.) > 0]" mode="collection_dates_coverage"/>  
                 
                 <xsl:apply-templates select="dc:source[string-length(.) > 0]" mode="collection_citation_info"/>  
              
@@ -179,6 +181,14 @@
         </subject>
     </xsl:template>
    
+    <xsl:template match="dc:coverage" mode="collection_spatial_coverage">
+        <coverage>
+            <spatial type='text'>
+                <xsl:value-of select='normalize-space(.)'/>
+            </spatial>
+        </coverage>
+    </xsl:template>
+   
     <xsl:template match="dc:rights" mode="collection_rights_rightsStatement">
         <xsl:if test="contains(lower-case(.), 'open access')">
             <rights>
@@ -188,11 +198,26 @@
         
         <xsl:variable name="currentValue" select="normalize-space(.)"/>
         
-        <xsl:variable name="codeDefinition_sequence" select="$licenseCodelist/custom:CT_CodelistCatalogue/custom:codelistItem/custom:CodeListDictionary[@custom:id='LicenseCodeAustralia']/custom:codeEntry/custom:CodeDefinition[contains($currentValue, normalize-space(replace(custom:remarks, '\{n\}', '')))]" as="node()*"/>
+        <xsl:variable name="codeDefinitionMatchRemarks_sequence" select="$licenseCodelist/custom:CT_CodelistCatalogue/custom:codelistItem/custom:CodeListDictionary[@custom:id='LicenseCodeAustralia']/custom:codeEntry/custom:CodeDefinition[contains($currentValue, normalize-space(replace(custom:remarks, '\{n\}', '')))]" as="node()*"/>
+        <xsl:variable name="codeDefinitionMatchIdentifier_sequence" select="$licenseCodelist/custom:CT_CodelistCatalogue/custom:codelistItem/custom:CodeListDictionary[@custom:id='LicenseCodeAustralia']/custom:codeEntry/custom:CodeDefinition[contains(translate($currentValue, ' ', '-'), normalize-space(custom:identifier))]" as="node()*"/>
         
         <xsl:choose>
-            <xsl:when test="count($codeDefinition_sequence) > 0">
-                <xsl:for-each select="$codeDefinition_sequence">
+            <xsl:when test="count($codeDefinitionMatchRemarks_sequence) > 0">
+                <xsl:for-each select="$codeDefinitionMatchRemarks_sequence">
+                    <xsl:if test="string-length(custom:identifier) > 0">
+                        <rights>
+                            <licence>
+                                <xsl:attribute name="type">
+                                    <xsl:value-of select="custom:identifier"/>
+                                    <xsl:message select="concat('Match found for ', $currentValue, ' so using custom:identifier: ', custom:identifier)"/>
+                                </xsl:attribute>
+                            </licence>
+                        </rights>
+                    </xsl:if>
+                </xsl:for-each>
+            </xsl:when>
+            <xsl:when test="count($codeDefinitionMatchIdentifier_sequence) > 0">
+                <xsl:for-each select="$codeDefinitionMatchIdentifier_sequence">
                     <xsl:if test="string-length(custom:identifier) > 0">
                         <rights>
                             <licence>
@@ -221,12 +246,35 @@
         </description>
     </xsl:template>
     
-    <xsl:template match="dc:date" mode="collection_dates_issued">
-        <dates type="issued">
-            <date type="dateFrom" dateFormat="W3CDTF">
-                <xsl:value-of select="substring-after(., 'http://openvivo.org/a/date')"/>
-            </date>
-        </dates>
+    <xsl:template match="dc:date" mode="collection_dates_coverage">
+    <xsl:message select="concat('input: ', .)"/>
+        <coverage>
+            <temporal>
+                <xsl:analyze-string select="translate(translate(., ']', ''), '[', '')" regex="[\d]+[?]*[-]*[\d]*">
+                    <xsl:matching-substring>
+                        <xsl:choose>
+                            <xsl:when test="contains(regex-group(0), '-')">
+                                <date type="dateFrom" dateFormat="W3CDTF">
+                                    <xsl:value-of select="substring-before(regex-group(0), '-')"/>
+                                    <xsl:message select="concat('from: ', substring-before(regex-group(0), '-'))"/>
+                                </date>
+                                <date type="dateTo" dateFormat="W3CDTF">
+                                    <xsl:value-of select="substring-after(regex-group(0), '-')"/>
+                                    <xsl:message select="concat('to: ', substring-after(regex-group(0), '-'))"/>
+                                </date>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <date type="dateFrom" dateFormat="W3CDTF">
+                                    <xsl:value-of select="regex-group(0)"/>
+                                    <xsl:message select="concat('match: ', regex-group(0))"/>
+                                </date> 
+                            </xsl:otherwise>
+                        </xsl:choose>
+                        
+                    </xsl:matching-substring>
+                </xsl:analyze-string>
+            </temporal>
+        </coverage>
     </xsl:template>  
     
     <xsl:template match="dc:source" mode="collection_citation_info">
