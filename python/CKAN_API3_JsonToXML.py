@@ -8,9 +8,26 @@ import getopt
 import numbers
 import JsonToXML
 import exceptions
+import string
 
 from optparse import OptionParser
 from xml.dom.minidom import Document
+
+
+def processList(value):
+    if isinstance(value, list):
+        print("%d datasets to retrieve" % (len(value)))
+        for dataSetName in value:
+            try:
+                outFileName = (outputDirectory + '/JsonXML/%s.xml' % string.replace(dataSetName, '/', ''))
+                dataSetUri = (descriptionByIdentifierURI % dataSetName)
+                JsonToXML.writeXmlFromJson(dataSetUri, outFileName)
+            except exceptions.KeyboardInterrupt:
+                print "Interrupted - ", sys.exc_info()[0]
+                sys.exit(0)
+            except:
+                traceback.print_exc(file=sys.stdout)
+                print "Exception - ", sys.exc_info()[0]
 
 # Get data source link from input
 usage = "usage: %prog [options] arg1"
@@ -57,24 +74,17 @@ loadedJson = json.loads(openedFile.read())
 if loadedJson is None:
     exit
 
-assert(isinstance(loadedJson, dict))
-for key in loadedJson.keys():
-  value = loadedJson[key]
-  if isinstance(value, list):
-    print("%d datasets to retrieve" % (len(value)))  
-    for dataSetName in value:
-      try:
-        outFileName = (outputDirectory+'/JsonXML/%s.xml' % dataSetName)
-        dataSetUri = (descriptionByIdentifierURI % dataSetName) 
-        JsonToXML.writeXmlFromJson(dataSetUri, outFileName)
-      except exceptions.KeyboardInterrupt:
-        print "Interrupted - ", sys.exc_info()[0]
-        sys.exit(0)
-      except:
-        traceback.print_exc(file=sys.stdout)
-        print "Exception - ", sys.exc_info()[0]
-          
- 
+if(isinstance(loadedJson, dict)):
+    for key in loadedJson.keys():
+      value = loadedJson[key]
+      processList(value)
+else:
+    if (isinstance(loadedJson, list)):
+        processList(loadedJson)
+    else:
+        print ("Not a dict or list, so not sure what to do")
+        assert(1)
+
 
 
 

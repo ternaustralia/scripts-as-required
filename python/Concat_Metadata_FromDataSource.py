@@ -52,8 +52,10 @@ def retrieveXML(count, filePath, uri):
   assert(result != 0)
 
   try:
-    doc = parseString(result)
     assert (result != 0)
+    doc = parseString(result)
+    assert (doc != 0)
+
   except Exception as e:
     print("Error: Unable to parse xml at uri %s - exception: %s" % (uri, e))
     return None
