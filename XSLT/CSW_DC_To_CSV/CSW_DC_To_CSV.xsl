@@ -8,7 +8,7 @@
     xmlns:dct="http://purl.org/dc/terms/"
     xmlns:ows="http://www.opengis.net/ows">
 
-    <xsl:param name="columnSeparator" select="','"/>
+    <xsl:param name="columnSeparator" select="'^'"/>
     <xsl:param name="valueSeparator" select="'|'"/>
     <xsl:output omit-xml-declaration="yes" indent="yes" encoding="UTF-8"/>
     <xsl:strip-space elements="*"/>  
@@ -24,18 +24,19 @@
     </xsl:template>
     
 	<xsl:template match="/">
-       
+       <!-- 
         <xsl:text>identifier</xsl:text><xsl:value-of select="$columnSeparator"/>
         <xsl:text>date</xsl:text><xsl:value-of select="$columnSeparator"/>
         <xsl:text>title</xsl:text><xsl:value-of select="$columnSeparator"/>
         <xsl:text>source</xsl:text><xsl:value-of select="$columnSeparator"/>
         <xsl:text>format</xsl:text><xsl:value-of select="$columnSeparator"/>
         <xsl:text>subject</xsl:text><xsl:value-of select="$columnSeparator"/>
-        <xsl:text>abstract</xsl:text><xsl:value-of select="$columnSeparator"/>
+        <xsl:text>publisher</xsl:text><xsl:value-of select="$columnSeparator"/>
         <xsl:text>description</xsl:text><xsl:value-of select="$columnSeparator"/>
         <xsl:text>getcapabilities_uri</xsl:text><xsl:value-of select="$columnSeparator"/>
         <xsl:text>bb_lowercorner</xsl:text><xsl:value-of select="$columnSeparator"/>
         <xsl:text>bb_uppercorner</xsl:text><xsl:value-of select="$columnSeparator"/>
+         -->
         
         <xsl:apply-templates select="//csw:Record"/>
         
@@ -87,9 +88,9 @@
         <xsl:text>&quot;</xsl:text>
         <xsl:value-of select="$columnSeparator"/>
         
-        <!--    column: abstract  -->
+        <!--    column: publisher  -->
         <xsl:text>&quot;</xsl:text>
-        <xsl:value-of select="dct:abstract"/>
+        <xsl:value-of select="dc:publisher"/>
         <xsl:text>&quot;</xsl:text>
         <xsl:value-of select="$columnSeparator"/>
         
