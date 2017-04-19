@@ -190,7 +190,7 @@
                 <!--xsl:apply-templates select="mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:identifier/mcc:MD_Identifier[contains(mcc:codeSpace, 'ga-dataSetURI')]/mcc:code[(string-length(.) > 0)]" mode="registryObject_location"/-->
                 <xsl:apply-templates select="mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code" mode="registryObject_identifier_global"/>
                 <xsl:apply-templates select="mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code" mode="registryObject_location"/>
-                <xsl:apply-templates select="mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:identifier/mcc:MD_Identifier[contains(mcc:codeSpace, 'ga-dataSetURI')]/mcc:code[(string-length(.) > 0)]" mode="registryObject_relatedInfo_data_via_service"/>
+                <!-->xsl:apply-templates select="mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:identifier/mcc:MD_Identifier[contains(mcc:codeSpace, 'ga-dataSetURI')]/mcc:code[(string-length(.) > 0)]" mode="registryObject_relatedInfo_data_via_service"/-->
                     
                 <xsl:apply-templates select="mdb:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="registryObject">
                     <xsl:with-param name="originatingSource" select="$originatingSource"/>
@@ -533,7 +533,8 @@
         </xsl:if>
     </xsl:template>
 
-    <xsl:template match="mcc:code" mode="registryObject_relatedInfo_data_via_service">
+    <!--  Commenting this out because all collections are being related to this same service which is causing the indexing in the registry to freak out -->
+    <!-- xsl:template match="mcc:code" mode="registryObject_relatedInfo_data_via_service">
         <xsl:variable name="dataAccessLink" select="normalize-space(.)"/>
         <xsl:if test="contains($dataAccessLink, 'thredds/catalog')">
             <relatedInfo type="service">
@@ -547,7 +548,7 @@
                 <title>thredds server</title>
             </relatedInfo>
         </xsl:if>
-    </xsl:template>
+    </xsl:template-->
     
     
    <!-- RegistryObject - Rights License -->
