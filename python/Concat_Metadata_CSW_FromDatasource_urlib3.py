@@ -191,9 +191,9 @@ os.makedirs(outputDirectory)
 outFileName = ('ConcatMetadataTree')
 filePath = outputDirectory + '/' + outFileName
 
-
 count = 1
 nextRecord = 1
+
 numberOfRecordsReturned = None
 numberOfRecordsMatched = None
 
