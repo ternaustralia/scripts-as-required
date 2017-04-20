@@ -184,12 +184,7 @@ outputDirectory = options.output_directory
 #
 ###############################################################################################################################
 
-if os.path.exists(outputDirectory):
-    if (confirm("Remove and recreate directory " + outputDirectory + " and all of its contents")):
-        shutil.rmtree(outputDirectory)
-    else:
-        sys.exit(-1)
-
+shutil.rmtree(outputDirectory)
 print("Constructing directory " + outputDirectory)
 os.makedirs(outputDirectory)
 
