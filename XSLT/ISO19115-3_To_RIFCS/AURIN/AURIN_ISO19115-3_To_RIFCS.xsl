@@ -30,7 +30,7 @@
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:import href="CustomFunctions.xsl"/>
+    <xsl:import href="../../CustomFunctions.xsl"/>
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements='*'/>
     <xsl:param name="global_originatingSource" select="'Australian Urban Research Network Infrastructure'"/>

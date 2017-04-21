@@ -10,7 +10,7 @@
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="3.0">
     
-    <xsl:import href="CustomFunctions.xsl"/>
+    <xsl:import href="../../CustomFunctions.xsl"/>
     
     <xsl:param name="global_originatingSource" select="'Australian Data Archive'"/>
     <xsl:param name="global_baseURI" select="'www.ada.edu.au'"/>

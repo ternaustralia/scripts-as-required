@@ -11,7 +11,7 @@
     xmlns:fn="http://www.w3.org/2005/xpath-functions"
     xmlns:saxon="http://saxon.sf.net/"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0" exclude-result-prefixes="dc">
-    <xsl:import href="CustomFunctions.xsl"/>
+    <xsl:import href="../../CustomFunctions.xsl"/>
     <xsl:strip-space elements="*"/>
     
     <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>

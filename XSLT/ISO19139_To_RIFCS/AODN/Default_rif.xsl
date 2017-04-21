@@ -17,8 +17,8 @@
     xmlns:customGMD="http://customGMD.nowhere.yet"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
     exclude-result-prefixes="geonet gmx oai xsi gmd srv gml gco gts custom customGMD">
-    <xsl:include href="CustomFunctions.xsl"/>
-    <xsl:include href="CustomFunctionsGMD.xsl"/>
+    <xsl:include href="../../CustomFunctions.xsl"/>
+    <xsl:include href="../../CustomFunctionsGMD.xsl"/>
     <xsl:variable name="anzsrcCodelist" select="document('anzsrc-codelist.xml')"/>
     <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>
     <xsl:variable name="gmdCodelists" select="document('codelists.xml')"/>

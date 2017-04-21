@@ -9,7 +9,7 @@
     xmlns:custom="http://custom.nowhere.yet"
     xmlns:customGMD="http://customGMD.nowhere.yet"
     exclude-result-prefixes="customGMD">
-    <xsl:import href="CustomFunctions.xsl"/>
+    <xsl:import href="../../CustomFunctions.xsl"/>
     
     
      <xsl:function name="customGMD:originatingSourceOrganisationFromMetadataURL" as="xs:string*">
