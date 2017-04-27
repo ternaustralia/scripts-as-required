@@ -38,7 +38,7 @@
     xmlns:gaFunc="http://gafunc.nowhere.yet"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
     exclude-result-prefixes="csw gaFunc oai lan mrc xlink srv mrd geonet mas mri mcc mrl xs mco mrs xsi mda msr mdb mds mdq cat mdt mac cit mex gco gcx mmi gmx gex mpc gml custom">
-    <xsl:import href="../../../../CustomFunctions.xsl"/>
+    <xsl:import href="../../CustomFunctions.xsl"/>
     <!-- stylesheet to convert iso19139 in OAI-PMH ListRecords response to RIF-CS -->
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements='*'/>
@@ -170,7 +170,7 @@
                 
                 <xsl:choose>
                     <xsl:when test="contains($registryObjectSubType, 'dataset')">
-                        <xsl:apply-templates select="mdb:distributionInfo/mrd:MD_Distribution/mrd:transferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource/cit:linkage[contains(., 'doi') and contains(lower-case(following-sibling::cit:name), 'digital object identifier') and contains(lower-case(following-sibling::cit:description), 'dataset doi')]" mode="registryObject_identifier"/>
+                        <xsl:apply-templates select="mdb:distributionInfo/mrd:MD_Distribution/mrd:transferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource/cit:linkage[contains(., 'doi') and contains(lower-case(following-sibling::cit:name), 'Digital Object Identifier for dataset') and contains(lower-case(following-sibling::cit:name), 'dataset doi')]" mode="registryObject_identifier"/>
                     </xsl:when>
                     <xsl:when test="contains($registryObjectSubType, 'publication')">
                         <xsl:apply-templates select="mdb:distributionInfo/mrd:MD_Distribution/mrd:transferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource/cit:linkage[contains(., 'doi') and contains(lower-case(following-sibling::cit:name), 'digital object identifier') and contains(lower-case(following-sibling::cit:description), 'publication doi')]" mode="registryObject_identifier"/>
@@ -253,15 +253,14 @@
             select="mri:resourceConstraints/mco:MD_LegalConstraints[mco:useConstraints/mco:MD_RestrictionCode/@codeListValue = 'license']"
             mode="registryObject_rights_license"/>
        
-       <xsl:apply-templates
+        <xsl:apply-templates
            select="mri:resourceConstraints/mco:MD_LegalConstraints[count(mco:accessConstraints) > 0]"
            mode="registryObject_rights_access"/>
-        
         
         <xsl:apply-templates
             select="ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:transferOptions/mrd:MD_DigitalTransferOptions[mrd:onLine/cit:CI_OnlineResource/cit:function/cit:CI_OnLineFunctionCode/@codeListValue = 'download']" mode="registryObject_rights_access"/>
         
-       <xsl:if test="gaFunc:getRegistryObjectTypeSubType(ancestor::mdb:MD_Metadata/mdb:metadataScope[1]/mdb:MD_MetadataScope[1]/mdb:resourceScope[1]/mcc:MD_ScopeCode[1]/@codeListValue)[1] = 'collection'">
+        <xsl:if test="gaFunc:getRegistryObjectTypeSubType(ancestor::mdb:MD_Metadata/mdb:metadataScope[1]/mdb:MD_MetadataScope[1]/mdb:resourceScope[1]/mcc:MD_ScopeCode[1]/@codeListValue)[1] = 'collection'">
             <xsl:apply-templates select="mdb:dateInfo/cit:CI_Date" mode="registryObject_dates"/>
             <xsl:apply-templates select="mri:citation/cit:CI_Citation/cit:date/cit:CI_Date" mode="registryObject_dates"/>
             <xsl:apply-templates select="mri:citation/cit:CI_Citation" mode="registryObject_citationMetadata_citationInfo">
@@ -373,22 +372,6 @@
         <xsl:variable name="dateValue_sequence" select="normalize-space(cit:date/gco:DateTime)" as="xs:string*"/>
         <xsl:variable name="dateCode_sequence" select="normalize-space(cit:dateType/cit:CI_DateTypeCode/@codeListValue)" as="xs:string*"/>
         
-        <xsl:variable name="transformedDateCode">
-            <xsl:if test="count($dateCode_sequence) > 0 and (string-length($dateCode_sequence[1]) > 0)">
-                <xsl:choose>
-                    <xsl:when test="contains(lower-case($dateCode_sequence[1]), 'creation')">
-                        <xsl:text>created</xsl:text>
-                    </xsl:when>
-                    <xsl:when test="contains(lower-case($dateCode_sequence[1]), 'publication')">
-                        <xsl:text>issued</xsl:text>
-                    </xsl:when>
-                    <xsl:when test="contains(lower-case($dateCode_sequence[1]), 'revision')">
-                        <xsl:text>modified</xsl:text>
-                    </xsl:when>
-                </xsl:choose>
-            </xsl:if>
-        </xsl:variable>
-        
         <xsl:if test="$global_debugExceptions">
             <xsl:if test="count($dateValue_sequence) = 0">
                 <xsl:message select="'Exception - No value in cit:date/gco:DateTime'"/>
@@ -406,11 +389,23 @@
         
         <xsl:if test="(count($dateValue_sequence) > 0) and (string-length($dateValue_sequence[1]) > 0)">
             <dates>
-                <xsl:if test="string-length($transformedDateCode) > 0">
-                    <xsl:attribute name="type">
-                        <xsl:value-of select="$transformedDateCode"/>
-                    </xsl:attribute>
-                </xsl:if>
+                
+                    <xsl:if test="count($dateCode_sequence) > 0 and (string-length($dateCode_sequence[1]) > 0)">
+                        <xsl:attribute name="type">
+                            <xsl:choose>
+                                <xsl:when test="contains(lower-case($dateCode_sequence[1]), 'creation')">
+                                    <xsl:text>created</xsl:text>
+                                </xsl:when>
+                                <xsl:when test="contains(lower-case($dateCode_sequence[1]), 'publication')">
+                                    <xsl:text>issued</xsl:text>
+                                </xsl:when>
+                                <xsl:when test="contains(lower-case($dateCode_sequence[1]), 'revision')">
+                                    <xsl:text>modified</xsl:text>
+                                </xsl:when>
+                            </xsl:choose>
+                        </xsl:attribute>
+                    </xsl:if>
+                
                 <date>
                     <xsl:attribute name="type">
                         <xsl:text>dateFrom</xsl:text>
