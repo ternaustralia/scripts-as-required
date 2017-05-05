@@ -98,9 +98,9 @@
                 
                 <xsl:apply-templates select="*:persons/*:dataSetPersonAssociation[(string-length(person-template:person/@uuid) > 0) and (string-length(person-template:person/core:family) > 0)]" mode="collection_relatedObject_publicProfile"/>
                 
-                <xsl:apply-templates select="*:persons" mode="collection_description_notes_internal_or_external_privateProfile"/>
+                <xsl:apply-templates select="*:persons" mode="collection_description_notes_internal_or_external_privateProfile_and_external_publicProfile"/>
                 
-                <xsl:apply-templates select="*:persons" mode="collection_description_notes_external_publicProfile"/>
+                <!-- xsl:apply-templates select="*:persons" mode="collection_description_notes_external_publicProfile"/-->
                 
                 <!-->xsl:apply-templates select="*:persons/*:dataSetPersonAssociation[(string-length(person-template:externalPerson/@uuid) > 0) and (string-length(person-template:externalPerson/core:family) > 0)]" mode="collection_relatedObject_external"/-->
                 
@@ -220,7 +220,7 @@
     <xsl:template match="*:dataSetPersonAssociation" mode="collection_relatedObject_publicProfile">
         <xsl:variable name="personName" select="concat(normalize-space(person-template:person/person-template:name/core:firstName), ' ', normalize-space(person-template:person/person-template:name/core:lastName))"/>
         <xsl:if test="$global_debug">
-            <xsl:message select="concat('personName for relatedObject: ', $personName)"/>
+            <xsl:message select="concat('Internal public personName for relatedObject: ', $personName)"/>
         </xsl:if>
         
         <xsl:if test="string-length($personName) > 0">
@@ -234,16 +234,32 @@
         </xsl:if>   
     </xsl:template>
     
-    <xsl:template match="*:persons" mode="collection_description_notes_internal_or_external_privateProfile">
-        <xsl:if test="count(*:dataSetPersonAssociation[((count(person-template:externalPerson) = 0) and (count(person-template:person) = 0)) and ((string-length(person-template:name/core:firstName) > 0) or (string-length(person-template:name/core:lastName) > 0))]) > 0">
+    <xsl:template match="*:persons" mode="collection_description_notes_internal_or_external_privateProfile_and_external_publicProfile">
+        <xsl:if test="(count(*:dataSetPersonAssociation[((count(person-template:externalPerson) = 0) and (count(person-template:person) = 0)) and ((string-length(person-template:name/core:firstName) > 0) or (string-length(person-template:name/core:lastName) > 0))]) > 0) or
+        			  (count(*:dataSetPersonAssociation[(string-length(person-template:externalPerson/@uuid) > 0) and (string-length(person-template:externalPerson/core:family) > 0)]) > 0)">
             <description type="notes">
                 <xsl:text>&lt;b&gt;Associated Persons&lt;/b&gt;</xsl:text>
                 <xsl:text>&lt;br/&gt;</xsl:text>
                 <xsl:for-each select="*:dataSetPersonAssociation[((count(person-template:externalPerson) = 0) and (count(person-template:person) = 0)) and ((string-length(person-template:name/core:firstName) > 0) or (string-length(person-template:name/core:lastName) > 0))]">
                         <xsl:variable name="fullName" select="concat(person-template:name/core:firstName, ' ', person-template:name/core:lastName)"/>
                         <xsl:variable name="role" select="person-template:personRole/core:term"/>
+                         <xsl:message select="concat('Associated Persons - External?Internal private: ', $fullName)"/>
                         <xsl:if test="string-length($fullName) > 0">
                             <xsl:if test="position() > 1">
+                                <xsl:text>; </xsl:text>
+                            </xsl:if>    
+                            <xsl:value-of select="normalize-space($fullName)"/>
+                            <xsl:if test="string-length($role) > 0">
+                                <xsl:value-of select="concat(' (', $role, ')')"/> 
+                            </xsl:if>
+                        </xsl:if>
+                </xsl:for-each>
+                <xsl:for-each select="*:dataSetPersonAssociation[(string-length(person-template:externalPerson/@uuid) > 0) and (string-length(person-template:externalPerson/core:family) > 0)]">
+                        <xsl:variable name="fullName" select="concat(person-template:externalPerson/externalperson-template:name/core:firstName, ' ', person-template:externalPerson/externalperson-template:name/core:lastName)"/>
+                        <xsl:variable name="role" select="person-template:personRole/core:term"/>
+                        <xsl:message select="concat('More Associated Persons - external, public: ', $fullName)"/>
+                        <xsl:if test="string-length($fullName) > 0">
+                            <xsl:if test="(count(*:dataSetPersonAssociation[((count(person-template:externalPerson) = 0) and (count(person-template:person) = 0)) and ((string-length(person-template:name/core:firstName) > 0) or (string-length(person-template:name/core:lastName) > 0))]) > 0) or (position() > 1)">
                                 <xsl:text>; </xsl:text>
                             </xsl:if>    
                             <xsl:value-of select="normalize-space($fullName)"/>
@@ -256,7 +272,7 @@
         </xsl:if>
     </xsl:template>
     
-    <xsl:template match="*:persons" mode="collection_description_notes_external_publicProfile">
+    <!-- xsl:template match="*:persons" mode="collection_description_notes_external_publicProfile">
         <xsl:message select="concat('count external persons public profile: ', count(*:dataSetPersonAssociation[(string-length(person-template:externalPerson/@uuid) > 0) and (string-length(person-template:externalPerson/core:family) > 0)]))"/>
         <xsl:if test="count(*:dataSetPersonAssociation[(string-length(person-template:externalPerson/@uuid) > 0) and (string-length(person-template:externalPerson/core:family) > 0)]) > 0">
             <description type="notes">
@@ -265,6 +281,7 @@
                 <xsl:for-each select="*:dataSetPersonAssociation[(string-length(person-template:externalPerson/@uuid) > 0) and (string-length(person-template:externalPerson/core:family) > 0)]">
                         <xsl:variable name="fullName" select="concat(person-template:externalPerson/externalperson-template:name/core:firstName, ' ', person-template:externalPerson/externalperson-template:name/core:lastName)"/>
                         <xsl:variable name="role" select="person-template:personRole/core:term"/>
+                        <xsl:message select="concat('External Persons - external, public: ', $fullName)"/>
                         <xsl:if test="string-length($fullName) > 0">
                             <xsl:if test="position() > 1">
                                 <xsl:text>; </xsl:text>
@@ -277,7 +294,7 @@
                 </xsl:for-each>
             </description>
         </xsl:if>
-    </xsl:template>
+    </xsl:template-->
     
     <!-->xsl:template match="*:dataSetPersonAssociation" mode="collection_relatedObject_external">
         <xsl:variable name="personName" select="concat(normalize-space(person-template:externalPerson/externalperson-template:name/core:firstName), ' ', normalize-space(person-template:externalPerson/externalperson-template:name/core:lastName))"/>
@@ -713,7 +730,7 @@
            
             <xsl:variable name="personName" select="concat(normalize-space(person-template:person/person-template:name/core:firstName), ' ', normalize-space(person-template:person/person-template:name/core:lastName))"/>
             <xsl:if test="$global_debug">
-                <xsl:message select="concat('personName (party_people): ', $personName)"/>
+                <xsl:message select="concat('Internal public personName (party_people): ', $personName)"/>
             </xsl:if>
         
             <xsl:if test="(string-length($personName) > 0)">
