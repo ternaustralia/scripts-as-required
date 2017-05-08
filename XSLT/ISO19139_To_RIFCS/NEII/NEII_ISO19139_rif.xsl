@@ -96,13 +96,14 @@
         
         <xsl:variable name="dataSetURI" select="*:dataSetURI"/>
         
+        
         <xsl:variable name="scopeCode">
             <xsl:choose>
-                <xsl:when test="string-length(normalize-space(*:hierarchyLevel/gmx:MX_ScopeCode/@codeListValue)) > 0">
-                    <xsl:value-of select="normalize-space(*:hierarchyLevel/gmx:MX_ScopeCode/@codeListValue)"/>
+                <xsl:when test="string-length(normalize-space(*:hierarchyLevel[1]/*:MX_ScopeCode[1]/@codeListValue)) > 0">
+                    <xsl:value-of select="normalize-space(*:hierarchyLevel[1]/*:MX_ScopeCode[1]/@codeListValue)"/>
                 </xsl:when>
-                <xsl:when test="string-length(normalize-space(*:hierarchyLevel/*:MD_ScopeCode/@codeListValue)) > 0">
-                    <xsl:value-of select="normalize-space(*:hierarchyLevel/*:MD_ScopeCode/@codeListValue)"/>
+                <xsl:when test="string-length(normalize-space(*:hierarchyLevel[1]/*:MD_ScopeCode[1]/@codeListValue)) > 0">
+                    <xsl:value-of select="normalize-space(*:hierarchyLevel[1]/*:MD_ScopeCode[1]/@codeListValue)"/>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:text>dataset</xsl:text>
