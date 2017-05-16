@@ -202,16 +202,19 @@ while (numberOfRecordsReturned != 0):
     resultsDict = retrieveXML(count, filePath,
                             dataSourceURI + "&startPosition=" + str(nextRecord))
 
-    numberOfRecordsMatched = resultsDict['numberOfRecordsMatched']
-    print("numberOfRecordsMatched: %s" % resultsDict['numberOfRecordsMatched'])
+    if resultsDict != None:
+	numberOfRecordsMatched = resultsDict['numberOfRecordsMatched']
+    	print("numberOfRecordsMatched: %s" % resultsDict['numberOfRecordsMatched'])
 
-    numberOfRecordsReturned = resultsDict['numberOfRecordsReturned']
-    print("numberOfRecordsReturned: %s" % resultsDict['numberOfRecordsReturned'])
+    	numberOfRecordsReturned = resultsDict['numberOfRecordsReturned']
+    	print("numberOfRecordsReturned: %s" % resultsDict['numberOfRecordsReturned'])
 
-    nextRecord = resultsDict['nextRecord']
-    print("nextRecord: %s" % resultsDict['nextRecord'])
+    	nextRecord = resultsDict['nextRecord']
+    	print("nextRecord: %s" % resultsDict['nextRecord'])
 
-    count = count + 1
+    	count = count + 1
+    else:
+	numberOfRecordsReturned = 0
 
 print("Output files written to directory %s" % outputDirectory)
 
