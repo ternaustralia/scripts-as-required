@@ -16,14 +16,15 @@
     xmlns:customGMD="http://customGMD.nowhere.yet"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
     exclude-result-prefixes="geonet gmx oai xsi gmd srv gml gco gts">
-    <xsl:import href="../../CustomFunctions.xsl"/>
-    <xsl:import href="../../CustomFunctionsGMD.xsl"/>
+    <xsl:import href="CustomFunctions.xsl"/>
+    <xsl:import href="CustomFunctionsGMD.xsl"/>
     <!-- stylesheet to convert iso19139 in OAI-PMH ListRecords response to RIF-CS -->
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
     <xsl:param name="global_acronym" select="'CF'"/>
     <xsl:param name="global_originatingSourceOrganisation" select="'City Futures Research Centre'"/> <!-- Only used as originating source if organisation name cannot be determined from Point Of Contact -->
     <xsl:param name="global_group" select="'City Futures Research Centre'"/> 
+    <xsl:param name="global_publisher" select="'City Futures Research Centre'"/> 
     <!-- xsl:param name="global_baseURI" select="'cftest.intersect.org.au'"/-->
     <!-- xsl:param name="global_path" select="'/layers/geonode%3A'"/-->
     <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>
@@ -388,7 +389,7 @@
     
     <xsl:template match="gmd:CI_OnlineResource" mode="registryObject_relatedInfo_service">
         <relatedInfo type="service">
-            <title><xsl:value-of select="gmd:name"/></title>
+            <title><xsl:value-of select="gmd:description"/></title>
             <identifier type="uri">
                 <xsl:value-of select="substring-before(gmd:linkage/gmd:URL, '?')"/>
             </identifier>
@@ -1056,8 +1057,7 @@
                 </xsl:otherwise-->
             </xsl:choose>
         </xsl:variable>
-             
-        <xsl:if test="count($allContributorName_sequence) > 0">
+        
            <citationInfo>
                 <citationMetadata>
                     <xsl:if test="string-length($identifierToUse) > 0">
@@ -1161,6 +1161,13 @@
                                 </xsl:choose>
                             </xsl:for-each>
                         </xsl:when>
+                        <xsl:otherwise>
+                            <contributor>
+                                <namePart>
+                                    <xsl:value-of select="$global_publisher"/>
+                                </namePart>
+                            </contributor>
+                        </xsl:otherwise>
                     </xsl:choose>
                     
                     <publisher>
@@ -1169,7 +1176,6 @@
                     
                </citationMetadata>
             </citationInfo>
-        </xsl:if>
     </xsl:template>
 
 
