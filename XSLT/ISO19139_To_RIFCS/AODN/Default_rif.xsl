@@ -17,8 +17,8 @@
     xmlns:customGMD="http://customGMD.nowhere.yet"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
     exclude-result-prefixes="geonet gmx oai xsi gmd srv gml gco gts custom customGMD">
-    <xsl:include href="../../CustomFunctions.xsl"/>
-    <xsl:include href="../../CustomFunctionsGMD.xsl"/>
+    <xsl:include href="CustomFunctions.xsl"/>
+    <xsl:include href="CustomFunctionsGMD.xsl"/>
     <xsl:variable name="anzsrcCodelist" select="document('anzsrc-codelist.xml')"/>
     <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>
     <xsl:variable name="gmdCodelists" select="document('codelists.xml')"/>
@@ -344,30 +344,28 @@
                 <xsl:value-of select="normalize-space(*:CI_Date/*:date/gco:DateTime)"/>
             </xsl:if>
         </xsl:variable> 
-        <xsl:variable name="dateCode"
-            select="normalize-space(*:CI_Date/*:dateType/*:CI_DateTypeCode/@codeListValue)"/>
-        <xsl:variable name="transformedDateCode">
-            <xsl:choose>
-                <xsl:when test="contains(lower-case($dateCode), 'creation')">
-                    <xsl:text>created</xsl:text>
-                </xsl:when>
-                <xsl:when test="contains(lower-case($dateCode), 'publication')">
-                    <xsl:text>issued</xsl:text>
-                </xsl:when>
-                <xsl:when test="contains(lower-case($dateCode), 'revision')">
-                    <xsl:text>modified</xsl:text>
-                </xsl:when>
-            </xsl:choose>
-        </xsl:variable>
-
-        <xsl:if
-            test="
-            (string-length($dateValue) > 0) and
-            (string-length($transformedDateCode) > 0)">
+        
+           <xsl:if test="string-length($dateValue) &gt; 0">
             <dates>
-                <xsl:attribute name="type">
-                    <xsl:value-of select="$transformedDateCode"/>
-                </xsl:attribute>
+       			<xsl:variable name="dateCode" select="string(*:CI_Date/*:dateType/*:CI_DateTypeCode/@codeListValue)" as="xs:string"/>
+            		<xsl:if test="string-length($dateCode) &gt; 0">
+	            		<xsl:attribute name="type">
+			        		<xsl:choose>
+				                <xsl:when test="contains(lower-case($dateCode), 'creation')">
+				                    <xsl:text>created</xsl:text>
+				                </xsl:when>
+				                <xsl:when test="contains(lower-case($dateCode), 'publication')">
+				                    <xsl:text>issued</xsl:text>
+				                </xsl:when>
+				                <xsl:when test="contains(lower-case($dateCode), 'revision')">
+				                    <xsl:text>modified</xsl:text>
+				                </xsl:when>
+				                <xsl:otherwise>
+				                	<xsl:value-of select="$dateCode"/>
+				                </xsl:otherwise>
+			            	</xsl:choose>
+			        	</xsl:attribute>
+		       		</xsl:if>
                 <date>
                     <xsl:attribute name="type">
                         <xsl:text>dateFrom</xsl:text>
@@ -1241,30 +1239,30 @@
                     
                     <xsl:variable name="codelist" select="$gmdCodelists/codelists/codelist[@name = '*:CI_DateTypeCode']"/>
                     
-                    <xsl:variable name="dateType">
-                        <xsl:if test="count($CI_Date_sequence)">
-                            <xsl:variable name="codevalue" select="$CI_Date_sequence[1]/*:dateType/*:CI_DateTypeCode/@codeListValue"/>
-                            <xsl:value-of select="$codelist/entry[code = $codevalue]/description"/>
-                        </xsl:if>
-                    </xsl:variable>
-                    
-                    <xsl:variable name="dateValue">
-                        <xsl:if test="count($CI_Date_sequence)">
-                            <xsl:if test="string-length($CI_Date_sequence[1]/*:date/gco:Date) > 3">
-                                <xsl:value-of select="substring($CI_Date_sequence[1]/*:date/gco:Date, 1, 4)"/>
-                            </xsl:if>
-                            <xsl:if test="string-length($CI_Date_sequence[1]/*:date/gco:DateTime) > 3">
-                                <xsl:value-of select="substring($CI_Date_sequence[1]/*:date/gco:DateTime, 1, 4)"/>
-                            </xsl:if>
-                        </xsl:if>
+                   <xsl:variable name="dateValue" as="xs:string">
+                    	<xsl:choose>
+	                         <xsl:when test="string-length(string($CI_Date_sequence[1]/*:date/gco:Date)) > 3">
+	                             <xsl:value-of select="substring($CI_Date_sequence[1]/*:date/gco:Date, 1, 4)"/>
+	                         </xsl:when>
+	                         <xsl:when test="string-length(string($CI_Date_sequence[1]/*:date/gco:DateTime)) > 3">
+	                             <xsl:value-of select="substring($CI_Date_sequence[1]/*:date/gco:DateTime, 1, 4)"/>
+	                         </xsl:when>
+	                          <xsl:otherwise>
+	                              <xsl:text></xsl:text>
+	                          </xsl:otherwise> 
+                    	</xsl:choose>
+                       
                     </xsl:variable>
                     
                      <xsl:choose>
-                        <xsl:when test="(string-length($dateType) > 0) and (string-length($dateValue) > 0)">
+                        <xsl:when test="string-length($dateValue) > 0">
                             <date>
-                                <xsl:attribute name="type">
-                                    <xsl:value-of select="$dateType"/>
-                                </xsl:attribute>
+                            	<xsl:variable name="codevalue" select="string($CI_Date_sequence[1]/*:dateType/*:CI_DateTypeCode/@codeListValue)"/>
+                                <xsl:if test="string-length($codevalue) > 0">
+	                                <xsl:attribute name="type">
+	                                    <xsl:value-of select="$codelist/entry[code = $codevalue]/description"/>
+	                                </xsl:attribute>
+	                            </xsl:if>
                                 <xsl:value-of select="$dateValue"/>
                             </date>
                         </xsl:when>

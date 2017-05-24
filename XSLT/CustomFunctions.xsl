@@ -113,7 +113,7 @@
                 <xsl:text>uri</xsl:text>
             </xsl:when>
             <xsl:otherwise>
-                <xsl:text>global</xsl:text>
+                <xsl:text>local</xsl:text>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:function>
