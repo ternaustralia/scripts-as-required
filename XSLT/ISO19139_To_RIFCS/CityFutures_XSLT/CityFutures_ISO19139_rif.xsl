@@ -49,7 +49,7 @@
             <xsl:attribute name="xsi:schemaLocation">
                 <xsl:text>http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd</xsl:text>
             </xsl:attribute>
-            <xsl:apply-templates select="//gmd:MD_Metadata"/>
+            <xsl:apply-templates select="//gmd:MD_Metadata[count(*) > 0]"/>
         </registryObjects>
     </xsl:template>
     
