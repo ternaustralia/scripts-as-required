@@ -42,11 +42,11 @@ def retrieveXML(count, filePath, uri):
   print (count)
   try:
     http = urllib3.PoolManager()
-    print("Opening uri %s" % uri)
-    r = http.request('GET', uri)
+    print("Opening uri %s" % uri.encode())
+    r = http.request('GET', uri.encode())
     result = r.data
   except Exception as e:
-      print("Unable to open uri %s - exception: %s" % (uri, e))
+      print("Unable to open uri %s - exception: %s" % (uri.encode(), e))
       sys.exit(-1)
     
   assert(result != 0)
