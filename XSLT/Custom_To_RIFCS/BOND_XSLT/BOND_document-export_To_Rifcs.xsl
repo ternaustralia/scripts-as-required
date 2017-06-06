@@ -9,7 +9,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     
 
-    <xsl:import href="../../CustomFunctions.xsl"/>
+    <xsl:import href="CustomFunctions.xsl"/>
     
     <xsl:param name="global_originatingSource" select="'BOND University'"/>
     <xsl:param name="global_baseURI" select="'epublications.bond.edu.au'"/>
@@ -78,6 +78,8 @@
                 <xsl:apply-templates select="fields/field[@name='comments'][string-length(.) > 0]" mode="collection_description_full"/>
                
                 <xsl:apply-templates select="fields/field[@name='geolocate'][string-length(.) > 0]" mode="collection_coverage_spatial_text"/>
+                
+                <xsl:apply-templates select="fields/field[@name='longitude'][string-length(.) > 0]" mode="collection_coverage_spatial_point"/>
                
                 <xsl:apply-templates select="fields/field[@name='date_range'][string-length(.) > 0]" mode="collection_coverage_temporal_text"/>
                
@@ -103,6 +105,8 @@
                 <xsl:apply-templates select="fields/field[@name='embargo_date'][string-length(.) > 0]" mode="collection_dates_available"/>
                 
                 <xsl:apply-templates select="fields/field[@name='publication_date'][string-length(.) > 0]" mode="collection_dates_issued"/>  
+                
+                <xsl:apply-templates select="fields/field[@name='custom_citation'][string-length(.) > 0]" mode="collection_citation_full"/>  
              
             </xsl:element>
         </registryObject>
@@ -272,6 +276,17 @@
             </spatial>
         </coverage>
    </xsl:template>
+    
+    <xsl:template match="field[@name='longitude']" mode="collection_coverage_spatial_point">
+        <coverage>
+            <spatial type="kmlPolyCoords">
+                <xsl:value-of select="normalize-space(.)"/>
+                <xsl:if test="string-length(normalize-space(../field[@name='latitude'])) > 0">
+                    <xsl:value-of select="concat(',', normalize-space(../field[@name='latitude']))"/>
+                </xsl:if>
+            </spatial>
+        </coverage>
+    </xsl:template>
    
    <xsl:template match="field[@name='date_range']" mode="collection_coverage_temporal_text">
         <coverage>
@@ -416,6 +431,14 @@
                 <xsl:value-of select="normalize-space(.)"/>
             </date>
         </dates>
+    </xsl:template>  
+    
+    <xsl:template match="field[@name='custom_citation']" mode="collection_citation_full">
+        <citationInfo>
+            <fullCitation>
+                <xsl:value-of select="normalize-space(.)"/>
+            </fullCitation>
+        </citationInfo>
     </xsl:template>  
              
      <xsl:template match="document" mode="party">
