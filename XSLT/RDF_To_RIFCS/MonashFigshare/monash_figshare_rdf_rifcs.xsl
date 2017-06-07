@@ -283,7 +283,7 @@
         <xsl:choose>
             <xsl:when test="contains(., 'CC BY')">
                 <rights>
-                    <licence type="{replace(., 'CC BY', 'CC-BY')}"/>
+                    <licence type="{replace(normalize-space(.), ' ', '-')}"/>
                 </rights>   
             </xsl:when>
             <xsl:otherwise>
