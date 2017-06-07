@@ -186,6 +186,14 @@
             mode="registryObject_subject"/>
         
          <xsl:apply-templates
+             select="gmd:graphicOverview/gmd:MD_BrowseGraphic[(string-length(normalize-space(gmd:fileName)) > 0) and (string-length(normalize-space(gmd:fileDescription)) = 0)]"
+             mode="registryObject_description_brief_image_only"/>
+         
+         <xsl:apply-templates
+             select="gmd:graphicOverview/gmd:MD_BrowseGraphic[(string-length(normalize-space(gmd:fileName)) > 0) and (string-length(normalize-space(gmd:fileDescription)) > 0)]"
+             mode="registryObject_description_brief_image_with_text"/>
+         
+         <xsl:apply-templates
             select="gmd:abstract[string-length(.) > 0]"
             mode="registryObject_description_full"/>
         
@@ -525,8 +533,21 @@
                 <xsl:value-of select="."></xsl:value-of>
             </subject>
     </xsl:template>
+    
+    <!-- RegistryObject - Descriptino Element - brief -->
+    <xsl:template match="gmd:MD_BrowseGraphic" mode="registryObject_description_brief_image_only">
+        <description type="brief">
+            <xsl:value-of select="concat('&lt;p&gt;&lt;img src=&quot;', gmd:fileName, '&quot; width=&quot;240&quot; height=&quot;180&quot; /&gt;&lt;/p&gt;')"/>
+        </description>
+    </xsl:template>
+    
+    <xsl:template match="gmd:MD_BrowseGraphic" mode="registryObject_description_brief_image_with_text">
+        <description type="brief">
+            <xsl:value-of select="concat('&lt;p&gt;&lt;img src=&quot;', gmd:fileName, '&quot; alt=&quot;', gmd:fileDescription, '&quot; width=&quot;240&quot; height=&quot;180&quot; /&gt;&lt;/p&gt;')"/>
+        </description>
+    </xsl:template>
 
-    <!-- RegistryObject - Description Element -->
+    <!-- RegistryObject - Description Element full -->
     <xsl:template match="gmd:abstract" mode="registryObject_description_full">
             <description type="full">
                 <xsl:value-of select="."/>
