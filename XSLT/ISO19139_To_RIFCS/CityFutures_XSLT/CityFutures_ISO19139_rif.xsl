@@ -49,7 +49,12 @@
             <xsl:attribute name="xsi:schemaLocation">
                 <xsl:text>http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd</xsl:text>
             </xsl:attribute>
-            <xsl:apply-templates select="//gmd:MD_Metadata[count(*) > 0]"/>
+            <!-- layers only -->
+            <xsl:for-each select="//gmd:MD_Metadata[count(*) > 0]">
+                <xsl:if test="contains(gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource[contains(gmd:protocol/gco:CharacterString, 'WWW:LINK-1.0-http--link')]/gmd:linkage/gmd:URL, '/layers/')">
+                    <xsl:apply-templates select="."/>
+                </xsl:if>
+            </xsl:for-each>
         </registryObjects>
     </xsl:template>
     
@@ -113,10 +118,11 @@
                     
                     <!-- xsl:apply-templates select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource[contains(gmd:protocol/gco:CharacterString, 'download') and not(boolean(contains(gmd:linkage/gmd:URL, '?')))]" mode="registryObject_location_download"/ -->
         
-                    <xsl:apply-templates select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource[contains(gmd:protocol/gco:CharacterString, 'download') and contains(gmd:linkage/gmd:URL, '?')]" mode="registryObject_relatedInfo_service"/>
+                    <xsl:apply-templates select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions" mode="registryObject_rights_accessRights"/>
+                
+                   <xsl:apply-templates select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource[contains(gmd:protocol/gco:CharacterString, 'download') and contains(gmd:linkage/gmd:URL, '?')]" mode="registryObject_relatedInfo_service"/>
         
                     <xsl:apply-templates select="gmd:parentIdentifier[string-length(.) > 0]" mode="registryObject_related_object"/>
-                    <xsl:apply-templates select="gmd:dataSetURI[string-length(.) > 0]" mode="registryObject_relatedInfo_data_via_service"/>
                     <xsl:apply-templates select="gmd:children/gmd:childIdentifier[string-length(.) > 0]" mode="registryObject_related_object"/>
                  
                     <xsl:apply-templates
@@ -229,7 +235,7 @@
             select="gmd:resourceConstraints/gmd:MD_Constraints"
             mode="registryObject_rights_rights"/>
         
-        <xsl:if test="cityfuturesFunc:registryObjectClass(ancestor::gmd:MD_Metadata/gmd:hierarchyLevel/*[contains(lower-case(name()),'scopecode')]/@codeListValue) = 'collection'">
+         <xsl:if test="cityfuturesFunc:registryObjectClass(ancestor::gmd:MD_Metadata/gmd:hierarchyLevel/*[contains(lower-case(name()),'scopecode')]/@codeListValue) = 'collection'">
             
             <xsl:apply-templates
                 select="gmd:citation/gmd:CI_Citation/gmd:date"
@@ -761,24 +767,7 @@
         </xsl:if>
     </xsl:template>
 
-    <xsl:template match="gmd:dataSetURI" mode="registryObject_relatedInfo_data_via_service">
-        <xsl:variable name="dataAccessLink" select="normalize-space(.)"/>
-        <xsl:if test="contains($dataAccessLink, 'thredds/catalog')">
-            <relatedInfo type="service">
-                <identifier type="uri">
-                    <xsl:value-of select="concat(substring-before($dataAccessLink, 'thredds/catalog'), 'thredds/catalog.html')"/>
-                </identifier>
-                <relation type="supports">
-                    <description>Data via the thredds server</description>
-                    <url><xsl:value-of select="$dataAccessLink"/></url>
-                </relation>
-                <title>thredds server</title>
-            </relatedInfo>
-        </xsl:if>
-    </xsl:template>
-    
-    
-    <xsl:template match="gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:source/gmd:LI_Source" mode="registryObject_relatedInfo">
+   <xsl:template match="gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:source/gmd:LI_Source" mode="registryObject_relatedInfo">
      <xsl:if test="string-length(gmd:sourceCitation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier/gmd:code) > 0">
         <relatedInfo>
            <xsl:attribute name="type">
@@ -867,6 +856,14 @@
         </xsl:for-each-->
     </xsl:template>
     
+    <xsl:template match="gmd:MD_DigitalTransferOptions" mode="registryObject_rights_accessRights">
+        <xsl:if test="count(gmd:onLine/gmd:CI_OnlineResource[(contains(gmd:protocol, 'download')) or (contains(gmd:protocol, 'OGC:'))]) > 0">
+             <rights>
+                 <accessRights select='open'/>
+             </rights>
+        </xsl:if>
+    </xsl:template>
+    
     <xsl:template match="gmd:resourceConstraint" mode="registryObject_rights_rights">
         <xsl:apply-templates select="gmd:MD_LegalConstraints" mode="registryObject_rights_rights"/>
         <xsl:apply-templates select="gmd:MD_Constraints" mode="registryObject_rights_rights"/>
@@ -918,7 +915,7 @@
             </xsl:if>
            </xsl:for-each>
            
-           <xsl:if test="count(gmd:accessConstraints[contains(lower-case(gmd:MD_RestrictionCode/@codeListValue), 'copyright')]) > 0">
+           <!--xsl:if test="count(gmd:accessConstraints[contains(lower-case(gmd:MD_RestrictionCode/@codeListValue), 'copyright')]) > 0">
                 <rights>
                     <xsl:choose>
                         <xsl:when test="count(gmd:accessConstraints[contains(lower-case(gmd:MD_RestrictionCode/@codeListValue), 'otherrestrictions')]) > 0">
@@ -929,7 +926,7 @@
                         </xsl:otherwise>
                     </xsl:choose>
                 </rights>
-           </xsl:if>
+           </xsl:if-->
     </xsl:template>
     
     <xsl:template match="gmd:otherConstraints" mode="rights_licence_type">
