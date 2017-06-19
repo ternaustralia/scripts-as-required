@@ -992,10 +992,10 @@
                 <xsl:attribute name="type">
                     <xsl:choose>
                         <xsl:when test="matches($id, '-[\d].[\d]-AU')">
-                            <xsl:value-of select="replace($id, '-[\d].[\d]-AU', '')"/>
+                            <xsl:value-of select="upper-case(replace($id, '-[\d].[\d]-AU', ''))"/>
                         </xsl:when>
                         <xsl:otherwise>
-                            <xsl:value-of select="$id"/>
+                            <xsl:value-of select="upper-case($id)"/>
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:attribute>
