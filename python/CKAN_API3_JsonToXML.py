@@ -9,6 +9,8 @@ import numbers
 import JsonToXML
 import exceptions
 import string
+import os
+import shutil
 
 from optparse import OptionParser
 from xml.dom.minidom import Document
@@ -66,6 +68,12 @@ if len(options.outputDirectory) < 1:
 identifierListURI = options.identifierListURI
 descriptionByIdentifierURI = options.descriptionByIdentifierURI
 outputDirectory = options.outputDirectory
+
+
+if os.path.exists(outputDirectory):
+    shutil.rmtree(outputDirectory)
+print("Constructing directory " + outputDirectory+'/'+'JsonXML')
+os.makedirs(outputDirectory+'/'+'JsonXML')
 
 print ("Reading datasets names from "+identifierListURI)
 openedFile = urllib2.urlopen(identifierListURI, timeout=5)
