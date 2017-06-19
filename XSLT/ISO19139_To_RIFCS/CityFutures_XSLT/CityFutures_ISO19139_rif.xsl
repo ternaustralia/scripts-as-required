@@ -859,7 +859,7 @@
     <xsl:template match="gmd:MD_DigitalTransferOptions" mode="registryObject_rights_accessRights">
         <xsl:if test="count(gmd:onLine/gmd:CI_OnlineResource[(contains(gmd:protocol, 'download')) or (contains(gmd:protocol, 'OGC:'))]) > 0">
              <rights>
-                 <accessRights select='open'/>
+                 <accessRights type='open'/>
              </rights>
         </xsl:if>
     </xsl:template>
