@@ -20,23 +20,20 @@
     <xsl:param name="global_publisherPlace" select="'Australia'"/>
 
     <xsl:template match="/">
-        <xsl:apply-templates/>
+        <xsl:apply-templates select="//datasets"/>
     </xsl:template>
     
-    <xsl:template match="//datasets/help"/>
-    <xsl:template match="//datasets/success"/>
-    
-    <!-- =========================================== -->
+     <!-- =========================================== -->
     <!-- dataset (datasets) Template             -->
     <!-- =========================================== -->
     
-    <xsl:template match="root">
+    <xsl:template match="datasets">
         <registryObjects>
             <xsl:attribute name="xsi:schemaLocation">
                 <xsl:text>http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd</xsl:text>
             </xsl:attribute>
             
-            <xsl:apply-templates select="datasets/result/results" mode="constructObjects"/>
+            <xsl:apply-templates select="result/results" mode="constructObjects"/>
             
         </registryObjects>
     </xsl:template>
