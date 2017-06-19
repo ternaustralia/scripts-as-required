@@ -282,9 +282,9 @@
    
     <xsl:template match="dc:rights" mode="collection_rights_access">
         <xsl:choose>
-            <xsl:when test="contains(., 'CC BY')">
+            <xsl:when test="contains(upper-case(.), 'CC BY')">
                 <rights>
-                    <licence type="{replace(., 'CC BY', 'CC-BY')}"/>
+                    <licence type="{upper-case(replace(normalize-space(.), ' ', '-'))}"/>
                 </rights>   
             </xsl:when>
             <xsl:otherwise>
@@ -295,7 +295,6 @@
                 </rights>
             </xsl:otherwise>
         </xsl:choose>
-        
     </xsl:template>
     
     <xsl:template match="oai:setSpec" mode="collection_subject">
