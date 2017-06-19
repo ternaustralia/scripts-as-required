@@ -47,7 +47,7 @@
     <xsl:param name="global_originatingSource" select="'Geoscience Australia'"/>
     <xsl:param name="global_acronym" select="'GA'"/>
     <xsl:param name="global_baseURI" select="'ecat.ga.gov.au'"/>
-    <xsl:param name="global_path" select="'/geonetwork/srv/eng/search#!'"/>
+    <xsl:param name="global_path" select="'/geonetwork/srv/eng/search?uuid='"/>
     <xsl:param name="global_group" select="'Geoscience Australia'"/>
     <xsl:param name="global_publisherName" select="'Geoscience Australia'"/>
     <xsl:param name="global_publisherPlace" select="'Canberra'"/>
@@ -221,8 +221,15 @@
                     
                  </xsl:choose>
                 
+                <xsl:apply-templates></xsl:apply-templates>
+                
+                <xsl:apply-templates select="mdb:distributionInfo/mrd:MD_Distribution/mrd:transferOptions/mrd:MD_DigitalTransferOptions[mrd:onLine/cit:CI_OnlineResource/cit:function/cit:CI_OnLineFunctionCode/@codeListValue = 'download']" mode="registryObject_rights_access"/>
+                                
                 <xsl:apply-templates select="mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code" mode="registryObject_identifier_global"/>
+                
+                 
                 <xsl:apply-templates select="mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code" mode="registryObject_location"/>
+                <xsl:apply-templates select="mdb:metadataLinkage/cit:CI_OnlineResource[contains(lower-case(cit:description), 'point-of-truth metadata')]/cit:linkage" mode="registryObject_identifier_URL"/>
                 <!-->xsl:apply-templates select="mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:identifier/mcc:MD_Identifier[contains(mcc:codeSpace, 'ga-dataSetURI')]/mcc:code[(string-length(.) > 0)]" mode="registryObject_relatedInfo_data_via_service"/-->
                     
                 <xsl:apply-templates select="mdb:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="registryObject">
@@ -244,6 +251,9 @@
         <xsl:param name="originatingSource"/>
         <xsl:param name="registryObjectType"/>
         <xsl:param name="registryObjectSubType"/>
+        
+        <xsl:apply-templates select="srv:containsOperations/srv:SV_OperationMetadata/srv:connectPoint/cit:CI_OnlineResource/cit:linkage" mode="registryObject_identifier_URL"/>
+        
         
         <xsl:apply-templates select="mri:citation/cit:CI_Citation/cit:title[string-length(.) > 0]" mode="registryObject_name"/>
         
@@ -289,8 +299,6 @@
            select="mri:resourceConstraints/mco:MD_LegalConstraints[count(mco:accessConstraints) > 0]"
            mode="registryObject_rights_access"/>
         
-        <xsl:apply-templates
-            select="ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:transferOptions/mrd:MD_DigitalTransferOptions[mrd:onLine/cit:CI_OnlineResource/cit:function/cit:CI_OnLineFunctionCode/@codeListValue = 'download']" mode="registryObject_rights_access"/>
         
         <xsl:if test="gaFunc:getRegistryObjectTypeSubType(ancestor::mdb:MD_Metadata/mdb:metadataScope[1]/mdb:MD_MetadataScope[1]/mdb:resourceScope[1]/mcc:MD_ScopeCode[1]/@codeListValue)[1] = 'collection'">
             <xsl:apply-templates select="mdb:dateInfo/cit:CI_Date" mode="registryObject_dates"/>
@@ -354,8 +362,15 @@
             <xsl:value-of select="."/>
         </identifier>
     </xsl:template>
-   
+    
     <!-- RegistryObject - Identifier Element  -->
+    
+    <xsl:template match="cit:linkage" mode="registryObject_identifier_URL">
+        <identifier type="uri">
+            <xsl:value-of select="."/>
+        </identifier>
+    </xsl:template>
+   
     <xsl:template match="mcc:code" mode="registryObject_identifier">
         <identifier>
             <xsl:attribute name="type">
@@ -500,10 +515,22 @@
             <xsl:value-of select="."></xsl:value-of>
         </subject>
     </xsl:template>
+    
+    
 
     <xsl:template match="mri:keyword" mode="registryObject_subject">
-        <subject type="local">
-            <xsl:value-of select="."></xsl:value-of>
+        <subject>
+            <xsl:attribute name="type">
+                <xsl:choose>
+                    <xsl:when test="contains(following-sibling::mri:thesaurusName/cit:CI_Citation/cit:title, 'ANZSRC')">
+                        <xsl:text>anzsrc-for</xsl:text>    
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:text>local</xsl:text>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:attribute>
+            <xsl:value-of select="normalize-space(.)"></xsl:value-of>
         </subject>
     </xsl:template>
     
