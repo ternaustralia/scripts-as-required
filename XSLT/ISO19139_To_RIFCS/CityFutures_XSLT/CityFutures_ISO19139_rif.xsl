@@ -826,8 +826,8 @@
     </xsl:template-->
 
     <!-- RegistryObject - Rights Licence - From CreativeCommons -->
-    <xsl:template match="gmd:MD_CreativeCommons" mode="registryObject_rights_licence_creative">
-        <xsl:variable name="licenseLink" select="normalize-space(gmd:licenseLink/gmd:URL)"/>
+    <xsl:template match="*:MD_CreativeCommonss" mode="registryObject_rights_licence_creative">
+        <xsl:variable name="licenseLink" select="normalize-space(*:licenseLink/gmd:URL)"/>
         <xsl:for-each
             select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCode']/gmx:codeEntry/gmx:CodeDefinition">
             <xsl:if test="string-length(normalize-space(gml:remarks)) > 0">

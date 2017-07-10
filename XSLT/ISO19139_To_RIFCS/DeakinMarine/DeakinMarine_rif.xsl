@@ -19,7 +19,7 @@
     xmlns:customDeakinGeonetwork="http://customDeakinGeonetwork.nowhere.yet"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
     exclude-result-prefixes="xlink geonet gmx oai xsi gmd srv gml gco mcp dwc customDeakinGeonetwork custom">
-    <xsl:import href="../../CustomFunctions.xsl"/>
+    <xsl:import href="CustomFunctions.xsl"/>
     <!-- stylesheet to convert iso19139 in OAI-PMH ListRecords response to RIF-CS -->
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>

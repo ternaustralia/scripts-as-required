@@ -16,8 +16,8 @@ xmlns:gco="http://www.isotc211.org/2005/gco"
     xmlns:customGMD="http://customGMD.nowhere.yet"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
     exclude-result-prefixes="geonet gmx oai xsi gmd srv gml gco gts">
-    <xsl:import href="../../CustomFunctions.xsl"/>
-    <xsl:import href="../../CustomFunctionsGMD.xsl"/>
+    <xsl:import href="CustomFunctions.xsl"/>
+    <xsl:import href="CustomFunctionsGMD.xsl"/>
     <!-- stylesheet to convert iso19139 in OAI-PMH ListRecords response to RIF-CS -->
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
@@ -808,8 +808,8 @@ xmlns:gco="http://www.isotc211.org/2005/gco"
     </xsl:template>
 
     <!-- RegistryObject - Rights Licence - From CreativeCommons -->
-    <xsl:template match="gmd:MD_CreativeCommons" mode="registryObject_rights_licence_creative">
-        <xsl:variable name="licenseLink" select="normalize-space(gmd:licenseLink/gmd:URL)"/>
+    <xsl:template match="*:MD_CreativeCommonss" mode="registryObject_rights_licence_creative">
+        <xsl:variable name="licenseLink" select="normalize-space(*:licenseLink/gmd:URL)"/>
         <xsl:for-each
             select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCode']/gmx:codeEntry/gmx:CodeDefinition">
             <xsl:if test="string-length(normalize-space(gml:remarks)) > 0">

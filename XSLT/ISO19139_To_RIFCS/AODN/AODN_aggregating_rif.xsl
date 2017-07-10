@@ -23,8 +23,8 @@
     <xsl:import href="IMOS_rif.xsl"/>
     <xsl:import href="AAD_rif.xsl"/>
     <xsl:import href="AIMS_rif.xsl"/>
-    <xsl:import href="../../CustomFunctions.xsl"/>
-    <xsl:import href="../../CustomFunctionsGMD.xsl"/>
+    <xsl:import href="CustomFunctions.xsl"/>
+    <xsl:import href="CustomFunctionsGMD.xsl"/>
     
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>

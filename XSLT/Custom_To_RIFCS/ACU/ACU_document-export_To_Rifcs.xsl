@@ -9,7 +9,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     
 
-    <xsl:import href="../../CustomFunctions.xsl"/>
+    <xsl:import href="CustomFunctions.xsl"/>
     
     <xsl:param name="global_originatingSource" select="'Australian Catholic University'"/>
     <xsl:param name="global_baseURI" select="'researchbank.acu.edu.au'"/>

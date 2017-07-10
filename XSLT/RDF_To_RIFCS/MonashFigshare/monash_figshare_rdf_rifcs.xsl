@@ -21,7 +21,7 @@
     xmlns:exslt="http://exslt.org/common"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0"
     exclude-result-prefixes="oai dc bibo datacite fabio foaf literal obo rdf rdfs vcard vivo xs custom fn local exslt">
-    <xsl:import href="../../CustomFunctions.xsl"/>
+    <xsl:import href="CustomFunctions.xsl"/>
     
     <xsl:variable name="categoryCodeList" select="document('api.figshare.com_v2_categories.xml')"/>
     

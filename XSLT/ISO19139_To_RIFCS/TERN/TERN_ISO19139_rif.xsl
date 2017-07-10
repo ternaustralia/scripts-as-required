@@ -262,19 +262,19 @@
                             mode="registryObject_relatedInfo"/>
     
                         <xsl:apply-templates
-                            select="descendant::gmd:resourceConstraints/gmd:MD_CreativeCommons[(ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification) and exists(gmd:licenseLink)]"
+                            select="descendant::gmd:resourceConstraints/*:MD_CreativeCommonss[(ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification) and exists(*:licenseLink)]"
                             mode="registryObject_rights_licence_creative"/>
     
                         <xsl:apply-templates
-                            select="descendant::gmd:resourceConstraints/gmd:MD_CreativeCommons[ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification]"
+                            select="descendant::gmd:resourceConstraints/*:MD_CreativeCommonss[ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification]"
                             mode="registryObject_rights_rightsStatement_creative"/>
     
                         <xsl:apply-templates
-                            select="descendant::gmd:resourceConstraints/gmd:MD_Commons[(ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification) and exists(gmd:licenseLink)]"
+                            select="descendant::gmd:resourceConstraints/*:MD_Commons[(ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification) and exists(*:licenseLink)]"
                             mode="registryObject_rights_licence_creative"/>
                         
                         <xsl:apply-templates
-                            select="descendant::gmd:resourceConstraints/gmd:MD_Commons[ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification]"
+                            select="descendant::gmd:resourceConstraints/*:MD_Commons[ancestor::gmd:MD_DataIdentification | ancestor::gmd:MD_ServiceIdentification]"
                             mode="registryObject_rights_rightsStatement_creative"/>
                         
                         <xsl:apply-templates
@@ -1037,8 +1037,8 @@
     </xsl:template>
 
     <!-- RegistryObject - Rights Licence - From CreativeCommons -->
-    <xsl:template match="gmd:MD_CreativeCommons" mode="registryObject_rights_licence_creative">
-        <xsl:variable name="licenseLink" select="normalize-space(gmd:licenseLink/gmd:URL)"/>
+    <xsl:template match="*:MD_CreativeCommonss" mode="registryObject_rights_licence_creative">
+        <xsl:variable name="licenseLink" select="normalize-space(*:licenseLink/gmd:URL)"/>
         <xsl:for-each
             select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCode']/gmx:codeEntry/gmx:CodeDefinition">
             <xsl:if test="string-length(normalize-space(gml:remarks)) > 0">
@@ -1059,7 +1059,7 @@
     </xsl:template>
 
     <!-- RegistryObject - Rights RightsStatement - From CreativeCommons -->
-    <xsl:template match="gmd:MD_CreativeCommons" mode="registryObject_rights_rightsStatement_creative">
+    <xsl:template match="*:MD_CreativeCommonss" mode="registryObject_rights_rightsStatement_creative">
         <xsl:for-each select="gmd:attributionConstraints">
             <!-- If there is text in other contraints, use this; otherwise, do nothing -->
             <xsl:if test="string-length(normalize-space(.)) > 0">
@@ -1073,8 +1073,8 @@
     </xsl:template>
     
     <!-- RegistryObject - Rights Licence - From CreativeCommons -->
-    <xsl:template match="gmd:MD_Commons" mode="registryObject_rights_licence_creative">
-        <xsl:variable name="licenseLink" select="normalize-space(gmd:licenseLink/gmd:URL)"/>
+    <xsl:template match="*:MD_Commons" mode="registryObject_rights_licence_creative">
+        <xsl:variable name="licenseLink" select="normalize-space(*:licenseLink/gmd:URL)"/>
         <xsl:for-each
             select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCode']/gmx:codeEntry/gmx:CodeDefinition">
             <xsl:if test="string-length(normalize-space(gml:remarks)) > 0">
@@ -1104,7 +1104,7 @@
     </xsl:template>
     
     <!-- RegistryObject - Rights RightsStatement - From CreativeCommons -->
-    <xsl:template match="gmd:MD_Commons" mode="registryObject_rights_rightsStatement_creative">
+    <xsl:template match="*:MD_Commons" mode="registryObject_rights_rightsStatement_creative">
         <xsl:for-each select="gmd:attributionConstraints">
             <!-- If there is text in other contraints, use this; otherwise, do nothing -->
             <xsl:if test="string-length(normalize-space(.)) > 0">
