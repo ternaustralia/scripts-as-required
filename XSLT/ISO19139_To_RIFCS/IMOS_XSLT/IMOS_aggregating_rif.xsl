@@ -26,7 +26,7 @@
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
     
-    <xsl:param name="global_group" select="'IMOS_123:Integrated Marine Observing System (123 Portal)'"/>
+    <xsl:param name="global_group" select="'IMOS:Integrated Marine Observing System (123 Portal)'"/>
     
     <!-- stylesheet to convert iso19139 in OAI-PMH ListRecords response to RIF-CS -->
     <xsl:template match="oai:responseDate"/>

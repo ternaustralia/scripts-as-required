@@ -879,7 +879,7 @@
     <xsl:template match="gmd:CI_OnlineResource" mode="IMOS_registryObject_relatedInfo">         
         
             <xsl:choose>
-                <xsl:when test="contains(gmd:protocol, 'OGC:') or contains(lower-case(gmd:linkage), 'thredds')">
+                <xsl:when test="contains(gmd:protocol, 'OGC:') or contains(lower-case(gmd:linkage/gmd:URL), 'thredds')">
                     <xsl:apply-templates select="." mode="relatedInfo_service"/>
                 </xsl:when>
                 <xsl:when test="not(contains(lower-case(gmd:description), 'point of truth url of this metadata record'))">
