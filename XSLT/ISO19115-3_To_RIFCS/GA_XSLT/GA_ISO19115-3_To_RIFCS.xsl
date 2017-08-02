@@ -207,69 +207,18 @@
                         </xsl:if>
                 </xsl:if>
                 
-                <xsl:choose>
-                    <xsl:when test="contains($registryObjectTypeSubType_sequence[2], 'dataset') and 
-                        (count(mdb:distributionInfo/mrd:MD_Distribution/mrd:transferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier') and contains(lower-case(cit:description), 'dataset doi')]/cit:linkage[contains(., 'doi')]) > 0)">
-                        <xsl:apply-templates select="mdb:distributionInfo/mrd:MD_Distribution/mrd:transferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier') and contains(lower-case(cit:description), 'dataset doi')]/cit:linkage[contains(., 'doi')][1]" mode="registryObject_identifier_doi"/>   
-                    </xsl:when>
-                    <xsl:when test="contains($registryObjectTypeSubType_sequence[2], 'dataset') and 
-                         (count(mdb:distributionInfo/mrd:MD_Distribution/mrd:distributionFormat/mrd:MD_Format/mrd:formatDistributor/mrd:MD_Distributor/mrd:distributorTransferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier for dataset') and contains(lower-case(cit:name), mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code)]/cit:linkage[contains(., 'doi')]) > 0)">
-                        <xsl:apply-templates select="mdb:distributionInfo/mrd:MD_Distribution/mrd:distributionFormat/mrd:MD_Format/mrd:formatDistributor/mrd:MD_Distributor/mrd:distributorTransferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier for dataset') and contains(lower-case(cit:name), mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code)]/cit:linkage[contains(., 'doi')][1]" mode="registryObject_identifier_doi"/>
-                    </xsl:when>
-                    
-                    <xsl:when test="contains($registryObjectTypeSubType_sequence[2], 'service') and 
-                        (count(mdb:distributionInfo/mrd:MD_Distribution/mrd:transferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier') and contains(lower-case(cit:description), 'service doi')]/cit:linkage[contains(., 'doi')]) > 0)">
-                        <xsl:apply-templates select="mdb:distributionInfo/mrd:MD_Distribution/mrd:transferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier') and contains(lower-case(cit:description), 'service doi')]/cit:linkage[contains(., 'doi')][1]" mode="registryObject_identifier_doi"/>   
-                    </xsl:when>
-                    <xsl:when test="contains($registryObjectTypeSubType_sequence[2], 'service') and 
-                        (count(mdb:distributionInfo/mrd:MD_Distribution/mrd:distributionFormat/mrd:MD_Format/mrd:formatDistributor/mrd:MD_Distributor/mrd:distributorTransferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier for service') and contains(lower-case(cit:name), mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code)]/cit:linkage[contains(., 'doi')]) > 0)">
-                        <xsl:apply-templates select="mdb:distributionInfo/mrd:MD_Distribution/mrd:distributionFormat/mrd:MD_Format/mrd:formatDistributor/mrd:MD_Distributor/mrd:distributorTransferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier for service') and contains(lower-case(cit:name), mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code)]/cit:linkage[contains(., 'doi')][1]" mode="registryObject_identifier_doi"/>
-                    </xsl:when>
-                    
-                    <xsl:when test="contains($registryObjectTypeSubType_sequence[2], 'software') and 
-                        (count(mdb:distributionInfo/mrd:MD_Distribution/mrd:transferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier') and contains(lower-case(cit:description), 'software doi')]/cit:linkage[contains(., 'doi')]) > 0)">
-                        <xsl:apply-templates select="mdb:distributionInfo/mrd:MD_Distribution/mrd:transferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier') and contains(lower-case(cit:description), 'software doi')]/cit:linkage[contains(., 'doi')][1]" mode="registryObject_identifier_doi"/>   
-                    </xsl:when>
-                    <xsl:when test="contains($registryObjectTypeSubType_sequence[2], 'software') and 
-                        (count(mdb:distributionInfo/mrd:MD_Distribution/mrd:distributionFormat/mrd:MD_Format/mrd:formatDistributor/mrd:MD_Distributor/mrd:distributorTransferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier for software') and contains(lower-case(cit:name), mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code)]/cit:linkage[contains(., 'doi')]) > 0)">
-                        <xsl:apply-templates select="mdb:distributionInfo/mrd:MD_Distribution/mrd:distributionFormat/mrd:MD_Format/mrd:formatDistributor/mrd:MD_Distributor/mrd:distributorTransferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier for software') and contains(lower-case(cit:name), mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code)]/cit:linkage[contains(., 'doi')][1]" mode="registryObject_identifier_doi"/>
-                    </xsl:when>
-                    
-                    <xsl:when test="contains($registryObjectTypeSubType_sequence[2], 'publication') and 
-                        (count(mdb:distributionInfo/mrd:MD_Distribution/mrd:transferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier') and contains(lower-case(cit:description), 'publication doi')]/cit:linkage[contains(., 'doi')]) > 0)">
-                        <xsl:apply-templates select="mdb:distributionInfo/mrd:MD_Distribution/mrd:transferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier') and contains(lower-case(cit:description), 'publication doi')]/cit:linkage[contains(., 'doi')][1]" mode="registryObject_identifier_doi"/>   
-                    </xsl:when>
-                    <xsl:when test="contains($registryObjectTypeSubType_sequence[2], 'publication') and 
-                        (count(mdb:distributionInfo/mrd:MD_Distribution/mrd:distributionFormat/mrd:MD_Format/mrd:formatDistributor/mrd:MD_Distributor/mrd:distributorTransferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier for publication') and contains(lower-case(cit:name), mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code)]/cit:linkage[contains(., 'doi')]) > 0)">
-                        <xsl:apply-templates select="mdb:distributionInfo/mrd:MD_Distribution/mrd:distributionFormat/mrd:MD_Format/mrd:formatDistributor/mrd:MD_Distributor/mrd:distributorTransferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier for publication') and contains(lower-case(cit:name), mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code)]/cit:linkage[contains(., 'doi')][1]" mode="registryObject_identifier_doi"/>
-                    </xsl:when>
-                    
-                    <xsl:when test="count(mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:identifier/mcc:MD_Identifier/mcc:code[contains(lower-case(.), 'doi')]) > 0">
-                        <xsl:apply-templates select="mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:identifier/mcc:MD_Identifier/mcc:code[not(contains(lower-case(.), 'doi'))]" mode="registryObject_identifier"/>
-                    </xsl:when>
-                    
-                    <!-- Could not find doi specific to type.  Try to find one that has the uuid of this metadata within the description-->
-                    <xsl:otherwise>
-                        <xsl:choose>
-                         <xsl:when test="
-                             (count(mdb:distributionInfo/mrd:MD_Distribution/mrd:distributionFormat/mrd:MD_Format/mrd:formatDistributor/mrd:MD_Distributor/mrd:distributorTransferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier') and contains(lower-case(cit:name), mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code)]/cit:linkage[contains(., 'doi')]) > 0)">
-                             <xsl:apply-templates select="mdb:distributionInfo/mrd:MD_Distribution/mrd:distributionFormat/mrd:MD_Format/mrd:formatDistributor/mrd:MD_Distributor/mrd:distributorTransferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier') and contains(lower-case(cit:name), mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code)]/cit:linkage[contains(., 'doi')][1]" mode="registryObject_identifier_doi"/>
-                         </xsl:when>
-                        </xsl:choose>
-                    </xsl:otherwise>
-                    
-                 </xsl:choose>
+                <xsl:apply-templates 
+                    select="mdb:distributionInfo/mrd:MD_Distribution/mrd:distributionFormat/mrd:MD_Format/mrd:formatDistributor/mrd:MD_Distributor/mrd:distributorTransferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code)]/cit:linkage[contains(., 'doi')][1]"
+                    mode="registryObject_identifier_doi"/>
                 
-                <xsl:apply-templates></xsl:apply-templates>
+                <xsl:apply-templates select="mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:identifier/mcc:MD_Identifier/mcc:code[not(contains(lower-case(.), 'doi'))]" mode="registryObject_identifier"/>
+                    
+                <xsl:apply-templates select="mdb:distributionInfo/mrd:MD_Distribution/mrd:distributionFormat/mrd:MD_Format/mrd:formatDistributor/mrd:MD_Distributor/mrd:distributorTransferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[not(contains(lower-case(cit:name), mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code) and contains(cit:linkage, 'doi'))]" mode="registryObject_relatedInfo"/>
                 
-                <xsl:apply-templates select="mdb:distributionInfo/mrd:MD_Distribution/mrd:transferOptions/mrd:MD_DigitalTransferOptions[mrd:onLine/cit:CI_OnlineResource/cit:function/cit:CI_OnLineFunctionCode/@codeListValue = 'download']" mode="registryObject_rights_access"/>
-                                
                 <xsl:apply-templates select="mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code" mode="registryObject_identifier_global"/>
-                
                  
                 <xsl:apply-templates select="mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code" mode="registryObject_location"/>
                 <xsl:apply-templates select="mdb:metadataLinkage/cit:CI_OnlineResource[contains(lower-case(cit:description), 'point-of-truth metadata')]/cit:linkage" mode="registryObject_identifier_metadata_URL"/>
-                <!-->xsl:apply-templates select="mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:identifier/mcc:MD_Identifier[contains(mcc:codeSpace, 'ga-dataSetURI')]/mcc:code[(string-length(.) > 0)]" mode="registryObject_relatedInfo_data_via_service"/-->
                     
                 <xsl:apply-templates select="mdb:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="registryObject">
                     <xsl:with-param name="originatingSource" select="$originatingSource"/>
@@ -330,11 +279,15 @@
             mode="registryObject_coverage_temporal"/>
          
         <xsl:apply-templates
-            select="mri:resourceConstraints/mco:MD_LegalConstraints[mco:useConstraints/mco:MD_RestrictionCode/@codeListValue = 'license']"
-            mode="registryObject_rights_license"/>
+            select="mri:resourceConstraints/mco:MD_LegalConstraints[(count(mco:reference/cit:CI_Citation) = 0) and (mco:useConstraints/mco:MD_RestrictionCode/@codeListValue = 'license') and (string-length(mco:otherConstraints) > 0)]"
+            mode="registryObject_rights_license_otherConstraint"/>
        
         <xsl:apply-templates
-           select="mri:resourceConstraints/mco:MD_LegalConstraints[count(mco:accessConstraints) > 0]"
+            select="mri:resourceConstraints/mco:MD_LegalConstraints[(string-length(mco:reference/cit:CI_Citation/cit:title) > 0) and (mco:useConstraints/mco:MD_RestrictionCode/@codeListValue = 'license')]"
+            mode="registryObject_rights_license_citation"/>
+        
+        <xsl:apply-templates
+            select="mri:resourceConstraints/mco:MD_LegalConstraints[count(mco:useConstraints) > 0]"
            mode="registryObject_rights_access"/>
         
         
@@ -388,7 +341,7 @@
         </key>
     </xsl:template>
     
-    <xsl:template match="cit:linkage" mode="registryObject_identifier_doi">
+  <xsl:template match="cit:linkage" mode="registryObject_identifier_doi">
         <identifier type="doi">
             <xsl:value-of select="."/>
         </identifier>
@@ -547,10 +500,10 @@
              </relatedObject>
             
             <xsl:for-each select="*/cit:individual/cit:CI_Individual">
-                <xsl:if test="string-length(normalize-space(cit:positionName)) > 0">
+                <xsl:if test="string-length(normalize-space(cit:name)) > 0">
                     <relatedObject>
                         <key>
-                            <xsl:value-of select="concat($global_acronym, '/', translate(normalize-space(cit:positionName),' ',''))"/>
+                            <xsl:value-of select="concat($global_acronym, '/', translate(normalize-space(cit:name),' ',''))"/>
                         </key>
                         <relation>
                             <xsl:attribute name="type" select="$role"/>
@@ -674,23 +627,6 @@
         </xsl:if>
     </xsl:template>
 
-    <!--  Commenting this out because all collections are being related to this same service which is causing the indexing in the registry to freak out -->
-    <!-- xsl:template match="mcc:code" mode="registryObject_relatedInfo_data_via_service">
-        <xsl:variable name="dataAccessLink" select="normalize-space(.)"/>
-        <xsl:if test="contains($dataAccessLink, 'thredds/catalog')">
-            <relatedInfo type="service">
-                <identifier type="uri">
-                    <xsl:value-of select="concat(substring-before($dataAccessLink, 'thredds/catalog'), 'thredds/catalog.html')"/>
-                </identifier>
-                <relation type="supports">
-                    <description>Data via the thredds server</description>
-                    <url><xsl:value-of select="$dataAccessLink"/></url>
-                </relation>
-                <title>thredds server</title>
-            </relatedInfo>
-        </xsl:if>
-    </xsl:template-->
-    
     <xsl:template match="srv:operatesOn" mode="registryObject_relatedObject_isSupportedBy">
             <relatedObject>
                 <key>
@@ -700,57 +636,223 @@
             </relatedObject>
     </xsl:template>
     
+    <!-- RegistryObject - RelatedInfo Element  -->
+    <xsl:template match="cit:CI_OnlineResource" mode="registryObject_relatedInfo">         
+        
+        <xsl:choose>
+            <xsl:when test="contains(cit:protocol, 'OGC:') or contains(lower-case(cit:linkage), 'thredds') or contains(lower-case(cit:linkage), '.nc')">
+                <xsl:apply-templates select="." mode="relatedInfo_service"/>
+            </xsl:when>
+            <xsl:when test="not(contains(lower-case(cit:description), 'point-of-truth'))">
+                <xsl:apply-templates select="." mode="relatedInfo_relatedInformation"/>
+            </xsl:when>
+            
+        </xsl:choose>
+        
+    </xsl:template>
+    
+    <xsl:template match="cit:CI_OnlineResource" mode="relatedInfo_service">       
+        
+        <xsl:variable name="identifierValue" select="normalize-space(cit:linkage)"/>
+        
+        <relatedInfo>
+            <xsl:attribute name="type" select="'service'"/>   
+            
+            <relation>
+                <xsl:attribute name="type">
+                    <xsl:text>supports</xsl:text>
+                </xsl:attribute>
+                <xsl:if test="(contains($identifierValue, '?')) or (contains($identifierValue, '.nc'))">
+                    <url>
+                        <xsl:value-of select="$identifierValue"/>
+                    </url>
+                </xsl:if>
+            </relation>
+            
+            <xsl:apply-templates select="." mode="relatedInfo_all"/>
+        </relatedInfo>
+        
+    </xsl:template>
+    
+    <xsl:template match="cit:CI_OnlineResource" mode="relatedInfo_relatedInformation">       
+        
+        <relatedInfo>
+            <xsl:attribute name="type" select="'relatedInformation'"/>   
+            
+            <relation>
+                <xsl:attribute name="type">
+                    <xsl:text>hasAssociationWith</xsl:text>
+                </xsl:attribute>
+            </relation>
+            
+            <xsl:apply-templates select="." mode="relatedInfo_all"/>
+        </relatedInfo>
+        
+    </xsl:template>
+    
+    
+    <xsl:template match="cit:CI_OnlineResource" mode="relatedInfo_all">     
+        
+        <xsl:variable name="identifierValue" select="normalize-space(cit:linkage)"/>
+        
+        <identifier>
+            <xsl:attribute name="type">
+                <xsl:choose>
+                    <xsl:when test="contains(lower-case($identifierValue), 'doi')">
+                        <xsl:text>doi</xsl:text>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:text>uri</xsl:text>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:attribute>
+            <xsl:choose>
+                <xsl:when test="contains($identifierValue, '?')">
+                    <xsl:value-of select="substring-before(., '?')"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="$identifierValue"/>
+                </xsl:otherwise>
+            </xsl:choose>
+            
+        </identifier>
+        
+        <xsl:choose>
+            <!-- Use description as title if we have it... -->
+            <xsl:when test="string-length(normalize-space(cit:description)) > 0">
+                <title>
+                    <xsl:value-of select="normalize-space(cit:description)"/>
+                    
+                    <!-- ...and then name in brackets following -->
+                    <xsl:if
+                        test="string-length(normalize-space(cit:name)) > 0">
+                        <xsl:value-of select="concat(' (', cit:name, ')')"/>
+                    </xsl:if>
+                </title>
+            </xsl:when>
+            <!-- No description, so use name as title if we have it -->
+            <xsl:otherwise>
+                <xsl:if
+                    test="string-length(normalize-space(cit:name)) > 0">
+                    <title>
+                        <xsl:value-of select="concat('(', cit:name, ')')"/>
+                    </title>
+                </xsl:if>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+    
+    <xsl:template match="mco:MD_LegalConstraints" mode="registryObject_rights_license_otherConstraint">
+        
+        <xsl:variable name="licenceText" select="mco:otherConstraints"/>
+        <xsl:call-template name="populateLicence">
+            <xsl:with-param name="licenceText" select="$licenceText"/>
+        </xsl:call-template>
+     </xsl:template>
+    
+    <xsl:template match="mco:MD_LegalConstraints" mode="registryObject_rights_license_citation">
+        
+        <xsl:variable name="licenceText" select="mco:reference/cit:CI_Citation/cit:title"/>
+        <xsl:call-template name="populateLicence">
+            <xsl:with-param name="licenceText" select="$licenceText"/>
+        </xsl:call-template>
+        
+    </xsl:template>
     
    <!-- RegistryObject - Rights License -->
-    <xsl:template match="mco:MD_LegalConstraints" mode="registryObject_rights_license">
-        <rights>
-            <licence>
-                
-                <xsl:variable name="inputTransformed" select="normalize-space(replace(replace(mco:otherConstraints, 'icence', 'icense', 'i'), '[\d.]+', ''))"/>
-                <xsl:variable name="codeDefinition_sequence" select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCodeAustralia' or @gml:id='LicenseCodeInternational']/gmx:codeEntry/gmx:CodeDefinition[normalize-space(replace(gml:name, '\{n\}', ' ')) = $inputTransformed]" as="node()*"/>
-                
-                <xsl:variable name="otherConstraints" select="mco:otherConstraints"/>
-                    
-                <xsl:for-each select="$codeDefinition_sequence">
-                    <xsl:variable name="codeDefinition" select="." as="node()"/>
-                     <xsl:variable name="licenceVersion" as="xs:string*">
-                        <xsl:analyze-string select="normalize-space($otherConstraints)"
-                            regex="[\d.]+">
-                            <xsl:matching-substring>
-                                <xsl:value-of select="regex-group(0)"/>
-                            </xsl:matching-substring>
-                        </xsl:analyze-string>
-                     </xsl:variable>
-                     
-                     <xsl:variable name="licenceURI">
-                         <xsl:value-of select="replace($codeDefinition/gml:remarks, '\{n\}', $licenceVersion)"/>
-                     </xsl:variable>
+    <xsl:template name="populateLicence">
+        <xsl:param name="licenceText"/>
         
-                     <xsl:if test="$global_debug">
-                        <xsl:message select="concat('licenceURI : ', $licenceURI)"/>
-                     </xsl:if>
-                     
-                    <xsl:if test="string-length($licenceURI) and count($licenceVersion) > 0">
-                         <xsl:attribute name="rightsUri">
-                             <xsl:value-of select="$licenceURI"/>
-                         </xsl:attribute>
-                    </xsl:if>
                     
-                    <xsl:if test="string-length(gml:identifier) > 0">
-                         <xsl:attribute name="type">
-                             <xsl:value-of select="gml:identifier"/>
-                         </xsl:attribute>
-                    </xsl:if>
-                </xsl:for-each>
+                    <xsl:variable name="inputTransformed" select="normalize-space(replace(replace(replace($licenceText, 'icence', 'icense', 'i'), '[\d.]+', ''), '-', ''))"/>
+                    <xsl:variable name="codeDefinition_sequence" select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCodeAustralia' or @gml:id='LicenseCodeInternational']/gmx:codeEntry/gmx:CodeDefinition[normalize-space(replace(replace(gml:name, '\{n\}', ' '), '-', '')) = $inputTransformed]" as="node()*"/>
+                    
+                    <xsl:choose>
+                        <xsl:when test="count($codeDefinition_sequence) > 0">
+                             <xsl:for-each select="$codeDefinition_sequence">
+                                 <xsl:variable name="codeDefinition" select="." as="node()"/>
+                                  <xsl:variable name="licenceVersion" as="xs:string*">
+                                     <xsl:analyze-string select="normalize-space($licenceText)"
+                                         regex="[\d.]+">
+                                         <xsl:matching-substring>
+                                             <xsl:value-of select="regex-group(0)"/>
+                                         </xsl:matching-substring>
+                                     </xsl:analyze-string>
+                                  </xsl:variable>
+                                  
+                                  <xsl:variable name="licenceURI">
+                                      <xsl:value-of select="replace($codeDefinition/gml:remarks, '\{n\}', $licenceVersion)"/>
+                                  </xsl:variable>
+                     
+                                  <xsl:if test="$global_debug">
+                                     <xsl:message select="concat('licenceURI : ', $licenceURI)"/>
+                                  </xsl:if>
+                                  
+                                 <xsl:variable name="type" select="gml:identifier"/>
+                                 
+                                 <rights>
+                                     <licence>
+                                         
+                                         <xsl:if test="string-length($licenceURI) and count($licenceVersion) > 0">
+                                              <xsl:attribute name="rightsUri">
+                                                  <xsl:value-of select="$licenceURI"/>
+                                              </xsl:attribute>
+                                         </xsl:if>
+                                         
+                                         <xsl:if test="string-length($type) > 0">
+                                              <xsl:attribute name="type">
+                                                  <xsl:value-of select="$type"/>
+                                              </xsl:attribute>
+                                         </xsl:if>
+                                         
+                                         <xsl:value-of select="$licenceText"/>
+                                     </licence>
+                                  </rights>
+                                 
+                                 <xsl:call-template name="populateAccessRights">
+                                     <xsl:with-param name="licenceType" select="$type"/>
+                                 </xsl:call-template>
+                                 
+                            </xsl:for-each>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <rights>
+                                <licence>
+                                    <xsl:value-of select="$licenceText"/>
+                                </licence>
+                            </rights>
+                            
+                            <xsl:call-template name="populateAccessRights"/> <!-- with no param -->
+                            
+                        </xsl:otherwise>
+                    </xsl:choose>
+     </xsl:template>
+    
+    <xsl:template name="populateAccessRights">
+        <xsl:param name="licenceType"/>
+        <rights>
+            <accessRights>
+                <xsl:choose>
+                    <xsl:when test="lower-case($licenceType) = 'cc-by'">
+                        <xsl:attribute name="type">
+                            <xsl:text>open</xsl:text>
+                        </xsl:attribute>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:attribute name="type">
+                            <xsl:text>conditional</xsl:text>
+                        </xsl:attribute>
+                    </xsl:otherwise>
+                </xsl:choose>
                 
-                <xsl:value-of select="mco:otherConstraints"/>
-            </licence>
+            </accessRights>
         </rights>
     </xsl:template>
     
+    
     <!-- RegistryObject - Rights Statement Access -->
     <xsl:template match="mco:MD_LegalConstraints" mode="registryObject_rights_access">
-        
+    <!-- todo -->
     </xsl:template>
     
     <xsl:template match="mrd:MD_DigitalTransferOptions" mode="registryObject_rights_access">
@@ -921,80 +1023,29 @@
                 <citationMetadata>
                     <identifier>
                         <xsl:choose>
-                            <xsl:when test="contains($registryObjectTypeSubType_sequence[2], 'dataset') and 
-                                (count(ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:transferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier') and contains(lower-case(cit:description), 'dataset doi')]/cit:linkage[contains(., 'doi')]) > 0)">
-                                <xsl:attribute name="type" select="'doi'"/>
-                                <xsl:value-of select="ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:transferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier') and contains(lower-case(cit:description), 'dataset doi')]/cit:linkage[contains(., 'doi')][1]"/>   
-                            </xsl:when>
-                            <xsl:when test="contains($registryObjectTypeSubType_sequence[2], 'dataset') and 
-                                (count(ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:distributionFormat/mrd:MD_Format/mrd:formatDistributor/mrd:MD_Distributor/mrd:distributorTransferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier for dataset') and contains(lower-case(cit:name), ancestor::mdb:MD_Metadata/mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code)]/cit:linkage[contains(., 'doi')]) > 0)">
-                                <xsl:attribute name="type" select="'doi'"/>
-                                <xsl:value-of select="ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:distributionFormat/mrd:MD_Format/mrd:formatDistributor/mrd:MD_Distributor/mrd:distributorTransferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier for dataset') and contains(lower-case(cit:name), ancestor::mdb:MD_Metadata/mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code)]/cit:linkage[contains(., 'doi')]"/>
-                            </xsl:when>
-                            
-                            <xsl:when test="contains($registryObjectTypeSubType_sequence[2], 'service') and 
-                                (count(ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:transferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier') and contains(lower-case(cit:description), 'service doi')]/cit:linkage[contains(., 'doi')]) > 0)">
-                                <xsl:attribute name="type" select="'doi'"/>
-                                <xsl:value-of select="ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:transferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier') and contains(lower-case(cit:description), 'service doi')]/cit:linkage[contains(., 'doi')][1]"/>   
-                            </xsl:when>
-                            <xsl:when test="contains($registryObjectTypeSubType_sequence[2], 'service') and 
-                                (count(ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:distributionFormat/mrd:MD_Format/mrd:formatDistributor/mrd:MD_Distributor/mrd:distributorTransferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier for service') and contains(lower-case(cit:name), ancestor::mdb:MD_Metadata/mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code)]/cit:linkage[contains(., 'doi')]) > 0)">
-                                <xsl:attribute name="type" select="'doi'"/>
-                                <xsl:value-of select="ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:distributionFormat/mrd:MD_Format/mrd:formatDistributor/mrd:MD_Distributor/mrd:distributorTransferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier for service') and contains(lower-case(cit:name), ancestor::mdb:MD_Metadata/mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code)]/cit:linkage[contains(., 'doi')][1]"/>
-                            </xsl:when>
-                            
-                            <xsl:when test="contains($registryObjectTypeSubType_sequence[2], 'software') and 
-                                (count(ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:transferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier') and contains(lower-case(cit:description), 'software doi')]/cit:linkage[contains(., 'doi')]) > 0)">
-                                <xsl:attribute name="type" select="'doi'"/>
-                                <xsl:value-of select="ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:transferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier') and contains(lower-case(cit:description), 'software doi')]/cit:linkage[contains(., 'doi')][1]"/>   
-                            </xsl:when>
-                            <xsl:when test="contains($registryObjectTypeSubType_sequence[2], 'software') and 
-                                (count(ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:distributionFormat/mrd:MD_Format/mrd:formatDistributor/mrd:MD_Distributor/mrd:distributorTransferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier for software') and contains(lower-case(cit:name), ancestor::mdb:MD_Metadata/mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code)]/cit:linkage[contains(., 'doi')]) > 0)">
-                                <xsl:attribute name="type" select="'doi'"/>
-                                <xsl:value-of select="ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:distributionFormat/mrd:MD_Format/mrd:formatDistributor/mrd:MD_Distributor/mrd:distributorTransferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier for software') and contains(lower-case(cit:name), ancestor::mdb:MD_Metadata/mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code)]/cit:linkage[contains(., 'doi')][1]"/>
-                            </xsl:when>
-                            
-                            <xsl:when test="contains($registryObjectTypeSubType_sequence[2], 'publication') and 
-                                (count(mdb:distributionInfo/mrd:MD_Distribution/mrd:transferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier') and contains(lower-case(cit:description), 'publication doi')]/cit:linkage[contains(., 'doi')]) > 0)">
-                                <xsl:attribute name="type" select="'doi'"/>
-                                <xsl:value-of select="mdb:distributionInfo/mrd:MD_Distribution/mrd:transferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier') and contains(lower-case(cit:description), 'publication doi')]/cit:linkage[contains(., 'doi')][1]"/>   
-                            </xsl:when>
-                            <xsl:when test="contains($registryObjectTypeSubType_sequence[2], 'publication') and 
-                                (count(ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:distributionFormat/mrd:MD_Format/mrd:formatDistributor/mrd:MD_Distributor/mrd:distributorTransferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier for publication') and contains(lower-case(cit:name), ancestor::mdb:MD_Metadata/mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code)]/cit:linkage[contains(., 'doi')]) > 0)">
-                                <xsl:attribute name="type" select="'doi'"/>
-                                <xsl:value-of select="ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:distributionFormat/mrd:MD_Format/mrd:formatDistributor/mrd:MD_Distributor/mrd:distributorTransferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier for publication') and contains(lower-case(cit:name), ancestor::mdb:MD_Metadata/mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code)]/cit:linkage[contains(., 'doi')][1]"/>
-                            </xsl:when>
-                            
-                            <xsl:when test="count(ancestor::mdb:MD_Metadata/mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:identifier/mcc:MD_Identifier/mcc:code[contains(lower-case(.), 'doi')]) > 0">
-                                <xsl:attribute name="type" select="'doi'"/>
-                                <xsl:value-of select="ancestor::mdb:MD_Metadata/mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:identifier/mcc:MD_Identifier/mcc:code[not(contains(lower-case(.), 'doi'))]"/>
-                            </xsl:when>
-                            
-                            <!-- Could not find doi specific to type.  Try to find one that has the uuid of this metadata within the description-->
-                           <xsl:when test="
-                               (count(ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:distributionFormat/mrd:MD_Format/mrd:formatDistributor/mrd:MD_Distributor/mrd:distributorTransferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier') and contains(lower-case(cit:name), ancestor::mdb:MD_Metadata/mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code)]/cit:linkage[contains(., 'doi')]) > 0)">
-                               <xsl:attribute name="type" select="'doi'"/>
-                               <xsl:value-of select="ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:distributionFormat/mrd:MD_Format/mrd:formatDistributor/mrd:MD_Distributor/mrd:distributorTransferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), 'digital object identifier') and contains(lower-case(cit:name), ancestor::mdb:MD_Metadata/mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code)]/cit:linkage[contains(., 'doi')][1]"/>
-                            </xsl:when>
-             
-                            
-                             <xsl:when 
-                                test="count(cit:identifier[contains(mcc:MD_Identifier/mcc:codeSpace, 'ga-dataSetURI')]/mcc:MD_Identifier/mcc:code) and (string-length(cit:identifier[contains(mcc:MD_Identifier/mcc:codeSpace, 'ga-dataSetURI')][1]/mcc:MD_Identifier/mcc:code[1]) > 0)">
-                                <xsl:attribute name="type" select="'uri'"/>
-                                <xsl:value-of select="cit:identifier[contains(mcc:MD_Identifier/mcc:codeSpace, 'ga-dataSetURI')][1]/mcc:MD_Identifier/mcc:code[1]"/>   
-                            </xsl:when>
-                            <xsl:when 
-                                test="count(cit:identifier[not(contains(mcc:MD_Identifier/mcc:codeSpace, 'ga-dataSetURI'))]/mcc:MD_Identifier/mcc:code) and (string-length(cit:identifier[not(contains(mcc:MD_Identifier/mcc:codeSpace, 'ga-dataSetURI'))][1]/mcc:MD_Identifier/mcc:code[1]) > 0)">
-                                <xsl:attribute name="type" select="'uri'"/>
-                                <xsl:value-of select="cit:identifier[not(contains(mcc:MD_Identifier/mcc:codeSpace, 'ga-dataSetURI'))][1]/mcc:MD_Identifier/mcc:code[1]"/>   
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:attribute name="type" select="'uri'"/>
-                                <xsl:value-of select="concat('http://', $global_baseURI, $global_path, ancestor::mdb:MD_Metadata/mdb:metadataIdentifier[1]/mcc:MD_Identifier[1]/mcc:code[1])"/>
-                            </xsl:otherwise>
+                                <xsl:when 
+                                    test="count(ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:distributionFormat/mrd:MD_Format/mrd:formatDistributor/mrd:MD_Distributor/mrd:distributorTransferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code)]/cit:linkage[contains(., 'doi')]) > 0">
+                                    <xsl:attribute name="type" select="'doi'"/>
+                                    <xsl:value-of select="
+                                        ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:distributionFormat/mrd:MD_Format/mrd:formatDistributor/mrd:MD_Distributor/mrd:distributorTransferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code)]/cit:linkage[contains(., 'doi')][1]"/>
+                                </xsl:when>
+                                <xsl:when 
+                                    test="count(cit:identifier[contains(mcc:MD_Identifier/mcc:codeSpace, 'ga-dataSetURI')]/mcc:MD_Identifier/mcc:code) and (string-length(cit:identifier[contains(mcc:MD_Identifier/mcc:codeSpace, 'ga-dataSetURI')][1]/mcc:MD_Identifier/mcc:code[1]) > 0)">
+                                    <xsl:attribute name="type" select="'uri'"/>
+                                    <xsl:value-of select="cit:identifier[contains(mcc:MD_Identifier/mcc:codeSpace, 'ga-dataSetURI')][1]/mcc:MD_Identifier/mcc:code[1]"/>   
+                                </xsl:when>
+                                <xsl:when 
+                                    test="count(cit:identifier[not(contains(mcc:MD_Identifier/mcc:codeSpace, 'ga-dataSetURI'))]/mcc:MD_Identifier/mcc:code) and (string-length(cit:identifier[not(contains(mcc:MD_Identifier/mcc:codeSpace, 'ga-dataSetURI'))][1]/mcc:MD_Identifier/mcc:code[1]) > 0)">
+                                    <xsl:attribute name="type" select="'uri'"/>
+                                    <xsl:value-of select="cit:identifier[not(contains(mcc:MD_Identifier/mcc:codeSpace, 'ga-dataSetURI'))][1]/mcc:MD_Identifier/mcc:code[1]"/>   
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:attribute name="type" select="'uri'"/>
+                                    <xsl:value-of select="concat('http://', $global_baseURI, $global_path, ancestor::mdb:MD_Metadata/mdb:metadataIdentifier[1]/mcc:MD_Identifier[1]/mcc:code[1])"/>
+                                </xsl:otherwise>
                         </xsl:choose>
                     </identifier>
-                 
+             
                     <title>
                         <xsl:value-of select="cit:title"/>
                     </title>
@@ -1152,13 +1203,13 @@
                     </name>
                     
                     <xsl:choose>
-                        <xsl:when test="(count(cit:individual/cit:CI_Individual) > 0) and (string-length(cit:individual/cit:CI_Individual/cit:positionName) > 0)"> 
+                        <xsl:when test="(count(cit:individual/cit:CI_Individual) > 0) and (string-length(cit:individual/cit:CI_Individual/cit:name) > 0)"> 
                             <!--  individual position name, so relate this individual to this organisation... -->
                             <xsl:for-each select="cit:individual/cit:CI_Individual">
-                                <xsl:if test="(string-length(cit:positionName) > 0)">
+                                <xsl:if test="(string-length(cit:name) > 0)">
                                   <relatedObject>
                                       <key>
-                                        <xsl:value-of select="concat($global_acronym, '/', translate(normalize-space(cit:positionName),' ',''))"/>
+                                          <xsl:value-of select="concat($global_acronym, '/', translate(normalize-space(cit:name),' ',''))"/>
                                       </key>
                                       <relation type="hasMember"/>
                                   </relatedObject>
@@ -1174,15 +1225,14 @@
                     
                 </party>
         </registryObject>
-        <xsl:if test="(count(cit:individual/cit:CI_Individual) > 0) and (string-length(cit:individual/cit:CI_Individual/cit:positionName) > 0)"> 
-            <!--  individual position name, so create a person record for this position, that takes the address from this CI_Organisation object -->
+        <!--xsl:if test="(count(cit:individual/cit:CI_Individual) > 0) and (string-length(cit:individual/cit:CI_Individual/cit:positionName) > 0)"> 
             <xsl:apply-templates select="." mode="party_position">
                 <xsl:with-param name="originatingSource" select="$originatingSource"/>
             </xsl:apply-templates>
-        </xsl:if>
-     </xsl:template>
+        </xsl:if-->
+     </xsl:template>     
      
-      <xsl:template match="cit:CI_Organisation" mode="party_position">
+     <!--xsl:template match="cit:CI_Organisation" mode="party_position">
             <xsl:param name="originatingSource"/>
             
            <registryObject group="{$global_group}">
@@ -1209,7 +1259,7 @@
                     
                 </party>
         </registryObject>
-     </xsl:template>
+     </xsl:template-->
     
     <xsl:template match="cit:CI_OnlineResource">
         <xsl:if test="string-length(cit:linkage) > 0">
