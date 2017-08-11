@@ -550,9 +550,11 @@
             <xsl:message select="concat('openAccessPermission uri: ', *:openAccessPermission/*:uri)"/>
             <xsl:message select="concat('openAccessPermission description: ', *:openAccessPermission/*:description)"/>
             <xsl:message select="concat('visibility: ', *:limitedVisibility/*:visibility)"/>
-            <xsl:message select="concat('legalCondition uri: ', *:legalConditions/*:legalCondition/*:typeClassification/*:uri)"/>
-            <xsl:message select="concat('legalCondition description: ', *:legalConditions/*:legalCondition/*:description)"/>
-        </xsl:if>
+            <xsl:for-each select="*:legalConditions/*:legalCondition/*:typeClassification">
+                <xsl:message select="concat('legalCondition uri: ', *:uri)"/>
+                <xsl:message select="concat('legalCondition uri: ', *:description)"/>
+            </xsl:for-each>
+       </xsl:if>
         
          <rights>
             <accessRights>   
@@ -620,22 +622,24 @@
               </accessRights>
         </rights>
         
-        <rights>
-            <rightsStatement>
-                <xsl:if test="string-length(*:legalConditions/*:legalCondition/*:typeClassification/*:term) > 0">
-                    <xsl:value-of select="*:legalConditions/*:legalCondition/*:typeClassification/*:term"/>
-                </xsl:if>    
-                
-                <xsl:if test="(string-length(*:legalConditions/*:legalCondition/*:typeClassification/*:term) > 0) and (string-length(*:description) > 0)">
-                    <xsl:text> - </xsl:text>
-                </xsl:if>    
-                
-                <xsl:if test="string-length(*:legalConditions/*:legalCondition/*:description) > 0">
-                    <xsl:value-of select="*:legalConditions/*:legalCondition/*:description"/>
-                </xsl:if>   
-            </rightsStatement>
-        </rights> 
-    
+        <xsl:for-each select="*:legalConditions/*:legalCondition">
+            <rights>
+                <rightsStatement>
+                    <xsl:if test="string-length(*:typeClassification/*:term) > 0">
+                        <xsl:value-of select="*:typeClassification/*:term"/>
+                    </xsl:if>    
+                    
+                    <xsl:if test="(string-length(*:typeClassification/*:term) > 0) and (string-length(*:description) > 0)">
+                        <xsl:text> - </xsl:text>
+                    </xsl:if>    
+                    
+                    <xsl:if test="string-length(*:description) > 0">
+                        <xsl:value-of select="*:description"/>
+                    </xsl:if>   
+                </rightsStatement>
+            </rights> 
+        </xsl:for-each>
+        
     </xsl:template>
     
     
