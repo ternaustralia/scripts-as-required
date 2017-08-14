@@ -21,7 +21,9 @@
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
     
-    <xsl:param name="global_IMOS_group" select="'IMOS_123:Integrated Marine Observing System'"/>
+    <xsl:param name="global_debug" select="false()" as="xs:boolean"/>
+    <xsl:param name="global_debugExceptions" select="true()" as="xs:boolean"/>
+    <xsl:param name="global_IMOS_group" select="'IMOS:Integrated Marine Observing System'"/>
     <xsl:param name="global_IMOS_sourceURL" select="'http://imosmest.aodn.org.au'"/>
     <!--xsl:param name="global_IMOS_originatingSourceOrganisation" select="'undetermined'"/-->
     
@@ -64,8 +66,10 @@
     <xsl:template match="*:MD_Metadata" mode="IMOS">
         <xsl:param name="aggregatingGroup"/>
         
-        <xsl:message>IMOS XSLT</xsl:message>
-       
+        <xsl:if test="$global_debug">
+            <xsl:message>IMOS XSLT</xsl:message>
+        </xsl:if>
+        
         <xsl:variable name="groupToUse">
             <xsl:choose>
                 <xsl:when test="string-length($aggregatingGroup) > 0">
@@ -99,9 +103,15 @@
             </xsl:choose>
         </xsl:variable> 
         
-        <xsl:message select="concat('originatingSourceURL: ', $originatingSourceURL)"/>
         <xsl:variable name="originatingSourceOrganisation" select="customGMD:originatingSourceOrganisation(.)"/>
-        <xsl:message select="concat('$originatingSourceOrganisation: ', $originatingSourceOrganisation)"/>
+        
+        <xsl:if test="$global_debug">
+            <xsl:message select="concat('originatingSourceURL: ', $originatingSourceURL)"/>
+            <xsl:message select="concat('$originatingSourceOrganisation: ', $originatingSourceOrganisation)"/>
+        </xsl:if>
+        
+        
+        
         
         
        
@@ -143,8 +153,6 @@
                 <xsl:apply-templates select="gmd:parentIdentifier" mode="IMOS_registryObject_related_object">
                     <xsl:with-param name="groupToUse" select="$groupToUse"/>  
                 </xsl:apply-templates>
-                
-                <!--xsl:apply-templates select="gmd:dataSetURI" mode="IMOS_registryObject_relatedInfo_data_via_service"/-->
                 
                 <xsl:apply-templates select="gmd:children/gmd:childIdentifier" mode="IMOS_registryObject_related_object">
                     <xsl:with-param name="groupToUse" select="$groupToUse"/>  
@@ -892,6 +900,8 @@
     
     <xsl:template match="gmd:CI_OnlineResource" mode="relatedInfo_service">       
       
+        <xsl:variable name="identifierValue" select="normalize-space(gmd:linkage/gmd:URL)"/>
+        
         <relatedInfo>
         <xsl:attribute name="type" select="'service'"/>   
          
@@ -899,6 +909,11 @@
              <xsl:attribute name="type">
                  <xsl:text>supports</xsl:text>
              </xsl:attribute>
+             <xsl:if test="(contains($identifierValue, '?')) or (contains($identifierValue, '.nc'))">
+                    <url>
+                        <xsl:value-of select="$identifierValue"/>
+                    </url>
+             </xsl:if>
          </relation>
          
          <xsl:apply-templates select="." mode="relatedInfo_all"/>
@@ -938,7 +953,15 @@
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:attribute>
-                <xsl:value-of select="$identifierValue"/>
+                <xsl:choose>
+                    <xsl:when test="contains($identifierValue, '?')">
+                        <xsl:value-of select="substring-before(., '?')"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:value-of select="$identifierValue"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+                
             </identifier>
             
                 <xsl:choose>
@@ -967,24 +990,7 @@
      </xsl:template>
     
     
-    <xsl:template match="gmd:dataSetURI" mode="IMOS_registryObject_relatedInfo_data_via_service">
-        <xsl:variable name="dataAccessLink" select="normalize-space(.)"/>
-        <xsl:if test="contains($dataAccessLink, 'thredds/catalog')">
-            <relatedInfo type="service">
-                <identifier type="uri">
-                    <xsl:value-of select="concat(substring-before($dataAccessLink, 'thredds/catalog'), 'thredds/catalog.html')"/>
-                </identifier>
-                <relation type="supports">
-                    <description>Data via the thredds server</description>
-                    <url><xsl:value-of select="$dataAccessLink"/></url>
-                </relation>
-                <title>thredds server</title>
-            </relatedInfo>
-        </xsl:if>
-    </xsl:template>
-    
-    
-    <xsl:template match="gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:source/gmd:LI_Source" mode="IMOS_registryObject_relatedInfo">
+     <xsl:template match="gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:source/gmd:LI_Source" mode="IMOS_registryObject_relatedInfo">
      <xsl:if test="string-length(gmd:sourceCitation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier/gmd:code) > 0">
         <relatedInfo>
            <xsl:attribute name="type">
@@ -1320,8 +1326,9 @@
            </xsl:for-each>
        </xsl:variable>
        
-       <xsl:message select="concat('Count($citationContributorName_sequence): ', count($citationContributorName_sequence))"/>
-       
+        <xsl:if test="$global_debug">
+            <xsl:message select="concat('Count($citationContributorName_sequence): ', count($citationContributorName_sequence))"/>
+        </xsl:if>
        
         <xsl:variable name="pointOfContact_principalInvestigator_sequence" as="node()*" select="
             ../../gmd:pointOfContact/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'principalInvestigator']"/>
@@ -1358,8 +1365,9 @@
       
       </xsl:variable>
       
-      <xsl:message select="concat('Count($pointOfContactContributorName_sequence): ', count($pointOfContactContributorName_sequence))"/>
-       
+        <xsl:if test="$global_debug">
+            <xsl:message select="concat('Count($pointOfContactContributorName_sequence): ', count($pointOfContactContributorName_sequence))"/>
+        </xsl:if>
       
         <xsl:variable name="allContributorName_sequence" as="xs:string*">
            
@@ -1490,15 +1498,21 @@
                     <xsl:variable name="publisherToUse">
                         <xsl:choose>
                             <xsl:when test="(count($publisher_sequence) > 0) and (string-length($publisher_sequence[1]/gmd:organisationName) > 0)">
-                                <xsl:message select="concat('Found party with publish role: ', $publisher_sequence[1]/gmd:organisationName)"/> 
-                                <xsl:copy-of select="$publisher_sequence[1]/gmd:organisationName"/>
+                                <xsl:if test="$global_debug">
+                                        <xsl:message select="concat('Found party with publish role: ', $publisher_sequence[1]/gmd:organisationName)"/> 
+                                </xsl:if>
+                                 <xsl:copy-of select="$publisher_sequence[1]/gmd:organisationName"/>
                             </xsl:when>
                             <xsl:when test="string-length($originatingSourceOrganisation) > 0">
-                                <xsl:message select="concat('No party with publish role found, using originating source organisation: ', $originatingSourceOrganisation)"/> 
+                                <xsl:if test="$global_debug">
+                                    <xsl:message select="concat('No party with publish role found, using originating source organisation: ', $originatingSourceOrganisation)"/> 
+                                </xsl:if>
                                 <xsl:value-of select="$originatingSourceOrganisation"/>
                             </xsl:when>
                             <xsl:otherwise>
-                                <xsl:message select="concat('Resorting to group for publisher: ', substring-after($global_IMOS_group, ':'))"/> 
+                                <xsl:if test="$global_debug">
+                                    <xsl:message select="concat('Resorting to group for publisher: ', substring-after($global_IMOS_group, ':'))"/> 
+                                </xsl:if>
                                 <xsl:value-of select="substring-after($global_IMOS_group, ':')"/>
                             </xsl:otherwise>
                         </xsl:choose>
@@ -1542,12 +1556,17 @@
                 <xsl:value-of select="concat(substring-before($groupToUse, ':'), '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
              </key>
             
-             <originatingSource>
+           <originatingSource>
                  <xsl:value-of select="$originatingSourceURL"/>
              </originatingSource> 
               
              <party type="person">
-                  <name type="primary">
+                 
+                 <identifier type="global">
+                     <xsl:value-of select="translate(normalize-space(current-grouping-key()),' ','')"/>
+                 </identifier>
+                 
+                 <name type="primary">
                       <namePart>
                           <xsl:value-of select="normalize-space(current-grouping-key())"/>
                       </namePart>
@@ -1606,6 +1625,11 @@
             </originatingSource> 
             
             <party type="group">
+                
+                <identifier type="global">
+                    <xsl:value-of select="translate(normalize-space(current-grouping-key()),' ','')"/>
+                </identifier>
+                
                 <name type="primary">
                     <namePart>
                         <xsl:value-of select="normalize-space(current-grouping-key())"/>
@@ -1785,37 +1809,50 @@
     
    <xsl:function name="customIMOS:registryObjectClass" as="xs:string">
         <xsl:param name="scopeCode_sequence" as="xs:string*"/>
-       <xsl:choose>
-            <xsl:when test="count($scopeCode_sequence) > 0">
-                <xsl:choose>
-                    <xsl:when test="contains(lower-case($scopeCode_sequence[1]), 'dataset')">
-                        <xsl:text>collection</xsl:text>
-                    </xsl:when>
-                    <xsl:when test="contains(lower-case($scopeCode_sequence[1]), 'collectionSession')">
-                        <xsl:text>activity</xsl:text>
-                    </xsl:when>
-                    <xsl:when test="contains(lower-case($scopeCode_sequence[1]), 'series')">
-                        <xsl:text>activity</xsl:text>
-                    </xsl:when>
-                    <xsl:when test="contains(lower-case($scopeCode_sequence[1]), 'software')">
-                        <xsl:text>collection</xsl:text>
-                    </xsl:when>
-                    <xsl:when test="contains(lower-case($scopeCode_sequence[1]), 'model')">
-                        <xsl:text>collection</xsl:text>
-                    </xsl:when>
-                    <xsl:when test="contains(lower-case($scopeCode_sequence[1]), 'service')">
-                        <xsl:text>service</xsl:text>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:text>collection</xsl:text>
-                    </xsl:otherwise>
-                </xsl:choose>
-            </xsl:when>
-            <xsl:otherwise>
-                <xsl:text>collection</xsl:text>
-            </xsl:otherwise>
-       </xsl:choose>
-   </xsl:function>
+       
+       <xsl:variable name="class">
+             <xsl:choose>
+                  <xsl:when test="count($scopeCode_sequence) > 0">
+                      <xsl:if test="$global_debug">
+                          <xsl:message select="concat('ScopeCode ', $scopeCode_sequence[1])"/>
+                      </xsl:if>
+                      <xsl:choose>
+                          <xsl:when test="contains(lower-case($scopeCode_sequence[1]), 'dataset')">
+                              <xsl:text>collection</xsl:text>
+                          </xsl:when>
+                          <xsl:when test="contains(lower-case($scopeCode_sequence[1]), 'collectionhardware')">
+                              <xsl:text>activity</xsl:text>
+                          </xsl:when>
+                          <xsl:when test="contains(lower-case($scopeCode_sequence[1]), 'series')">
+                              <xsl:text>activity</xsl:text>
+                          </xsl:when>
+                          <xsl:when test="contains(lower-case($scopeCode_sequence[1]), 'software')">
+                              <xsl:text>collection</xsl:text>
+                          </xsl:when>
+                          <xsl:when test="contains(lower-case($scopeCode_sequence[1]), 'model')">
+                              <xsl:text>collection</xsl:text>
+                          </xsl:when>
+                          <xsl:when test="contains(lower-case($scopeCode_sequence[1]), 'service')">
+                              <xsl:text>service</xsl:text>
+                          </xsl:when>
+                          <xsl:otherwise>
+                              <xsl:text>collection</xsl:text>
+                          </xsl:otherwise>
+                      </xsl:choose>
+                  </xsl:when>
+                  <xsl:otherwise>
+                      <xsl:text>collection</xsl:text>
+                  </xsl:otherwise>
+             </xsl:choose>
+        </xsl:variable>
+       
+       <xsl:if test="$global_debug">
+           <xsl:message select="concat('Determined class ', $class)"/>
+       </xsl:if>
+       
+       <xsl:value-of select="$class"/>
+       
+     </xsl:function>
     
     <xsl:function name="customIMOS:registryObjectType" as="xs:string*">
         <xsl:param name="scopeCode_sequence" as="xs:string*"/>
@@ -1825,7 +1862,7 @@
                     <xsl:when test="contains(lower-case($scopeCode_sequence[1]), 'dataset')">
                         <xsl:text>dataset</xsl:text>
                     </xsl:when>
-                    <xsl:when test="contains(lower-case($scopeCode_sequence[1]), 'collectionSession')">
+                    <xsl:when test="contains(lower-case($scopeCode_sequence[1]), 'collectionhardware')">
                         <xsl:text>project</xsl:text>
                     </xsl:when>
                     <xsl:when test="contains(lower-case($scopeCode_sequence[1]), 'series')">

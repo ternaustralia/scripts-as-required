@@ -1734,6 +1734,11 @@
             <xsl:message select="concat('typeToUse:', $typeToUse)"/>
             
             <party type="{$typeToUse}">
+                
+                <identifier type="global">
+                    <xsl:value-of select="translate(customIMAS:nameNoTitle($name),' ','')"/>
+                </identifier>
+                
                 <name type="primary">
                     <namePart>
                         <xsl:value-of select="$name"/>
