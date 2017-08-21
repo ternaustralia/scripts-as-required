@@ -211,7 +211,7 @@
                     select="mdb:distributionInfo/mrd:MD_Distribution/mrd:distributionFormat/mrd:MD_Format/mrd:formatDistributor/mrd:MD_Distributor/mrd:distributorTransferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code)]/cit:linkage[contains(., 'doi')][1]"
                     mode="registryObject_identifier_doi"/>
                 
-                <xsl:apply-templates select="mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:identifier/mcc:MD_Identifier/mcc:code[not(contains(lower-case(.), 'doi'))]" mode="registryObject_identifier"/>
+                <xsl:apply-templates select="mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:identifier/mcc:MD_Identifier/mcc:code[not(contains(lower-case(.), 'doi')) and not(contains(lower-case(.), 'product'))]" mode="registryObject_identifier"/>
                     
                 <xsl:apply-templates select="mdb:distributionInfo/mrd:MD_Distribution/mrd:distributionFormat/mrd:MD_Format/mrd:formatDistributor/mrd:MD_Distributor/mrd:distributorTransferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[not(contains(lower-case(cit:name), mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code) and contains(cit:linkage, 'doi'))]" mode="registryObject_relatedInfo"/>
                 
@@ -640,7 +640,7 @@
     <xsl:template match="cit:CI_OnlineResource" mode="registryObject_relatedInfo">         
         
         <xsl:choose>
-            <xsl:when test="contains(cit:protocol, 'OGC:') or contains(lower-case(cit:linkage), 'thredds') or contains(lower-case(cit:linkage), '.nc')">
+            <xsl:when test="contains(cit:protocol, 'OGC:') or contains(lower-case(cit:linkage), 'thredds') or contains(lower-case(cit:linkage), '.nc') or contains(lower-case(cit:linkage), '?')">
                 <xsl:apply-templates select="." mode="relatedInfo_service"/>
             </xsl:when>
             <xsl:when test="not(contains(lower-case(cit:description), 'point-of-truth'))">
@@ -702,7 +702,7 @@
                         <xsl:text>doi</xsl:text>
                     </xsl:when>
                     <xsl:otherwise>
-                        <xsl:text>uri</xsl:text>
+                        <xsl:text>url</xsl:text>
                     </xsl:otherwise>
                 </xsl:choose>
             </xsl:attribute>
