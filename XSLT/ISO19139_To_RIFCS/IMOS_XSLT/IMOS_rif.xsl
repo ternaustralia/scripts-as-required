@@ -24,7 +24,7 @@
     <xsl:param name="global_debug" select="false()" as="xs:boolean"/>
     <xsl:param name="global_debugExceptions" select="true()" as="xs:boolean"/>
     <xsl:param name="global_IMOS_group" select="'IMOS:Integrated Marine Observing System'"/>
-    <xsl:param name="global_IMOS_sourceURL" select="'http://imosmest.aodn.org.au'"/>
+    <xsl:param name="global_IMOS_sourceURL" select="'http://catalogue-imos.aodn.org.au'"/>
     <!--xsl:param name="global_IMOS_originatingSourceOrganisation" select="'undetermined'"/-->
     
     <xsl:param name="global_IMOS_path" select="'/geonetwork/srv/en/metadata.show?uuid='"/>

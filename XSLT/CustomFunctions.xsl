@@ -94,7 +94,7 @@
             <xsl:when test="contains(lower-case($identifier), 'purl.org')">
                 <xsl:text>purl</xsl:text>
             </xsl:when>
-            <xsl:when test="contains(lower-case($identifier), 'doi.org')">
+            <xsl:when test="contains(lower-case($identifier), 'doi')">
                 <xsl:text>doi</xsl:text>
             </xsl:when>
             <xsl:when test="contains(lower-case($identifier), 'scopus')">

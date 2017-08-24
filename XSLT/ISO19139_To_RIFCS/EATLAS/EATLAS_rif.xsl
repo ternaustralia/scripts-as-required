@@ -1938,6 +1938,11 @@
                      </originatingSource>
          
                      <party type="{$type}">
+                         
+                         <identifier type="global">
+                             <xsl:value-of select="translate(normalize-space(current-grouping-key()),' ','')"/>
+                         </identifier>
+                         
                          <name type="primary">
                              <namePart>
                                  <xsl:value-of select="normalize-space(current-grouping-key())"/>
