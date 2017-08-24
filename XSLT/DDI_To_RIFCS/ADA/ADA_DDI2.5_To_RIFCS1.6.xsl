@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:oai="http://www.openarchives.org/OAI/2.0/" 
     xmlns:ddi="http://www.icpsr.umich.edu/DDI" 
+    xmlns:oai_ddi="https://dataverse-test.ada.edu.au/oai"
     xmlns:custom="http://custom.nowhere.yet"
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xmlns:fn="http://www.w3.org/2005/xpath-functions"
     xmlns:localFunc="http://www.localfunc.net"
     xmlns:saxon="http://saxon.sf.net/"
     xmlns:local="http://local.to.here"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="3.0">
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="3.0"
+    exclude-result-prefixes="saxon local xs oai ddi oai_ddi custom fn localFunc">
     
     <xsl:import href="CustomFunctions.xsl"/>
     
@@ -21,23 +24,25 @@
     <xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes"/>
     
     <xsl:template match="/">
-        <xsl:message select="concat('name:', name(ddi:codeBook))"/>
-        <!-- registryObjects xmlns="http://ands.org.au/standards/rif-cs/registryObjects" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd"-->
-            <xsl:apply-templates select="ddi:codeBook" mode="collection"/>
+        <registryObjects>
+            <xsl:attribute name="xsi:schemaLocation">
+                <xsl:text>http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd</xsl:text>
+            </xsl:attribute>
+            <xsl:apply-templates select="//*:codeBook" mode="collection"/>
             <!--xsl:apply-templates select="." mode="activity"/-->
-            <xsl:apply-templates select="ddi:codeBook/ddi:stdyDscr/ddi:citation/ddi:rspStmt/ddi:AuthEnty[(string-length(.) > 0)]" mode="party_author"/>
-            <xsl:apply-templates select="ddi:codeBook/ddi:docDscr/ddi:citation/ddi:prodStmt/ddi:producer[(string-length(.) > 0)]" mode="party_producer"/>
-            <xsl:apply-templates select="ddi:codeBook/ddi:stdyDscr/ddi:citation/ddi:rspStmt/ddi:AuthEnty/@affiliation[(string-length(.) > 0)]" mode="party_organisation"/>
+            <xsl:apply-templates select="//*:codeBook/*:stdyDscr/*:citation/*:rspStmt/*:AuthEnty[(string-length(.) > 0)]" mode="party_author"/>
+            <xsl:apply-templates select="//*:codeBook/*:docDscr/*:citation/*:prodStmt/*:producer[(string-length(.) > 0)]" mode="party_producer"/>
+            <xsl:apply-templates select="//*:codeBook/*:stdyDscr/*:citation/*:rspStmt/*:AuthEnty/@affiliation[(string-length(.) > 0)]" mode="party_organisation"/>
                 
-        <!-- /registryObjects-->
+        </registryObjects>
     </xsl:template>
     
-    <xsl:template match="ddi:codeBook" mode="collection">
+   <xsl:template match="*:codeBook" mode="collection">
         <xsl:message select="concat('match', 'codeBook')"/>
         <registryObject>
             <xsl:attribute name="group" select="$global_group"/>
             <key>
-                <xsl:value-of select="normalize-space(@ID)"/>
+                <xsl:value-of select="custom:registryObjectKeyFromString(*:stdyDscr/*:citation/*:titlStmt/*:IDNo)"/>
             </key>
             <originatingSource>
                 <xsl:value-of select="$global_originatingSource"/>
@@ -45,35 +50,35 @@
                 
             <collection>
                 <xsl:attribute name="type" select="'dataset'"/>
-                <xsl:attribute name="dateAccessioned" select="ddi:stdyDscr/ddi:citation/ddi:distStmt/ddi:depDate/@date[(string-length(.) > 0)]"/>
-                <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:titlStmt/ddi:IDNo[(string-length(.) > 0)]" mode="registryObject_identifier"/>
-                <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:titlStmt/ddi:titl[(string-length(.) > 0)]" mode="registryObject_name"/>
-                <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:titlStmt/ddi:IDNo[(string-length(.) > 0)]" mode="registryObject_location"/>
-                <xsl:apply-templates select="ddi:stdyDscr/ddi:stdyInfo/ddi:subject/ddi:keyword[(string-length(.) > 0)]" mode="registryObject_subject"/>
-                <xsl:apply-templates select="ddi:stdyDscr/ddi:stdyInfo/ddi:abstract[(string-length(.) > 0)]" mode="registryObject_description"/>
-                <xsl:apply-templates select="ddi:stdyDscr/ddi:stdyInfo/ddi:sumDscr" mode="registryObject_coverage"/>
-                <xsl:apply-templates select="ddi:stdyDscr/ddi:othrStdyMat/ddi:relPubl" mode="registryObject_relatedInfo"/>
-                <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:rspStmt/ddi:AuthEnty[(string-length(.) > 0)]" mode="registryObject_relatedObject"/>
-                <xsl:apply-templates select="ddi:docDscr/ddi:citation/ddi:prodStmt/ddi:producer[(string-length(.) > 0)]" mode="registryObject_relatedObject"/>
-                <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:titlStmt/ddi:altTitl[(string-length(.) > 0)]" mode="registryObject_altname"/>
-                <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:prodStmt/ddi:copyright" mode="registryObject_rights_statement"/>
-                <xsl:apply-templates select="ddi:stdyDscr/ddi:dataAccs/ddi:useStmt" mode="registryObject_rights_access"/>
+                <xsl:attribute name="dateAccessioned" select="*:stdyDscr/*:citation/*:distStmt/*:depDate/@date[(string-length(.) > 0)]"/>
+                <xsl:apply-templates select="*:stdyDscr/*:citation/*:titlStmt/*:IDNo[(string-length(.) > 0)]" mode="registryObject_identifier"/>
+                <xsl:apply-templates select="*:stdyDscr/*:citation/*:titlStmt/*:titl[(string-length(.) > 0)]" mode="registryObject_name"/>
+                <xsl:apply-templates select="*:stdyDscr/*:citation/*:titlStmt/*:IDNo[(string-length(.) > 0)]" mode="registryObject_location"/>
+                <xsl:apply-templates select="*:stdyDscr/*:stdyInfo/*:subject/*:keyword[(string-length(.) > 0)]" mode="registryObject_subject"/>
+                <xsl:apply-templates select="*:stdyDscr/*:stdyInfo/*:abstract[(string-length(.) > 0)]" mode="registryObject_description"/>
+                <xsl:apply-templates select="*:stdyDscr/*:stdyInfo/*:sumDscr" mode="registryObject_coverage"/>
+                <xsl:apply-templates select="*:stdyDscr/*:othrStdyMat/*:relPubl" mode="registryObject_relatedInfo"/>
+                <xsl:apply-templates select="*:stdyDscr/*:citation/*:rspStmt/*:AuthEnty[(string-length(.) > 0)]" mode="registryObject_relatedObject"/>
+                <xsl:apply-templates select="*:docDscr/*:citation/*:prodStmt/*:producer[(string-length(.) > 0)]" mode="registryObject_relatedObject"/>
+                <xsl:apply-templates select="*:stdyDscr/*:citation/*:titlStmt/*:altTitl[(string-length(.) > 0)]" mode="registryObject_altname"/>
+                <xsl:apply-templates select="*:stdyDscr/*:citation/*:prodStmt/*:copyright" mode="registryObject_rights_statement"/>
+                <xsl:apply-templates select="*:stdyDscr/*:dataAccs/*:useStmt" mode="registryObject_rights_access"/>
                 
                 <xsl:apply-templates select="." mode="registryObject_citationInfo"/>
                 
-                <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:distStmt/ddi:depDate/@date[(string-length(.) > 0)]" mode="registryObject_dates_accepted"/>
-                <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:distStmt/ddi:distDate/@date[(string-length(.) > 0)]" mode="registryObject_dates_available"/>
+                <xsl:apply-templates select="*:stdyDscr/*:citation/*:distStmt/*:depDate/@date[(string-length(.) > 0)]" mode="registryObject_dates_accepted"/>
+                <xsl:apply-templates select="*:stdyDscr/*:citation/*:distStmt/*:distDate/@date[(string-length(.) > 0)]" mode="registryObject_dates_available"/>
             </collection>
         </registryObject>
     </xsl:template>
     
-    <xsl:template match="ddi:codeBook" mode="activity">
+    <xsl:template match="*:codeBook" mode="activity">
     </xsl:template>
     
-    <xsl:template match="ddi:codeBook" mode="party">
+    <xsl:template match="*:codeBook" mode="party">
     </xsl:template>
     
-    <xsl:template match="ddi:IDNo" mode="registryObject_location">
+    <xsl:template match="*:IDNo" mode="registryObject_location">
         <location>
             <address>
                  <electronic type="url">
@@ -83,7 +88,14 @@
                                 <xsl:value-of select="concat($global_baseURL, substring-after(normalize-space(.), 'au.edu.anu.ada.ddi.'))"/>
                             </xsl:when>
                             <xsl:otherwise>
-                                <xsl:value-of select="normalize-space(.)"/>
+                                <xsl:choose>
+                                    <xsl:when test="contains(lower-case(.), 'doi:')">
+                                        <xsl:value-of select="concat('http://doi.org/', substring-after(., 'doi:'))"/>
+                                     </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:value-of select="normalize-space(.)"/>
+                                    </xsl:otherwise>
+                                  </xsl:choose>
                             </xsl:otherwise>
                         </xsl:choose>
                     </value> 
@@ -92,7 +104,7 @@
         </location>
      </xsl:template>
     
-   <xsl:template match="ddi:keyword" mode="registryObject_subject">
+   <xsl:template match="*:keyword" mode="registryObject_subject">
         <subject>
             <xsl:choose>
                 <xsl:when test="string-length(@vocab) > 0">
@@ -110,31 +122,31 @@
         </subject>
     </xsl:template>
     
-    <xsl:template match="ddi:abstract" mode="registryObject_description">
+    <xsl:template match="*:abstract" mode="registryObject_description">
         <description type="full">
             <xsl:value-of select="normalize-space(.)"/>
         </description>
     </xsl:template>
     
-    <xsl:template match="ddi:sumDscr" mode="registryObject_coverage">
+    <xsl:template match="*:sumDscr" mode="registryObject_coverage">
         <coverage>
-            <!--xsl:apply-templates select="ddi:timePrd[(@event = 'start') and (string-length(@date) > 0)]" mode="registryObject_coverage_temporal_start"/-->
-            <!--xsl:apply-templates select="ddi:timePrd[(@event = 'single') and (string-length(@date) > 0)]" mode="registryObject_coverage_temporal_single"/-->
-            <xsl:apply-templates select="ddi:collDate[(@event = 'start') and (string-length(@date) > 0)]" mode="registryObject_coverage_temporal_start"/>
-            <xsl:apply-templates select="ddi:collDate[(@event = 'single') and (string-length(@date) > 0)]" mode="registryObject_coverage_temporal_single"/>
-            <xsl:apply-templates select="ddi:nation[string-length(.) > 0]" mode="registryObject_coverage_spatial"/>
-            <xsl:apply-templates select="ddi:geogCover[string-length(.) > 0]" mode="registryObject_coverage_spatial"/>
-            <xsl:apply-templates select="ddi:geogUnit[string-length(.) > 0]" mode="registryObject_coverage_spatial"/>
+            <!--xsl:apply-templates select="*:timePrd[(@event = 'start') and (string-length(@date) > 0)]" mode="registryObject_coverage_temporal_start"/-->
+            <!--xsl:apply-templates select="*:timePrd[(@event = 'single') and (string-length(@date) > 0)]" mode="registryObject_coverage_temporal_single"/-->
+            <xsl:apply-templates select="*:collDate[(@event = 'start') and (string-length(@date) > 0)]" mode="registryObject_coverage_temporal_start"/>
+            <xsl:apply-templates select="*:collDate[(@event = 'single') and (string-length(@date) > 0)]" mode="registryObject_coverage_temporal_single"/>
+            <xsl:apply-templates select="*:nation[string-length(.) > 0]" mode="registryObject_coverage_spatial"/>
+            <xsl:apply-templates select="*:geogCover[string-length(.) > 0]" mode="registryObject_coverage_spatial"/>
+            <xsl:apply-templates select="*:geogUnit[string-length(.) > 0]" mode="registryObject_coverage_spatial"/>
         </coverage>
     </xsl:template>
     
-    <xsl:template match="ddi:relPubl" mode="registryObject_relatedInfo">
+    <xsl:template match="*:relPubl" mode="registryObject_relatedInfo">
         <relatedInfo type="publication">
             <identifier type="uri">
-                <xsl:value-of select="normalize-space(ddi:citation/ddi:holdings/@URI)"/>
+                <xsl:value-of select="normalize-space(*:citation/*:holdings/@URI)"/>
             </identifier> 
             <title>
-                <xsl:value-of select="normalize-space(ddi:citation/ddi:titlStmt/ddi:titl)"/>
+                <xsl:value-of select="normalize-space(*:citation/*:titlStmt/*:titl)"/>
             </title> 
             <relation type="isCitedBy"/>
             <notes>
@@ -143,21 +155,21 @@
         </relatedInfo>
     </xsl:template>
     
-    <!--xsl:template match="ddi:timePrd" mode="registryObject_coverage_temporal_start">
+    <!--xsl:template match="*:timePrd" mode="registryObject_coverage_temporal_start">
         <temporal>
             <date type="dateFrom" dateFormat="W3CDTF">
                 <xsl:value-of select="normalize-space(@date)"/>
             </date>
             
-            <xsl:if test="following-sibling::ddi:timePrd[@event = 'end'][1]/@date[string-length(.) > 0]">
+            <xsl:if test="following-sibling::*:timePrd[@event = 'end'][1]/@date[string-length(.) > 0]">
                 <date type="dateTo" dateFormat="W3CDTF">
-                    <xsl:value-of select="normalize-space(following-sibling::ddi:timePrd[@event = 'end'][1]/@date)"/>
+                    <xsl:value-of select="normalize-space(following-sibling::*:timePrd[@event = 'end'][1]/@date)"/>
                 </date>
             </xsl:if>
         </temporal>
     </xsl:template-->
     
-    <!--xsl:template match="ddi:timePrd" mode="registryObject_coverage_temporal_single">
+    <!--xsl:template match="*:timePrd" mode="registryObject_coverage_temporal_single">
         <temporal>
             <date type="dateFrom" dateFormat="W3CDTF">
                 <xsl:value-of select="normalize-space(@date)"/>
@@ -165,20 +177,20 @@
             </temporal>
     </xsl:template-->
     
-    <xsl:template match="ddi:collDate" mode="registryObject_coverage_temporal_start">
+    <xsl:template match="*:collDate" mode="registryObject_coverage_temporal_start">
         <temporal>
             <date type="dateFrom" dateFormat="W3CDTF">
                 <xsl:value-of select="normalize-space(@date)"/>
             </date>
-            <xsl:if test="following-sibling::ddi:collDate[@event = 'end'][1]/@date[string-length(.) > 0]">
+            <xsl:if test="following-sibling::*:collDate[@event = 'end'][1]/@date[string-length(.) > 0]">
                <date type="dateTo" dateFormat="W3CDTF">
-                   <xsl:value-of select="normalize-space(following-sibling::ddi:collDate[@event = 'end'][1]/@date)"/>
+                   <xsl:value-of select="normalize-space(following-sibling::*:collDate[@event = 'end'][1]/@date)"/>
                </date>
             </xsl:if>
         </temporal>
     </xsl:template>
     
-    <xsl:template match="ddi:collDate" mode="registryObject_coverage_temporal_single">
+    <xsl:template match="*:collDate" mode="registryObject_coverage_temporal_single">
         <temporal>
             <date type="dateFrom" dateFormat="W3CDTF">
                 <xsl:value-of select="normalize-space(@date)"/>
@@ -186,19 +198,19 @@
           </temporal>
     </xsl:template>
     
-    <xsl:template match="ddi:nation" mode="registryObject_coverage_spatial">
+    <xsl:template match="*:nation" mode="registryObject_coverage_spatial">
         <spatial type="text">
             <xsl:value-of select="normalize-space(.)"/>
         </spatial>
     </xsl:template>
     
-    <xsl:template match="ddi:geogCover" mode="registryObject_coverage_spatial">
+    <xsl:template match="*:geogCover" mode="registryObject_coverage_spatial">
         <spatial type="text">
             <xsl:value-of select="normalize-space(.)"/>
         </spatial>
     </xsl:template>
     
-    <xsl:template match="ddi:geogUnit" mode="registryObject_coverage_spatial">
+    <xsl:template match="*:geogUnit" mode="registryObject_coverage_spatial">
         <spatial type="text">
             <xsl:value-of select="normalize-space(.)"/>
         </spatial>
@@ -209,13 +221,13 @@
     
     
     
-    <xsl:template match="ddi:IDNo" mode="registryObject_identifier">
+    <xsl:template match="*:IDNo" mode="registryObject_identifier">
         <identifier type="{custom:getIdentifierType(.)}">
             <xsl:value-of select="normalize-space(.)"/>
         </identifier>
     </xsl:template>
     
-    <xsl:template match="ddi:titl" mode="registryObject_name">
+    <xsl:template match="*:titl" mode="registryObject_name">
         <name type="primary">
             <namePart>
                 <xsl:value-of select="normalize-space(.)"/>
@@ -223,7 +235,7 @@
         </name>
     </xsl:template>
     
-    <xsl:template match="ddi:AuthEnty" mode="registryObject_relatedObject">
+    <xsl:template match="*:AuthEnty" mode="registryObject_relatedObject">
         <xsl:message select="concat('AuthEnty for relatedObject: ', .)"/>
         <xsl:if test="string-length(.) > 0">
             <relatedObject>
@@ -235,7 +247,7 @@
         </xsl:if>   
     </xsl:template>
     
-    <xsl:template match="ddi:producer" mode="registryObject_relatedObject">
+    <xsl:template match="*:producer" mode="registryObject_relatedObject">
         <xsl:message select="concat('producer for relatedObject: ', .)"/>
         <xsl:if test="string-length(.) > 0">
             <relatedObject>
@@ -247,7 +259,7 @@
         </xsl:if>   
     </xsl:template>
     
-    <xsl:template match="ddi:titl" mode="registryObject_altname">
+    <xsl:template match="*:titl" mode="registryObject_altname">
         <name type="alternative">
             <namePart>
                 <xsl:value-of select="normalize-space(.)"/>
@@ -255,7 +267,7 @@
         </name>
     </xsl:template>
     
-    <xsl:template match="ddi:copyright" mode="registryObject_rights_statement">
+    <xsl:template match="*:copyright" mode="registryObject_rights_statement">
         <rights>
             <rightsStatement>
                 <xsl:value-of select="normalize-space(.)"/>
@@ -263,11 +275,11 @@
         </rights>
     </xsl:template>
     
-    <xsl:template match="ddi:useStmt" mode="registryObject_rights_access">
+    <xsl:template match="*:useStmt" mode="registryObject_rights_access">
         
         <!--xsl:variable name="accessType">
             <xsl:choose>
-                <xsl:when test="ddi:specPerm/@required = 'yes'">
+                <xsl:when test="*:specPerm/@required = 'yes'">
                     <xsl:text>restricted</xsl:text>
                 </xsl:when>
                 <xsl:otherwise>
@@ -279,17 +291,17 @@
         <xsl:variable name="accessType" select="'restricted'"/>
         
         <rights>
-            <xsl:if test="lower-case(normalize-space(ddi:confDec/@required)) = 'yes'">
+            <xsl:if test="lower-case(normalize-space(*:confDec/@required)) = 'yes'">
                 <accessRights type="{$accessType}">
                     <xsl:text>Confidentiality Declaration Required</xsl:text>
                 </accessRights>
             </xsl:if>
-            <xsl:if test="lower-case(normalize-space(ddi:specPerm/@required)) = 'no'">
+            <xsl:if test="lower-case(normalize-space(*:specPerm/@required)) = 'no'">
                 <accessRights type="{$accessType}">
                     <xsl:text>General Access Application Required</xsl:text>
                 </accessRights>
             </xsl:if>
-            <xsl:if test="lower-case(normalize-space(ddi:specPerm/@required)) = 'yes'">
+            <xsl:if test="lower-case(normalize-space(*:specPerm/@required)) = 'yes'">
                 <accessRights type="{$accessType}">
                     <xsl:text>Restricted Application and Access Approval Required</xsl:text>
                 </accessRights>
@@ -314,40 +326,41 @@
         </dates>
     </xsl:template>
     
-    <xsl:template match="ddi:codeBook" mode="registryObject_citationInfo">
+    <xsl:template match="*:codeBook" mode="registryObject_citationInfo">
       
-        <citationInfo>
-            <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:biblCit[(string-length(.) > 0)]" mode="registryObject_citation_full"/>
-        </citationInfo>
+       
+        <xsl:apply-templates select="*:stdyDscr/*:citation/*:biblCit[(string-length(.) > 0)]" mode="registryObject_citation_full"/>
         
         <citationInfo>
             <citationMetadata>
-                <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:titlStmt/ddi:IDNo[(string-length(.) > 0)]" mode="registryObject_citation_identifier"/>
-                <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:rspStmt/ddi:AuthEnty[(string-length(.) > 0)]" mode="registryObject_citation_contributor"/>
-                <xsl:apply-templates select="ddi:docDscr/ddi:citation/ddi:prodStmt/ddi:producer[(string-length(.) > 0)]" mode="registryObject_citation_publisher"/>
-                <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:titlStmt/ddi:titl[(string-length(.) > 0)]" mode="registryObject_citation_title"/>
-                <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:verStmt/ddi:version[(string-length(.) > 0)]" mode="registryObject_citation_version"/>
-                <xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:distStmt/ddi:distDate/@date[(string-length(.) > 3)]" mode="registryObject_citation_date_published"/>
-                <!--xsl:apply-templates select="ddi:stdyDscr/ddi:citation/ddi:titlStmt/ddi:IDNo[(string-length(.) > 0)]" mode="registryObject_citation_url"/-->
+                <xsl:apply-templates select="*:stdyDscr/*:citation/*:titlStmt/*:IDNo[(string-length(.) > 0)]" mode="registryObject_citation_identifier"/>
+                <xsl:apply-templates select="*:stdyDscr/*:citation/*:rspStmt/*:AuthEnty[(string-length(.) > 0)]" mode="registryObject_citation_contributor"/>
+                <xsl:apply-templates select="*:docDscr/*:citation/*:prodStmt/*:producer[(string-length(.) > 0)]" mode="registryObject_citation_publisher"/>
+                <xsl:apply-templates select="*:stdyDscr/*:citation/*:titlStmt/*:titl[(string-length(.) > 0)]" mode="registryObject_citation_title"/>
+                <xsl:apply-templates select="*:stdyDscr/*:citation/*:verStmt/*:version[(string-length(.) > 0)]" mode="registryObject_citation_version"/>
+                <xsl:apply-templates select="*:stdyDscr/*:citation/*:distStmt/*:distDate/@date[(string-length(.) > 3)]" mode="registryObject_citation_date_published"/>
+                <!--xsl:apply-templates select="*:stdyDscr/*:citation/*:titlStmt/*:IDNo[(string-length(.) > 0)]" mode="registryObject_citation_url"/-->
                 
             </citationMetadata>
         </citationInfo>
     </xsl:template>
     
-    <xsl:template match="ddi:biblCit" mode="registryObject_citation_full">
-        <fullCitation>
-            <xsl:value-of select="normalize-space(.)"/>
-        </fullCitation>
+    <xsl:template match="*:biblCit" mode="registryObject_citation_full">
+        <citationInfo>
+          <fullCitation>
+              <xsl:value-of select="normalize-space(.)"/>
+          </fullCitation>
+        </citationInfo>
     </xsl:template>
     
     
-    <xsl:template match="ddi:IDNo" mode="registryObject_citation_identifier">
+    <xsl:template match="*:IDNo" mode="registryObject_citation_identifier">
         <identifier type="{custom:getIdentifierType(.)}">
             <xsl:value-of select="normalize-space(.)"/>
         </identifier>
     </xsl:template>
     
-    <xsl:template match="ddi:AuthEnty" mode="registryObject_citation_contributor">
+    <xsl:template match="*:AuthEnty" mode="registryObject_citation_contributor">
         <contributor>
             <namePart>
                 <xsl:value-of select="normalize-space(.)"/>
@@ -355,13 +368,13 @@
         </contributor>
     </xsl:template>
     
-    <xsl:template match="ddi:titl" mode="registryObject_citation_title">
+    <xsl:template match="*:titl" mode="registryObject_citation_title">
         <title>
             <xsl:value-of select="normalize-space(.)"/>
         </title>
     </xsl:template>
     
-    <xsl:template match="ddi:version" mode="registryObject_citation_version">
+    <xsl:template match="*:version" mode="registryObject_citation_version">
         <version>
             <xsl:value-of select="normalize-space(.)"/>
         </version>
@@ -373,7 +386,7 @@
         </date>
     </xsl:template>
     
-    <xsl:template match="ddi:producer" mode="registryObject_citation_publisher">
+    <xsl:template match="*:producer" mode="registryObject_citation_publisher">
         <publisher>
             <xsl:value-of select="normalize-space(.)"/>
             <xsl:if test="string-length(@affiliation) > 0">
@@ -382,7 +395,7 @@
         </publisher>
     </xsl:template>
     
-    <!--xsl:template match="ddi:IDNo" mode="registryObject_citation_url">
+    <!--xsl:template match="*:IDNo" mode="registryObject_citation_url">
         <url>
             <xsl:choose>
                 <xsl:when test="contains(., 'au.edu.anu.ada.ddi.')">
@@ -396,7 +409,7 @@
     </xsl:template-->
     
     
-    <xsl:template match="ddi:AuthEnty" mode="party_author">
+    <xsl:template match="*:AuthEnty" mode="party_author">
         <xsl:variable name="personName" select="."/>
             <xsl:message select="concat('personName for party_producer: ', $personName    )"/>
         
@@ -434,7 +447,7 @@
                 </xsl:if>
         </xsl:template>
     
-    <xsl:template match="ddi:producer" mode="party_producer">
+    <xsl:template match="*:producer" mode="party_producer">
         <xsl:variable name="personName" select="."/>
             <xsl:message select="concat('personName for party_producer: ', $personName    )"/>
         
