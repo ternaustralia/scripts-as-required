@@ -220,6 +220,10 @@
                 <xsl:apply-templates select="mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code" mode="registryObject_location"/>
                 <xsl:apply-templates select="mdb:metadataLinkage/cit:CI_OnlineResource[contains(lower-case(cit:description), 'point-of-truth metadata')]/cit:linkage" mode="registryObject_identifier_metadata_URL"/>
                     
+                <xsl:apply-templates
+                    select="mdb:resourceLineage/mrl:LI_Lineage/mrl:statement[string-length(.) > 0]"
+                    mode="registryObject_description_lineage"/>
+                
                 <xsl:apply-templates select="mdb:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="registryObject">
                     <xsl:with-param name="originatingSource" select="$originatingSource"/>
                     <xsl:with-param name="registryObjectTypeSubType_sequence" select="$registryObjectTypeSubType_sequence"/>
@@ -268,7 +272,7 @@
             mode="registryObject_subject"/>
         
          <xsl:apply-templates
-            select="mri:abstract"
+             select="mri:abstract[string-length(.) > 0]"
             mode="registryObject_description_brief"/>
         
         <xsl:apply-templates select="mri:extent/gex:EX_Extent/gex:geographicElement/gex:EX_GeographicBoundingBox" mode="registryObject_coverage_spatial"/>
@@ -541,6 +545,15 @@
     <xsl:template match="mri:abstract" mode="registryObject_description_brief">
         <xsl:if test="string-length(normalize-space(.)) > 0">
             <description type="brief">
+                <xsl:value-of select="."/>
+            </description>
+        </xsl:if>
+    </xsl:template>
+    
+    <!-- RegistryObject - Decription Element - lineage -->
+    <xsl:template match="mrl:statement" mode="registryObject_description_lineage">
+        <xsl:if test="string-length(normalize-space(.)) > 0">
+            <description type="lineage">
                 <xsl:value-of select="."/>
             </description>
         </xsl:if>
