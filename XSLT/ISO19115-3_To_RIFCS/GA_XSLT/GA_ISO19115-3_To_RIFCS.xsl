@@ -207,9 +207,19 @@
                         </xsl:if>
                 </xsl:if>
                 
-                <xsl:apply-templates 
-                    select="mdb:distributionInfo/mrd:MD_Distribution/mrd:distributionFormat/mrd:MD_Format/mrd:formatDistributor/mrd:MD_Distributor/mrd:distributorTransferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code)]/cit:linkage[contains(., 'doi')][1]"
-                    mode="registryObject_identifier_doi"/>
+                <xsl:choose>
+                    <xsl:when test="count(mdb:distributionInfo/mrd:MD_Distribution/mrd:distributionFormat/mrd:MD_Format/mrd:formatDistributor/mrd:MD_Distributor/mrd:distributorTransferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code)]/cit:linkage[contains(., 'doi')]) > 0">
+                        <xsl:apply-templates 
+                        select="mdb:distributionInfo/mrd:MD_Distribution/mrd:distributionFormat/mrd:MD_Format/mrd:formatDistributor/mrd:MD_Distributor/mrd:distributorTransferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code)]/cit:linkage[contains(., 'doi')][1]"
+                        mode="registryObject_identifier_doi"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:apply-templates 
+                            select="mdb:distributionInfo/mrd:MD_Distribution/mrd:transferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:description), 'dataset doi') and contains(lower-case(cit:name), 'digital object identifier')]/cit:linkage[contains(., 'doi')][1]"
+                            mode="registryObject_identifier_doi"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+                
                 
                 <xsl:apply-templates select="mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:identifier/mcc:MD_Identifier/mcc:code[not(contains(lower-case(.), 'doi')) and not(contains(lower-case(.), 'product'))]" mode="registryObject_identifier"/>
                     
@@ -1041,6 +1051,12 @@
                                     <xsl:attribute name="type" select="'doi'"/>
                                     <xsl:value-of select="
                                         ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:distributionFormat/mrd:MD_Format/mrd:formatDistributor/mrd:MD_Distributor/mrd:distributorTransferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:name), mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code)]/cit:linkage[contains(., 'doi')][1]"/>
+                                </xsl:when>
+                                <xsl:when 
+                                    test="count(ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:transferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(cit:description, 'Dataset DOI') and contains(cit:name, 'Digital Object Identifier')]/cit:linkage[contains(., 'doi')]) > 0">
+                                    <xsl:attribute name="type" select="'doi'"/>
+                                    <xsl:value-of select="
+                                        ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:transferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:description), 'dataset doi') and contains(lower-case(cit:name), 'digital object identifier')]/cit:linkage[contains(., 'doi')][1]"/>
                                 </xsl:when>
                                 <xsl:when 
                                     test="count(cit:identifier[contains(mcc:MD_Identifier/mcc:codeSpace, 'ga-dataSetURI')]/mcc:MD_Identifier/mcc:code) and (string-length(cit:identifier[contains(mcc:MD_Identifier/mcc:codeSpace, 'ga-dataSetURI')][1]/mcc:MD_Identifier/mcc:code[1]) > 0)">
