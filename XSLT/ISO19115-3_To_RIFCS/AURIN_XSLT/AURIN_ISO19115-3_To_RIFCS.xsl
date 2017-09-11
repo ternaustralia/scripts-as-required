@@ -403,7 +403,6 @@
                              select="normalize-space(concat('; uplimit=',gex:EX_VerticalExtent/gex:maximumValue/gco:Real,'; downlimit=',gex:EX_VerticalExtent/gex:minimumValue/gco:Real))"
                          />
                      </xsl:if>
-                     <xsl:text>; projection=GDA94</xsl:text>
                  </xsl:variable>
                  <coverage>
                      <spatial>
