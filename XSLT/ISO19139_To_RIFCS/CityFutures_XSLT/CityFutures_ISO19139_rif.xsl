@@ -23,7 +23,7 @@
     <xsl:strip-space elements="*"/>
     <xsl:param name="global_acronym" select="'CF'"/>
     <xsl:param name="global_originatingSourceOrganisation" select="'City Futures Research Centre'"/> <!-- Only used as originating source if organisation name cannot be determined from Point Of Contact -->
-    <xsl:param name="global_group" select="'City Futures Research Centre'"/> 
+    <xsl:param name="global_group" select="'City Futures Research Centre, UNSW'"/> 
     <xsl:param name="global_publisher" select="'City Futures Research Centre'"/> 
     <!-- xsl:param name="global_baseURI" select="'cftest.intersect.org.au'"/-->
     <!-- xsl:param name="global_path" select="'/layers/geonode%3A'"/-->
@@ -826,8 +826,8 @@
     </xsl:template-->
 
     <!-- RegistryObject - Rights Licence - From CreativeCommons -->
-    <xsl:template match="*:MD_CreativeCommonss" mode="registryObject_rights_licence_creative">
-        <xsl:variable name="licenseLink" select="normalize-space(*:licenseLink/gmd:URL)"/>
+    <xsl:template match="gmd:MD_CreativeCommons" mode="registryObject_rights_licence_creative">
+        <xsl:variable name="licenseLink" select="normalize-space(gmd:licenseLink/gmd:URL)"/>
         <xsl:for-each
             select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCode']/gmx:codeEntry/gmx:CodeDefinition">
             <xsl:if test="string-length(normalize-space(gml:remarks)) > 0">
