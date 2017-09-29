@@ -21,15 +21,8 @@
 
     <xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes"/>
 
-    <xsl:template match="/">
-        <registryObjects xmlns="http://ands.org.au/standards/rif-cs/registryObjects" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd">
-            <xsl:apply-templates select="//oai:record/oai:metadata/*:document-export/*:documents/*:document" mode="collection"/>
-            <!-- xsl:apply-templates select="//oai:record/oai:metadata/*:document-export/*:documents/*:document" mode="activity"/-->
-            <xsl:apply-templates select="//oai:record/oai:metadata/*:document-export/*:documents/*:document" mode="party"/>
-        </registryObjects>
-    </xsl:template>
-  
     <xsl:template match="document" mode="collection">
+        <xsl:param name="parentIdentifier"/>
        
         <registryObject>
             <xsl:attribute name="group" select="$global_group"/>
@@ -84,6 +77,10 @@
                 <xsl:apply-templates select="fields/field[@name='date_range'][string-length(.) > 0]" mode="collection_coverage_temporal_text"/>
                
                 <xsl:apply-templates select="." mode="collection_coverage_spatial_point"/>
+                
+                <xsl:call-template name="relateToParent">
+                    <xsl:with-param name="parentIdentifier" select="$parentIdentifier"/>
+                </xsl:call-template>
                
                 <xsl:apply-templates select="fields/field[@name='related_publications'][string-length(.) > 0]" mode="collection_relatedInfo"/>
                
@@ -110,6 +107,16 @@
              
             </xsl:element>
         </registryObject>
+    </xsl:template>
+    
+    <xsl:template name="relateToParent">
+        <xsl:param name="parentIdentifier"/>
+        <relatedInfo type="collection">
+            <identifier type="uri">
+                <xsl:value-of select="$parentIdentifier"/>
+            </identifier>
+                <relation type="isPartOf"/>
+         </relatedInfo>
     </xsl:template>
    
     
