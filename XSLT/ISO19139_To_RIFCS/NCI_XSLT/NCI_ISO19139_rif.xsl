@@ -99,7 +99,6 @@
                     <xsl:apply-templates select="gmd:fileIdentifier" mode="registryObject_identifier"/>
                     <xsl:apply-templates select="gmd:fileIdentifier" mode="registryObject_location_metadata"/>
                     <xsl:apply-templates select="gmd:parentIdentifier" mode="registryObject_related_object"/>
-                    <xsl:apply-templates select="gmd:dataSetURI" mode="registryObject_relatedInfo_data_via_service"/>
                     <xsl:apply-templates select="gmd:children/gmd:childIdentifier" mode="registryObject_related_object"/>
                  
                     <xsl:apply-templates
@@ -128,9 +127,7 @@
         
         <xsl:apply-templates select="gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource" mode="registryObject_relatedInfo"/>
         
-        <xsl:apply-templates select="gmd:MD_Distribution/gmd:distributionFormat/gmd:MD_Format/gmd:formatDistributor/gmd:MD_Distributor/gmd:distributorTransferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource" mode="registryObject_relatedInfo"/>
-        
-    </xsl:template>
+     </xsl:template>
     
    <xsl:template match="*[contains(lower-case(name()),'identification')]" mode="registryObject">
         <xsl:param name="originatingSource"/>
@@ -400,15 +397,7 @@
     <xsl:template match="gmd:CI_ResponsibleParty" mode="registryObject_related_object">
          <relatedObject>
             <key>
-                <xsl:variable name="mappedKey" select="ncifunc:getMappedKey(translate(normalize-space(current-grouping-key()),' ',''))"/>
-                <xsl:choose>
-                    <xsl:when test="string-length($mappedKey) > 0">
-                        <xsl:value-of select="$mappedKey"/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:value-of select="concat($global_acronym,'/', translate(normalize-space(current-grouping-key()),' ',''))"/>
-                    </xsl:otherwise>
-                </xsl:choose>
+                <xsl:value-of select="concat($global_acronym,'/', translate(normalize-space(current-grouping-key()),' ',''))"/>
             </key>
             <xsl:choose>
                 <xsl:when test="count(current-group()/gmd:role) > 0">
@@ -702,21 +691,24 @@
 
    <!-- RegistryObject - RelatedInfo Element  -->
     
+    <!-- RegistryObject - RelatedInfo Element  -->
     <xsl:template match="gmd:CI_OnlineResource" mode="registryObject_relatedInfo">         
         
         <xsl:choose>
-            <xsl:when test="contains(lower-case(gmd:linkage/gmd:URL), 'thredds')">
+            <xsl:when test="contains(gmd:protocol, 'OGC:') or contains(lower-case(gmd:linkage/gmd:URL), 'thredds')">
                 <xsl:apply-templates select="." mode="relatedInfo_service"/>
             </xsl:when>
-            <xsl:otherwise>
+            <xsl:when test="not(contains(lower-case(gmd:description), 'point of truth url of this metadata record'))">
                 <xsl:apply-templates select="." mode="relatedInfo_relatedInformation"/>
-            </xsl:otherwise>
+            </xsl:when>
             
         </xsl:choose>
         
     </xsl:template>
     
     <xsl:template match="gmd:CI_OnlineResource" mode="relatedInfo_service">       
+        
+        <xsl:variable name="identifierValue" select="normalize-space(gmd:linkage/gmd:URL)"/>
         
         <relatedInfo>
             <xsl:attribute name="type" select="'service'"/>   
@@ -725,6 +717,11 @@
                 <xsl:attribute name="type">
                     <xsl:text>supports</xsl:text>
                 </xsl:attribute>
+                <xsl:if test="(contains($identifierValue, '?')) or (contains($identifierValue, '.nc'))">
+                    <url>
+                        <xsl:value-of select="$identifierValue"/>
+                    </url>
+                </xsl:if>
             </relation>
             
             <xsl:apply-templates select="." mode="relatedInfo_all"/>
@@ -764,26 +761,54 @@
                     </xsl:otherwise>
                 </xsl:choose>
             </xsl:attribute>
-            <xsl:value-of select="$identifierValue"/>
-        </identifier>
-        
-        <xsl:choose>
+            <xsl:choose>
+                <xsl:when test="contains($identifierValue, '?')">
+                    <xsl:value-of select="substring-before(., '?')"/>
+                </xsl:when>    
+            <xsl:otherwise>
+                    <xsl:value-of
+select="$identifierValue"/>
+                </xsl:otherwise>
+            </xsl:choose>
+                     </identifier>
+                 <xsl:choose>
             <!-- Use description as title if we have it... -->
-            <xsl:when test="string-length(normalize-space(gmd:description)) > 0">
+            <xsl:when
+test="string-length(normalize-space(gmd:description)) > 0">
                 <title>
                     <xsl:value-of select="normalize-space(gmd:description)"/>
-                    
-                    <!-- ...and then name in brackets following -->
-                    <xsl:if
-                        test="string-length(normalize-space(gmd:name)) > 0">
-                        <xsl:value-of select="concat(' (', gmd:name, ')')"/>
+          
+             
+                <!-- ...and then name
+in
+brackets following
+-->
+                 
+  <xsl:if
+    
+    
+    
+      
+  test="string-length(normalize-space(gmd:name)) > 0">
+        
+            
+  <xsl:value-of select="concat(' (', gmd:name, ')')"/>
                     </xsl:if>
                 </title>
             </xsl:when>
-            <!-- No description, so use name as title if we have it -->
+           
+<!-- No description,
+so use name
+as
+title if
+we
+have
+it
+-->
             <xsl:otherwise>
                 <xsl:if
-                    test="string-length(normalize-space(gmd:name)) > 0">
+           
+        test="string-length(normalize-space(gmd:name)) > 0">
                     <title>
                         <xsl:value-of select="concat('(', gmd:name, ')')"/>
                     </title>
@@ -791,62 +816,8 @@
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
-    
-    <xsl:template match="gmd:dataSetURI" mode="registryObject_relatedInfo_data_via_service">
-        <xsl:variable name="dataAccessLink" select="normalize-space(.)"/>
-        <xsl:if test="contains($dataAccessLink, 'thredds/catalog')">
-            <relatedInfo type="service">
-                <identifier type="uri">
-                    <xsl:value-of select="concat(substring-before($dataAccessLink, 'thredds/catalog'), 'thredds/catalog.html')"/>
-                </identifier>
-                <relation type="supports">
-                    <description>Data via the thredds server</description>
-                    <url><xsl:value-of select="$dataAccessLink"/></url>
-                </relation>
-                <title>thredds server</title>
-            </relatedInfo>
-        </xsl:if>
-    </xsl:template>
-    
-    
-    <xsl:template match="gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:source/gmd:LI_Source" mode="registryObject_relatedInfo">
-     <xsl:if test="string-length(gmd:sourceCitation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier/gmd:code) > 0">
-        <relatedInfo>
-           <xsl:attribute name="type">
-               <xsl:choose>
-                   <xsl:when test="contains(lower-case(gmd:sourceCitation/gmd:CI_Citation/gmd:presentationForm/gmd:CI_PresentationFormCode/@codeListValue), 'modeldigital')">
-                       <xsl:text>service</xsl:text>
-                   </xsl:when>
-                   <xsl:otherwise>
-                       <xsl:text>reuseInformation</xsl:text>
-                   </xsl:otherwise>
-               </xsl:choose>
-           </xsl:attribute>
-            <identifier type="{custom:getIdentifierType(gmd:sourceCitation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier/gmd:code)}">
-               <xsl:value-of select="gmd:sourceCitation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier/gmd:code"/>
-           </identifier>
-           <relation>
-               <xsl:attribute name="type">
-                   <xsl:choose>
-                       <xsl:when test="contains(lower-case(gmd:sourceCitation/gmd:CI_Citation/gmd:presentationForm/gmd:CI_PresentationFormCode/@codeListValue), 'modeldigital')">
-                           <xsl:text>produces</xsl:text>
-                       </xsl:when>
-                       <xsl:otherwise>
-                           <xsl:text>supplements</xsl:text>
-                       </xsl:otherwise>
-                   </xsl:choose>
-               </xsl:attribute>
-           </relation>
-           <xsl:if test="string-length(normalize-space(gmd:sourceCitation/gmd:CI_Citation/gmd:title)) > 0">
-             <title>
-                 <xsl:value-of select="normalize-space(gmd:sourceCitation/gmd:CI_Citation/gmd:title)"/>
-             </title>
-           </xsl:if>
-        </relatedInfo>
-     </xsl:if>
-    </xsl:template>
    
-    <!-- RegistryObject - RelatedInfo Element  -->
+     <!-- RegistryObject - RelatedInfo Element  -->
     <xsl:template match="gmd:childIdentifier" mode="registryObject_relatedInfo">
         <xsl:variable name="identifier" select="normalize-space(.)"/>
         <xsl:if test="string-length($identifier) > 0">
@@ -1597,19 +1568,6 @@
             <xsl:otherwise>
                 <xsl:text>dataset</xsl:text>
             </xsl:otherwise>
-        </xsl:choose>
-    </xsl:function>
-    
-    <xsl:function name="ncifunc:getMappedKey" as="xs:string">
-        <xsl:param name="inputKey" as="xs:string"/>
-        <xsl:choose>
-            <xsl:when test="contains(lower-case($inputKey), 'nationalcomputationalinfrastructure') or 
-                            contains(lower-case($inputKey), 'nci')">
-                <xsl:value-of select="$global_ActivityKeyNCI"/>
-            </xsl:when>
-            <xsl:otherwise>
-                <xsl:value-of select="''"/>
-            </xsl:otherwise> 
         </xsl:choose>
     </xsl:function>
     
