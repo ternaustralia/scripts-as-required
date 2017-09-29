@@ -1,5 +1,6 @@
 import urllib2
 import sys
+import re
 
 #working
 noConstraints = '''
@@ -48,49 +49,78 @@ queryTemplate = '''
         <csw:Query typeNames="csw:Record">
             <ElementSetName typeNames="csw:Record">full</ElementSetName>
             <Constraint version="1.1.0">
-                <ogc:Filter xmlns="http://http://www.opengis.net/ogc" xmlns:gmd="http://www.isotc211.org/2005/gmd">
-                    <ogc:PropertyIsLike wildCard="*" singleChar="_" escapeChar="\">
-                        <ogc:PropertyName>{1}</ogc:PropertyName>
-                        <ogc:Literal>{2}</ogc:Literal>
-                    </ogc:PropertyIsLike>
-                </ogc:Filter>
+                <ogc:Filter xmlns="http://http://www.opengis.net/ogc" xmlns:gmd="http://www.isotc211.org/2005/gmd">{1}</ogc:Filter>
             </Constraint>
         </csw:Query>
     </csw:GetRecords>
     '''
 
+queryPropertyTemplate = '''
+    <ogc:{0}><ogc:PropertyIsLike wildCard="*" singleChar="_" escapeChar="\">
+    <ogc:PropertyName>{1}</ogc:PropertyName>
+    <ogc:Literal>{2}</ogc:Literal>
+    </ogc:PropertyIsLike></ogc:{3}>
+    '''
 
-def callCSW(cswUrl, propertyName, literal):
+
+def constructQuery(allEntries):
+
+    query = ""
+
+    for entry in allEntries:
+        query += str.format(queryPropertyTemplate, entry["condition"], entry["key"], entry["value"], entry["condition"])
+
+    return query
+
+
+def dictFormatted(allEntries):
+
+    formatted = ""
+
+    for entry in allEntries:
+        formatted += str.format('{0}_{1}_{2}_', entry["condition"], entry["key"], entry["value"])
+
+    return formatted
+
+
+def callCSW(cswUrl, allEntries):
 
     startPosition = '1'
-    queryToUse = None
-    fileName = None
+    fullQuery = None
+    fileName = ""
 
-    if literal != None:
-        queryToUse = queryTemplate.format(startPosition, propertyName, literal)
-        fileName = literal+"_records.xml"
+    if (allEntries != None):
+
+        query = constructQuery(allEntries)
+        if(query == None):
+            print "Unable to construct query"
+            return
+
+        fullQuery = queryTemplate.format(startPosition, query)
+        print fullQuery
+        okForFileName = re.sub('[/:]', '_', dictFormatted(allEntries))
+        fileName = str.format('{0}{1}', okForFileName, 'records.xml')
+        print(fileName)
+
     else:
-        queryToUse = noConstraints.format(startPosition)
+        fullQuery = noConstraints.format(startPosition)
         fileName = "all_records.xml"
 
-    print queryToUse
+    print str(fileName)
 
-    # call(allDatasetsQuery, 'all_records.xml')
-    # call(rr4Query, 'rr4_records.xml')
-
-    request = urllib2.Request(url=cswUrl, data=queryToUse, headers={"Content-type": "application/xml"})
+    request = urllib2.Request(url=cswUrl, data=fullQuery, headers={"Content-type": "application/xml"})
 
     response = urllib2.urlopen(request)
 
 
-    with open(fileName, 'w') as f:
+    with open(str(fileName), 'w') as f:
         for line in response.read():
             f.write(line),
 
     print 'done'
 
 
-#callCSW(None)
+
 
 def main():
 
@@ -101,9 +131,37 @@ def main():
 
     url = sys.argv[1]
 
-    callCSW(url, 'AnyText', 'rr4')
-    callCSW(url, 'AnyText', 'rr6')
-    callCSW(url, 'AnyText', 'rr7')
+
+    entry = dict({"condition" : "And", "key" : "ResourceIdentifier", "value" : "rr4"})
+    print len(entry)
+
+    allEntries = list()
+
+    allEntries.append(entry)
+
+    entry = dict({"condition" : "Or", "key" : "ResourceIdentifier", "value" : "rr6"})
+    print len(entry)
+
+    allEntries.append(entry)
+
+    print len(allEntries)
+
+
+    callCSW(url, allEntries)
+
+    #dictKeyValue = {'ResourceIdentifier', 'rr6'}
+    #callCSW(url, dictKeyValue)
+
+    #dictKeyValue = {'ResourceIdentifier', 'rr7'}
+    #callCSW(url, dictKeyValue)
+
+    #dictKeyValue = {'Identifier', 'f8510_1385_3021_0891'}
+    #callCSW(url, 'Identifier', 'f8510_1385_3021_0891')
+
+    #callCSW(url, None, None)
+    #callCSW(url, 'AnyText', 'rr4')
+    #callCSW(url, 'AnyText', 'rr6')
+    #callCSW(url, 'AnyText', 'rr7')
 
 
 if __name__ == "__main__":

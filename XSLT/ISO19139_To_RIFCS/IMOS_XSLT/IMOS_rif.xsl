@@ -451,159 +451,6 @@
         </xsl:if>
     </xsl:template>
     
-    <!-- RegistryObject - RelatedInfo Element  -->
-    <xsl:template match="gmd:MD_DigitalTransferOptions" mode="registryObject_relatedInfo">
-        <xsl:for-each select="gmd:onLine/gmd:CI_OnlineResource">
-            
-            <xsl:variable name="protocol" select="normalize-space(gmd:protocol)"/>
-            <!-- metadata-URL was added as electronic address and possibly citation identifier, too
-                (if there was no alternative identifier - e.g. DOI - specified in CI_Citation)
-                Add all other online resources here as relatedInfo -->
-            <xsl:if test="(string-length($protocol) > 0) and not(contains($protocol, 'metadata-URL'))">
-                
-                <xsl:variable name="identifierValue" select="normalize-space(gmd:linkage/gmd:URL)"/>
-                <xsl:if test="string-length($identifierValue) > 0">
-                    <relatedInfo>
-                        <xsl:choose>
-                            <xsl:when test="contains($protocol, 'get-map')">
-                                <xsl:attribute name="type">
-                                    <xsl:value-of select="'service'"/>
-                                </xsl:attribute>
-                                
-                                <identifier>
-                                    <xsl:attribute name="type">
-                                        <xsl:choose>
-                                            <xsl:when test="contains($identifierValue, 'doi')">
-                                                <xsl:text>doi</xsl:text>
-                                            </xsl:when>
-                                            <xsl:otherwise>
-                                                <xsl:text>uri</xsl:text>
-                                            </xsl:otherwise>
-                                        </xsl:choose>
-                                    </xsl:attribute>
-                                    <xsl:value-of select="$identifierValue"/>
-                                </identifier>
-                                
-                                <relation>
-                                    <xsl:attribute name="type">
-                                        <xsl:text>isAvailableThrough</xsl:text>
-                                    </xsl:attribute>
-                                </relation>
-                                
-                            </xsl:when>
-                            <xsl:when test="contains($protocol, 'related')">
-                                <xsl:attribute name="type">
-                                    <xsl:choose>
-                                        <xsl:when test="contains($identifierValue, 'extpubs')">
-                                            <xsl:text>publication</xsl:text>
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <xsl:text>website</xsl:text>
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </xsl:attribute>
-                                
-                                <identifier>
-                                    <xsl:attribute name="type">
-                                        <xsl:choose>
-                                            <xsl:when test="contains($identifierValue, 'doi')">
-                                                <xsl:text>doi</xsl:text>
-                                            </xsl:when>
-                                            <xsl:otherwise>
-                                                <xsl:text>uri</xsl:text>
-                                            </xsl:otherwise>
-                                        </xsl:choose>
-                                    </xsl:attribute>
-                                    <xsl:value-of select="$identifierValue"/>
-                                </identifier>
-                                
-                                <relation>
-                                    <xsl:attribute name="type">
-                                        <xsl:choose>
-                                            <xsl:when test="contains($identifierValue, 'extpubs')">
-                                                <xsl:text>isReferencedBy</xsl:text>
-                                            </xsl:when>
-                                            <xsl:otherwise>
-                                                <xsl:text>hasAssociationWith</xsl:text>
-                                            </xsl:otherwise>
-                                        </xsl:choose>
-                                    </xsl:attribute>
-                                </relation>
-                            </xsl:when>
-                            <xsl:when test="contains($protocol, 'link')">
-                                <xsl:attribute name="type">
-                                    <xsl:choose>
-                                        <xsl:when test="contains($identifierValue, 'datatool')">
-                                            <xsl:text>service</xsl:text>
-                                        </xsl:when>
-                                        <xsl:when test="contains($identifierValue, 'rss')">
-                                            <xsl:text>service</xsl:text>
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <xsl:text>website</xsl:text>
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </xsl:attribute>
-                                
-                                <identifier>
-                                    <xsl:attribute name="type">
-                                        <xsl:choose>
-                                            <xsl:when test="contains($identifierValue, 'doi')">
-                                                <xsl:text>doi</xsl:text>
-                                            </xsl:when>
-                                            <xsl:otherwise>
-                                                <xsl:text>uri</xsl:text>
-                                            </xsl:otherwise>
-                                        </xsl:choose>
-                                    </xsl:attribute>
-                                    <xsl:value-of select="$identifierValue"/>
-                                </identifier>
-                                
-                                <relation>
-                                    <xsl:attribute name="type">
-                                        <xsl:choose>
-                                            <xsl:when
-                                                test="contains($identifierValue, 'datatool') or contains($identifierValue, 'rss')">
-                                                <xsl:text>isAvailableThrough</xsl:text>
-                                            </xsl:when>
-                                            <xsl:otherwise>
-                                                <xsl:text>hasAssociationWith</xsl:text>
-                                            </xsl:otherwise>
-                                        </xsl:choose>
-                                    </xsl:attribute>
-                                </relation>
-                            </xsl:when>
-                        </xsl:choose>
-                        
-                        <xsl:choose>
-                            <!-- Use name as title if we have it... -->
-                            <xsl:when test="string-length(normalize-space(gmd:name)) > 0">
-                                <title>
-                                    <xsl:value-of select="normalize-space(gmd:name)"/>
-                                </title>
-                                <!-- ...and then description as notes -->
-                                <xsl:if test="string-length(normalize-space(gmd:description)) > 0">
-                                    <notes>
-                                        <xsl:value-of select="normalize-space(gmd:description)"/>
-                                    </notes>
-                                </xsl:if>
-                            </xsl:when>
-                            <!-- No name, so use description as title if we have it -->
-                            <xsl:otherwise>
-                                <xsl:if test="string-length(normalize-space(gmd:description)) > 0">
-                                    <title>
-                                        <xsl:value-of select="normalize-space(gmd:description)"/>
-                                    </title>
-                                </xsl:if>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                        
-                    </relatedInfo>
-                </xsl:if>
-            </xsl:if>
-        </xsl:for-each>
-    </xsl:template>
-    
     <!-- RegistryObject - Related Object (Organisation or Individual) Element -->
     <xsl:template match="gmd:CI_ResponsibleParty" mode="IMOS_registryObject_related_object">
         <xsl:param name="groupToUse"/>
@@ -888,17 +735,17 @@
         
             <xsl:choose>
                 <xsl:when test="contains(gmd:protocol, 'OGC:') or contains(lower-case(gmd:linkage/gmd:URL), 'thredds')">
-                    <xsl:apply-templates select="." mode="relatedInfo_service"/>
+                    <xsl:apply-templates select="." mode="IMOS_relatedInfo_service"/>
                 </xsl:when>
                 <xsl:when test="not(contains(lower-case(gmd:description), 'point of truth url of this metadata record'))">
-                    <xsl:apply-templates select="." mode="relatedInfo_relatedInformation"/>
+                    <xsl:apply-templates select="." mode="IMOS_relatedInfo_relatedInformation"/>
                 </xsl:when>
                 
             </xsl:choose>
             
      </xsl:template>
     
-    <xsl:template match="gmd:CI_OnlineResource" mode="relatedInfo_service">       
+    <xsl:template match="gmd:CI_OnlineResource" mode="IMOS_relatedInfo_service">       
       
         <xsl:variable name="identifierValue" select="normalize-space(gmd:linkage/gmd:URL)"/>
         
@@ -916,12 +763,12 @@
              </xsl:if>
          </relation>
          
-         <xsl:apply-templates select="." mode="relatedInfo_all"/>
+            <xsl:apply-templates select="." mode="IMOS_relatedInfo_all"/>
         </relatedInfo>
          
     </xsl:template>
     
-    <xsl:template match="gmd:CI_OnlineResource" mode="relatedInfo_relatedInformation">       
+    <xsl:template match="gmd:CI_OnlineResource" mode="IMOS_relatedInfo_relatedInformation">       
         
         <relatedInfo>
           <xsl:attribute name="type" select="'relatedInformation'"/>   
@@ -932,13 +779,13 @@
               </xsl:attribute>
           </relation>
           
-          <xsl:apply-templates select="." mode="relatedInfo_all"/>
+            <xsl:apply-templates select="." mode="IMOS_relatedInfo_all"/>
         </relatedInfo>
         
     </xsl:template>
     
         
-        <xsl:template match="gmd:CI_OnlineResource" mode="relatedInfo_all">     
+    <xsl:template match="gmd:CI_OnlineResource" mode="IMOS_relatedInfo_all">     
             
             <xsl:variable name="identifierValue" select="normalize-space(gmd:linkage/gmd:URL)"/>
             
