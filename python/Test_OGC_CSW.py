@@ -56,49 +56,55 @@ queryTemplate = '''
     '''
 
 queryPropertyTemplate = '''
-    <ogc:{0}><ogc:PropertyIsLike wildCard="*" singleChar="_" escapeChar="\">
-    <ogc:PropertyName>{1}</ogc:PropertyName>
-    <ogc:Literal>{2}</ogc:Literal>
-    </ogc:PropertyIsLike></ogc:{3}>
+    <ogc:PropertyIsLike wildCard="*" singleChar="_" escapeChar="\">
+    <ogc:PropertyName>{0}</ogc:PropertyName>
+    <ogc:Literal>{1}</ogc:Literal>
+    </ogc:PropertyIsLike>
     '''
 
 
-def constructQuery(allEntries):
+def constructQuery(conditionDict):
 
     query = ""
 
-    for entry in allEntries:
-        query += str.format(queryPropertyTemplate, entry["condition"], entry["key"], entry["value"], entry["condition"])
+    for key, paramList in conditionDict.iteritems():
+        query += str.format('<ogc:{0}>', key)
+        for params in paramList:
+            query += str.format(queryPropertyTemplate, params["name"], params["value"])
+
+        query += str.format('</ogc:{0}>', key)
 
     return query
 
 
-def dictFormatted(allEntries):
+def dictFormatted(conditionDict):
 
     formatted = ""
 
-    for entry in allEntries:
-        formatted += str.format('{0}_{1}_{2}_', entry["condition"], entry["key"], entry["value"])
+    for key, paramList in conditionDict.iteritems():
+        formatted += str.format('{0}_', key)
+        for params in paramList:
+            formatted += str.format('{0}_{1}_', params["name"], params["value"])
 
     return formatted
 
 
-def callCSW(cswUrl, allEntries):
+def callCSW(cswUrl, conditionDict):
 
     startPosition = '1'
     fullQuery = None
     fileName = ""
 
-    if (allEntries != None):
+    if (conditionDict != None):
 
-        query = constructQuery(allEntries)
+        query = constructQuery(conditionDict)
         if(query == None):
             print "Unable to construct query"
             return
 
         fullQuery = queryTemplate.format(startPosition, query)
         print fullQuery
-        okForFileName = re.sub('[/:]', '_', dictFormatted(allEntries))
+        okForFileName = re.sub('[/:]', '_', dictFormatted(conditionDict))
         fileName = str.format('{0}{1}', okForFileName, 'records.xml')
         print(fileName)
 
@@ -131,23 +137,20 @@ def main():
 
     url = sys.argv[1]
 
+    paramList = list()
 
-    entry = dict({"condition" : "And", "key" : "ResourceIdentifier", "value" : "rr4"})
-    print len(entry)
+    paramDict = dict({"name" : "ResourceIdentifier", "value" : "rr6"})
+    paramList.append(paramDict)
 
-    allEntries = list()
+    paramDict = dict({"name" : "ResourceIdentifier", "value" : "rr4"})
+    paramList.append(paramDict)
 
-    allEntries.append(entry)
+    paramDict = dict({"name": "ResourceIdentifier", "value": "rr7"})
+    paramList.append(paramDict)
 
-    entry = dict({"condition" : "Or", "key" : "ResourceIdentifier", "value" : "rr6"})
-    print len(entry)
+    conditionDict = dict({"Or" : paramList})
 
-    allEntries.append(entry)
-
-    print len(allEntries)
-
-
-    callCSW(url, allEntries)
+    callCSW(url, conditionDict)
 
     #dictKeyValue = {'ResourceIdentifier', 'rr6'}
     #callCSW(url, dictKeyValue)
