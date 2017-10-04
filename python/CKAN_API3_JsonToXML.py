@@ -21,7 +21,7 @@ def processList(value):
         print("%d datasets to retrieve" % (len(value)))
         for dataSetName in value:
             try:
-                outFileName = (outputDirectory + '/JsonXML/%s.xml' % string.replace(dataSetName, '/', ''))
+                outFileName = (outputDirectory + '/%s.xml' % string.replace(dataSetName, '/', ''))
                 dataSetUri = (descriptionByIdentifierURI % dataSetName)
                 JsonToXML.writeXmlFromJson(dataSetUri, outFileName)
             except exceptions.KeyboardInterrupt:
@@ -72,8 +72,8 @@ outputDirectory = options.outputDirectory
 
 if os.path.exists(outputDirectory):
     shutil.rmtree(outputDirectory)
-print("Constructing directory " + outputDirectory+'/'+'JsonXML')
-os.makedirs(outputDirectory+'/'+'JsonXML')
+print("Constructing directory " + outputDirectory)
+os.makedirs(outputDirectory)
 
 print ("Reading datasets names from "+identifierListURI)
 openedFile = urllib2.urlopen(identifierListURI, timeout=5)
