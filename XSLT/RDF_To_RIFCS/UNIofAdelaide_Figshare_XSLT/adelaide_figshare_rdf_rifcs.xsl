@@ -27,7 +27,7 @@
     
     <xsl:param name="global_originatingSource" select="'University of Adelaide Figshare'"/>
     <xsl:param name="global_baseURI" select="'adelaide.edu.au'"/>
-    <xsl:param name="global_group" select="'University of Adelaide'"/>
+    <xsl:param name="global_group" select="'The University of Adelaide'"/>
     <xsl:param name="global_publisherName" select="'University of Adelaide'"/>
 
   <xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes"/>
@@ -281,10 +281,22 @@
     </xsl:template>
    
     <xsl:template match="dc:rights" mode="collection_rights_access">
+        
         <xsl:choose>
             <xsl:when test="contains(upper-case(.), 'CC BY')">
+                <xsl:variable name="ccNoNumber" as="xs:string*">
+                    <xsl:analyze-string select="." regex="[A-Za-z\s]+">
+                        <xsl:matching-substring>
+                            <xsl:if test="string-length(regex-group(0)) > 0">
+                                <xsl:value-of select="regex-group(0)"/>
+                            </xsl:if>
+                        </xsl:matching-substring>
+                    </xsl:analyze-string>
+                </xsl:variable>
                 <rights>
-                    <licence type="{upper-case(replace(normalize-space(.), ' ', '-'))}"/>
+                    <licence type="{upper-case(replace(normalize-space($ccNoNumber), ' ', '-'))}">
+                        <xsl:value-of select="upper-case(replace(normalize-space(.), ' ', '-'))"/>
+                    </licence>
                 </rights>   
             </xsl:when>
             <xsl:otherwise>
