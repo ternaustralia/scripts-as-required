@@ -11,7 +11,7 @@
     <xsl:param name="valueSeparator" select="','"/>
     
     <xsl:param name="activityXML" select="document('file:///home/csiroanu/projects/UNIofAdelaide_Project/FromProductionRDA_DataConnect/University-of-Adelaide-MainDatasource_And_MintDatasource_RIF-CS-Export_ProductionPublishedActivities.xml')"/>
-    <xsl:param name="collectionXML_demo" select="document('file:///home/csiroanu/projects/UNIofAdelaide_Project/FromProductionRDA_DataConnect/University-of-Adelaide-Figshare-RIF-CS-Export_DemoPublishedCollections.xml')"/>
+    <xsl:param name="collectionXML_prod" select="document('file:///home/csiroanu/projects/UNIofAdelaide_Project/University-of-Adelaide-Figshare-RIF-CS-Export_FigshareProdPublishedCollections.xml')"/>
     
     <!-- This can be run on Collection registryObjects xml, to find each activity related to the Collection -->
     
@@ -64,13 +64,13 @@
             
             <xsl:choose>
                 <xsl:when test="count($activityXML/ro:registryObjects/ro:registryObject/ro:activity[contains(preceding-sibling::ro:key, $currentActivityKey)]) > 1">
-                    <xsl:message select="concat('Unexpected:  found more than one activity with key: ', $currentActivityKey)"/> 
+                    <xsl:message><xsl:value-of select="concat('Unexpected:  found more than one activity with key: ', $currentActivityKey)"/></xsl:message>
                 </xsl:when>
                 <xsl:when test="count($activityXML/ro:registryObjects/ro:registryObject/ro:activity[contains(preceding-sibling::ro:key, $currentActivityKey)]) = 1">
-                    <xsl:message select="concat('Found one activity with key: ', $currentActivityKey)"/> 
+                    <xsl:message><xsl:value-of select="concat('Found one activity with key: ', $currentActivityKey)"/></xsl:message>
                 </xsl:when>
                 <xsl:otherwise>
-                    <xsl:message select="concat('Found zero activities with key: ', $currentActivityKey)"/> 
+                    <xsl:message><xsl:value-of select="concat('Found zero activities with key: ', $currentActivityKey)"/></xsl:message>
                 </xsl:otherwise>
             </xsl:choose>
             
@@ -116,11 +116,11 @@
             <!--	column: collection in demo (mandatory) -->
             <xsl:text>&quot;</xsl:text>
             <xsl:choose>
-                <xsl:when test="count($collectionXML_demo/ro:registryObjects/ro:registryObject/ro:collection[contains(ro:name/ro:namePart, $currentCollectionName)]) > 0">
-                    <xsl:message select="'Collection is in figshare'"/>
-                    <xsl:if test="string-length($collectionXML_demo/ro:registryObjects/ro:registryObject/ro:collection[contains(ro:name/ro:namePart, $currentCollectionName)][1]/ro:name/ro:namePart) > 0">
-                        <xsl:message select="concat('Collection in figshare has name: ', $collectionXML_demo/ro:registryObjects/ro:registryObject/ro:collection[contains(ro:name/ro:namePart, $currentCollectionName)][1]/preceding-sibling::ro:key)"/>
-                        <xsl:value-of select="concat('https://demo.ands.org.au/view/?key=', $collectionXML_demo/ro:registryObjects/ro:registryObject/ro:collection[contains(ro:name/ro:namePart, $currentCollectionName)][1]/preceding-sibling::ro:key)"/>    
+                <xsl:when test="count($collectionXML_prod/ro:registryObjects/ro:registryObject/ro:collection[contains(ro:name/ro:namePart, $currentCollectionName)]) > 0">
+                    <xsl:message>Collection is in figshare</xsl:message>
+                    <xsl:if test="string-length($collectionXML_prod/ro:registryObjects/ro:registryObject/ro:collection[contains(ro:name/ro:namePart, $currentCollectionName)][1]/ro:name/ro:namePart) > 0">
+                        <xsl:message><xsl:value-of select="concat('Collection in figshare has name: ', $collectionXML_prod/ro:registryObjects/ro:registryObject/ro:collection[contains(ro:name/ro:namePart, $currentCollectionName)][1]/preceding-sibling::ro:key)"/></xsl:message>
+                        <xsl:value-of select="concat('https://researchdata.ands.org.au/view/?key=', $collectionXML_prod/ro:registryObjects/ro:registryObject/ro:collection[contains(ro:name/ro:namePart, $currentCollectionName)][1]/preceding-sibling::ro:key)"/>    
                     </xsl:if>
                 </xsl:when>         
              </xsl:choose>
