@@ -28,7 +28,7 @@
     <xsl:param name="global_DeakinGeonetwork_sourceURL" select="'http://mhm-dev.deakin.edu.au'"/>
     <!--xsl:param name="global_DeakinGeonetwork_originatingSourceOrganisation" select="'undetermined'"/-->
     
-    <xsl:param name="global_DeakinGeonetwork_path" select="'/metadataviewer/faces/view.xhtml?uuid='"/>
+    <xsl:param name="global_DeakinGeonetwork_path" select="'/geonetwork/srv/eng/metadata.show?uuid='"/>
     
     <xsl:param name="global_DeakinGeonetwork_cannedCitation" select="'The citation in a list of references is: citation author name/s (year metadata published), metadata title. Citation author organisation/s. File identifier and Data accessed at (add http link).'"/>
     
