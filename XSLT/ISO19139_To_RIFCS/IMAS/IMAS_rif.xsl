@@ -28,7 +28,7 @@
     <xsl:param name="global_IMAS_sourceURL" select="'http://metadata.imas.utas.edu.au'"/>
     <!--xsl:param name="global_IMAS_originatingSourceOrganisation" select="'undetermined'"/-->
     
-    <xsl:param name="global_IMAS_path" select="'/metadataviewer/faces/view.xhtml?uuid='"/>
+    <xsl:param name="global_IMAS_path" select="'/geonetwork/srv/eng/metadata.show?uuid='"/>
     
     <xsl:param name="global_IMAS_cannedCitation" select="'The citation in a list of references is: citation author name/s (year metadata published), metadata title. Citation author organisation/s. File identifier and Data accessed at (add http link).'"/>
     <xsl:param name="global_IMAS_identifier_open" select="'39060c33-9246-49fe-8f97-758b67ced4ce'"/>
