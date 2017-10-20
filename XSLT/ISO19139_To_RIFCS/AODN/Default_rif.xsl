@@ -24,7 +24,7 @@
     <xsl:variable name="gmdCodelists" select="document('codelists.xml')"/>
     
     <xsl:param name="global_sourceURL" select="'http://catalogue.aodn.org.au'"/>
-    <xsl:param name="global_path" select="'/metadataviewer/faces/view.xhtml?uuid='"/>
+    <xsl:param name="global_path" select="'/geonetwork/srv/eng/metadata.show?uuid='"/>
     
     <!-- =========================================== -->
     <!-- RegistryObject RegistryObject Template          -->
@@ -1188,6 +1188,12 @@
             <xsl:choose>
                 <xsl:when test="count($doiIdentifier_sequence) and (string-length($doiIdentifier_sequence[1]) > 0)">
                     <xsl:value-of select="$doiIdentifier_sequence[1]"/>   
+                </xsl:when>
+                <xsl:when test="count(ancestor::*:MD_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage[contains(lower-case(following-sibling::gmd:protocol), 'metadata-url')]/gmd:URL) > 0">
+                    <xsl:if test="string-length((ancestor::*:MD_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage[contains(lower-case(following-sibling::gmd:protocol), 'metadata-url')]/gmd:URL)[1]) > 0">
+                        <xsl:message select="'Using metadata point of truth as citation identifier'"/>
+                        <xsl:value-of select="(ancestor::*:MD_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage[contains(lower-case(following-sibling::gmd:protocol), 'metadata-url')]/gmd:URL)[1]"/>
+                    </xsl:if>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:value-of select="concat($global_sourceURL, $global_path, ancestor::*:MD_Metadata/*:fileIdentifier)"/>
