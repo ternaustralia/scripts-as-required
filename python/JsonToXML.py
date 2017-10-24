@@ -98,10 +98,15 @@ def writeXmlFromJson(dataSetUri, outFileName):
 
     try:
 
-        print("About to create file "+outFileName)
-        outputFile = open(outFileName, 'w+')
+        if(count <= (rows+start-100)):
+            print("No more to retrieve")
 
         while(count > (rows+start-100)):
+
+            print("About to create file " + outFileName)
+            outputFile = open(outFileName, 'w+')
+
+            print("About to retrieve content at " + dataSetUri + postfix)
 
             postfix = str.format("&rows="+str(rows)+"&start="+str(start))
 
