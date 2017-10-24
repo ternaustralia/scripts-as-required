@@ -98,9 +98,6 @@ def writeXmlFromJson(dataSetUri, outFileName):
 
     try:
 
-        if(count <= (rows+start-100)):
-            print("No more to retrieve")
-
         while(count > (rows+start-100)):
 
             print("About to create file " + outFileName)
@@ -145,7 +142,10 @@ def writeXmlFromJson(dataSetUri, outFileName):
 
             print("Rows+Start-100: "+str((rows+start-100)))
 
-            #obj_StreamReaderWriter.write(obj_xml_Document.toprettyxml(encoding='utf-8', indent=' '))
+            if (count <= (rows + start - 100)):
+                print("No more to retrieve")
+
+                #obj_StreamReaderWriter.write(obj_xml_Document.toprettyxml(encoding='utf-8', indent=' '))
 
 
 
