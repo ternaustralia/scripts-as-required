@@ -109,6 +109,7 @@ def writeXmlFromJson(dataSetUri, outFileName):
 
             try:
                 obj_addinfourl = urllib2.urlopen(dataSetUri+postfix, timeout=5)
+                print("Retrieved content at " + dataSetUri + postfix)
             except exceptions.KeyboardInterrupt:
                 print "Interrupted - ", sys.exc_info()[0]
                 raise
@@ -117,7 +118,6 @@ def writeXmlFromJson(dataSetUri, outFileName):
                 return
 
 
-            print("Retrieved content at "+dataSetUri+postfix)
             assert(obj_addinfourl is not None)
             obj_json_str = (obj_addinfourl.read())
             assert(obj_json_str is not None)
