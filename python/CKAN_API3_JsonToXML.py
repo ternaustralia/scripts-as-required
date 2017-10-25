@@ -19,7 +19,21 @@ from xml.dom.minidom import Document
 def processList(value):
     if isinstance(value, list):
         print("%d datasets to retrieve" % (len(value)))
-        for dataSetName in value:
+        for entry in value:
+            dataSetName = None
+            if isinstance(entry, dict):
+                data = entry.get(u'data')
+                if isinstance(data, dict):
+                    package = data.get('package')
+                    if isinstance(package, dict):
+                        dataSetName = package.get(u'name')
+            else:
+                print("Length of entry: %d " % (len(entry)))
+                print("Entry: %s" % (entry))
+                dataSetName = entry
+
+
+            print("dataSetName: %s" % (dataSetName))
             try:
                 outFileName = (outputDirectory + '/%s.xml' % string.replace(dataSetName, '/', ''))
                 dataSetUri = (descriptionByIdentifierURI % dataSetName)
