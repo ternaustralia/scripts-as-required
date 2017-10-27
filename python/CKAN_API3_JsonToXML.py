@@ -17,22 +17,43 @@ from xml.dom.minidom import Document
 
 
 def processList(value):
+    dataSetName_list = list()
     if isinstance(value, list):
         print("%d datasets to retrieve" % (len(value)))
+
         for entry in value:
+            print("Dataset: ", entry)
             dataSetName = None
             if isinstance(entry, dict):
-                data = entry.get(u'data')
-                if isinstance(data, dict):
-                    package = data.get('package')
-                    if isinstance(package, dict):
-                        dataSetName = package.get(u'name')
+                if(entry.has_key(u'data')):
+                    data = entry.get(u'data')
+                    if isinstance(data, dict):
+                        package = data.get('package')
+                        if isinstance(package, dict):
+                            dataSetName = package.get(u'name')
+                            print("Found datasetname: ", dataSetName)
+                            dataSetName_list.append(dataSetName)
+                elif(entry.has_key(u'dataset_uris')):
+                    dataset_uris = entry.get(u'dataset_uris')
+                    if isinstance(dataset_uris, list):
+                        print('dataset_uris is a list of len %d' % len(dataset_uris))
+                        for dataset_uri in dataset_uris:
+                            dataSetName = dataset_uri
+                            print("Found datasetname: ", dataSetName)
+                            dataSetName_list.append(dataSetName)
+
             else:
                 print("Length of entry: %d " % (len(entry)))
                 print("Entry: %s" % (entry))
                 dataSetName = entry
+                print("Found datasetname: ", dataSetName)
+                dataSetName_list.append(dataSetName)
+    else:
+        print("Not list")
 
+    return dataSetName_list
 
+def processDataset(dataSetName):
             print("dataSetName: %s" % (dataSetName))
             try:
                 outFileName = (outputDirectory + '/%s.xml' % string.replace(dataSetName, '/', ''))
@@ -99,10 +120,17 @@ if loadedJson is None:
 if(isinstance(loadedJson, dict)):
     for key in loadedJson.keys():
       value = loadedJson[key]
-      processList(value)
+      dataSetName_list = processList(value)
+      print("Obtained %d dataset names, now in list" % len(dataSetName_list))
+      for dataSetName in dataSetName_list:
+          processDataset(dataSetName)
 else:
     if (isinstance(loadedJson, list)):
-        processList(loadedJson)
+        dataSetName_list = processList(loadedJson)
+        print("Obtained %d dataset names, now in list" % len(dataSetName_list))
+        for dataSetName in dataSetName_list:
+            processDataset(dataSetName)
+
     else:
         print ("Not a dict or list, so not sure what to do")
         assert(1)
