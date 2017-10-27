@@ -39,7 +39,7 @@ def parse_element(doc, root, j):
     return
   if isinstance(j, dict):
     for key in j.keys():
-      
+
       value = j[key]
       if isinstance(value, list):
         for e in value:
@@ -56,6 +56,11 @@ def parse_element(doc, root, j):
           elem = doc.createElement(keyFormatted)
         parse_element(doc, elem, value)
         root.appendChild(elem)
+  elif isinstance(j, list):
+    print("isinstance list of len ", len(j))
+    print(j)
+    for e in j:
+        parse_element(doc, root, e)
   elif isinstance(j, unicode):
     text = doc.createTextNode(j)
     root.appendChild(text)
@@ -67,7 +72,7 @@ def parse_element(doc, root, j):
     text = doc.createTextNode(str(j))
     root.appendChild(text)
   else:
-    raise Exception("bad type %s for %s" % (type(j), j,))
+    raise Exception("unhandled type %s for %s" % (type(j), j,))
 
 def parse_doc(root, j):
   doc = Document()
@@ -98,18 +103,15 @@ def writeXmlFromJson(dataSetUri, outFileName):
 
     try:
 
+        print("About to create file "+outFileName)
+        outputFile = open(outFileName, 'w+')
+
         while(count > (rows+start-100)):
-
-            print("About to create file " + outFileName)
-            outputFile = open(outFileName, 'w+')
-
-            print("About to retrieve content at " + dataSetUri + postfix)
 
             postfix = str.format("&rows="+str(rows)+"&start="+str(start))
 
             try:
                 obj_addinfourl = urllib2.urlopen(dataSetUri+postfix, timeout=5)
-                print("Retrieved content at " + dataSetUri + postfix)
             except exceptions.KeyboardInterrupt:
                 print "Interrupted - ", sys.exc_info()[0]
                 raise
@@ -118,8 +120,10 @@ def writeXmlFromJson(dataSetUri, outFileName):
                 return
 
 
+            print("Retrieved content at "+dataSetUri+postfix)
             assert(obj_addinfourl is not None)
             obj_json_str = (obj_addinfourl.read())
+            #print(obj_json_str)
             assert(obj_json_str is not None)
             obj_dict = json.loads(obj_json_str)
 
@@ -134,7 +138,7 @@ def writeXmlFromJson(dataSetUri, outFileName):
                 assert(len(countElementList[0].childNodes[0].data) > 0)
                 count=int(countElementList[0].childNodes[0].data)
 
-            
+
             print("Remaining: "+str(count-(rows+start)))
             print("Remaining: "+str(count-(rows+start)))
 
@@ -142,10 +146,7 @@ def writeXmlFromJson(dataSetUri, outFileName):
 
             print("Rows+Start-100: "+str((rows+start-100)))
 
-            if (count <= (rows + start - 100)):
-                print("No more to retrieve")
-
-                #obj_StreamReaderWriter.write(obj_xml_Document.toprettyxml(encoding='utf-8', indent=' '))
+            #obj_StreamReaderWriter.write(obj_xml_Document.toprettyxml(encoding='utf-8', indent=' '))
 
 
 
