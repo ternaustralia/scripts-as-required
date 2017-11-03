@@ -233,8 +233,11 @@
                  
                 <xsl:apply-templates select="mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code"
                     mode="registryObject_location"/>
-                <xsl:apply-templates select="mdb:metadataLinkage/cit:CI_OnlineResource[contains(lower-case(cit:description), 'point-of-truth metadata')]/cit:linkage" mode="registryObject_identifier_metadata_URL"/>
+                
+                <xsl:apply-templates select="mdb:metadataLinkage/cit:CI_OnlineResource[contains(lower-case(cit:description), 'point-of-truth metadata')]/cit:linkage[not(contains(., 'internal.ecat'))]" mode="registryObject_identifier_metadata_URL"/>
                     
+                <xsl:apply-templates select="mdb:metadataLinkage/cit:CI_OnlineResource[contains(lower-case(cit:description), 'point-of-truth metadata')]/cit:linkage[contains(., 'internal.ecat')]" mode="registryObject_identifier_metadata_URL_replace"/>
+                
                 <xsl:apply-templates
                     select="mdb:resourceLineage/mrl:LI_Lineage/mrl:statement[string-length(.) > 0]"
                     mode="registryObject_description_lineage"/>
@@ -264,19 +267,21 @@
         <xsl:apply-templates select="mri:citation/cit:CI_Citation/cit:title[string-length(.) > 0]" mode="registryObject_name"/>
         
         
-         <xsl:for-each
+         <xsl:for-each-group
             select="mri:citation/cit:CI_Citation/cit:citedResponsibleParty/cit:CI_Responsibility/cit:party[(string-length(normalize-space(cit:CI_Individual/cit:name))) > 0] |
-            ancestor::mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility/cit:party[(string-length(normalize-space(cit:CI_Individual/cit:name))) > 0] |
-            ancestor::mdb:MD_Metadata/mdb:contact/cit:CI_Responsibility/cit:party[(string-length(normalize-space(cit:CI_Individual/cit:name))) > 0]">
+            ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:distributionFormat/mrd:MD_Format/mrd:formatDistributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility/cit:party[(string-length(normalize-space(cit:CI_Individual/cit:name))) > 0] |
+            ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility/cit:party[(string-length(normalize-space(cit:CI_Individual/cit:name))) > 0] |
+            ancestor::mdb:MD_Metadata/mdb:contact/cit:CI_Responsibility/cit:party[(string-length(normalize-space(cit:CI_Individual/cit:name))) > 0]" group-by="cit:CI_Individual/cit:name">
             <xsl:apply-templates select="." mode="registryObject_related_object"/>
-        </xsl:for-each>
+        </xsl:for-each-group>
         
-        <xsl:for-each
+        <xsl:for-each-group
             select="mri:citation/cit:CI_Citation/cit:citedResponsibleParty/cit:CI_Responsibility/cit:party[(string-length(normalize-space(cit:CI_Organisation/cit:name)) > 0)] |
-            ancestor::mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility/cit:party[(string-length(normalize-space(cit:CI_Organisation/cit:name)) > 0)] |
-            ancestor::mdb:MD_Metadata/mdb:contact/cit:CI_Responsibility/cit:party[(string-length(normalize-space(cit:CI_Organisation/cit:name)) > 0)]">
+            ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:distributionFormat/mrd:MD_Format/mrd:formatDistributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility/cit:party[(string-length(normalize-space(cit:CI_Organisation/cit:name)) > 0)] |
+            ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility/cit:party[(string-length(normalize-space(cit:CI_Organisation/cit:name)) > 0)] |
+            ancestor::mdb:MD_Metadata/mdb:contact/cit:CI_Responsibility/cit:party[(string-length(normalize-space(cit:CI_Organisation/cit:name)) > 0)]" group-by="cit:CI_Organisation/cit:name">
             <xsl:apply-templates select="." mode="registryObject_related_object"/>
-        </xsl:for-each>
+        </xsl:for-each-group>
         
         <xsl:apply-templates
             select="mri:topicCategory/mri:MD_TopicCategoryCode[string-length(.) > 0]"
@@ -331,7 +336,8 @@
   
         <xsl:for-each
             select="mri:citation/cit:CI_Citation/cit:citedResponsibleParty/cit:CI_Responsibility/cit:party/cit:CI_Individual[string-length(normalize-space(cit:name)) > 0] |
-            ancestor::mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility/cit:party/cit:CI_Individual[string-length(normalize-space(cit:name)) > 0] |
+            ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:distributionFormat/mrd:MD_Format/mrd:formatDistributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility/cit:party/cit:CI_Individual[string-length(normalize-space(cit:name)) > 0] |
+            ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility/cit:party/cit:CI_Individual[string-length(normalize-space(cit:name)) > 0] |
             ancestor::mdb:MD_Metadata/mdb:contact/cit:CI_Responsibility/cit:party/cit:CI_Individual[string-length(normalize-space(cit:name)) > 0]">
             <xsl:apply-templates select="." mode="party_person">
                 <xsl:with-param name="originatingSource" select="$originatingSource"/>
@@ -340,7 +346,8 @@
     
         <xsl:for-each
             select="mri:citation/cit:CI_Citation/cit:citedResponsibleParty/cit:CI_Responsibility/cit:party/cit:CI_Organisation[string-length(normalize-space(cit:name)) > 0] |
-            ancestor::mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility/cit:party/cit:CI_Organisation[string-length(normalize-space(cit:name)) > 0] |
+            ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:distributionFormat/mrd:MD_Format/mrd:formatDistributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility/cit:party/cit:CI_Organisation[string-length(normalize-space(cit:name)) > 0]  |
+            ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility/cit:party/cit:CI_Organisation[string-length(normalize-space(cit:name)) > 0] |
             ancestor::mdb:MD_Metadata/mdb:contact/cit:CI_Responsibility/cit:party/cit:CI_Organisation[string-length(normalize-space(cit:name)) > 0]">
         <xsl:apply-templates select="." mode="party_group">
                 <xsl:with-param name="originatingSource" select="$originatingSource"/>
@@ -387,9 +394,16 @@
         </identifier>
     </xsl:template>
     
+    
     <xsl:template match="cit:linkage" mode="registryObject_identifier_metadata_URL">
         <identifier type="uri">
             <xsl:value-of select="."/>    
+        </identifier>
+    </xsl:template>
+    
+    <xsl:template match="cit:linkage" mode="registryObject_identifier_metadata_URL_replace">
+        <identifier type="uri">
+            <xsl:value-of select="replace(., 'internal.ecat', 'ecat')"/>    
         </identifier>
     </xsl:template>
    
@@ -511,11 +525,13 @@
         </xsl:if>
               <relatedObject>
                 <key>
-                    <xsl:value-of select="concat($global_acronym, '/', translate(normalize-space(*/cit:name),' ',''))"/>
+                    <xsl:value-of select="concat($global_acronym, '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
                 </key>
-                <relation>
-                    <xsl:attribute name="type" select="$role"/>
-                </relation>
+                    <xsl:for-each select="distinct-values(current-group()/preceding-sibling::cit:role/cit:CI_RoleCode/@codeListValue)">
+                        <relation>
+                            <xsl:attribute name="type" select="."/>
+                        </relation>
+                     </xsl:for-each>
              </relatedObject>
             
             <xsl:for-each select="*/cit:individual/cit:CI_Individual">
