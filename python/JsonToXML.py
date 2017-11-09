@@ -106,7 +106,7 @@ def writeXmlFromJson(dataSetUri, outFileName):
         print("About to create file "+outFileName)
         outputFile = open(outFileName, 'w+')
 
-        while(count > (rows+start-100)):
+        while(count > (rows+start)):
 
             postfix = str.format("&rows="+str(rows)+"&start="+str(start))
 
@@ -138,17 +138,17 @@ def writeXmlFromJson(dataSetUri, outFileName):
                 assert(len(countElementList[0].childNodes[0].data) > 0)
                 count=int(countElementList[0].childNodes[0].data)
 
-
-            print("Remaining: "+str(count-(rows+start)))
-            print("Remaining: "+str(count-(rows+start)))
+            print("Retrieved count %d " % count)
 
             start+=100
 
-            print("Rows+Start-100: "+str((rows+start-100)))
-
+            print("Continuing if count (%d) greater than rows+start (%d)  " % (count, rows+start))
             #obj_StreamReaderWriter.write(obj_xml_Document.toprettyxml(encoding='utf-8', indent=' '))
 
 
+            outputFile.write(obj_xml_rootDocument.toprettyxml(encoding='utf-8', indent=' '))
+
+            print("Output written to %s" % outFileName)
 
     except exceptions.KeyboardInterrupt:
         print "Interrupted - ", sys.exc_info()[0]
@@ -157,9 +157,7 @@ def writeXmlFromJson(dataSetUri, outFileName):
         print "Exception - ", sys.exc_info()[0]
         traceback.print_exc(file=sys.stdout)
 
-    outputFile.write(obj_xml_rootDocument.toprettyxml(encoding='utf-8', indent=' '))
 
-    print("Output written to %s" % outFileName)
 
     if outputFile is not None:
         outputFile.close()
