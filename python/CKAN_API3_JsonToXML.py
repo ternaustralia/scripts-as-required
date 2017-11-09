@@ -56,7 +56,7 @@ def processList(value):
 def processDataset(dataSetName):
             print("dataSetName: %s" % (dataSetName))
             try:
-                outFileName = (outputDirectory + '/%s.xml' % string.replace(dataSetName, '/', ''))
+                outFileName = (outputDirectory + '/%s.xml' % string.replace(string.replace(dataSetName, ':', ''), '/', ''))
                 dataSetUri = (descriptionByIdentifierURI % dataSetName)
                 JsonToXML.writeXmlFromJson(dataSetUri, outFileName)
             except exceptions.KeyboardInterrupt:
@@ -130,6 +130,7 @@ else:
         print("Obtained %d dataset names, now in list" % len(dataSetName_list))
         for dataSetName in dataSetName_list:
             processDataset(dataSetName)
+            #exit(0) # for testing only
 
     else:
         print ("Not a dict or list, so not sure what to do")
