@@ -44,7 +44,7 @@
     <xsl:template match="result" mode="constructObjects">
         <xsl:apply-templates select="." mode="collection"/>
         <xsl:apply-templates select="." mode="party"/>
-        <xsl:apply-templates select="." mode="service"/>
+        <!--xsl:apply-templates select="." mode="service"/-->
     </xsl:template>
 
     <xsl:template match="result" mode="collection">
@@ -117,8 +117,10 @@
 
                 <xsl:apply-templates select="." mode="collection_extras"/>
 
-                <xsl:apply-templates select="notes" mode="collection_description"/>
-
+                <xsl:apply-templates select="notes" mode="collection_description_brief"/>
+                
+                <xsl:apply-templates select="." mode="collection_description_full"/>
+                
                 <xsl:apply-templates select="isopen" mode="collection_rights_accessRights"/>
 
                 <xsl:call-template name="collection_license">
@@ -366,12 +368,31 @@
 
 
     <!-- Collection - Decription (full) Element -->
-    <xsl:template match="notes" mode="collection_description">
+    <xsl:template match="notes" mode="collection_description_brief">
         <xsl:if test="string-length(normalize-space(.))">
-            <description type="full">
+            <description type="brief">
                 <xsl:value-of select="normalize-space(.)"/>
             </description>
         </xsl:if>
+    </xsl:template>
+    
+    <!-- Collection - Decription (full) Element -->
+    <xsl:template match="*" mode="collection_description_full">
+        <description type="full">
+            <xsl:for-each select="resources">
+                <xsl:if test="string-length(normalize-space(name)) > 0">
+                    <xsl:value-of select="concat('&lt;b&gt;', normalize-space(name), '&lt;/b&gt;')"/>
+                </xsl:if>
+                <xsl:choose>
+                    <xsl:when test="string-length(normalize-space(description)) > 0">
+                        <xsl:value-of select="concat(' (', normalize-space(description), ')', '&lt;br/&gt;')"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:text>&lt;br/&gt;</xsl:text>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:for-each>
+        </description>
     </xsl:template>
 
     <!-- Collection - AccessRights -->
@@ -465,137 +486,47 @@
                     </xsl:choose>
                 </xsl:variable>
                 <xsl:variable name="serviceName" select="custom:getServiceName($serviceUrl)"/>
-                <xsl:choose>
-                    <xsl:when test="string-length($serviceUrl) > 0">
-                        <xsl:message select="concat('serviceUrl: ', $serviceUrl)"/>
-                        <relatedInfo type="service">
-                            <identifier type="uri">
-                                <xsl:value-of select="$serviceUrl"/>
-                            </identifier>
-                            <relation type="supports">
-                            <!--xsl:if test="$serviceUrl != $url">
-                                <url>
-                                    <xsl:value-of select="$url"/>
-                                </url>
-                            </xsl:if-->
-                            </relation>
-                            <xsl:if test="string-length(name) > 0">
-                                <title>
-                                    <xsl:value-of select="name"/>
-                                </title>
-                            </xsl:if>
-                            <!--xsl:if
-                                test="string-length($organizationTitle) > 0 or string-length($serviceName) > 0">
-                                <title>
-                                    <xsl:choose>
-                                        <xsl:when test="string-length($serviceName)">
-                                            <xsl:value-of
-                                                select="concat($serviceName, ' for access to ', $organizationTitle, ' data')"
-                                            />
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <xsl:value-of
-                                                select="concat('Service for access to ', $organizationTitle, ' data')"
-                                            />
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </title>
-                            </xsl:if-->
-                        </relatedInfo>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:message select="concat('no service url obtainable from url: ', $url)"/>
-                        <xsl:if test="contains(lower-case(webstore_url), 'active')">
-                            <relatedInfo type="service">
-                                <xsl:variable name="id" select="normalize-space(id)"/>
-                                <xsl:if test="string-length($id)">
-                                    <identifier type="uri">
-                                        <xsl:value-of
-                                            select="concat($global_baseURI, 'api/3/action/datastore_search')"
-                                        />
-                                    </identifier>
-                                </xsl:if>
-                                <xsl:variable name="format" select="'Tabular data in JSON'"/>
-                                <xsl:variable name="description">
-                                    <xsl:choose>
-                                        <xsl:when test="string-length(normalize-space(name))">
-                                            <xsl:value-of
-                                                select="concat(normalize-space(name), ' (',$format, ')')"
-                                            />
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <xsl:value-of select="concat('(',$format, ')')"/>
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                    <xsl:if test="string-length(normalize-space(description))">
-                                        <xsl:value-of
-                                            select="concat(' ', normalize-space(description))"/>
-                                    </xsl:if>
-                                </xsl:variable>
-                                <relation type="supports">
-                                    <xsl:if test="string-length(normalize-space($description)) > 0">
-                                        <description>
-                                            <xsl:value-of select="$description"/>
-                                        </description>
-                                    </xsl:if>
-                                    <url>
-                                        <xsl:value-of
-                                            select="concat($global_baseURI, 'api/3/action/datastore_search?resource_id=', $id)"
-                                        />
-                                    </url>
-                                </relation>
-                                <xsl:if
-                                    test="string-length($organizationTitle) > 0 or string-length($serviceName) > 0">
+                <xsl:if test="string-length($serviceUrl) > 0">
+                    <xsl:message select="concat('serviceUrl: ', $serviceUrl)"/>
+                    <relatedInfo type="service">
+                        <identifier type="uri">
+                            <xsl:value-of select="$serviceUrl"/>
+                        </identifier>
+                        <relation type="supports">
+                        <xsl:if test="$serviceUrl != $url">
+                            <url>
+                                <xsl:value-of select="$url"/>
+                            </url>
+                        </xsl:if>
+                        </relation>
+                        <!-- use title and not notes because notes does not turn up in hover at the moment -->
+                        <xsl:choose>
+                             <xsl:when test="string-length(name) > 0">
+                                 <xsl:choose>
+                                    <xsl:when test="string-length(description) > 0">
+                                        <!-- name and description, so use both -->
+                                        <title>
+                                            <xsl:value-of select="concat(name, ' - (', description, ')')"/>
+                                        </title>
+                                    </xsl:when>
+                                     <xsl:otherwise> <!-- name, but no description, so just use name -->
+                                        <title>
+                                            <xsl:value-of select="name"/>
+                                        </title>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                             </xsl:when>
+                            <xsl:otherwise> <!-- no name, so use description if there is one -->
+                                <xsl:if test="string-length(description) > 0">
                                     <title>
-                                        <xsl:choose>
-                                            <xsl:when test="string-length($serviceName)">
-                                                <xsl:value-of
-                                                  select="concat($serviceName, ' for access to ', $organizationTitle, ' data')"
-                                                />
-                                            </xsl:when>
-                                            <xsl:otherwise>
-                                                <xsl:value-of
-                                                  select="concat('Service at ', $global_baseURI)"/>
-                                            </xsl:otherwise>
-                                        </xsl:choose>
+                                        <xsl:value-of select="description"/>
                                     </title>
                                 </xsl:if>
-                            </relatedInfo>
-
-                        </xsl:if>
-                        <!--xsl:if test="normalize-space($url) != $global_portalURI">
-                            <location>
-                                <address>
-                                    <electronic type="url" target="directDownload">
-                                        <value>
-                                            <xsl:value-of select="normalize-space(url)"/>
-                                        </value>
-                                        <xsl:if test="string-length(name) > 0">
-                                            <title>
-                                                <xsl:value-of select="name"/>
-                                            </title>
-                                        </xsl:if>
-                                        <xsl:if test="string-length(normalize-space(description))">
-                                            <notes>
-                                                <xsl:value-of select="normalize-space(description)"/>
-                                            </notes>
-                                        </xsl:if>
-                                        <xsl:if test="string-length(mimetype) > 0">
-                                            <mediaType>
-                                                <xsl:value-of select="mimetype"/>
-                                            </mediaType>
-                                        </xsl:if>
-                                        <xsl:if test="string-length(size) > 0">
-                                            <byteSize>
-                                                <xsl:value-of select="size"/>
-                                            </byteSize>
-                                        </xsl:if>
-                                    </electronic>
-                                </address>
-                            </location>
-                        </xsl:if-->
-                    </xsl:otherwise>
-                </xsl:choose>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                       </relatedInfo>
+                </xsl:if>
+                   
             </xsl:if>
         </xsl:for-each>
     </xsl:template>
@@ -738,7 +669,7 @@
                             <xsl:value-of select="normalize-space(description)"/>
                         </description>
                     </xsl:if>
-                    <xsl:for-each select="../resources">
+                    <!--xsl:for-each select="../resources">
                         <xsl:message>resources</xsl:message>
                         <xsl:variable name="serviceUrl" select="custom:getServiceUrl(.)"/>
                         <xsl:if test="string-length($serviceUrl) > 0">
@@ -760,7 +691,7 @@
                                 </xsl:if>
                             </relatedInfo>
                         </xsl:if>
-                    </xsl:for-each>
+                    </xsl:for-each-->
 
                 </party>
             </registryObject>
@@ -987,24 +918,30 @@
         <xsl:param name="title"/>
         <xsl:param name="id"/>
         <xsl:param name="url"/>
-        <rights>
-            <licence>
-                <xsl:attribute name="type">
-                    <xsl:choose>
-                        <xsl:when test="matches($id, '-[\d].[\d]-AU')">
-                            <xsl:value-of select="upper-case(replace($id, '-[\d].[\d]-AU', ''))"/>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <xsl:value-of select="upper-case($id)"/>
-                        </xsl:otherwise>
-                    </xsl:choose>
-                </xsl:attribute>
-                <xsl:attribute name="rightsUri">
-                    <xsl:value-of select="$url"/>
-                </xsl:attribute>
-                <xsl:value-of select="$title"/>
-            </licence>
-        </rights>
+        <xsl:if test="(string-length($title) > 0) or (string-length($id) > 0) or (string-length($url) > 0)">
+            <rights>
+                <licence>
+                    <xsl:if test="(string-length($id) > 0)">
+                        <xsl:attribute name="type">
+                            <xsl:choose>
+                                <xsl:when test="matches($id, '-[\d].[\d]-AU')">
+                                    <xsl:value-of select="upper-case(replace($id, '-[\d].[\d]-AU', ''))"/>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:value-of select="upper-case($id)"/>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        </xsl:attribute>
+                    </xsl:if>
+                    <xsl:if test="(string-length($url) > 0)">
+                        <xsl:attribute name="rightsUri">
+                            <xsl:value-of select="$url"/>
+                        </xsl:attribute>
+                        <xsl:value-of select="$title"/>
+                    </xsl:if>
+                </licence>
+            </rights>
+        </xsl:if>
     </xsl:template>
 
     <xsl:function name="custom:getServiceName">
