@@ -21,7 +21,7 @@
     <xsl:param name="global_debugExceptions" select="true()" as="xs:boolean"/>
     <xsl:param name="global_originatingSource" select="'University of Western Australia'"/>
     <xsl:param name="global_baseURI" select="'research-repository.uwa.edu.au'"/>
-    <xsl:param name="global_group" select="'University of Western Australia (Research Repository)'"/>
+    <xsl:param name="global_group" select="'The University of Western Australia'"/>
     <xsl:param name="global_publisherName" select="'University of Western Australia'"/>
     
 
