@@ -506,7 +506,7 @@
                                     <xsl:when test="string-length(description) > 0">
                                         <!-- name and description, so use both -->
                                         <title>
-                                            <xsl:value-of select="concat(name, ' - (', description, ')')"/>
+                                            <xsl:value-of select="concat(name, ' (', description, ')')"/>
                                         </title>
                                     </xsl:when>
                                      <xsl:otherwise> <!-- name, but no description, so just use name -->

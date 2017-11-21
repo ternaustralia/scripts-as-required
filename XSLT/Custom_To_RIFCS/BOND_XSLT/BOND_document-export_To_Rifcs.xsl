@@ -88,13 +88,9 @@
                 
                 <xsl:apply-templates select="fields/field[@name='grantid'][string-length(.) > 0]" mode="collection_relatedInfo"/>
                 
-                <xsl:apply-templates select="fields/field[@name='access'][string-length(.) > 0]" mode="collection_rights_statement"/>
-                
                 <xsl:apply-templates select="fields/field[@name='rights'][string-length(.) > 0]" mode="collection_rights_statement"/>
                 
-                <xsl:apply-templates select="fields/field[@name='access'][string-length(.) > 0]" mode="collection_rights_access"/>
-                
-                <xsl:apply-templates select="fields/field[@name='distribution_license'][string-length(.) > 0]" mode="collection_rights_license"/>
+                <xsl:apply-templates select="fields/field[@name='distribution_license'][string-length(.) > 0]" mode="collection_rights_license_access"/>
                 
                 
                 <xsl:apply-templates select="submission-date[string-length(.) > 0]" mode="collection_dates_submitted"/> 
@@ -354,33 +350,7 @@
         </relatedInfo>
    </xsl:template>
   
-   <xsl:template match="field[@name='access']" mode="collection_rights_access">
-        <rights>
-            <accessRights>
-                <xsl:choose>
-                    <xsl:when test="contains(lower-case(.), 'open access')">
-                        <xsl:attribute name="type" select="'open'"/>
-                    </xsl:when>
-                    <xsl:when test="contains(lower-case(.), 'mediated')">
-                        <xsl:attribute name="type" select="'conditional'"/>
-                    </xsl:when>
-                </xsl:choose>
-                <xsl:if test="string-length(../field[@name='comments'])">
-                    <xsl:value-of select="normalize-space(../field[@name='comments'])"/>
-                </xsl:if>
-            </accessRights>
-        </rights>
-    </xsl:template>
-    
-    <xsl:template match="field[@name='access']" mode="collection_rights_statement">
-        <rights>
-            <rightsStatement>
-                <xsl:value-of select="normalize-space(.)"/>
-            </rightsStatement>
-        </rights>
-    </xsl:template>
-    
-    <xsl:template match="field[@name='distribution_license']" mode="collection_rights_license">
+    <xsl:template match="field[@name='distribution_license']" mode="collection_rights_license_access">
          <xsl:variable name="currentValue" select="normalize-space(.)"/>
         
         <xsl:variable name="codeDefinition_sequence" select="$licenseCodelist/custom:CT_CodelistCatalogue/custom:codelistItem/custom:CodeListDictionary[@custom:id='LicenseCodeAustralia']/custom:codeEntry/custom:CodeDefinition[contains($currentValue, normalize-space(replace(custom:remarks, '\{n\}', '')))]" as="node()*"/>
@@ -395,6 +365,11 @@
                                     <xsl:message select="concat('Match found for ', $currentValue, ' so using custom:identifier: ', custom:identifier)"/>
                                 </xsl:attribute>
                             </licence>
+                            <xsl:if test="contains(lower-case(custom:identifier), 'cc-by')">
+                                <accessRights>
+                                    <xsl:attribute name="type" select="'open'"/>
+                                 </accessRights>
+                            </xsl:if>
                         </rights>
                     </xsl:if>
                 </xsl:for-each>

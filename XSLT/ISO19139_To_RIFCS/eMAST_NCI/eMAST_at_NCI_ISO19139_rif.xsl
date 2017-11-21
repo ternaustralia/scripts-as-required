@@ -20,11 +20,11 @@
     <xsl:param name="global_defaultOriginatingSource" select="'external'"/>
     <xsl:param name="global_acronym" select="'eMAST'"/>
     <xsl:param name="global_originatingSource" select="'eMAST'"/> <!-- Only used as originating source if organisation name cannot be determined from Point Of Contact -->
-    <xsl:param name="global_group" select="'eMAST'"/> 
+    <xsl:param name="global_group" select="'Ecosystem Modelling and Scaling Infrastructure (eMAST) Facility'"/> 
     <xsl:param name="global_path" select="'/geonetwork/srv/eng/catalog.search#/metadata/'"/>
     <xsl:param name="global_baseURI" select="'geonetworkrr9.nci.org.au'"/>
     <xsl:param name="global_ActivityKeyNCI" select="'ncris.innovation.gov.au/activity/20'"/>
-    <xsl:param name="global_SourceFacilityKey" select="'eMAST@NCI/EcosystemModellingandScalingInfrastructure(eMAST)Facility'"/>
+    <xsl:param name="global_SourceFacilityKey" select="'NCI/EcosystemModellingandScalingInfrastructure(eMAST)Facility'"/>
     <xsl:variable name="anzsrcCodelist" select="document('anzsrc-codelist.xml')"/>
     <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>
     <xsl:variable name="gmdCodelists" select="document('codelists.xml')"/>
@@ -525,29 +525,35 @@
                     </xsl:otherwise>
                 </xsl:choose>
             </key>
-            <xsl:for-each-group select="current-group()/gmd:role"
-                group-by="gmd:CI_RoleCode/@codeListValue">
-                <xsl:variable name="code">
-                    <xsl:value-of select="normalize-space(current-grouping-key())"/>
-                </xsl:variable>
-                <xsl:choose>
-                    <xsl:when test="string-length($code) > 0">
-                        <relation>
-                            <xsl:attribute name="type">
-                                <xsl:value-of select="$code"/>
-                            </xsl:attribute>
-                        </relation>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <relation>
-                            <xsl:attribute name="type">
-                                <xsl:text>unknown</xsl:text>
-                            </xsl:attribute>
-                        </relation>
-                    </xsl:otherwise>
-                </xsl:choose>
-                
-            </xsl:for-each-group>
+             <xsl:choose>
+                 <xsl:when test="count(current-group()/gmd:role) > 0">
+                    <xsl:for-each-group select="current-group()/gmd:role"
+                        group-by="gmd:CI_RoleCode/@codeListValue">
+                        <xsl:variable name="code">
+                            <xsl:value-of select="normalize-space(current-grouping-key())"/>
+                        </xsl:variable>
+                        <xsl:choose>
+                            <xsl:when test="string-length($code) > 0">
+                                <relation>
+                                    <xsl:attribute name="type">
+                                        <xsl:value-of select="$code"/>
+                                    </xsl:attribute>
+                                </relation>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <relation>
+                                    <xsl:attribute name="type">
+                                        <xsl:text>unknown</xsl:text>
+                                    </xsl:attribute>
+                                </relation>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </xsl:for-each-group>
+                 </xsl:when>
+                 <xsl:otherwise>
+                     <relation type="hasAssociationWith"/>
+                 </xsl:otherwise>
+             </xsl:choose>
         </relatedObject>
     </xsl:template>
 

@@ -72,7 +72,7 @@
                
                 <xsl:apply-templates select="fields/field[@name='orcid_id'][string-length(.) > 0]" mode="collection_relatedInfo"/>
                 
-                <xsl:apply-templates select="fields/field[@name='grantid'][string-length(.) > 0]" mode="collection_relatedInfo"/>
+                <xsl:apply-templates select="fields/field[@name='grant_num'][string-length(.) > 0]" mode="collection_relatedInfo"/>
                 
                 <xsl:apply-templates select="fields/field[@name='access'][string-length(.) > 0]" mode="collection_rights_statement"/>
                 
@@ -231,13 +231,23 @@
         </relatedInfo>
    </xsl:template>
    
-   <xsl:template match="field[@name='grantid']" mode="collection_relatedInfo">
-        <relatedInfo type="activity">
-            <identifier type='purl'>
-                <xsl:value-of select="normalize-space(.)"/>
-            </identifier>
-            <relation type="isOutputOf"/>
-        </relatedInfo>
+   <xsl:template match="field[@name='grant_num']" mode="collection_relatedInfo">
+       <relatedInfo type="activity">
+           <xsl:choose>
+                <xsl:when test="contains(., '/')">
+                    <identifier type="{substring-before(normalize-space(.),'/')}">
+                         <xsl:value-of select="substring-after(normalize-space(.),'/')"/>
+                     </identifier>
+                     <relation type="isOutputOf"/>
+                 </xsl:when>
+                 <xsl:otherwise>
+                     <identifier type="global">
+                         <xsl:value-of select="normalize-space(.)"/>
+                     </identifier>
+                     <relation type="isOutputOf"/>
+                 </xsl:otherwise>
+            </xsl:choose>
+       </relatedInfo>
    </xsl:template>
   
    <xsl:template match="field[@name='access']" mode="collection_rights_access">

@@ -33,16 +33,16 @@
             xsi:schemaLocation="http://ands.org.au/standards/rif-cs/registryObjects 
             http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd"-->
           
-            <xsl:apply-templates select="//core:result/core:content"/>
+            <xsl:apply-templates select="//*:result/*:content"/>
             
         <!-- /registryObjects-->
     </xsl:template>
    
-    <xsl:template match="core:content">
+    <xsl:template match="*:content">
         
     <!-- include dataset for now -->
         
-        <xsl:if test="contains(core:type, 'dk.atira.pure.modules.datasets.external.model.dataset.DataSet')">
+        <xsl:if test="contains(*:type, 'dk.atira.pure.modules.datasets.external.model.dataset.DataSet')">
                 <xsl:apply-templates select="." mode="collection">
                     <xsl:with-param name="type" select="'dataset'"/>
                 </xsl:apply-templates>
@@ -50,7 +50,7 @@
         </xsl:if>
     </xsl:template>
     
-    <xsl:template match="core:content" mode="collection">
+    <xsl:template match="*:content" mode="collection">
         <xsl:param name="type" as="xs:string"/>
         <xsl:variable name="class" select="'collection'"/>
         
@@ -61,7 +61,7 @@
         <registryObject>
             <xsl:attribute name="group" select="$global_group"/>
             <key>
-                <xsl:value-of select="concat(normalize-space(core:family), ':', normalize-space(@uuid))"/>
+                <xsl:value-of select="concat(normalize-space(*:family), ':', normalize-space(@uuid))"/>
             </key>
             <originatingSource>
                 <xsl:value-of select="$global_originatingSource"/>
@@ -70,17 +70,17 @@
                 
                 <xsl:attribute name="type" select="$type"/>
              
-                <xsl:apply-templates select="core:modified[string-length(.) > 0]" mode="collection_date_modified"/>
+                <xsl:apply-templates select="*:modified[string-length(.) > 0]" mode="collection_date_modified"/>
                 
-                <xsl:apply-templates select="core:created[string-length(.) > 0]" mode="collection_date_created"/>
+                <xsl:apply-templates select="*:created[string-length(.) > 0]" mode="collection_date_created"/>
                 
                 <xsl:apply-templates select="@uuid[string-length(.) > 0]" mode="collection_identifier"/>
                 
-                <xsl:apply-templates select="*:doi/core:doi[string-length(.) > 0]" mode="collection_identifier"/>
+                <xsl:apply-templates select="*:doi/*:doi[string-length(.) > 0]" mode="collection_identifier"/>
                 
-                <xsl:apply-templates select="*:doi/core:doi[string-length(.) > 0]" mode="collection_location"/>
+                <xsl:apply-templates select="*:doi/*:doi[string-length(.) > 0]" mode="collection_location"/>
                 
-                <xsl:if test="string-length(*:doi/core:doi) = 0">
+                <xsl:if test="string-length(*:doi/*:doi) = 0">
                     <xsl:apply-templates select="*[1]/@todo:about[(string-length(.) > 0)]" mode="collection_location"/>
                 </xsl:if>
                 
@@ -88,21 +88,21 @@
                 
                 <!-- xsl:apply-templates select="*:managedBy" mode="collection_relatedInfo"/-->
                 
-                <xsl:apply-templates select="*:managedBy[(string-length(@uuid) > 0) and (string-length(core:family) > 0)]" mode="collection_relatedObject"/>
+                <xsl:apply-templates select="*:managedBy[(string-length(@uuid) > 0) and (string-length(*:family) > 0)]" mode="collection_relatedObject"/>
                 
-                <xsl:apply-templates select="*:organisations/*:organisation[(string-length(@uuid) > 0) and (string-length(core:family) > 0)]" mode="collection_relatedObject"/>
+                <xsl:apply-templates select="*:organisations/*:organisation[(string-length(@uuid) > 0) and (string-length(*:family) > 0)]" mode="collection_relatedObject"/>
         
                 <xsl:apply-templates select="*:externalOrganisations" mode="collection_description_notes"/>
                         
-                <!-- xsl:apply-templates select="*:persons/*:dataSetPersonAssociation[(string-length(person-template:person/@uuid) > 0) and (string-length(person-template:person/core:family) > 0)]" mode="collection_relatedInfo"/-->
+                <!-- xsl:apply-templates select="*:persons/*:dataSetPersonAssociation[(string-length(person-template:person/@uuid) > 0) and (string-length(person-template:person/*:family) > 0)]" mode="collection_relatedInfo"/-->
                 
-                <xsl:apply-templates select="*:persons/*:dataSetPersonAssociation[(string-length(person-template:person/@uuid) > 0) and (string-length(person-template:person/core:family) > 0)]" mode="collection_relatedObject_publicProfile"/>
+                <xsl:apply-templates select="*:persons/*:dataSetPersonAssociation[(string-length(person-template:person/@uuid) > 0) and (string-length(person-template:person/*:family) > 0)]" mode="collection_relatedObject_publicProfile"/>
                 
                 <xsl:apply-templates select="*:persons" mode="collection_description_notes_internal_or_external_privateProfile_and_external_publicProfile"/>
                 
                 <!-- xsl:apply-templates select="*:persons" mode="collection_description_notes_external_publicProfile"/-->
                 
-                <!-->xsl:apply-templates select="*:persons/*:dataSetPersonAssociation[(string-length(person-template:externalPerson/@uuid) > 0) and (string-length(person-template:externalPerson/core:family) > 0)]" mode="collection_relatedObject_external"/-->
+                <!-->xsl:apply-templates select="*:persons/*:dataSetPersonAssociation[(string-length(person-template:externalPerson/@uuid) > 0) and (string-length(person-template:externalPerson/*:family) > 0)]" mode="collection_relatedObject_external"/-->
                 
                 <xsl:apply-templates select="*:keywordGroups/*:keywordGroup/*:keyword/*:userDefinedKeyword/*:freeKeyword[string-length(.) > 0]" mode="collection_subject"/>
                 
@@ -134,11 +134,11 @@
         </registryObject>
     </xsl:template>
    
-    <xsl:template match="core:modified" mode="collection_date_modified">
+    <xsl:template match="*:modified" mode="collection_date_modified">
         <xsl:attribute name="dateModified" select="."/>
     </xsl:template>
    
-    <xsl:template match="core:created" mode="collection_date_created">
+    <xsl:template match="*:created" mode="collection_date_created">
         <xsl:attribute name="dateAccessioned" select="."/>
     </xsl:template>
     
@@ -152,7 +152,7 @@
         </xsl:if>
     </xsl:template>
     
-    <xsl:template match="core:doi" mode="collection_identifier">
+    <xsl:template match="*:doi" mode="collection_identifier">
         <identifier type="doi">
             <xsl:choose>
                 <xsl:when test="starts-with(. , '10.')">
@@ -165,7 +165,7 @@
         </identifier>    
     </xsl:template>
     
-     <xsl:template match="core:doi" mode="collection_location">
+     <xsl:template match="*:doi" mode="collection_location">
         <location>
             <address>
                 <electronic type="url" target="landingPage">
@@ -206,7 +206,7 @@
     </xsl:template>
     
     <xsl:template match="*:personRole" mode="relation">
-        <xsl:variable name="uriValue_sequence" select="tokenize(core:uri, '/')" as="xs:string*"/>
+        <xsl:variable name="uriValue_sequence" select="tokenize(*:uri, '/')" as="xs:string*"/>
         <xsl:if test="count($uriValue_sequence) > 0">
             <xsl:variable name="role" select="$uriValue_sequence[count($uriValue_sequence)]"/>
                 <relation>
@@ -218,7 +218,7 @@
     </xsl:template>
     
     <xsl:template match="*:dataSetPersonAssociation" mode="collection_relatedObject_publicProfile">
-        <xsl:variable name="personName" select="concat(normalize-space(person-template:person/following-sibling::person-template:name/core:firstName), ' ', normalize-space(person-template:person/following-sibling::person-template:name/core:lastName))"/>
+        <xsl:variable name="personName" select="concat(normalize-space(person-template:person/following-sibling::person-template:name/*:firstName), ' ', normalize-space(person-template:person/following-sibling::person-template:name/*:lastName))"/>
         <xsl:if test="$global_debug">
             <xsl:message select="concat('Internal public personName for relatedObject: ', $personName)"/>
         </xsl:if>
@@ -226,7 +226,7 @@
         <xsl:if test="string-length($personName) > 0">
             <relatedObject>
                 <key>
-                    <xsl:value-of select="concat(normalize-space(person-template:person/core:family), ':', normalize-space(person-template:person/@uuid))"/>
+                    <xsl:value-of select="concat(normalize-space(person-template:person/*:family), ':', normalize-space(person-template:person/@uuid))"/>
                    <!-- xsl:value-of select="local:formatKey($personName)"/--> 
                 </key>
                 <xsl:apply-templates select="person-template:personRole" mode="relation"/>
@@ -235,14 +235,14 @@
     </xsl:template>
     
     <xsl:template match="*:persons" mode="collection_description_notes_internal_or_external_privateProfile_and_external_publicProfile">
-        <xsl:if test="(count(*:dataSetPersonAssociation[((count(person-template:externalPerson) = 0) and (count(person-template:person) = 0)) and ((string-length(person-template:name/core:firstName) > 0) or (string-length(person-template:name/core:lastName) > 0))]) > 0) or
-        			  (count(*:dataSetPersonAssociation[(string-length(person-template:externalPerson/@uuid) > 0) and (string-length(person-template:externalPerson/core:family) > 0)]) > 0)">
+        <xsl:if test="(count(*:dataSetPersonAssociation[((count(person-template:externalPerson) = 0) and (count(person-template:person) = 0)) and ((string-length(person-template:name/*:firstName) > 0) or (string-length(person-template:name/*:lastName) > 0))]) > 0) or
+        			  (count(*:dataSetPersonAssociation[(string-length(person-template:externalPerson/@uuid) > 0) and (string-length(person-template:externalPerson/*:family) > 0)]) > 0)">
             <description type="notes">
                 <xsl:text>&lt;b&gt;Associated Persons&lt;/b&gt;</xsl:text>
                 <xsl:text>&lt;br/&gt;</xsl:text>
-                <xsl:for-each select="*:dataSetPersonAssociation[((count(person-template:externalPerson) = 0) and (count(person-template:person) = 0)) and ((string-length(person-template:name/core:firstName) > 0) or (string-length(person-template:name/core:lastName) > 0))]">
-                        <xsl:variable name="fullName" select="concat(person-template:name/core:firstName, ' ', person-template:name/core:lastName)"/>
-                        <xsl:variable name="role" select="person-template:personRole/core:term"/>
+                <xsl:for-each select="*:dataSetPersonAssociation[((count(person-template:externalPerson) = 0) and (count(person-template:person) = 0)) and ((string-length(person-template:name/*:firstName) > 0) or (string-length(person-template:name/*:lastName) > 0))]">
+                        <xsl:variable name="fullName" select="concat(person-template:name/*:firstName, ' ', person-template:name/*:lastName)"/>
+                        <xsl:variable name="role" select="person-template:personRole/*:term"/>
                          <xsl:message select="concat('Associated Persons - External?Internal private: ', $fullName)"/>
                         <xsl:if test="string-length($fullName) > 0">
                             <xsl:if test="position() > 1">
@@ -254,12 +254,12 @@
                             </xsl:if>
                         </xsl:if>
                 </xsl:for-each>
-                <xsl:for-each select="*:dataSetPersonAssociation[(string-length(person-template:externalPerson/@uuid) > 0) and (string-length(person-template:externalPerson/core:family) > 0)]">
-                        <xsl:variable name="fullName" select="concat(person-template:name/core:firstName, ' ', person-template:name/core:lastName)"/>
-                        <xsl:variable name="role" select="person-template:personRole/core:term"/>
+                <xsl:for-each select="*:dataSetPersonAssociation[(string-length(person-template:externalPerson/@uuid) > 0) and (string-length(person-template:externalPerson/*:family) > 0)]">
+                        <xsl:variable name="fullName" select="concat(person-template:name/*:firstName, ' ', person-template:name/*:lastName)"/>
+                        <xsl:variable name="role" select="person-template:personRole/*:term"/>
                         <xsl:message select="concat('More Associated Persons - external, public: ', $fullName)"/>
                         <xsl:if test="string-length($fullName) > 0">
-                            <xsl:if test="(count(*:dataSetPersonAssociation[((count(person-template:externalPerson) = 0) and (count(person-template:person) = 0)) and ((string-length(person-template:name/core:firstName) > 0) or (string-length(person-template:name/core:lastName) > 0))]) > 0) or (position() > 1)">
+                            <xsl:if test="(count(*:dataSetPersonAssociation[((count(person-template:externalPerson) = 0) and (count(person-template:person) = 0)) and ((string-length(person-template:name/*:firstName) > 0) or (string-length(person-template:name/*:lastName) > 0))]) > 0) or (position() > 1)">
                                 <xsl:text>; </xsl:text>
                             </xsl:if>    
                             <xsl:value-of select="normalize-space($fullName)"/>
@@ -273,14 +273,14 @@
     </xsl:template>
     
     <!-- xsl:template match="*:persons" mode="collection_description_notes_external_publicProfile">
-        <xsl:message select="concat('count external persons public profile: ', count(*:dataSetPersonAssociation[(string-length(person-template:externalPerson/@uuid) > 0) and (string-length(person-template:externalPerson/core:family) > 0)]))"/>
-        <xsl:if test="count(*:dataSetPersonAssociation[(string-length(person-template:externalPerson/@uuid) > 0) and (string-length(person-template:externalPerson/core:family) > 0)]) > 0">
+        <xsl:message select="concat('count external persons public profile: ', count(*:dataSetPersonAssociation[(string-length(person-template:externalPerson/@uuid) > 0) and (string-length(person-template:externalPerson/*:family) > 0)]))"/>
+        <xsl:if test="count(*:dataSetPersonAssociation[(string-length(person-template:externalPerson/@uuid) > 0) and (string-length(person-template:externalPerson/*:family) > 0)]) > 0">
             <description type="notes">
                 <xsl:text>&lt;b&gt;External Persons&lt;/b&gt;</xsl:text>
                 <xsl:text>&lt;br/&gt;</xsl:text>
-                <xsl:for-each select="*:dataSetPersonAssociation[(string-length(person-template:externalPerson/@uuid) > 0) and (string-length(person-template:externalPerson/core:family) > 0)]">
-                        <xsl:variable name="fullName" select="concat(person-template:name/core:firstName, ' ', person-template:name/core:lastName)"/>
-                        <xsl:variable name="role" select="person-template:personRole/core:term"/>
+                <xsl:for-each select="*:dataSetPersonAssociation[(string-length(person-template:externalPerson/@uuid) > 0) and (string-length(person-template:externalPerson/*:family) > 0)]">
+                        <xsl:variable name="fullName" select="concat(person-template:name/*:firstName, ' ', person-template:name/*:lastName)"/>
+                        <xsl:variable name="role" select="person-template:personRole/*:term"/>
                         <xsl:message select="concat('External Persons - external, public: ', $fullName)"/>
                         <xsl:if test="string-length($fullName) > 0">
                             <xsl:if test="position() > 1">
@@ -297,14 +297,14 @@
     </xsl:template-->
     
     <!-->xsl:template match="*:dataSetPersonAssociation" mode="collection_relatedObject_external">
-        <xsl:variable name="personName" select="concat(normalize-space(person-template:name/core:firstName), ' ', normalize-space(person-template:name/core:lastName))"/>
+        <xsl:variable name="personName" select="concat(normalize-space(person-template:name/*:firstName), ' ', normalize-space(person-template:name/*:lastName))"/>
         <xsl:if test="$global_debug">
             <xsl:message select="concat('personName for relatedObject: ', $personName)"/>
         </xsl:if>
         <xsl:if test="string-length($personName) > 0">
             <relatedObject>
                 <key>
-                    <xsl:value-of select="concat(normalize-space(person-template:externalPerson/core:family), ':', normalize-space(person-template:externalPerson/@uuid))"/>
+                    <xsl:value-of select="concat(normalize-space(person-template:externalPerson/*:family), ':', normalize-space(person-template:externalPerson/@uuid))"/>
                 </key>
                 <xsl:apply-templates select="person-template:personRole" mode="relation"/>
             </relatedObject>
@@ -316,7 +316,7 @@
         <xsl:if test="string-length(@uuid) > 0">
             <relatedObject>
                 <key>
-                   <xsl:value-of select="concat(normalize-space(core:family), ':', normalize-space(@uuid))"/> 
+                   <xsl:value-of select="concat(normalize-space(*:family), ':', normalize-space(@uuid))"/> 
                 </key>
                 <relation type="isAssociatedWith"/>
             </relatedObject>
@@ -327,7 +327,7 @@
         <xsl:if test="string-length(@uuid) > 0">
             <relatedObject>
                 <key>
-                   <xsl:value-of select="concat(normalize-space(core:family), ':', normalize-space(@uuid))"/> 
+                   <xsl:value-of select="concat(normalize-space(*:family), ':', normalize-space(@uuid))"/> 
                 </key>
                 <relation type="isManagedBy"/>
             </relatedObject>
@@ -422,7 +422,7 @@
         </relatedInfo>
     </xsl:template>
     
-    <xsl:template match="core:content" mode="collection_coverage_temporal">
+    <xsl:template match="*:content" mode="collection_coverage_temporal">
         <xsl:if test="((string-length(*:temporalCoverageStartDate) > 0) or (string-length(*:temporalCoverageEndDate) > 0))">
             <coverage>
                 <temporal>
@@ -498,7 +498,7 @@
     </xsl:template>
   
     <xsl:template match="*:documents" mode="collection_rights_licence">
-        <xsl:variable name="fileLicense_sequence" select="*:document/*:documentLicense/core:uri[string-length(.) > 0]"/>
+        <xsl:variable name="fileLicense_sequence" select="*:document/*:documentLicense/*:uri[string-length(.) > 0]"/>
         <xsl:choose>
             <xsl:when test="(count($fileLicense_sequence) > 0) and (custom:sequenceContainsSameValuesCaseInsensitive($fileLicense_sequence))">
             	<xsl:if test="string-length(substring-after($fileLicense_sequence[1], '/dk/atira/pure/dataset/documentlicenses/')) > 0">
@@ -520,7 +520,7 @@
         </xsl:choose>
     </xsl:template>
     
-    <xsl:template match="core:content" mode="collection_dates">
+    <xsl:template match="*:content" mode="collection_dates">
         <xsl:for-each select="*:dateMadeAvailable">
             <dates type="issued">
                 <date type="dateFrom" dateFormat="W3CDTF">
@@ -578,7 +578,7 @@
                                             <!-- file-level visibility not set, or not open -->
                                             <xsl:if test="(count(*:limitedVisibility/*:visibility) = 0) or (string-length(*:limitedVisibility/*:visibility) = 0) or not(contains(lower-case(*:limitedVisibility/*:visibility), 'free'))">
                                                 <xsl:if test="$global_debug">
-                                                    <xsl:message select="concat('found closed file ', core:fileName)"/> 
+                                                    <xsl:message select="concat('found closed file ', *:fileName)"/> 
                                                 </xsl:if>
                                                 <xsl:value-of select="true()"/> 
                                             </xsl:if>  
@@ -643,27 +643,27 @@
     </xsl:template>
     
     
-    <xsl:template match="core:content" mode="collection_citationInfo">
+    <xsl:template match="*:content" mode="collection_citationInfo">
         <citationInfo>
             <citationMetadata>
-                <xsl:apply-templates select="*:doi/core:doi" mode="citation_identifier"/>
+                <xsl:apply-templates select="*:doi/*:doi" mode="citation_identifier"/>
                 
                 <xsl:apply-templates select="*:title[string-length(.) > 0]" mode="citation_title"/>
                 
-                <xsl:apply-templates select="*:persons/*:dataSetPersonAssociation[(string-length(person-template:person/@uuid) > 0) and (string-length(person-template:person/core:family) > 0) and (contains(substring-after(normalize-space(person-template:personRole/core:uri), '/dk/atira/pure/dataset/roles/dataset/'), 'creator'))]" mode="citation_contributor_public"/>
+                <xsl:apply-templates select="*:persons/*:dataSetPersonAssociation[(string-length(person-template:person/@uuid) > 0) and (string-length(person-template:person/*:family) > 0) and (contains(substring-after(normalize-space(person-template:personRole/*:uri), '/dk/atira/pure/dataset/roles/dataset/'), 'creator'))]" mode="citation_contributor_public"/>
            
-                <xsl:apply-templates select="*:persons/*:dataSetPersonAssociation[(string-length(person-template:externalPerson/@uuid) > 0) and (string-length(person-template:externalPerson/core:family) > 0) and (contains(substring-after(normalize-space(person-template:personRole/core:uri), '/dk/atira/pure/dataset/roles/dataset/'), 'creator'))]" mode="citation_contributor_external"/>
+                <xsl:apply-templates select="*:persons/*:dataSetPersonAssociation[(string-length(person-template:externalPerson/@uuid) > 0) and (string-length(person-template:externalPerson/*:family) > 0) and (contains(substring-after(normalize-space(person-template:personRole/*:uri), '/dk/atira/pure/dataset/roles/dataset/'), 'creator'))]" mode="citation_contributor_external"/>
            
-                <xsl:apply-templates select="*:persons/*:dataSetPersonAssociation[((count(person-template:person) = 0) and (count(person-template:externalPerson) = 0)) and ((string-length(person-template:name/core:firstName) > 0) or (string-length(person-template:name/core:lastName) > 0)) and (contains(substring-after(normalize-space(person-template:personRole/core:uri), '/dk/atira/pure/dataset/roles/dataset/'), 'creator'))]" mode="citation_contributor_private"/>
+                <xsl:apply-templates select="*:persons/*:dataSetPersonAssociation[((count(person-template:person) = 0) and (count(person-template:externalPerson) = 0)) and ((string-length(person-template:name/*:firstName) > 0) or (string-length(person-template:name/*:lastName) > 0)) and (contains(substring-after(normalize-space(person-template:personRole/*:uri), '/dk/atira/pure/dataset/roles/dataset/'), 'creator'))]" mode="citation_contributor_private"/>
            
                 <xsl:apply-templates select="*:publisher[string-length(*:name) > 0]" mode="citation_publisher"/>
                 
-                <xsl:apply-templates select="*:dateMadeAvailable[string-length(core:year) > 0]" mode="citation_publication_date"/>
+                <xsl:apply-templates select="*:dateMadeAvailable[string-length(*:year) > 0]" mode="citation_publication_date"/>
             </citationMetadata>
         </citationInfo>
     </xsl:template>
   
-    <xsl:template match="core:doi" mode="citation_identifier">
+    <xsl:template match="*:doi" mode="citation_identifier">
         <identifier type="doi">
             <xsl:value-of select="."/>
         </identifier>   
@@ -678,10 +678,10 @@
     <xsl:template match="*:dataSetPersonAssociation" mode="citation_contributor_public">
         <contributor>
             <namePart type="given">
-                <xsl:value-of select="normalize-space(person-template:name/core:firstName)"/>
+                <xsl:value-of select="normalize-space(person-template:name/*:firstName)"/>
             </namePart>    
             <namePart type="family">
-                <xsl:value-of select="normalize-space(person-template:name/core:lastName)"/>
+                <xsl:value-of select="normalize-space(person-template:name/*:lastName)"/>
             </namePart>    
         </contributor>
     </xsl:template>
@@ -689,10 +689,10 @@
     <xsl:template match="*:dataSetPersonAssociation" mode="citation_contributor_external">
         <contributor>
             <namePart type="given">
-                <xsl:value-of select="normalize-space(person-template:name/core:firstName)"/>
+                <xsl:value-of select="normalize-space(person-template:name/*:firstName)"/>
             </namePart>    
             <namePart type="family">
-                <xsl:value-of select="normalize-space(person-template:name/core:lastName)"/>
+                <xsl:value-of select="normalize-space(person-template:name/*:lastName)"/>
             </namePart>    
         </contributor>
     </xsl:template>
@@ -700,10 +700,10 @@
     <xsl:template match="*:dataSetPersonAssociation" mode="citation_contributor_private">
         <contributor>
             <namePart type="given">
-                <xsl:value-of select="normalize-space(person-template:name/core:firstName)"/>
+                <xsl:value-of select="normalize-space(person-template:name/*:firstName)"/>
             </namePart>    
             <namePart type="family">
-                <xsl:value-of select="normalize-space(person-template:name/core:lastName)"/>
+                <xsl:value-of select="normalize-space(person-template:name/*:lastName)"/>
             </namePart>    
         </contributor>
     </xsl:template>
@@ -716,23 +716,23 @@
     
     <xsl:template match="*:dateMadeAvailable" mode="citation_publication_date">
         <date type="publicationDate">
-            <xsl:value-of select="normalize-space(core:year)"/>
+            <xsl:value-of select="normalize-space(*:year)"/>
         </date> 
     </xsl:template>
         
-    <xsl:template match="core:content" mode="party">
+    <xsl:template match="*:content" mode="party">
     
-        <xsl:apply-templates select="*:managedBy[(string-length(@uuid) > 0) and (string-length(core:family) > 0)]" mode="party_managing_organisation"/>
-        <xsl:apply-templates select="*:organisations/*:organisation[(string-length(@uuid) > 0) and (string-length(core:family) > 0)]" mode="party_organisation"/>
-        <xsl:apply-templates select="*:persons/*:dataSetPersonAssociation[(string-length(person-template:person/@uuid) > 0) and (string-length(person-template:person/core:family) > 0)]" mode="party_people"/>
-        <!-- xsl:apply-templates select="*:persons/*:dataSetPersonAssociation[(string-length(person-template:externalPerson/@uuid) > 0) and (string-length(person-template:externalPerson/core:family) > 0)]" mode="party_external_people"/-->
+        <xsl:apply-templates select="*:managedBy[(string-length(@uuid) > 0) and (string-length(*:family) > 0)]" mode="party_managing_organisation"/>
+        <xsl:apply-templates select="*:organisations/*:organisation[(string-length(@uuid) > 0) and (string-length(*:family) > 0)]" mode="party_organisation"/>
+        <xsl:apply-templates select="*:persons/*:dataSetPersonAssociation[(string-length(person-template:person/@uuid) > 0) and (string-length(person-template:person/*:family) > 0)]" mode="party_people"/>
+        <!-- xsl:apply-templates select="*:persons/*:dataSetPersonAssociation[(string-length(person-template:externalPerson/@uuid) > 0) and (string-length(person-template:externalPerson/*:family) > 0)]" mode="party_external_people"/-->
                 
     
     </xsl:template>
     
      <xsl:template match="*:dataSetPersonAssociation" mode="party_people">
            
-            <xsl:variable name="personName" select="concat(normalize-space(person-template:name/core:firstName), ' ', normalize-space(person-template:name/core:lastName))"/>
+            <xsl:variable name="personName" select="concat(normalize-space(person-template:name/*:firstName), ' ', normalize-space(person-template:name/*:lastName))"/>
             <xsl:if test="$global_debug">
                 <xsl:message select="concat('Internal public personName (party_people): ', $personName)"/>
             </xsl:if>
@@ -741,7 +741,7 @@
             
                      <registryObject group="{$global_group}">
                         <key>
-                            <xsl:value-of select="concat(normalize-space(person-template:person/core:family), ':', normalize-space(person-template:person/@uuid))"/> 
+                            <xsl:value-of select="concat(normalize-space(person-template:person/*:family), ':', normalize-space(person-template:person/@uuid))"/> 
                            <!-- xsl:value-of select="local:formatKey($personName)"/--> 
                         </key>       
                         <originatingSource>
@@ -758,10 +758,10 @@
                             </xsl:if>
                              <name type="primary">
                                  <namePart type="given">
-                                    <xsl:value-of select="normalize-space(person-template:name/core:firstName)"/>
+                                    <xsl:value-of select="normalize-space(person-template:name/*:firstName)"/>
                                  </namePart>    
                                  <namePart type="family">
-                                    <xsl:value-of select="normalize-space(person-template:name/core:lastName)"/>
+                                    <xsl:value-of select="normalize-space(person-template:name/*:lastName)"/>
                                  </namePart>    
                              </name>
                          </party>
@@ -773,7 +773,7 @@
         
         <xsl:template match="*:dataSetPersonAssociation" mode="party_external_people">
            
-            <xsl:variable name="personName" select="concat(normalize-space(person-template:name/core:firstName), ' ', normalize-space(person-template:name/core:lastName))"/>
+            <xsl:variable name="personName" select="concat(normalize-space(person-template:name/*:firstName), ' ', normalize-space(person-template:name/*:lastName))"/>
             <xsl:if test="$global_debug">
                 <xsl:message select="concat('personName (party_external_people): ', $personName)"/>
             </xsl:if>
@@ -782,7 +782,7 @@
             
                      <registryObject group="{$global_group}">
                         <key>
-                            <xsl:value-of select="concat(normalize-space(person-template:externalPerson/core:family), ':', normalize-space(person-template:externalPerson/@uuid))"/> 
+                            <xsl:value-of select="concat(normalize-space(person-template:externalPerson/*:family), ':', normalize-space(person-template:externalPerson/@uuid))"/> 
                            <!-- xsl:value-of select="local:formatKey($personName)"/--> 
                         </key>       
                         <originatingSource>
@@ -799,10 +799,10 @@
                             </xsl:if>
                              <name type="primary">
                                  <namePart type="given">
-                                    <xsl:value-of select="normalize-space(person-template:name/core:firstName)"/>
+                                    <xsl:value-of select="normalize-space(person-template:name/*:firstName)"/>
                                  </namePart>    
                                  <namePart type="family">
-                                    <xsl:value-of select="normalize-space(person-template:name/core:lastName)"/>
+                                    <xsl:value-of select="normalize-space(person-template:name/*:lastName)"/>
                                  </namePart>    
                              </name>
                          </party>
@@ -835,7 +835,7 @@
             
                      <registryObject group="{$global_group}">
                         <key>
-                           <xsl:value-of select="concat(normalize-space(core:family), ':', normalize-space(@uuid))"/> 
+                           <xsl:value-of select="concat(normalize-space(*:family), ':', normalize-space(@uuid))"/> 
                         </key>       
                         <originatingSource>
                              <xsl:value-of select="$global_originatingSource"/>
@@ -863,7 +863,7 @@
            
                      <registryObject group="{$global_group}">
                         <key>
-                           <xsl:value-of select="concat(normalize-space(core:family), ':', normalize-space(@uuid))"/> 
+                           <xsl:value-of select="concat(normalize-space(*:family), ':', normalize-space(@uuid))"/> 
                         </key>       
                         <originatingSource>
                              <xsl:value-of select="$global_originatingSource"/>
