@@ -54,31 +54,6 @@
         
     </xsl:function>
     
-    <xsl:function name="custom:sequenceContainsSameValuesCaseInsensitive" as="xs:boolean">
-        <xsl:param name="sequence" as="xs:string*"/>
-     
-        <xsl:variable name="false_sequence" as="xs:boolean*">
-            <xsl:if test="count($sequence) > 0">
-                <xsl:variable name="firstValue" as="xs:string" select="normalize-space($sequence[1])"/> 
-                <xsl:for-each select="distinct-values($sequence)">
-                    <xsl:if test="(lower-case(normalize-space(.)) != lower-case($firstValue))">
-                        <xsl:copy-of select="false()"/>
-                    </xsl:if>
-                </xsl:for-each>
-            </xsl:if>
-        </xsl:variable>
-        
-        <xsl:choose>
-            <xsl:when test="count($false_sequence) > 0">
-                <xsl:copy-of select="false()"/>
-            </xsl:when>
-            <xsl:otherwise>
-                <xsl:copy-of select="true()"/>
-            </xsl:otherwise>
-        </xsl:choose>
-        
-    </xsl:function>
-    
     <xsl:function name="custom:convertLongitude">
         <xsl:param name="input" as="xs:decimal"/>
         <!--Convert Longitude 0-360 to -180 to 180 or 180W-180E -->
@@ -86,7 +61,7 @@
     </xsl:function>
     
     <xsl:function name="custom:getIdentifierType" as="xs:string">
-        <xsl:param name="identifier" as="xs:string"/>
+        <xsl:param name="identifier"/>
         <xsl:choose>
             <xsl:when test="contains(lower-case($identifier), 'orcid')">
                 <xsl:text>orcid</xsl:text>
@@ -94,7 +69,7 @@
             <xsl:when test="contains(lower-case($identifier), 'purl.org')">
                 <xsl:text>purl</xsl:text>
             </xsl:when>
-            <xsl:when test="contains(lower-case($identifier), 'doi')">
+            <xsl:when test="contains(lower-case($identifier), 'doi.org')">
                 <xsl:text>doi</xsl:text>
             </xsl:when>
             <xsl:when test="contains(lower-case($identifier), 'scopus')">
@@ -113,7 +88,7 @@
                 <xsl:text>uri</xsl:text>
             </xsl:when>
             <xsl:otherwise>
-                <xsl:text>local</xsl:text>
+                <xsl:text>global</xsl:text>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:function>
