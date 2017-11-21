@@ -1,1 +1,0 @@
-../EATLAS/EATLAS_rif.xsl
