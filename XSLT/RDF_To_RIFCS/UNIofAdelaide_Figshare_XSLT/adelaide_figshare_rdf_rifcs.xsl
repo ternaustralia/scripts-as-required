@@ -285,7 +285,7 @@
         <xsl:choose>
             <xsl:when test="contains(upper-case(.), 'CC BY')">
                 <xsl:variable name="ccNoNumber" as="xs:string*">
-                    <xsl:analyze-string select="." regex="[A-Za-z\s]+">
+                    <xsl:analyze-string select="." regex="[A-Za-z\s-]+">
                         <xsl:matching-substring>
                             <xsl:if test="string-length(regex-group(0)) > 0">
                                 <xsl:value-of select="regex-group(0)"/>
