@@ -458,9 +458,9 @@
                     </xsl:for-each-group>
 
                     <xsl:for-each-group
-                        select="gmd:identificationInfo/*/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName)) > 0) and 
+                        select="gmd:identificationInfo/*/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName[1])) > 0) and 
                          (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)) > 0)] |
-                         gmd:identificationInfo/*/gmd:pointOfContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName)) > 0) and 
+                         gmd:identificationInfo/*/gmd:pointOfContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName[1])) > 0) and 
                          (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)) > 0)]"
                         group-by="gmd:organisationName">
                         <xsl:apply-templates select="." mode="IMAS_registryObject_related_object">
@@ -600,9 +600,9 @@
         </xsl:for-each-group>
 
         <xsl:for-each-group
-            select="gmd:identificationInfo/*/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName)) > 0) and 
+            select="gmd:identificationInfo/*/gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName[1])) > 0) and 
              (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)) > 0)] |
-             gmd:identificationInfo/*/gmd:pointOfContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName)) > 0) and 
+             gmd:identificationInfo/*/gmd:pointOfContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName[1])) > 0) and 
              (string-length(normalize-space(gmd:role/gmd:CI_RoleCode/@codeListValue)) > 0)]"
             group-by="gmd:organisationName">
             <xsl:call-template name="IMAS_party">
@@ -851,7 +851,7 @@
             </key>
             <!-- if current grouping key is organisation name and there is an individual name, make relation soft-->
             <xsl:choose>
-                <xsl:when test="(current-grouping-key() = gmd:organisationName) and (string-length(normalize-space(gmd:individualName)) > 0)">
+                <xsl:when test="(current-grouping-key() = gmd:organisationName[1]) and (string-length(normalize-space(gmd:individualName)) > 0)">
                          <relation type="hasAssociationWith"/>
                 </xsl:when>
                 <xsl:otherwise>
@@ -1752,7 +1752,7 @@
                 <!-- If we are dealing with an individual...-->
                 <xsl:choose>
                     <xsl:when test="contains($type, 'person')">
-                        <xsl:variable name="organisationName" select="normalize-space(gmd:organisationName)"/>
+                        <xsl:variable name="organisationName" select="normalize-space(gmd:organisationName[1])"/>
                      
                         <xsl:choose>
                             <xsl:when
@@ -2192,7 +2192,7 @@
                     
                     <xsl:for-each-group
                         select="$parent/descendant::gmd:CI_ResponsibleParty[
-                        (string-length(normalize-space(gmd:organisationName)) > 0) and 
+                        (string-length(normalize-space(gmd:organisationName[1])) > 0) and 
                         (string-length(normalize-space(gmd:individualName))) > 0]"
                         group-by="gmd:organisationName">
 
@@ -2244,7 +2244,7 @@
                     
                     <xsl:for-each-group
                         select="$parent/descendant::gmd:CI_ResponsibleParty[
-                        (string-length(normalize-space(gmd:organisationName)) > 0)]"
+                        (string-length(normalize-space(gmd:organisationName[1])) > 0)]"
                         group-by="gmd:organisationName">
                         
                         <!--xsl:message>For each...</xsl:message-->
