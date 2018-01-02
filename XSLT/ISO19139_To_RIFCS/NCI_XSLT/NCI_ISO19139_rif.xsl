@@ -158,11 +158,7 @@
             select="gmd:topicCategory/gmd:MD_TopicCategoryCode"
             mode="registryObject_subject"/>
         
-        <xsl:apply-templates
-            select="gmd:topicCategory/gmd:MD_TopicCategoryCode"
-            mode="registryObject_subject"/>
-        
-        <xsl:apply-templates
+       <xsl:apply-templates
             select="gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword"
             mode="registryObject_subject"/>
         
@@ -460,13 +456,12 @@
             </subject>
         </xsl:if>
         
-        <xsl:variable name="anzsrcMappedCode_sequence" as="xs:string*">
+        <!--xsl:variable name="anzsrcMappedCode_sequence" as="xs:string*">
                 
                 <xsl:if test="string-length(normalize-space(.)) > 0">
                     <xsl:variable name="subjectSplit_sequence" as="xs:string*" select="tokenize(., '&gt;')"/>
                     <xsl:for-each select="distinct-values($subjectSplit_sequence)">
                         
-                        <!-- seek an anzsrc-code within the text -->
                         <xsl:variable name="match" as="xs:string*">
                             <xsl:analyze-string select="normalize-space(.)"
                                 regex="[0-9]+">
@@ -484,7 +479,6 @@
                             </xsl:for-each>
                         </xsl:if>
                         
-                        <!-- determines whether any text has a corresponding mapped code -->
                         <xsl:variable name="keyword" select="normalize-space(.)"/>
                         <xsl:variable name="code"
                             select="(normalize-space($anzsrcCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='ANZSRCCode']/gmx:codeEntry/gmx:CodeDefinition/gml:identifier[lower-case(following-sibling::gml:name) = lower-case($keyword)]))[1]"/>
@@ -503,7 +497,7 @@
                 </xsl:attribute>
                 <xsl:value-of select="."/>
             </subject>
-        </xsl:for-each>
+        </xsl:for-each-->
     </xsl:template>
     
    <xsl:template match="gmd:MD_TopicCategoryCode" mode="registryObject_subject">
