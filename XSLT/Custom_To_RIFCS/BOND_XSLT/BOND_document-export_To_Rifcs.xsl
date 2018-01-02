@@ -90,6 +90,8 @@
                 
                 <xsl:apply-templates select="fields/field[@name='rights'][string-length(.) > 0]" mode="collection_rights_statement"/>
                 
+                <xsl:apply-templates select="fields/field[@name='comments'][count(../field[@name='distribution_license']) = 0][string-length(.) > 0]" mode="collection_rights_license_access"/>
+                
                 <xsl:apply-templates select="fields/field[@name='distribution_license'][string-length(.) > 0]" mode="collection_rights_license_access"/>
                 
                 
@@ -350,31 +352,57 @@
         </relatedInfo>
    </xsl:template>
   
+    <xsl:template match="field[@name='comments']" mode="collection_rights_license_access">
+        <xsl:variable name="currentValue">
+            <xsl:analyze-string select="." regex="href=&quot;(http.+?)&quot;">
+                <xsl:matching-substring>
+                    <xsl:value-of select="regex-group(1)"/>
+                </xsl:matching-substring>
+            </xsl:analyze-string>
+        </xsl:variable>
+        
+        <xsl:message select="concat('Obtained from comments: ', $currentValue)"></xsl:message>
+        
+        <xsl:if test="string-length($currentValue) > 0">
+         <xsl:call-template name="license_access">
+             <xsl:with-param name="currentValue" select="$currentValue"/>
+         </xsl:call-template>
+        </xsl:if>
+        
+    </xsl:template>
+    
     <xsl:template match="field[@name='distribution_license']" mode="collection_rights_license_access">
          <xsl:variable name="currentValue" select="normalize-space(.)"/>
         
+        <xsl:call-template name="license_access">
+            <xsl:with-param name="currentValue" select="$currentValue"/>
+        </xsl:call-template>
+            
+    </xsl:template>
+    
+    <xsl:template name="license_access">
+        <xsl:param name="currentValue"/>
         <xsl:variable name="codeDefinition_sequence" select="$licenseCodelist/custom:CT_CodelistCatalogue/custom:codelistItem/custom:CodeListDictionary[@custom:id='LicenseCodeAustralia']/custom:codeEntry/custom:CodeDefinition[contains($currentValue, normalize-space(replace(custom:remarks, '\{n\}', '')))]" as="node()*"/>
         
-            <xsl:if test="count($codeDefinition_sequence) > 0">
-                <xsl:for-each select="$codeDefinition_sequence">
-                    <xsl:if test="string-length(custom:identifier) > 0">
-                        <rights>
-                            <licence>
-                                <xsl:attribute name="type">
-                                    <xsl:value-of select="custom:identifier"/>
-                                    <xsl:message select="concat('Match found for ', $currentValue, ' so using custom:identifier: ', custom:identifier)"/>
-                                </xsl:attribute>
-                            </licence>
-                            <xsl:if test="contains(lower-case(custom:identifier), 'cc-by')">
-                                <accessRights>
-                                    <xsl:attribute name="type" select="'open'"/>
-                                 </accessRights>
-                            </xsl:if>
-                        </rights>
-                    </xsl:if>
-                </xsl:for-each>
-            </xsl:if>
-            
+        <xsl:if test="count($codeDefinition_sequence) > 0">
+            <xsl:for-each select="$codeDefinition_sequence">
+                <xsl:if test="string-length(custom:identifier) > 0">
+                    <rights>
+                        <licence>
+                            <xsl:attribute name="type">
+                                <xsl:value-of select="custom:identifier"/>
+                                <xsl:message select="concat('Match found for ', $currentValue, ' so using custom:identifier: ', custom:identifier)"/>
+                            </xsl:attribute>
+                        </licence>
+                        <xsl:if test="contains(lower-case(custom:identifier), 'cc-by')">
+                            <accessRights>
+                                <xsl:attribute name="type" select="'open'"/>
+                            </accessRights>
+                        </xsl:if>
+                    </rights>
+                </xsl:if>
+            </xsl:for-each>
+        </xsl:if>
     </xsl:template>
     
     <xsl:template match="field[@name='rights']" mode="collection_rights_statement">
