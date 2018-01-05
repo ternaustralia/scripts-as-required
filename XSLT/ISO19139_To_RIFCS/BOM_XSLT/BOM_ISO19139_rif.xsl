@@ -137,8 +137,8 @@ xmlns:gco="http://www.isotc211.org/2005/gco"
                     <xsl:apply-templates select="gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:statement[string-length(.) > 0]"
                         mode="registryObject_description_lineage"/>
              
-                    <xsl:apply-templates select="gmd:metadataConstraints/gmd:MD_LegalConstraints/gmd:otherConstraints[string-length(.) > 0]"
-                        mode="registryObject_description_notes"/>
+                    <!--xsl:apply-templates select="gmd:metadataConstraints/gmd:MD_LegalConstraints/gmd:otherConstraints[string-length(.) > 0]"
+                        mode="registryObject_description_notes"/-->
                      
                     <xsl:apply-templates select="gmd:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="registryObject">
                              <xsl:with-param name="originatingSourceOrganisation" select="$originatingSourceOrganisation"/>
@@ -205,13 +205,13 @@ xmlns:gco="http://www.isotc211.org/2005/gco"
             select="gmd:abstract[string-length(.) > 0]"
             mode="registryObject_description_full"/>
         
-        <xsl:apply-templates
+        <!--xsl:apply-templates
             select="gmd:purpose[string-length(.) > 0]"
-            mode="registryObject_description_notes"/>
+            mode="registryObject_description_notes"/-->
             
-        <xsl:apply-templates
+        <!--xsl:apply-templates
             select="gmd:credit[string-length(.) > 0]"
-            mode="registryObject_description_notes"/>
+            mode="registryObject_description_notes"/-->
              
         <xsl:apply-templates select="gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_GeographicBoundingBox" mode="registryObject_coverage_spatial"/>
         <xsl:apply-templates select="gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_BoundingPolygon/gmd:polygon" mode="registryObject_coverage_spatial"/>
@@ -483,21 +483,30 @@ xmlns:gco="http://www.isotc211.org/2005/gco"
     <xsl:template match="gmd:abstract" mode="registryObject_description_full">
             <description type="full">
                 <xsl:value-of select="."/>
+                
+                <xsl:apply-templates select="ancestor::gmd:MD_Metadata/gmd:metadataConstraints/gmd:MD_LegalConstraints/gmd:otherConstraints[contains(lower-case(.), 'metadata licence details')]"
+                        mode="registryObject_description_full_add_metadataConstraints"/>
+                
+                <xsl:apply-templates select="../gmd:purpose[string-length(.) > 0]"
+                    mode="registryObject_description_full_add_purpose"/>
+                
+                <xsl:apply-templates select="../gmd:credit[string-length(.) > 0]"
+                    mode="registryObject_description_full_add_credit"/>
             </description>
     </xsl:template>
     
     <!-- RegistryObject - Description Element -->
-    <xsl:template match="gmd:purpose" mode="registryObject_description_notes">
-            <description type="notes">
-                <xsl:value-of select="."/>
-            </description>
+    <xsl:template match="gmd:purpose" mode="registryObject_description_full_add_purpose">
+        <xsl:text>&#10;</xsl:text>
+        <xsl:text>&lt;h4&gt;Purpose&lt;/h4&gt;</xsl:text>    
+        <xsl:value-of select="."/>
     </xsl:template>
     
     <!-- RegistryObject - Description Element -->
-    <xsl:template match="gmd:credit" mode="registryObject_description_notes">
-            <description type="notes">
-                <xsl:value-of select="."/>
-            </description>
+    <xsl:template match="gmd:credit" mode="registryObject_description_full_add_credit">
+        <xsl:text>&#10;</xsl:text>
+        <xsl:text>&lt;h4&gt;Credit&lt;/h4&gt;</xsl:text>    
+        <xsl:value-of select="."/>
     </xsl:template>
     
     <!-- RegistryObject - Description Element -->
@@ -507,11 +516,10 @@ xmlns:gco="http://www.isotc211.org/2005/gco"
         </description>
     </xsl:template>
     
-    <!-- RegistryObject - Description Element -->
-    <xsl:template match="gmd:otherConstraints" mode="registryObject_description_notes">
-        <description type="notes">
-            <xsl:value-of select="."/>
-        </description>
+    <xsl:template match="gmd:otherConstraints" mode="registryObject_description_full_add_metadataConstraints">
+        <xsl:text>&#10;</xsl:text>
+        <xsl:text>&lt;h4&gt;Metadata Constraints&lt;/h4&gt;</xsl:text>    
+        <xsl:value-of select="."/>
     </xsl:template>
 
     <!-- RegistryObject - Coverage Spatial Element -->
