@@ -485,13 +485,13 @@ xmlns:gco="http://www.isotc211.org/2005/gco"
             <description type="full">
                 <xsl:value-of select="."/>
                 
-                <xsl:apply-templates select="ancestor::gmd:MD_Metadata/gmd:metadataConstraints/gmd:MD_LegalConstraints/gmd:otherConstraints[contains(lower-case(.), 'metadata licence details')]"
+                <xsl:apply-templates select="ancestor::gmd:MD_Metadata/gmd:metadataConstraints/gmd:MD_LegalConstraints/gmd:otherConstraints[contains(lower-case(.), 'metadata constraints')]"
                         mode="registryObject_description_full_add_metadataConstraints"/>
                 
-                <xsl:apply-templates select=".."
+                <xsl:apply-templates select="..[count(gmd:purpose) > 0]"
                     mode="registryObject_description_full_add_purpose"/>
                 
-                <xsl:apply-templates select=".."
+                <xsl:apply-templates select="..[count(gmd:credit) > 0]"
                     mode="registryObject_description_full_add_credit"/>
             </description>
     </xsl:template>
@@ -530,7 +530,17 @@ xmlns:gco="http://www.isotc211.org/2005/gco"
     <xsl:template match="gmd:otherConstraints" mode="registryObject_description_full_add_metadataConstraints">
         <xsl:text>&#10;</xsl:text>
         <xsl:text>&lt;h4&gt;Metadata Constraints&lt;/h4&gt;</xsl:text>    
-        <xsl:value-of select="."/>
+        <xsl:choose>
+            <xsl:when test="contains(., 'Metadata constraints:')">
+                <xsl:value-of select="normalize-space(substring-after(., 'Metadata constraints:'))"/>
+            </xsl:when>
+            <xsl:when test="contains(., 'Metadata Constraints:')">
+                <xsl:value-of select="normalize-space(substring-after(., 'Metadata Constraints:'))"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="."/>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:template>
 
     <!-- RegistryObject - Coverage Spatial Element -->
