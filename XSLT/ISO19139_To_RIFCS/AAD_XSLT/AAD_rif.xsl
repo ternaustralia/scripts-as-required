@@ -29,12 +29,12 @@
     <!-- =========================================== -->
 
     <xsl:template match="/">
-        <!--registryObjects-->
-        <!--xsl:attribute name="xsi:schemaLocation">
+        <registryObjects>
+            <xsl:attribute name="xsi:schemaLocation">
                 <xsl:text>http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd</xsl:text>
-            </xsl:attribute-->
-        <xsl:apply-templates select="gmd:MD_Metadata" mode="AAD"/>
-        <!--/registryObjects-->
+            </xsl:attribute>
+        <xsl:apply-templates select="//gmd:MD_Metadata" mode="AAD"/>
+        </registryObjects>
     </xsl:template>
 
     
