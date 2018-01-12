@@ -72,7 +72,7 @@
                
                 <xsl:apply-templates select="fields/field[@name='orcid_id'][string-length(.) > 0]" mode="collection_relatedInfo"/>
                 
-                <xsl:apply-templates select="fields/field[@name='grant_num'][string-length(.) > 0]" mode="collection_relatedInfo"/>
+                <xsl:apply-templates select="fields/field[contains(@name, 'grant_num')][string-length(.) > 0]" mode="collection_relatedInfo"/>
                 
                 <xsl:apply-templates select="fields/field[@name='access'][string-length(.) > 0]" mode="collection_rights_statement"/>
                 
@@ -231,7 +231,7 @@
         </relatedInfo>
    </xsl:template>
    
-   <xsl:template match="field[@name='grant_num']" mode="collection_relatedInfo">
+   <xsl:template match="field[contains(@name, 'grant_num')]" mode="collection_relatedInfo">
        <relatedInfo type="activity">
            <xsl:choose>
                 <xsl:when test="contains(., '/')">
@@ -360,7 +360,7 @@
                            </relatedObject>
                      </xsl:if>
                      
-                     <xsl:for-each select="ancestor::document/fields/field[@name='grantid']">
+                     <!--xsl:for-each select="ancestor::document/fields/field[@name='grantid']">
                         <xsl:if test="string-length(normalize-space(.)) > 0">
                             <relatedInfo type="activity">
                                 <identifier type="purl">
@@ -369,7 +369,7 @@
                                 <relation type="isParticipantIn"/>
                             </relatedInfo>
                         </xsl:if>
-                     </xsl:for-each>
+                     </xsl:for-each-->
                     
                  </party>
              </registryObject>
