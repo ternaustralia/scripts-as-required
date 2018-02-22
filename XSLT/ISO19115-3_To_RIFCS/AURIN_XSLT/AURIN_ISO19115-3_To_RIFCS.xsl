@@ -33,12 +33,12 @@
     <xsl:import href="CustomFunctions.xsl"/>
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements='*'/>
-    <xsl:param name="global_originatingSource" select="'Australian Urban Research Network Infrastructure'"/>
+    <xsl:param name="global_originatingSource" select="'Australian Urban Research Infrastructure Network (AURIN)'"/>
     <xsl:param name="global_acronym" select="'AURIN'"/>
     <xsl:param name="global_baseURI" select="'aurin.org.au'"/>
     <xsl:param name="global_path" select="'aurin.org.au'"/>
-    <xsl:param name="global_group" select="'Australian Urban Research Network Infrastructure'"/>
-    <xsl:param name="global_publisherName" select="'Australian Urban Research Network Infrastructure'"/>
+    <xsl:param name="global_group" select="'Australian Urban Research Infrastructure Network (AURIN)'"/>
+    <xsl:param name="global_publisherName" select="'Australian Urban Research Infrastructure Network (AURIN)'"/>
     <xsl:param name="global_publisherPlace" select="'Victoria'"/>
     <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>
     <xsl:variable name="gmdCodelists" select="document('codelists.xml')"/>
