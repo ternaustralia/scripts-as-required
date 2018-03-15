@@ -28,14 +28,23 @@
   <xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes" omit-xml-declaration="yes"/>
 
     <xsl:template match="/">
-        <!-- registryObjects xmlns="http://ands.org.au/standards/rif-cs/registryObjects" 
-            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-            xsi:schemaLocation="http://ands.org.au/standards/rif-cs/registryObjects 
-            http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd"-->
-          
-            <xsl:apply-templates select="//*:result/*:content"/>
-            
-        <!-- /registryObjects-->
+        <!-- wrap with registryObjects if dealing with page from oai-pmh-->
+        <xsl:choose>
+            <xsl:when test="count(//*:OAI-PMH) > 0">
+                <registryObjects xmlns="http://ands.org.au/standards/rif-cs/registryObjects" 
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+                    xsi:schemaLocation="http://ands.org.au/standards/rif-cs/registryObjects 
+                    http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd">
+                
+                <xsl:apply-templates select="//*:result/*:content"/>
+                
+                </registryObjects>
+                
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:apply-templates select="//*:result/*:content"/>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:template>
    
     <xsl:template match="*:content">
