@@ -103,10 +103,18 @@ def writeXmlFromJson(dataSetUri, outFileName):
 
     try:
 
+        workingDirectory = os.path.dirname(outFileName)
+        print("Working directory " + workingDirectory)
         print("About to create file "+outFileName)
         outputFile = open(outFileName, 'w+')
 
+        if not os.path.exists(workingDirectory+'/PerPage'):
+            os.makedirs(workingDirectory+'/PerPage')
+
         while(count > (rows+start)):
+
+            currentFilename = str.format(workingDirectory+'/PerPage/Current_' + str(start) + '.xml')
+            currentFile = open(currentFilename, 'w+')
 
             postfix = str.format("&rows="+str(rows)+"&start="+str(start))
 
@@ -145,10 +153,12 @@ def writeXmlFromJson(dataSetUri, outFileName):
             print("Continuing if count (%d) greater than rows+start (%d)  " % (count, rows+start))
             #obj_StreamReaderWriter.write(obj_xml_Document.toprettyxml(encoding='utf-8', indent=' '))
 
-
             outputFile.write(obj_xml_rootDocument.toprettyxml(encoding='utf-8', indent=' '))
+            currentFile.write(obj_xml_rootDocument.toprettyxml(encoding='utf-8', indent=' '))
+            currentFile.close()
 
-            print("Output written to %s" % outFileName)
+            print("All output appended to %s" % outFileName)
+            print("This page of output only written to %s" % currentFilename)
 
     except exceptions.KeyboardInterrupt:
         print "Interrupted - ", sys.exc_info()[0]
