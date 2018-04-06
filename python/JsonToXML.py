@@ -111,7 +111,7 @@ def writeXmlFromJson(dataSetUri, outFileName):
         if not os.path.exists(workingDirectory+'/PerPage'):
             os.makedirs(workingDirectory+'/PerPage')
 
-        while(count > (rows+start)):
+        while(count > (start)):
 
             currentFilename = str.format(workingDirectory+'/PerPage/Current_' + str(start) + '.xml')
             currentFile = open(currentFilename, 'w+')
@@ -150,7 +150,7 @@ def writeXmlFromJson(dataSetUri, outFileName):
 
             start+=100
 
-            print("Continuing if count (%d) greater than rows+start (%d)  " % (count, rows+start))
+            print("Continuing if count (%d) greater than start (%d)  " % (count, start))
             #obj_StreamReaderWriter.write(obj_xml_Document.toprettyxml(encoding='utf-8', indent=' '))
 
             outputFile.write(obj_xml_rootDocument.toprettyxml(encoding='utf-8', indent=' '))
