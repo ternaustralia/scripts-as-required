@@ -9,6 +9,7 @@ import numbers
 import codecs
 import os
 import exceptions
+import shutil
 from xml.dom.minidom import parseString, Document, DOMImplementation
 
 def json2xml(json_obj, line_padding=""):
@@ -34,7 +35,7 @@ def json2xml(json_obj, line_padding=""):
     return "%s%s" % (line_padding, json_obj)
 
 
-def parse_element(doc, root, j):
+def parse_element(doc, root, j, namespaceUri):
   if j is None:
     return
   if isinstance(j, dict):
@@ -44,17 +45,17 @@ def parse_element(doc, root, j):
       if isinstance(value, list):
         for e in value:
           keyFormatted = key.replace(' ', '_')
-          elem = doc.createElement(keyFormatted)
-          parse_element(doc, elem, e)
+          elem = doc.createElementNS(namespaceUri, keyFormatted)
+          parse_element(doc, elem, e, namespaceUri)
           root.appendChild(elem)
       else:
         if key.isdigit():
-          elem = doc.createElement('item')
+          elem = doc.createElementNS(namespaceUri, 'item')
           elem.setAttribute('value', key)
         else:
           keyFormatted = key.replace(' ', '_')
-          elem = doc.createElement(keyFormatted)
-        parse_element(doc, elem, value)
+          elem = doc.createElementNS(namespaceUri, keyFormatted)
+        parse_element(doc, elem, value, namespaceUri)
         root.appendChild(elem)
   elif isinstance(j, list):
     print("isinstance list of len ", len(j))
@@ -74,19 +75,13 @@ def parse_element(doc, root, j):
   else:
     raise Exception("unhandled type %s for %s" % (type(j), j,))
 
-def parse_doc(root, j):
-  doc = Document()
-  if root is None:
-    if len(j.keys()) > 1:
-      raise Exception('Expected one root element, or use --root to set root')
-    root = j.keys()[0]
-    elem = doc.createElement(root)
-    j = j[root]
-  else:
-    elem = doc.createElement(root)
-  parse_element(doc, elem, j)
-  doc.appendChild(elem)
-  return doc
+
+def getSubDirectoryName(splitElement=None):
+    if(splitElement != None):
+        return str('Records')
+    else:
+        return str('Pages')
+
 
 def writeXmlFromJson(dataSetUri, outFileName, splitElement=None):
 
@@ -95,9 +90,14 @@ def writeXmlFromJson(dataSetUri, outFileName, splitElement=None):
     start=0
     count=100
 
+    namespaceUri = "http://json.to.xml"
+    namespacePrefix = "jsonXml"
+
     domImplementation = DOMImplementation()
     obj_xml_rootDocument = Document()
-    root = obj_xml_rootDocument.createElement("root")
+    root = obj_xml_rootDocument.createElementNS(namespaceUri, namespacePrefix + ':' + 'root')
+    root.setAttribute('xmlns', namespaceUri)
+    root.setAttribute(('xmlns:' + namespacePrefix), namespaceUri)
     obj_xml_rootDocument.appendChild(root)
 
     domain = dataSetUri.split("//")[-1].split("/")[0].split('?')[0]
@@ -109,8 +109,10 @@ def writeXmlFromJson(dataSetUri, outFileName, splitElement=None):
         print("About to create file "+outFileName)
         outputFile = open(outFileName, 'w+')
 
-        if not os.path.exists(workingDirectory+'/PerPage'):
-            os.makedirs(workingDirectory+'/PerPage')
+        subDirectoryName = getSubDirectoryName(splitElement)
+        if os.path.exists(workingDirectory + '/' + subDirectoryName):
+            shutil.rmtree(workingDirectory + '/' + subDirectoryName)
+        os.makedirs(workingDirectory + '/' + subDirectoryName)
 
         while(count > (start)):
 
@@ -134,12 +136,12 @@ def writeXmlFromJson(dataSetUri, outFileName, splitElement=None):
             obj_dict = json.loads(obj_json_str)
 
             elem = obj_xml_rootDocument.createElement("datasets")
-            parse_element(obj_xml_rootDocument, elem, obj_dict)
+            parse_element(obj_xml_rootDocument, elem, obj_dict, namespaceUri)
             root.appendChild(elem)
 
             #print(obj_xml_rootDocument.toprettyxml())
 
-            countElementList = elem.getElementsByTagName("count")
+            countElementList = elem.getElementsByTagNameNS(namespaceUri, 'count')
             if(len(countElementList) == 1):
                 assert(len(countElementList[0].childNodes[0].data) > 0)
                 count=int(countElementList[0].childNodes[0].data)
@@ -150,21 +152,30 @@ def writeXmlFromJson(dataSetUri, outFileName, splitElement=None):
 
             if(splitElement != None):
 
-                # Create one file per record, with domain name and increment
-                resultsList = elem.getElementsByTagName(splitElement)
+                domImplementation = DOMImplementation()
+                obj_xml_rootRecordDocument = Document()
+                rootRecord = obj_xml_rootRecordDocument.createElementNS(namespaceUri, namespacePrefix + ':' + 'record')
+                rootRecord.setAttribute('xmlns', namespaceUri)
+                rootRecord.setAttribute(('xmlns:' + namespacePrefix), namespaceUri)
+                obj_xml_rootRecordDocument.appendChild(rootRecord)
+
+               # Create one file per record, with domain name and increment
+                resultsList = elem.getElementsByTagNameNS(namespaceUri, splitElement)
                 for i in xrange(1, len(resultsList)):
 
                     results = resultsList[i]
 
-                    recordFilename = str.format(workingDirectory + '/PerPage/' + domain + '_' + str(i + start) + '.xml')
+                    rootRecord.appendChild(results)
+
+                    recordFilename = str.format(workingDirectory + '/' + subDirectoryName + '/' + domain + '_' + str(i + start) + '.xml')
                     recordFile = open(recordFilename, 'w+')
 
-                    recordFile.write(results.toprettyxml(encoding='utf-8', indent=' '))
+                    recordFile.write(rootRecord.toprettyxml(encoding='utf-8', indent=' '))
                     recordFile.close()
                     print("This page of output split per record, and written to %s" % recordFilename)
             else:
 
-                recordFilename = str.format(workingDirectory + '/PerPage/' + domain + '_' + str(start) + '.xml')
+                recordFilename = str.format(workingDirectory + '/' + subDirectoryName + '/' + domain + '_' + str(start) + '.xml')
                 recordFile = open(recordFilename, 'w+')
 
                 recordFile.write(obj_xml_rootDocument.toprettyxml(encoding='utf-8', indent=' '))
