@@ -5,7 +5,7 @@
     xmlns:fn = "http://www.w3.org/2005/xpath-functions"
     xmlns:xs="http://www.w3.org/2001/XMLSchema" 
     xmlns:custom="http://custom.nowhere.yet"
-    xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
+    xpath-default-namespace="http://json.to.xml"
     exclude-result-prefixes="xsl xsi fn xs custom">
     <!-- stylesheet to convert data.gov.au xml (transformed from json with python script) to RIF-CS -->
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
@@ -19,24 +19,17 @@
     <xsl:param name="global_publisherPlace" select="'Canberra'"/>
     <xsl:param name="global_localParentCollectionPostfix" select="'dataset'"/>
 
-    <xsl:template match="/">
-        <xsl:apply-templates/>
-    </xsl:template>
-
-    <xsl:template match="//datasets/help"/>
-    <xsl:template match="//datasets/success"/>
-
     <!-- =========================================== -->
     <!-- dataset (datasets) Template             -->
     <!-- =========================================== -->
 
-    <xsl:template match="results">
+    <xsl:template match="/">
         <registryObjects>
             <xsl:attribute name="xsi:schemaLocation">
                 <xsl:text>http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd</xsl:text>
             </xsl:attribute>
         
-            <xsl:apply-templates select="." mode="constructObjects"/>
+            <xsl:apply-templates select="//results" mode="constructObjects"/>
             
         </registryObjects>
             
