@@ -100,7 +100,7 @@ def writeXmlFromJson(dataSetUri, outFileName, splitElement=None):
     root.setAttribute(('xmlns:' + namespacePrefix), namespaceUri)
     obj_xml_rootDocument.appendChild(root)
 
-    domain = dataSetUri.split("//")[-1].split("/")[0].split('?')[0]
+    domain = str(dataSetUri.split("//")[-1].split("/")[0].split('?')[0])
 
     try:
 
@@ -109,7 +109,7 @@ def writeXmlFromJson(dataSetUri, outFileName, splitElement=None):
         print("About to create file "+outFileName)
         outputFile = open(outFileName, 'w+')
 
-        subDirectoryName = getSubDirectoryName(splitElement)
+        subDirectoryName = str(getSubDirectoryName(splitElement))
         if os.path.exists(workingDirectory + '/' + subDirectoryName):
             shutil.rmtree(workingDirectory + '/' + subDirectoryName)
         os.makedirs(workingDirectory + '/' + subDirectoryName)
@@ -175,7 +175,7 @@ def writeXmlFromJson(dataSetUri, outFileName, splitElement=None):
                     print("This page of output split per record, and written to %s" % recordFilename)
             else:
 
-                recordFilename = str.format(workingDirectory + '/' + subDirectoryName + '/' + domain + '_' + str(start) + '.xml')
+                recordFilename = str.format(str(workingDirectory) + '/' + str(subDirectoryName) + '/' + str(domain) + '_' + str(start) + '.xml')
                 recordFile = open(recordFilename, 'w+')
 
                 recordFile.write(obj_xml_rootDocument.toprettyxml(encoding='utf-8', indent=' '))
