@@ -88,7 +88,7 @@ def parse_doc(root, j):
   doc.appendChild(elem)
   return doc
 
-def writeXmlFromJson(dataSetUri, outFileName):
+def writeXmlFromJson(dataSetUri, outFileName, splitElement=None):
 
     postfix=""
     rows=99
@@ -100,6 +100,7 @@ def writeXmlFromJson(dataSetUri, outFileName):
     root = obj_xml_rootDocument.createElement("root")
     obj_xml_rootDocument.appendChild(root)
 
+    domain = dataSetUri.split("//")[-1].split("/")[0].split('?')[0]
 
     try:
 
@@ -112,9 +113,6 @@ def writeXmlFromJson(dataSetUri, outFileName):
             os.makedirs(workingDirectory+'/PerPage')
 
         while(count > (start)):
-
-            currentFilename = str.format(workingDirectory+'/PerPage/Current_' + str(start) + '.xml')
-            currentFile = open(currentFilename, 'w+')
 
             postfix = str.format("&rows="+str(rows)+"&start="+str(start))
 
@@ -148,17 +146,36 @@ def writeXmlFromJson(dataSetUri, outFileName):
 
             print("Retrieved count %d " % count)
 
-            start+=100
+            #obj_StreamReaderWriter.write(obj_xml_Document.toprettyxml(encoding='utf-8', indent=' ')
 
-            print("Continuing if count (%d) greater than start (%d)  " % (count, start))
-            #obj_StreamReaderWriter.write(obj_xml_Document.toprettyxml(encoding='utf-8', indent=' '))
+            if(splitElement != None):
+
+                # Create one file per record, with domain name and increment
+                resultsList = elem.getElementsByTagName(splitElement)
+                for i in xrange(1, len(resultsList)):
+
+                    results = resultsList[i]
+
+                    recordFilename = str.format(workingDirectory + '/PerPage/' + domain + '_' + str(i + start) + '.xml')
+                    recordFile = open(recordFilename, 'w+')
+
+                    recordFile.write(results.toprettyxml(encoding='utf-8', indent=' '))
+                    recordFile.close()
+                    print("This page of output split per record, and written to %s" % recordFilename)
+            else:
+
+                recordFilename = str.format(workingDirectory + '/PerPage/' + domain + '_' + str(start) + '.xml')
+                recordFile = open(recordFilename, 'w+')
+
+                recordFile.write(obj_xml_rootDocument.toprettyxml(encoding='utf-8', indent=' '))
+                recordFile.close()
+                print("This page of output all written to %s" % recordFilename)
 
             outputFile.write(obj_xml_rootDocument.toprettyxml(encoding='utf-8', indent=' '))
-            currentFile.write(obj_xml_rootDocument.toprettyxml(encoding='utf-8', indent=' '))
-            currentFile.close()
-
             print("All output appended to %s" % outFileName)
-            print("This page of output only written to %s" % currentFilename)
+
+            start += 100
+            print("Continuing if count (%d) greater than start (%d)  " % (count, start))
 
     except exceptions.KeyboardInterrupt:
         print "Interrupted - ", sys.exc_info()[0]
