@@ -91,9 +91,9 @@ def parse_doc(root, j):
 def writeXmlFromJson(dataSetUri, outFileName):
 
     postfix=""
-    rows=99
+    rows=1
     start=0
-    count=100
+    count=1
 
     domImplementation = DOMImplementation()
     obj_xml_rootDocument = Document()
@@ -148,7 +148,7 @@ def writeXmlFromJson(dataSetUri, outFileName):
 
             print("Retrieved count %d " % count)
 
-            start+=100
+            start+=1
 
             print("Continuing if count (%d) greater than start (%d)  " % (count, start))
             #obj_StreamReaderWriter.write(obj_xml_Document.toprettyxml(encoding='utf-8', indent=' '))
