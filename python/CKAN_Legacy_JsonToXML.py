@@ -40,4 +40,4 @@ dataSetUri = options.URI
 outputFile = options.outputFile
 
 print("Out file: %s" % outputFile)
-JsonToXML.writeXmlFromJson(dataSetUri, outputFile)
+JsonToXML.writeXmlFromJson(dataSetUri, outputFile, 'results') #split xml output on element 'results' so that we get a file per record within page retrieved)
