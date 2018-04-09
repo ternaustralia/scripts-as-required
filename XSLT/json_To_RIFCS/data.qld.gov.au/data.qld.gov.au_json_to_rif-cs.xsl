@@ -4,7 +4,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:xs="http://www.w3.org/2001/XMLSchema" 
     xmlns:custom="http://custom.nowhere.yet"
-    xmlns="http://ands.org.au/standards/rif-cs/registryObjects">
+    xpath-default-namespace="http://www.openarchives.org/OAI/2.0/">
     <!-- stylesheet to convert data.qld.gov.au xml (transformed from json with python script) to RIF-CS -->
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
@@ -15,18 +15,11 @@
     <xsl:param name="global_publisherName" select="'data.qld.gov.au'"/>
     <xsl:param name="global_publisherPlace" select="'Queensland'"/>
 
-    <xsl:template match="/">
-        <xsl:apply-templates/>
-    </xsl:template>
-
-    <xsl:template match="datasets/help"/>
-    <xsl:template match="datasets/success"/>
-
     <!-- =========================================== -->
     <!-- dataset (datasets) Template             -->
     <!-- =========================================== -->
 
-    <xsl:template match="datasets">
+    <xsl:template match="/">
         <!-- registryObjects>
             <xsl:attribute name="xsi:schemaLocation">
                 <xsl:text>http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd</xsl:text>
@@ -34,8 +27,8 @@
             <xsl:apply-templates select="result" mode="collection"/>
             <xsl:apply-templates select="result" mode="party"/>
         </registryObjects-->
-        <xsl:apply-templates select="result" mode="collection"/>
-            <xsl:apply-templates select="result" mode="party"/>
+            <xsl:apply-templates select="//result" mode="collection"/>
+            <xsl:apply-templates select="//result" mode="party"/>
     </xsl:template>
 
     <xsl:template match="result" mode="collection">
