@@ -119,6 +119,7 @@ def callCSW(cswUrl, conditionDict):
     try:
         http = urllib3.PoolManager()
         print("Opening uri %s" % cswUrl)
+        print("Query \n %s" % fullQuery)
         r = http.request('POST', cswUrl, body = fullQuery, headers = {'Content-Type': 'application/xml'})
         result = r.data
     except Exception as e:
@@ -160,6 +161,23 @@ def callCSW(cswUrl, conditionDict):
         print ("numberOfRecordsMatched: %d" % int(searchResults.item(0).getAttribute('numberOfRecordsMatched')))
 
     print 'Results written to ' + str(fileName)
+
+
+def main():
+
+    print(sys.argv[0])
+    print(sys.argv[1])
+
+    assert (len(sys.argv) == 2)
+    assert (sys.argv[1] != None)
+
+    url = sys.argv[1]
+
+    callCSW(url, None)
+
+
+if __name__ == "__main__":
+    main()
 
 
 
