@@ -38,8 +38,6 @@
     <xsl:template match="oai:GetRecord/oai:record/oai:header/oai:datestamp"/>
     <xsl:template match="oai:GetRecord/oai:record/oai:header/oai:setSpec"/>
     
-    <xsl:param name="global_AIMS_baseURI" select="'data.aims.gov.au'"/>
-
     <!--xsl:template match="node()"/-->
 
     <!-- =========================================== -->
