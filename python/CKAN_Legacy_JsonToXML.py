@@ -15,7 +15,7 @@ from xml.dom.minidom import Document
 usage = "usage: %prog [options] arg1"
 parser = OptionParser(usage=usage)
 parser.add_option("--uri", action="store", dest="URI", help="uri of all metadata in JSON, e.g. https://www.opengov.nsw.gov.au/publication.json")
-parser.add_option("--outputFile", action="store", dest="outputFile", help="file name for output")
+parser.add_option("--outputDirectory", action="store", dest="outputDirectory", help="file name for output")
 
 (options, args) = parser.parse_args()
 
@@ -28,16 +28,17 @@ if len(options.URI) < 1:
     parser.error("Requires URI.  Try --help for usage")
     sys.exit(-1)
 
-if not(options.outputFile):
-    parser.error("Requires file name for output.  Try --help for usage")
+if not(options.outputDirectory):
+    parser.error("Requires directory name for output.  Try --help for usage")
     sys.exit(-1)
 
-if len(options.outputFile) < 1:
-    parser.error("Requires file name for output.  Try --help for usage")
+if len(options.outputDirectory) < 1:
+    parser.error("Requires directory for output.  Try --help for usage")
     sys.exit(-1)
 
 dataSetUri = options.URI
-outputFile = options.outputFile
+outputDirectory = options.outputDirectory
 
-print("Out file: %s" % outputFile)
-JsonToXML.writeXmlFromJson(dataSetUri, outputFile, 'results') #split xml output on element 'results' so that we get a file per record within page retrieved)
+print("Out directory: %s" % outputDirectory)
+#JsonToXML.writeXmlFromJson(dataSetUri, outputFile, 'results') #split xml output on element 'results' so that we get a file per record within page retrieved)
+JsonToXML.writeXmlFromJson(dataSetUri, 'legacy', outputDirectory, 'results') #split xml output on element 'results' so that we get a file per record within page retrieved)
