@@ -56,9 +56,9 @@ def processList(value):
 def processDataset(dataSetName):
             print("dataSetName: %s" % (dataSetName))
             try:
-                outFileName = (outputDirectory + '/%s.xml' % string.replace(string.replace(dataSetName, ':', ''), '/', ''))
+                #outFileName = (outputDirectory + '/%s.xml' % string.replace(string.replace(dataSetName, ':', ''), '/', ''))
                 dataSetUri = (descriptionByIdentifierURI % dataSetName)
-                JsonToXML.writeXmlFromJson(dataSetUri, outFileName)
+                JsonToXML.writeXmlFromJson(dataSetUri, dataSetName, outputDirectory)
             except exceptions.KeyboardInterrupt:
                 print "Interrupted - ", sys.exc_info()[0]
                 sys.exit(0)
