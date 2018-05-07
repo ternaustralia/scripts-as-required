@@ -83,7 +83,8 @@ def getSubDirectoryName(splitElement=None):
         return str('Pages')
 
 
-def writeXmlFromJson(dataSetUri, outFileName, splitElement=None):
+#def writeXmlFromJson(dataSetUri, outFileName, splitElement=None):
+def writeXmlFromJson(dataSetUri, dataSetName, outputDirectory, splitElement=None):
 
     postfix=""
     rows=99
@@ -104,10 +105,8 @@ def writeXmlFromJson(dataSetUri, outFileName, splitElement=None):
 
     try:
 
-        workingDirectory = os.path.dirname(outFileName)
+        workingDirectory = os.path.dirname(outputDirectory)
         print("Working directory " + workingDirectory)
-        print("About to create file "+outFileName)
-        outputFile = open(outFileName, 'w+')
 
         subDirectoryName = str(getSubDirectoryName(splitElement))
         if os.path.exists(workingDirectory + '/' + subDirectoryName):
@@ -175,15 +174,15 @@ def writeXmlFromJson(dataSetUri, outFileName, splitElement=None):
                     print("This page of output split per record, and written to %s" % recordFilename)
             else:
 
-                recordFilename = str.format(str(workingDirectory) + '/' + str(subDirectoryName) + '/' + str(domain) + '_' + str(start) + '.xml')
+                recordFilename = str.format(str(workingDirectory) + '/' + str(subDirectoryName) + '/' + str(domain) + '_' + str(dataSetName) + '_' + str(start) + '.xml')
                 recordFile = open(recordFilename, 'w+')
 
                 recordFile.write(obj_xml_rootDocument.toprettyxml(encoding='utf-8', indent=' '))
                 recordFile.close()
                 print("This page of output all written to %s" % recordFilename)
 
-            outputFile.write(obj_xml_rootDocument.toprettyxml(encoding='utf-8', indent=' '))
-            print("All output appended to %s" % outFileName)
+            #outputFile.write(obj_xml_rootDocument.toprettyxml(encoding='utf-8', indent=' '))
+            #print("All output appended to %s" % outFileName)
 
             start += 100
             print("Continuing if count (%d) greater than start (%d)  " % (count, start))
@@ -197,8 +196,8 @@ def writeXmlFromJson(dataSetUri, outFileName, splitElement=None):
 
 
 
-    if outputFile is not None:
-        outputFile.close()
+    #if outputFile is not None:
+        #outputFile.close()
 
   
 
