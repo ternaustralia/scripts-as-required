@@ -105,6 +105,10 @@ def writeXmlFromJson(dataSetUri, dataSetName, outputDirectory, splitElement=None
 
     try:
 
+        if os.path.exists(outputDirectory):
+            shutil.rmtree(outputDirectory)
+        os.makedirs(outputDirectory)
+
         workingDirectory = os.path.dirname(outputDirectory)
         print("Working directory " + workingDirectory)
 
