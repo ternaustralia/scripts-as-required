@@ -19,7 +19,7 @@ from xml.dom.minidom import Document
 def processList(value):
     dataSetName_list = list()
     if isinstance(value, list):
-        print("%d datasets to retrieve" % (len(value)))
+        print("%d dataset names in json list" % (len(value)))
 
         for entry in value:
             print("Dataset: ", entry)
@@ -51,14 +51,14 @@ def processList(value):
     else:
         print("Not list")
 
-    return dataSetName_list
+    return list(dataSetName_list)
 
-def processDataset(dataSetName):
+def processDataset(dataSetName, fullDirectoryPath):
             print("dataSetName: %s" % (dataSetName))
             try:
                 #outFileName = (outputDirectory + '/%s.xml' % string.replace(string.replace(dataSetName, ':', ''), '/', ''))
                 dataSetUri = (descriptionByIdentifierURI % dataSetName)
-                JsonToXML.writeXmlFromJson(dataSetUri, dataSetName, outputDirectory)
+                JsonToXML.writeXmlFromJson(dataSetUri, dataSetName, fullDirectoryPath)
             except exceptions.KeyboardInterrupt:
                 print "Interrupted - ", sys.exc_info()[0]
                 sys.exit(0)
@@ -104,7 +104,6 @@ identifierListURI = options.identifierListURI
 descriptionByIdentifierURI = options.descriptionByIdentifierURI
 outputDirectory = options.outputDirectory
 
-
 if os.path.exists(outputDirectory):
     shutil.rmtree(outputDirectory)
 print("Constructing directory " + outputDirectory)
@@ -117,19 +116,26 @@ loadedJson = json.loads(openedFile.read())
 if loadedJson is None:
     exit
 
+print("OutputDirectory directory requested: " + outputDirectory)
+
+fullDirectoryPath = outputDirectory + '/' + 'Records'
+if os.path.exists(fullDirectoryPath):
+    shutil.rmtree(fullDirectoryPath)
+os.makedirs(fullDirectoryPath)
+
+print "Created full directory path %s? %s " % (fullDirectoryPath, os.path.exists(fullDirectoryPath))
+
 if(isinstance(loadedJson, dict)):
     for key in loadedJson.keys():
       value = loadedJson[key]
-      dataSetName_list = processList(value)
-      print("Obtained %d dataset names, now in list" % len(dataSetName_list))
+      dataSetName_list = list(processList(value))
       for dataSetName in dataSetName_list:
-          processDataset(dataSetName)
+          processDataset(dataSetName, fullDirectoryPath)
 else:
     if (isinstance(loadedJson, list)):
         dataSetName_list = processList(loadedJson)
-        print("Obtained %d dataset names, now in list" % len(dataSetName_list))
         for dataSetName in dataSetName_list:
-            processDataset(dataSetName)
+            processDataset(dataSetName, fullDirectoryPath)
             #exit(0) # for testing only
 
     else:

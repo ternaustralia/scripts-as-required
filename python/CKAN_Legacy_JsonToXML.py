@@ -7,6 +7,7 @@ import traceback
 import getopt
 import numbers
 import JsonToXML
+import os
 
 from optparse import OptionParser
 from xml.dom.minidom import Document
@@ -36,9 +37,21 @@ if len(options.outputDirectory) < 1:
     parser.error("Requires directory for output.  Try --help for usage")
     sys.exit(-1)
 
+
+
 dataSetUri = options.URI
 outputDirectory = options.outputDirectory
 
+print("OutputDirectory directory requested: " + outputDirectory)
+
+fullDirectoryPath = outputDirectory + '/' + 'Records'
+if os.path.exists(fullDirectoryPath):
+    shutil.rmtree(fullDirectoryPath)
+os.makedirs(fullDirectoryPath)
+
+print "Created full directory path %s? %s " % (fullDirectoryPath, os.path.exists(fullDirectoryPath))
+
+
 print("Out directory: %s" % outputDirectory)
 #JsonToXML.writeXmlFromJson(dataSetUri, outputFile, 'results') #split xml output on element 'results' so that we get a file per record within page retrieved)
-JsonToXML.writeXmlFromJson(dataSetUri, 'legacy', outputDirectory, 'results') #split xml output on element 'results' so that we get a file per record within page retrieved)
+JsonToXML.writeXmlFromJson(dataSetUri, 'search', fullDirectoryPath, 'results') #split xml output on element 'results' so that we get a file per record within page retrieved)

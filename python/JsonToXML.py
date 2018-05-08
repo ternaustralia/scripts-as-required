@@ -75,15 +75,6 @@ def parse_element(doc, root, j, namespaceUri):
   else:
     raise Exception("unhandled type %s for %s" % (type(j), j,))
 
-
-def getSubDirectoryName(splitElement=None):
-    if(splitElement != None):
-        return str('Records')
-    else:
-        return str('Pages')
-
-
-#def writeXmlFromJson(dataSetUri, outFileName, splitElement=None):
 def writeXmlFromJson(dataSetUri, dataSetName, outputDirectory, splitElement=None):
 
     postfix=""
@@ -104,18 +95,6 @@ def writeXmlFromJson(dataSetUri, dataSetName, outputDirectory, splitElement=None
     domain = str(dataSetUri.split("//")[-1].split("/")[0].split('?')[0])
 
     try:
-
-        if os.path.exists(outputDirectory):
-            shutil.rmtree(outputDirectory)
-        os.makedirs(outputDirectory)
-
-        workingDirectory = os.path.dirname(outputDirectory)
-        print("Working directory " + workingDirectory)
-
-        subDirectoryName = str(getSubDirectoryName(splitElement))
-        if os.path.exists(workingDirectory + '/' + subDirectoryName):
-            shutil.rmtree(workingDirectory + '/' + subDirectoryName)
-        os.makedirs(workingDirectory + '/' + subDirectoryName)
 
         while(count > (start)):
 
@@ -170,7 +149,7 @@ def writeXmlFromJson(dataSetUri, dataSetName, outputDirectory, splitElement=None
 
                     rootRecord.appendChild(results)
 
-                    recordFilename = str.format(workingDirectory + '/' + subDirectoryName + '/' + domain + '_' + str(i + start) + '.xml')
+                    recordFilename = str.format(outputDirectory + '/' + domain + '_' + str(i + start) + '.xml')
                     recordFile = open(recordFilename, 'w+')
 
                     recordFile.write(rootRecord.toprettyxml(encoding='utf-8', indent=' '))
@@ -178,7 +157,7 @@ def writeXmlFromJson(dataSetUri, dataSetName, outputDirectory, splitElement=None
                     print("This page of output split per record, and written to %s" % recordFilename)
             else:
 
-                recordFilename = str.format(str(workingDirectory) + '/' + str(subDirectoryName) + '/' + str(domain) + '_' + str(dataSetName) + '_' + str(start) + '.xml')
+                recordFilename = str.format(outputDirectory + '/' + domain + '_' + str(dataSetName) + '_' + str(start) + '.xml')
                 recordFile = open(recordFilename, 'w+')
 
                 recordFile.write(obj_xml_rootDocument.toprettyxml(encoding='utf-8', indent=' '))
