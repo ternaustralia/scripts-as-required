@@ -2,7 +2,9 @@
 <xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:custom="http://custom.nowhere.yet"
-    xmlns="http://ands.org.au/standards/rif-cs/registryObjects">
+    xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
+    xpath-default-namespace="http://json.to.xml"
+    exclude-result-prefixes="xsl xsi xs custom">
     <!-- stylesheet to convert data.nsw.gov.au xml (transformed from json with python script) to RIF-CS -->
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
