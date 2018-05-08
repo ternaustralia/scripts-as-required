@@ -8,6 +8,7 @@ import getopt
 import numbers
 import JsonToXML
 import os
+import shutil
 
 from optparse import OptionParser
 from xml.dom.minidom import Document
