@@ -23,7 +23,7 @@
     <xsl:strip-space elements="*"/>
     <xsl:param name="global_acronym" select="'CF'"/>
     <xsl:param name="global_originatingSourceOrganisation" select="'City Futures Research Centre'"/> <!-- Only used as originating source if organisation name cannot be determined from Point Of Contact -->
-    <xsl:param name="global_group" select="'City Futures Research Centre, UNSW'"/> 
+    <xsl:param name="global_group" select="'City Futures Research Centre, UNSW Sydney'"/> 
     <xsl:param name="global_publisher" select="'City Futures Research Centre'"/> 
     <!-- xsl:param name="global_baseURI" select="'cftest.intersect.org.au'"/-->
     <!-- xsl:param name="global_path" select="'/layers/geonode%3A'"/-->
