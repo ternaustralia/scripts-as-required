@@ -47,6 +47,8 @@
     <xsl:param name="global_originatingSource" select="'Geoscience Australia'"/>
     <xsl:param name="global_acronym" select="'GA'"/>
     <xsl:param name="global_baseURI" select="'ecat.ga.gov.au'"/>
+    <xsl:param name="global_baseURI_PID" select="'pid.geoscience.gov.au'"/>
+    <xsl:param name="global_path_PID" select="'/dataset/ga/'"/>
     <xsl:param name="global_path" select="'/geonetwork/srv/eng/search?uuid='"/>
     <xsl:param name="global_group" select="'Geoscience Australia'"/>
     <xsl:param name="global_publisherName" select="'Geoscience Australia'"/>
@@ -221,7 +223,7 @@
                 </xsl:choose>
                 
                 
-                <xsl:apply-templates select="mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:identifier/mcc:MD_Identifier/mcc:code[not(contains(lower-case(.), 'doi')) and not(contains(lower-case(.), 'product')) and not(contains(lower-case(.), 'resource'))]" mode="registryObject_identifier"/>
+                <xsl:apply-templates select="mdb:identificationInfo/mri:MD_DataIdentification/mri:citation/cit:CI_Citation/cit:identifier/mcc:MD_Identifier[not(contains(lower-case(mcc:codeSpace), 'dataseturi'))]/mcc:code[not(contains(lower-case(.), 'doi')) and not(contains(lower-case(.), 'product')) and not(contains(lower-case(.), 'resource'))]" mode="registryObject_identifier"/>
                    
                 <xsl:if test="$registryObjectTypeSubType_sequence[1] != 'service'">
                     <xsl:apply-templates select="mdb:distributionInfo/mrd:MD_Distribution/mrd:distributionFormat/mrd:MD_Format/mrd:formatDistributor/mrd:MD_Distributor/mrd:distributorTransferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[not(contains(lower-case(cit:name), mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code) and contains(cit:linkage, 'doi'))]" 
@@ -230,13 +232,15 @@
                 
                 <xsl:apply-templates select="mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code"
                     mode="registryObject_identifier_global"/>
-                 
-                <xsl:apply-templates select="mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code"
-                    mode="registryObject_location"/>
                 
-                <xsl:apply-templates select="mdb:metadataLinkage/cit:CI_OnlineResource[contains(lower-case(cit:description), 'point-of-truth metadata')]/cit:linkage[not(contains(., 'internal.ecat'))]" mode="registryObject_identifier_metadata_URL"/>
+                <xsl:apply-templates select="mdb:alternativeMetadataReference/cit:CI_Citation/cit:identifier/mcc:MD_Identifier[contains(lower-case(mcc:codeSpace), 'ecatid')]/mcc:code"
+                    mode="registryObject_identifier_PID"/>
+                
+                <xsl:apply-templates select="mdb:alternativeMetadataReference/cit:CI_Citation/cit:identifier/mcc:MD_Identifier[contains(lower-case(mcc:codeSpace), 'ecatid')]/mcc:code"
+                    mode="registryObject_location"/>
+                <!--xsl:apply-templates select="mdb:metadataLinkage/cit:CI_OnlineResource[contains(lower-case(cit:description), 'point-of-truth metadata')]/cit:linkage[not(contains(., 'internal.ecat'))]" mode="registryObject_identifier_metadata_URL"/-->
                     
-                <xsl:apply-templates select="mdb:metadataLinkage/cit:CI_OnlineResource[contains(lower-case(cit:description), 'point-of-truth metadata')]/cit:linkage[contains(., 'internal.ecat')]" mode="registryObject_identifier_metadata_URL_replace"/>
+                <!--xsl:apply-templates select="mdb:metadataLinkage/cit:CI_OnlineResource[contains(lower-case(cit:description), 'point-of-truth metadata')]/cit:linkage[contains(., 'internal.ecat')]" mode="registryObject_identifier_metadata_URL_replace"/-->
                 
                 <xsl:apply-templates
                     select="mdb:resourceLineage/mrl:LI_Lineage/mrl:statement[string-length(.) > 0]"
@@ -394,16 +398,21 @@
         </identifier>
     </xsl:template>
     
-    
-    <xsl:template match="cit:linkage" mode="registryObject_identifier_metadata_URL">
+    <!--xsl:template match="cit:linkage" mode="registryObject_identifier_metadata_URL">
         <identifier type="uri">
             <xsl:value-of select="."/>    
         </identifier>
-    </xsl:template>
+    </xsl:template-->
     
-    <xsl:template match="cit:linkage" mode="registryObject_identifier_metadata_URL_replace">
+    <!--xsl:template match="cit:linkage" mode="registryObject_identifier_metadata_URL_replace">
         <identifier type="uri">
             <xsl:value-of select="replace(., 'internal.ecat', 'ecat')"/>    
+        </identifier>
+    </xsl:template-->
+    
+    <xsl:template match="mcc:code" mode="registryObject_identifier_PID">
+        <identifier type = "pid">
+                <xsl:value-of select="concat('http://', $global_baseURI_PID, $global_path_PID, .)"/>
         </identifier>
     </xsl:template>
    
@@ -442,7 +451,7 @@
                         <xsl:text>landingPage</xsl:text>
                     </xsl:attribute>
                     <value>
-                        <xsl:value-of select="concat('http://', $global_baseURI, $global_path, .)"/>
+                        <xsl:value-of select="concat('http://', $global_baseURI_PID, $global_path_PID, .)"/>
                     </value>
                 </electronic>
             </address>
@@ -1080,9 +1089,9 @@
                                         ancestor::mdb:MD_Metadata/mdb:distributionInfo/mrd:MD_Distribution/mrd:transferOptions/mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource[contains(lower-case(cit:description), 'dataset doi') and contains(lower-case(cit:name), 'digital object identifier')]/cit:linkage[contains(., 'doi')][1]"/>
                                 </xsl:when>
                                 <xsl:when 
-                                    test="count(cit:identifier[contains(mcc:MD_Identifier/mcc:codeSpace, 'ga-dataSetURI')]/mcc:MD_Identifier/mcc:code) and (string-length(cit:identifier[contains(mcc:MD_Identifier/mcc:codeSpace, 'ga-dataSetURI')][1]/mcc:MD_Identifier/mcc:code[1]) > 0)">
+                                    test="count(ancestor::mdb:MD_Metadata/mdb:alternativeMetadataReference/cit:CI_Citation/cit:identifier/mcc:MD_Identifier[contains(lower-case(mcc:codeSpace), 'ecatid')]/mcc:code) and (string-length(ancestor::mdb:MD_Metadata/mdb:alternativeMetadataReference/cit:CI_Citation/cit:identifier/mcc:MD_Identifier[contains(lower-case(mcc:codeSpace), 'ecatid')][1]/mcc:code[1]) > 0)">
                                     <xsl:attribute name="type" select="'uri'"/>
-                                    <xsl:value-of select="cit:identifier[contains(mcc:MD_Identifier/mcc:codeSpace, 'ga-dataSetURI')][1]/mcc:MD_Identifier/mcc:code[1]"/>   
+                                    <xsl:value-of select="concat('http://', $global_baseURI_PID, $global_path_PID, ancestor::mdb:MD_Metadata/mdb:alternativeMetadataReference/cit:CI_Citation/cit:identifier/mcc:MD_Identifier[contains(lower-case(mcc:codeSpace), 'ecatid')][1]//mcc:code[1])"/>   
                                 </xsl:when>
                                 <xsl:when 
                                     test="count(cit:identifier[not(contains(mcc:MD_Identifier/mcc:codeSpace, 'ga-dataSetURI'))]/mcc:MD_Identifier/mcc:code) and (string-length(cit:identifier[not(contains(mcc:MD_Identifier/mcc:codeSpace, 'ga-dataSetURI'))][1]/mcc:MD_Identifier/mcc:code[1]) > 0)">
