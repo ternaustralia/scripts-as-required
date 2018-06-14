@@ -411,7 +411,7 @@
     </xsl:template-->
     
     <xsl:template match="mcc:code" mode="registryObject_identifier_PID">
-        <identifier type = "pid">
+        <identifier type = "purl">
                 <xsl:value-of select="concat('http://', $global_baseURI_PID, $global_path_PID, .)"/>
         </identifier>
     </xsl:template>
