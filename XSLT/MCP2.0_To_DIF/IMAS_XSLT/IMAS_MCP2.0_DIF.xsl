@@ -65,7 +65,10 @@
                 <xsl:apply-templates select="gmd:identificationInfo/*:MD_DataIdentification/gmd:purpose" mode="DIF_Summary_Purpose"/>
             </Summary>
             
-            <xsl:apply-templates select="gmd:distributionInfo/gmd:MD_Distribution" mode="DIF_Related_URL"/>
+            <xsl:apply-templates select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource
+                [not(contains(lower-case(gmd:protocol), 'http--publication'))]"  mode="DIF_Related_URL_ExceptPublications"/>
+            
+            <xsl:apply-templates select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions"  mode="DIF_Related_URL_OnlyPublications"/>
             
             <xsl:apply-templates select="gmd:parentIdentifier" mode="DIF_Parent_DIF"/>
             
@@ -377,12 +380,6 @@
         </Purpose>
     </xsl:template>
     
-    <xsl:template match="gmd:MD_Distribution" mode="DIF_Related_URL">
-        <Related_URL>
-        </Related_URL>
-    </xsl:template>
-        
-        
         <xsl:template match="gmd:parentIdentifier" mode="DIF_Parent_DIF">
             <Parent_DIF>
                 <xsl:value-of select="."/>
@@ -400,6 +397,117 @@
                 <xsl:value-of select="local:truncDate(.)"/>
             </Last_DIF_Revision_Date>
         </xsl:template>
+    
+    <xsl:template match="gmd:CI_OnlineResource"  mode="DIF_Related_URL_ExceptPublications">
+        <Related_URL>
+            <URL_Content_Type>
+                <Type>
+                    <xsl:value-of select="local:mapRelatedUrlType_ISO_DIF(gmd:protocol)"/>
+                </Type>
+                <xsl:if test="string-length(local:mapRelatedUrlSubType_ISO_DIF(gmd:protocol)) > 0">
+                    <Subtype>
+                        <xsl:value-of select="local:mapRelatedUrlSubType_ISO_DIF(gmd:protocol)"/>
+                    </Subtype>
+                </xsl:if>
+            </URL_Content_Type>
+            <URL>
+                <xsl:value-of select="gmd:linkage/gmd:URL"/>
+            </URL>
+            <Description>
+                <xsl:choose>
+                    <xsl:when test="contains(lower-case(gmd:protocol), 'wfs') or contains(lower-case(gmd:protocol), 'wms')">
+                        <xsl:value-of select="gmd:name"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:value-of select="gmd:description"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </Description>
+        </Related_URL>
+    </xsl:template>
+    
+    <xsl:template match="gmd:MD_DigitalTransferOptions"  mode="DIF_Related_URL_OnlyPublications">
+        
+        <xsl:if test="count(gmd:onLine/gmd:CI_OnlineResource[not(contains(lower-case(gmd:protocol), 'http--publication'))]) > 0">
+            <Related_URL>
+                <URL_Content_Type>
+                    <Type>VIEW RELATED INFORMATION</Type>
+                    <Subtype>PUBLICATIONS</Subtype>
+                </URL_Content_Type>
+                <xsl:for-each select="gmd:onLine/gmd:CI_OnlineResource[contains(lower-case(gmd:protocol), 'http--publication')]/gmd:linkage/gmd:URL">
+                    <URL>
+                        <xsl:value-of select="."/>
+                    </URL>
+                </xsl:for-each>
+             </Related_URL>
+        </xsl:if>
+    </xsl:template>
+    
+    <xsl:function name="local:mapRelatedUrlType_ISO_DIF">
+        <xsl:param name="protocol"/>
+            <xsl:choose>
+                <xsl:when test="contains(lower-case($protocol), 'downloaddata')">
+                    <xsl:text>GET DATA</xsl:text>
+                </xsl:when>
+                <xsl:when test="contains(lower-case($protocol), 'http--portal')">
+                    <xsl:text>GOTO WEB TOOL</xsl:text>
+                </xsl:when>
+                <xsl:when test="contains(lower-case($protocol), 'http--readme')">
+                    <xsl:text>VIEW RELATED INFORMATION</xsl:text>
+                </xsl:when>
+                <xsl:when test="contains(lower-case($protocol), 'http--manual')">
+                    <xsl:text>VIEW RELATED INFORMATION</xsl:text>
+                </xsl:when>
+                <xsl:when test="contains(lower-case($protocol), 'http--metadata-url')">
+                    <xsl:text>DATA SET LANDING PAGE</xsl:text>
+                </xsl:when>
+                <xsl:when test="contains(lower-case($protocol), 'wms')">
+                    <xsl:text>USE SERVICE API</xsl:text>
+                </xsl:when>
+                <xsl:when test="contains(lower-case($protocol), 'wfs')">
+                    <xsl:text>USE SERVICE API</xsl:text>
+                </xsl:when>
+                <xsl:when test="contains(lower-case($protocol), 'http--') and contains(lower-case($protocol), 'www:link')">
+                    <xsl:text>VIEW RELATED INFORMATION</xsl:text>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:text></xsl:text>
+                </xsl:otherwise>
+            </xsl:choose>
+    </xsl:function>
+    
+    <xsl:function name="local:mapRelatedUrlSubType_ISO_DIF">
+        <xsl:param name="protocol"/>
+        <xsl:choose>
+            <xsl:when test="contains(lower-case($protocol), 'downloaddata')">
+                <xsl:text>DIRECT DOWNLOAD</xsl:text>
+            </xsl:when>
+            <xsl:when test="contains(lower-case($protocol), 'http--portal')">
+                <xsl:text>MAP VIEWER</xsl:text>
+            </xsl:when>
+            <xsl:when test="contains(lower-case($protocol), 'http--readme')">
+                <xsl:text>READ-ME</xsl:text>
+            </xsl:when>
+            <xsl:when test="contains(lower-case($protocol), 'http--manual')">
+                <xsl:text>USER’S MANUAL</xsl:text>
+            </xsl:when>
+            <xsl:when test="contains(lower-case($protocol), 'http--metadata-url')">
+                <xsl:text></xsl:text>
+            </xsl:when>
+            <xsl:when test="contains(lower-case($protocol), 'wms')">
+                <xsl:text>WEB MAP SERVICE (WMS)</xsl:text>
+            </xsl:when>
+            <xsl:when test="contains(lower-case($protocol), 'wfs')">
+                <xsl:text>WEB FEATURE SERVICE (WFS)</xsl:text>
+            </xsl:when>
+            <xsl:when test="contains(lower-case($protocol), 'http--') and contains(lower-case($protocol), 'www:link')">
+                <xsl:text></xsl:text>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:text></xsl:text>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:function>
 
 
     <xsl:function name="local:mapRole_ISO_DIF">
