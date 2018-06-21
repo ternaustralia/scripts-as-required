@@ -1082,8 +1082,12 @@
        
         <!-- Attempt to obtain contributor names; only construct citation if we have contributor names -->
         
-       <xsl:variable name="citedResponsibleParty_sequence" select="gmd:citedResponsibleParty/gmd:CI_ResponsibleParty" as="node()*"/>
+        <xsl:variable name="citedResponsibleParty_sequence" select="gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue != 'publisher']" as="node()*"/>
         
+        <xsl:variable name="publisher_sequence" as="node()*" select="
+            gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'publisher']"/>  
+        
+        <!--
        <xsl:variable name="principalInvestigator_sequence" as="node()*" select="
             gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'principalInvestigator']"/>
         
@@ -1096,15 +1100,15 @@
         <xsl:variable name="coInvestigator_sequence" as="node()*" select="
             gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'coInvestigator']"/>
         
-        <xsl:variable name="publisher_sequence" as="node()*" select="
-            gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'publisher']"/>  
         
         <xsl:variable name="owner_sequence" as="node()*" select="
             gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue = 'owner']"/>  
+    
+        -->
         
-        
-        <!--xsl:message select="concat('count principalInvestigator_sequence: ', count($principalInvestigator_sequence))"/-->
         <xsl:variable name="citationContributorName_sequence" as="xs:string*">
+        
+            <!--        
            <xsl:for-each select="$principalInvestigator_sequence">
                <xsl:choose>
                    <xsl:when test="string-length(gmd:individualName) = 0">
@@ -1156,7 +1160,8 @@
                    </xsl:otherwise>
                </xsl:choose>
            </xsl:for-each>
-           
+               -->
+        
            <xsl:for-each select="$citedResponsibleParty_sequence">
                <xsl:choose>
                    <xsl:when test="string-length(gmd:individualName) = 0">
@@ -1231,9 +1236,11 @@
             </xsl:if>
         </xsl:variable>
         
-        <xsl:for-each select="$allContributorName_sequence">
-            <xsl:message select="concat('Contributor name: ', .)"/>
-        </xsl:for-each>
+        <xsl:if test="$global_debug">
+            <xsl:for-each select="$allContributorName_sequence">
+                <xsl:message select="concat('Contributor name: ', .)"/>
+            </xsl:for-each>
+        </xsl:if>
         
         <!-- We can only accept one DOI; however, first we will find all -->
         <xsl:variable name = "doiIdentifier_sequence" as="xs:string*" select="gmd:identifier/gmd:MD_Identifier/gmd:code[contains(lower-case(.), 'doi')]"/>
@@ -1364,7 +1371,7 @@
                     </xsl:variable>
                     
                     <xsl:for-each select="distinct-values($allContributorName_sequence)">
-                        <contributor>
+                        <contributor seq="{position()}">
                             <namePart>
                                 <xsl:value-of select="."/>
                             </namePart>
