@@ -54,15 +54,6 @@
     <xsl:param name="global_publisherName" select="'Geoscience Australia'"/>
     <xsl:param name="global_publisherPlace" select="'Canberra'"/>
     <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>
-    <xsl:template match="oai:responseDate"/>
-    <xsl:template match="oai:request"/>
-    <xsl:template match="oai:error"/>
-    <xsl:template match="oai:GetRecord/oai:record/oai:header/oai:identifier"/>
-    <xsl:template match="oai:GetRecord/oai:record/oai:header/oai:datestamp"/>
-    <xsl:template match="oai:GetRecord/oai:record/oai:header/oai:setSpec"/>
-    <xsl:template match="oai:ListRecords/oai:record/oai:header/oai:identifier"/>
-    <xsl:template match="oai:ListRecords/oai:record/oai:header/oai:datestamp"/>
-    <xsl:template match="oai:ListRecords/oai:record/oai:header/oai:setSpec"/>
     
     <!-- =========================================== -->
     <!-- RegistryObjects (root) Template             -->
