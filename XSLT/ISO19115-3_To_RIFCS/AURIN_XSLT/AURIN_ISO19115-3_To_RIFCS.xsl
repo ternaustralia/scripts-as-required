@@ -41,7 +41,6 @@
     <xsl:param name="global_publisherName" select="'Australian Urban Research Infrastructure Network (AURIN)'"/>
     <xsl:param name="global_publisherPlace" select="'Victoria'"/>
     <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>
-    <xsl:variable name="gmdCodelists" select="document('codelists.xml')"/>
     
     <!-- =========================================== -->
     <!-- RegistryObjects (root) Template             -->
