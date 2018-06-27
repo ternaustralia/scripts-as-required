@@ -62,7 +62,7 @@ def retrieveXML(count, filePath, uri):
 
     print("Results written to %s" % filePath)
 
-    searchResults = doc.getElementsByTagName('count')
+    searchResults = doc.getElementsByTagNameNS('*', 'count')
     assert (searchResults.length <= 1)
     if (searchResults.length == 1):
         print(searchResults.item(0).__class__.__name__)
