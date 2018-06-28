@@ -158,8 +158,12 @@
              
                 <!--xsl:apply-templates select="gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:source/gmd:LI_Source[string-length(gmd:sourceCitation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier/gmd:code) > 0]"
                      mode="IMOS_registryObject_relatedInfo"/-->
+                
+                <xsl:apply-templates
+                    select="gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:statement"
+                    mode="IMOS_registryObject_description_lineage"/>
                  
-                <xsl:apply-templates select="gmd:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="IMOS_registryObject">
+                 <xsl:apply-templates select="gmd:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="IMOS_registryObject">
                     <xsl:with-param name="originatingSourceURL" select="$originatingSourceURL"/>
                     <xsl:with-param name="originatingSourceOrganisation" select="$originatingSourceOrganisation"/>
                     <xsl:with-param name="groupToUse" select="$groupToUse"/>
@@ -567,6 +571,16 @@
     <xsl:template match="gmd:purpose" mode="IMOS_registryObject_description_notes">
         <xsl:if test="string-length(normalize-space(.)) > 0">
             <description type="notes">
+                <xsl:value-of select="."/>
+            </description>
+        </xsl:if>
+    </xsl:template>
+    
+    
+    <!-- RegistryObject - Decription Element -->
+    <xsl:template match="gmd:statement" mode="IMOS_registryObject_description_lineage">
+        <xsl:if test="string-length(normalize-space(.)) > 0">
+            <description type="lineage">
                 <xsl:value-of select="."/>
             </description>
         </xsl:if>
