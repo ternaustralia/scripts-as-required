@@ -15,6 +15,8 @@
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
     
+    <xsl:variable name="constant_unit_metres" select="'m'"/>
+    
     <xsl:template match="/">
         <xsl:apply-templates select="//*:MD_Metadata" mode="DIF"/>
     </xsl:template>
@@ -94,11 +96,36 @@
         
         <xsl:variable name="citedResponsiblePartyIndividualNames_NoTitle_sequence" as="xs:string*">
             <xsl:for-each select="distinct-values(gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty/gmd:individualName)">
-                <xsl:variable name="individualNamesOnly_sequence" select="local:individualNamesOnly_sequence(.)"/>
-                <xsl:for-each select="$individualNamesOnly_sequence">
-                    <xsl:if test="count($individualNamesOnly_sequence) &gt; position()">
-                        <xsl:copy-of select="."/>
-                    </xsl:if>
+                <xsl:variable name="individualNamesOnlyNoTitle_sequence" select="local:nameSeparatedNoTitle_sequence(.)"/>
+                <xsl:for-each select="$individualNamesOnlyNoTitle_sequence">
+                    <xsl:message select="concat('string length of ', ., ' is ', string-length(.))"/>
+                    <xsl:choose>
+                        <xsl:when test="position() = 1">
+                            <xsl:value-of select="."/>
+                        </xsl:when>
+                        <xsl:when test="string-length(.) = 1">
+                            <!-- Presume initial only, so add fullstop -->
+                            <xsl:value-of select="."/>
+                        </xsl:when>
+                        <xsl:when test="string-length(.) = 2">
+                            <xsl:choose>
+                            <!-- if this is an initial and a full stop, just use it -->
+                             <xsl:when test="substring(., 2, 1) = '.'">
+                                 <xsl:value-of select="."/>
+                             </xsl:when>
+                             <xsl:otherwise>
+                                 <xsl:value-of select="concat(substring(., 1, 1),'.')"/>
+                             </xsl:otherwise>
+                            </xsl:choose>
+                        </xsl:when>
+                        <xsl:when test="string-length(.) > 2">
+                           <!-- More than an initial and fullstop, so truncate to initial and fullstop -->
+                            <xsl:value-of select="concat(substring(., 1, 1),'.')"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="."/>
+                        </xsl:otherwise>
+                    </xsl:choose>
                 </xsl:for-each>
             </xsl:for-each>
         </xsl:variable>
@@ -139,7 +166,7 @@
     
     <xsl:template match="gmd:CI_ResponsibleParty" mode="DIF_Personnel">
         
-        <xsl:variable name="namePart_sequence" select="local:individualNamesOnly_sequence(gmd:individualName)" as="xs:string*"/>
+        <xsl:variable name="namePart_sequence" select="local:nameSeparatedNoTitle_sequence(gmd:individualName)" as="xs:string*"/>
          
         <Personnel>
             <Role><xsl:value-of select="local:mapRole_ISO_DIF(gmd:role/gmd:CI_RoleCode)"/></Role>
@@ -287,14 +314,38 @@
             <Easternmost_Longitude>
                 <xsl:value-of select="gmd:geographicElement/gmd:EX_GeographicBoundingBox/gmd:eastBoundLongitude"/>
             </Easternmost_Longitude>
-            <Minimum_Depth>
-                <xsl:value-of select="gmd:verticalElement/gmd:EX_VerticalExtent/gmd:minimumValue"/>
-            </Minimum_Depth>
-            <Maximum_Depth>
-                <xsl:value-of select="gmd:verticalElement/gmd:EX_VerticalExtent/gmd:maximumValue"/>
-            </Maximum_Depth>
+            
+            <xsl:apply-templates select="gmd:verticalElement/gmd:EX_VerticalExtent" mode="DIF_Spatial_Coverage_Vertical"/>
+            
         </Spatial_Coverage>
         
+    </xsl:template>
+    
+    <xsl:template match="gmd:EX_VerticalExtent" mode="DIF_Spatial_Coverage_Vertical">
+        <xsl:variable name="units" select="local:unitsFromVerticalCRS(gmd:verticalCRS/gml:VerticalCRS/gml:identifier)"/>
+        
+        <xsl:apply-templates select="gmd:minimumValue[string-length(.) > 0]" mode="DIF_Spatial_Coverage_Vertical_Minimum">
+            <xsl:with-param name="units" select="$units"/>
+        </xsl:apply-templates>
+    
+        <xsl:apply-templates select="gmd:maximumValue[string-length(.) > 0]" mode="DIF_Spatial_Coverage_Vertical_Maximum">
+            <xsl:with-param name="units" select="$units"/>
+        </xsl:apply-templates>
+    
+    </xsl:template>
+    
+    <xsl:template match="gmd:minimumValue" mode="DIF_Spatial_Coverage_Vertical_Minimum">
+        <xsl:param name="units"/>
+        <Minimum_Depth>
+            <xsl:value-of select="concat(., $units)"/>
+        </Minimum_Depth>
+    </xsl:template>
+    
+    <xsl:template match="gmd:maximumValue" mode="DIF_Spatial_Coverage_Vertical_Maximum">
+        <xsl:param name="units"/>
+        <Maximum_Depth>
+            <xsl:value-of select="concat(., $units)"/>
+        </Maximum_Depth>
     </xsl:template>
     
     <xsl:template match="*:otherConstraints" mode="DIF_Access_Constraints">
@@ -443,6 +494,15 @@
         </xsl:if>
     </xsl:template>
     
+    <xsl:function name="local:unitsFromVerticalCRS">
+        <xsl:param name="verticalCRS_identifier"/>
+        <xsl:choose>
+            <xsl:when test="contains(lower-case($verticalCRS_identifier), 'epsg::5715')">
+                <xsl:text>m</xsl:text>
+            </xsl:when>
+        </xsl:choose>
+    </xsl:function>
+    
     <xsl:function name="local:mapRelatedUrlType_ISO_DIF">
         <xsl:param name="protocol"/>
             <xsl:choose>
@@ -516,19 +576,25 @@
             <xsl:when test="contains(lower-case($role), 'principalinvestigator')">
                 <xsl:text>INVESTIGATOR</xsl:text>
             </xsl:when>
+            <xsl:when test="contains(lower-case($role), 'coinvestigator')">
+                <xsl:text>INVESTIGATOR</xsl:text>
+            </xsl:when>
             <xsl:when test="contains(lower-case($role), 'pointofcontact')">
                 <xsl:text>TECHNICAL CONTACT</xsl:text>
             </xsl:when>
         </xsl:choose>
     </xsl:function>
     
-    <xsl:function name="local:individualNamesOnly_sequence" as="xs:string*">
+    <xsl:function name="local:nameSeparatedNoTitle_sequence" as="xs:string*">
         <xsl:param name="individualName"/>
         
         <!-- Filter out each name and title, so allow a '/' as in 'Assoc/Prof', and include '.' as after an initial-->
-       <xsl:analyze-string select="$individualName" regex="(\?=^|\w)[A-z/.]+">
+        <xsl:analyze-string select="$individualName" regex="[A-z./]+">
             <xsl:matching-substring>
-                <xsl:value-of select="regex-group(0)"/>
+                <!-- then return names only - no titles -->
+                <xsl:if test="not(matches(regex-group(0), '(Miss|Mr|Mrs|Ms|Dr|PhD|Assoc/Prof|Professor|Prof)'))">
+                    <xsl:value-of select="regex-group(0)"/>
+                </xsl:if>
             </xsl:matching-substring>
         </xsl:analyze-string>
   
