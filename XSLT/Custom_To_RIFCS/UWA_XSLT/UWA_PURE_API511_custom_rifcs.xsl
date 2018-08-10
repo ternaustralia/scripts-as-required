@@ -19,7 +19,7 @@
     <xsl:param name="global_originatingSource" select="'University of Western Australia'"/>
     <xsl:param name="global_baseURI" select="'research-repository.uwa.edu.au'"/>
     <xsl:param name="global_acronym" select="'UWA_PURE'"/>
-    <xsl:param name="global_group" select="'The University of Western Australia (API 59)'"/>
+    <xsl:param name="global_group" select="'The University of Western Australia (API 511)'"/>
     <xsl:param name="global_publisherName" select="'University of Western Australia'"/>
     
 
@@ -34,34 +34,54 @@
                     xsi:schemaLocation="http://ands.org.au/standards/rif-cs/registryObjects 
                     http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd">
                 
-                <xsl:apply-templates select="//*:result/*:dataSet"/>
-                
+                        
+                    <xsl:apply-templates select="//*:result/*:equipment"/>
+                    <xsl:apply-templates select="//*:result/*:dataSet"/>
+                    
                 </registryObjects>
                 
             </xsl:when>
             <xsl:otherwise>
+                <xsl:apply-templates select="/*:result/*:equipment"/>
                 <xsl:apply-templates select="//*:result/*:dataSet"/>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
    
-    <xsl:template match="*:dataSet">
+    <xsl:template match="*:equipment | *:dataSet">
         
-     <!-- include dataset for now -->
-        <xsl:message select="concat('type is: ', *:type)"/>
-        <xsl:message select="concat('type is dataset: ', contains(lower-case(*:type), 'dataset'))"/>
-        
-        <xsl:if test="contains(lower-case(*:type), 'dataset')">
-                <xsl:apply-templates select="." mode="collection">
-                    <xsl:with-param name="type" select="'dataset'"/>
-                </xsl:apply-templates>
+        <!-- include dataset for now -->
+           <xsl:message select="concat('type is: ', *:type)"/>
+           <xsl:message select="concat('type is dataset: ', contains(lower-case(*:type), 'dataset'))"/>
+           
+           <xsl:if test="contains(lower-case(*:type), 'dataset')">
+                   <xsl:apply-templates select="." mode="registryObject">
+                       <xsl:with-param name="type" select="'dataset'"/>
+                       <xsl:with-param name="class" select="'collection'"/>
+                   </xsl:apply-templates>
+               
                 <xsl:apply-templates select="." mode="party"/>
-        </xsl:if>
+           </xsl:if>
+           
+           <xsl:if test="contains(lower-case(*:type), 'equipment')">
+               <!-- Create equipment record only if approved -->
+               <xsl:message select="concat('workflow: ', *:workflow)"/>
+               <xsl:if test="contains(lower-case(*:workflow), 'approved')">
+                    <xsl:apply-templates select="." mode="registryObject">
+                        <xsl:with-param name="type" select="'create'"/>
+                        <xsl:with-param name="class" select="'service'"/>
+                    </xsl:apply-templates>
+                   
+                   <xsl:apply-templates select="." mode="party"/>
+               </xsl:if>
+           </xsl:if>
+           
+          
     </xsl:template>
     
-    <xsl:template match="*:dataSet" mode="collection">
+    <xsl:template match="*:equipment | *:dataSet" mode="registryObject">
         <xsl:param name="type" as="xs:string"/>
-        <xsl:variable name="class" select="'collection'"/>
+        <xsl:param name="class" as="xs:string"/>
         
         <xsl:if test="$global_debug">
             <xsl:message select="concat('mapped type: ', $type)"/>
@@ -81,16 +101,20 @@
              
                 <xsl:apply-templates select="*:info/*:modifiedDate[string-length(.) > 0]" mode="collection_date_modified"/>
                 
-                <xsl:apply-templates select="*:info/*:createdDate[string-length(.) > 0]" mode="collection_date_created"/>
+                <xsl:if test="$class = 'collection'">
+                    <xsl:apply-templates select="*:info/*:createdDate[string-length(.) > 0]" mode="collection_date_created"/>
+                </xsl:if>
                 
                 <xsl:apply-templates select="@uuid[string-length(.) > 0]" mode="collection_identifier"/>
+                
+                <xsl:apply-templates select="*:webAddresses/*:webAddress[@type = 'Handle']" mode="collection_identifier_handle"/>
             
                 <xsl:apply-templates select="*:doi[string-length(.) > 0]" mode="collection_identifier"/>
                 
                 <xsl:apply-templates select="*:doi[string-length(.) > 0]" mode="collection_location"/>
                 
                 <xsl:if test="string-length(*:doi) = 0">
-                    <xsl:apply-templates select="*[1]/@todo:about[(string-length(.) > 0)]" mode="collection_location"/>
+                    <xsl:apply-templates select="." mode="collection_location_address_contact"/>
                 </xsl:if>
                 
                 <xsl:apply-templates select="*:title[string-length(.) > 0]" mode="collection_name"/>
@@ -117,11 +141,16 @@
                 
                 <xsl:apply-templates select="*:keywordGroups/*:keywordGroup" mode="collection_subject"/>
                
-                <xsl:apply-templates select="*:rendering[string-length(.) > 0]" mode="collection_description_full"/>
+                <xsl:apply-templates select="*:descriptions/*:description[string-length(.) > 0]" mode="collection_description_full"/>
+                
+                <xsl:apply-templates select="*:description[string-length(.) > 0]" mode="collection_description_full"/>
                 
                 <xsl:apply-templates select="*:links/*:link" mode="collection_relatedInfo"/>
                 
                 <xsl:apply-templates select="*:relatedResearchOutputs/*[contains(name(), 'related')]" mode="collection_relatedInfo"/>
+                
+                <xsl:apply-templates select="*:webAddresses/*:webAddress[not(@type = 'Handle')]" mode="collection_relatedInfo"/>
+                
                 
                 <xsl:apply-templates select="*:dataProductionPeriod" mode="collection_coverage_temporal"/>
                 
@@ -135,9 +164,11 @@
                 
                 <xsl:apply-templates select="." mode="collection_rights"/>
                 
-                <xsl:apply-templates select="." mode="collection_citationInfo"/>
+                <xsl:if test="$class = 'collection'">
+                    <xsl:apply-templates select="." mode="collection_citationInfo"/>
                 
-                <xsl:apply-templates select="." mode="collection_dates"/>  
+                    <xsl:apply-templates select="." mode="collection_dates"/>  
+                </xsl:if>
                  
             </xsl:element>
         </registryObject>
@@ -159,6 +190,12 @@
         <xsl:if test="$global_debug">
             <xsl:message select="concat('metadata id: ', .)"/>
         </xsl:if>
+    </xsl:template>
+    
+    <xsl:template match="*:webAddress" mode="collection_identifier_handle">
+        <identifier type="handle">
+            <xsl:value-of select="."/>
+        </identifier>
     </xsl:template>
     
     <xsl:template match="*:doi" mode="collection_identifier">
@@ -202,16 +239,80 @@
     </xsl:template>
     
     
-    <xsl:template match="@todo:about" mode="collection_location">
+    <xsl:template match="*:equipment | *:dataSet" mode="collection_location_address_contact">
         <location>
             <address>
-                <electronic type="url" target="landingPage">
-                    <value>
-                        <xsl:value-of select="."/>
-                    </value>
-                </electronic>
+            <xsl:apply-templates select=" *:emails/*:email" mode="registryObject_email"/>
+                <xsl:if test="(count(*:phoneNumbers/*:phoneNumber[@type='Phone']) > 0) or (count(*:phoneNumbers/*:phoneNumber[@type='Fax']) > 0)">
+                        <physical type="streetAddress">
+                           <xsl:apply-templates select="*:phoneNumbers/*:phoneNumber[@type='Phone']" mode="registryObject_phone_number"/>
+                           <xsl:apply-templates select="*:phoneNumbers/*:phoneNumber[@type='Fax']" mode="registryObject_fax_number"/>
+                        </physical>
+                 </xsl:if>
             </address>
-        </location> 
+        </location>
+        
+        <xsl:apply-templates select=" *:addresses/*:address[contains(*:addressType/@uri, 'postal')][(string-length(*:building) > 0) or (string-length(*:geoLocation) > 0)]" mode="registryObject_postal_address"/>
+        <xsl:apply-templates select=" *:addresses/*:address[contains(*:addressType/@uri, 'street')][(string-length(*:building) > 0) or (string-length(*:geoLocation) > 0)]" mode="registryObject_street_address"/>
+        
+    </xsl:template>
+    
+    <xsl:template match="*:address" mode="registryObject_postal_address">
+        <location>
+            <xsl:if test="string-length(*:building) > 0">
+                <address>
+                <physical type="postalAddress">    
+                    <addressPart type="addressLine">
+                        <xsl:value-of select="*:building"/>
+                    </addressPart>
+                </physical>
+              </address>
+            </xsl:if>
+            <xsl:if test="string-length(*:geoLocation) > 0">
+             <spatial type="dcmiPoint">
+                  <xsl:value-of select="*:geoLocation"/>
+              </spatial>
+            </xsl:if>
+          </location>
+    </xsl:template>
+    
+    <xsl:template match="*:address" mode="registryObject_street_address">
+        <location>
+            <xsl:if test="string-length(*:building) > 0">
+                <address>
+                <physical type="streetAddress">    
+                    <addressPart type="addressLine">
+                        <xsl:value-of select="*:building"/>
+                    </addressPart>
+                </physical>
+              </address>
+            </xsl:if>
+            <xsl:if test="string-length(*:geoLocation) > 0">
+                <spatial type="dcmiPoint">
+                    <xsl:value-of select="*:geoLocation"/>
+                </spatial>
+            </xsl:if>
+        </location>
+    </xsl:template>
+    
+    <xsl:template match="*:email" mode="registryObject_email">
+        <electronic type="email">
+            <value>
+                <xsl:value-of select="."/>
+            </value>
+        </electronic>
+    </xsl:template>
+    
+    <xsl:template match="*:phoneNumber" mode="registryObject_phone_number">
+            <addressPart type="telephoneNumber">
+                <xsl:value-of select="."/>
+            </addressPart>
+   </xsl:template>
+    
+    <xsl:template match="*:phoneNumber" mode="registryObject_fax_number">
+             <addressPart type="faxNumber">
+                <xsl:value-of select="."/>
+            </addressPart>
     </xsl:template>
     
     <!--xsl:template match="*:personRole" mode="relation">
@@ -389,7 +490,7 @@
         </xsl:for-each>
     </xsl:template>
     
-    <xsl:template match="*:rendering" mode="collection_description_full">
+    <xsl:template match="*:description" mode="collection_description_full">
         <description type="full">
             <xsl:value-of select="."/>
         </description>
@@ -405,6 +506,21 @@
             <xsl:if test="string-length(*:description) > 0">
                 <title>
                     <xsl:value-of select="*:description"/>
+                </title>
+            </xsl:if>
+        </relatedInfo>
+    </xsl:template>
+    
+    <xsl:template match="*:webAddress" mode="collection_relatedInfo">
+        <relatedInfo type="website">
+            <xsl:if test="string-length(.) > 0">
+                <identifier type="url">
+                    <xsl:value-of select="."/>
+                </identifier>
+            </xsl:if>
+            <xsl:if test="string-length(@type) > 0">
+                <title>
+                    <xsl:value-of select="@type"/>
                 </title>
             </xsl:if>
         </relatedInfo>
@@ -527,6 +643,7 @@
        
         <xsl:if test="$global_debug">
             <xsl:message select="concat('count fileLicense_sequence: ', count($fileLicense_sequence))"/> 
+            <xsl:message select="concat('values fileLicense_sequence: ', string-join($fileLicense_sequence, ','))"/> 
         </xsl:if>
         
         <xsl:choose>
@@ -550,7 +667,7 @@
         </xsl:choose>
     </xsl:template>
     
-    <xsl:template match="*:dataSet" mode="collection_dates">
+    <xsl:template match="*:equipment | *:dataSet" mode="collection_dates">
         <xsl:for-each select="*:publicationDate">
             <dates type="issued">
                 <date type="dateFrom" dateFormat="W3CDTF">
@@ -574,7 +691,7 @@
         
     </xsl:template> 
     
-    <xsl:template match="*:dataSet" mode="collection_rights">
+    <xsl:template match="*:equipment | *:dataSet" mode="collection_rights">
     
         <xsl:if test="$global_debug">
             <xsl:message select="concat('openAccessPermission: ', *:openAccessPermission)"/>
@@ -634,10 +751,13 @@
                                     <xsl:if test="$global_debug">
                                         <xsl:message select="'setting accessrights to ''restricted'' -- collection-level visibility is ''free'', access permission is one of either: ''embargoed'', ''restricted''; or ''closed'''"/>  
                                     </xsl:if> 
-                                </xsl:when>
+                                </xsl:when> 
+                                <xsl:when test=" contains(lower-case(*:openAccessPermission), 'unknown')">
+                                    <xsl:message select="'not setting access rights -- collection-level visibility is ''free'', but access permission is ''unknown'''"/>  
+                                </xsl:when>    
                                 <xsl:otherwise>
                                     <xsl:if test="$global_debug">
-                                        <xsl:message select="'not setting accessrights -- collection-level visibility is ''free'', but access permission is not set'"/>  
+                                        <xsl:message select="'not setting access rights -- collection-level visibility is ''free'', but access permission is not set'"/>  
                                     </xsl:if>
                                 </xsl:otherwise>
                             </xsl:choose>
@@ -673,7 +793,7 @@
     </xsl:template>
     
     
-    <xsl:template match="*:dataSet" mode="collection_citationInfo">
+    <xsl:template match="*:equipment | *:dataSet" mode="collection_citationInfo">
         <citationInfo>
             <citationMetadata>
                 <xsl:apply-templates select="*:doi" mode="citation_identifier"/>
@@ -750,7 +870,7 @@
         </date> 
     </xsl:template>
         
-    <xsl:template match="*:dataSet" mode="party">
+    <xsl:template match="*:equipment | *:dataSet" mode="party">
     
         <xsl:apply-templates select="*:managingOrganisationalUnit[(string-length(@uuid) > 0)]" mode="party_managing_organisation"/>
         <xsl:apply-templates select="*:organisationalUnits/*:organisationalUnit[(string-length(@uuid) > 0)]" mode="party_organisation"/>
