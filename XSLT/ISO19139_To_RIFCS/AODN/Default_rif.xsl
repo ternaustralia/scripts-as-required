@@ -13,6 +13,7 @@
     xmlns:gmx="http://www.isotc211.org/2005/gmx"
     xmlns:oai="http://www.openarchives.org/OAI/2.0/" 
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:default_local="http://default_local.nowhere.yet"
     xmlns:custom="http://custom.nowhere.yet"
     xmlns:customGMD="http://customGMD.nowhere.yet"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
@@ -249,6 +250,7 @@
             <xsl:apply-templates select="*:citation/*:CI_Citation"
                 mode="registryObject_citationMetadata_citationInfo">
                 <xsl:with-param name="originatingSourceOrganisation" select="$originatingSourceOrganisation"></xsl:with-param>
+                <xsl:with-param name="groupToUse" select="$groupToUse"></xsl:with-param>
             </xsl:apply-templates>
         </xsl:if>
             
@@ -347,25 +349,28 @@
         
            <xsl:if test="string-length($dateValue) &gt; 0">
             <dates>
-       			<xsl:variable name="dateCode" select="string(*:CI_Date/*:dateType/*:CI_DateTypeCode/@codeListValue)" as="xs:string"/>
-            		<xsl:if test="string-length($dateCode) &gt; 0">
-	            		<xsl:attribute name="type">
-			        		<xsl:choose>
-				                <xsl:when test="contains(lower-case($dateCode), 'creation')">
-				                    <xsl:text>created</xsl:text>
-				                </xsl:when>
-				                <xsl:when test="contains(lower-case($dateCode), 'publication')">
-				                    <xsl:text>issued</xsl:text>
-				                </xsl:when>
-				                <xsl:when test="contains(lower-case($dateCode), 'revision')">
-				                    <xsl:text>modified</xsl:text>
-				                </xsl:when>
-				                <xsl:otherwise>
-				                	<xsl:value-of select="$dateCode"/>
-				                </xsl:otherwise>
-			            	</xsl:choose>
-			        	</xsl:attribute>
-		       		</xsl:if>
+                <xsl:attribute name="type">
+       		<xsl:variable name="dateCode" select="string(*:CI_Date/*:dateType/*:CI_DateTypeCode/@codeListValue)" as="xs:string"/>
+            		
+        		<xsl:choose>
+	                <xsl:when test="contains(lower-case($dateCode), 'creation')">
+	                    <xsl:text>created</xsl:text>
+	                </xsl:when>
+	                <xsl:when test="contains(lower-case($dateCode), 'publication')">
+	                    <xsl:text>issued</xsl:text>
+	                </xsl:when>
+	                <xsl:when test="contains(lower-case($dateCode), 'revision')">
+	                    <xsl:text>modified</xsl:text>
+	                </xsl:when>
+        		    <xsl:when test="string-length($dateCode) &gt; 0">
+        		        <xsl:value-of select="$dateCode"/>
+        		    </xsl:when>
+	                <xsl:otherwise>
+	                    <!-- default to issued because we are drawing from the citation block of the source, and rif-cs won't be accepted without a type-->
+	                    <xsl:value-of select="'issued'"/>
+	                </xsl:otherwise>
+            	</xsl:choose>
+                </xsl:attribute>
                 <date>
                     <xsl:attribute name="type">
                         <xsl:text>dateFrom</xsl:text>
@@ -1026,6 +1031,7 @@
     <!-- RegistryObject - CitationInfo Element -->
     <xsl:template match="*:CI_Citation" mode="registryObject_citationMetadata_citationInfo">
         <xsl:param name="originatingSourceOrganisation"/>
+        <xsl:param name="groupToUse"/>
          
         <!-- Attempt to obtain contributor names; only construct citation if we have contributor names -->
         
@@ -1231,34 +1237,49 @@
                     
                     <xsl:variable name="current_CI_Citation" select="."/>
                     <xsl:variable name="CI_Date_sequence" as="node()*">
-                        <xsl:variable name="type_sequence" as="xs:string*" select="'creation,publication,revision'"/>
+                        <xsl:variable name="type_sequence" as="xs:string*" select="'creation,publication,revision,'"/> <!-- Note ending , allows match with no value-->
                         <xsl:for-each select="tokenize($type_sequence, ',')">
                             <xsl:variable name="type" select="."/>
                             <xsl:for-each select="$current_CI_Citation/*:date/*:CI_Date">
                                 <xsl:variable name="code" select="normalize-space(*:dateType/*:CI_DateTypeCode/@codeListValue)"/>
                                     <xsl:if test="contains(lower-case($code), lower-case($type))">
-                                    <xsl:copy-of select="."/>
-                                </xsl:if>
+                                        <xsl:copy-of select="."/>
+                                    </xsl:if>
                             </xsl:for-each>
                         </xsl:for-each>
                     </xsl:variable>
+                    
+                    <xsl:message select="concat('Count CI_Date_sequence: ', count($CI_Date_sequence))"/> 
+                    <xsl:if test="count($CI_Date_sequence) > 0">
+                        <xsl:message select="concat('First entry CI_Date_sequence: ', $CI_Date_sequence[1])"/> 
+                    </xsl:if>
                     
                     <xsl:variable name="codelist" select="$gmdCodelists/codelists/codelist[@name = '*:CI_DateTypeCode']"/>
                     
                    <xsl:variable name="dateValue" as="xs:string">
                     	<xsl:choose>
+                    	                <xsl:when test="contains($CI_Date_sequence[1]/*:date/gco:Date, '/')">
+                    	                    <xsl:value-of select="tokenize($CI_Date_sequence[1]/*:date/gco:Date, '/')[count(tokenize($CI_Date_sequence[1]/*:date/gco:Date, '/'))]"/>
+                    	                </xsl:when>
 	                         <xsl:when test="string-length(string($CI_Date_sequence[1]/*:date/gco:Date)) > 3">
 	                             <xsl:value-of select="substring($CI_Date_sequence[1]/*:date/gco:Date, 1, 4)"/>
 	                         </xsl:when>
 	                         <xsl:when test="string-length(string($CI_Date_sequence[1]/*:date/gco:DateTime)) > 3">
 	                             <xsl:value-of select="substring($CI_Date_sequence[1]/*:date/gco:DateTime, 1, 4)"/>
 	                         </xsl:when>
-	                          <xsl:otherwise>
-	                              <xsl:text></xsl:text>
-	                          </xsl:otherwise> 
+                       	    <xsl:when test="string-length(string($CI_Date_sequence[1]/*:date/gco:Date)) > 0">
+                       	        <xsl:value-of select="$CI_Date_sequence[1]/*:date/gco:Date"/>
+                       	    </xsl:when>
+                       	    <xsl:when test="string-length(string($CI_Date_sequence[1]/*:date/gco:DateTime)) > 0">
+                       	        <xsl:value-of select="$CI_Date_sequence[1]/*:date/gco:DateTime"/>
+                       	    </xsl:when>
+                       	    <xsl:otherwise>
+                       	        <xsl:text></xsl:text>
+                       	    </xsl:otherwise>
                     	</xsl:choose>
                        
                     </xsl:variable>
+                    
                     
                      <xsl:choose>
                         <xsl:when test="string-length($dateValue) > 0">
@@ -1299,8 +1320,8 @@
                                 <xsl:value-of select="$originatingSourceOrganisation"/>
                             </xsl:when>
                             <xsl:otherwise>
-                                <xsl:message select="concat('Resorting to group for publisher: ', substring-after($global_AIMS_group, ':'))"/> 
-                                <xsl:value-of select="substring-after($global_AIMS_group, ':')"/>
+                                <xsl:message select="concat('Resorting to group for publisher: ', substring-after($groupToUse, ':'))"/> 
+                                <xsl:value-of select="substring-after($groupToUse, ':')"/>
                             </xsl:otherwise>
                         </xsl:choose>
                     </xsl:variable>
@@ -1314,7 +1335,7 @@
                     </xsl:for-each>
                     
                     <publisher>
-                        <xsl:value-of select="normalize-space(publisherToUse)"/>
+                        <xsl:value-of select="normalize-space($publisherToUse)"/>
                     </publisher>
                     
                </citationMetadata>
@@ -1688,4 +1709,6 @@
             </xsl:otherwise>
         </xsl:choose>
     </xsl:function>
+    
+   
 </xsl:stylesheet>
