@@ -66,18 +66,11 @@
 					<gml:remarks>http://creativecommons.org/licenses/by-nc-nd/</gml:remarks>
 				</gmx:CodeDefinition>
 			</gmx:codeEntry>
-				<gmx:codeEntry>
+			<gmx:codeEntry>
 				<gmx:CodeDefinition gml:id="LicenseCode_GPL">
 					<gml:identifier codeSpace="http://not.yet.defined">GPL</gml:identifier>
 					<gml:name codeSpace="http://not.yet.defined">General Public License</gml:name>
-					<gml:remarks></gml:remarks>
-				</gmx:CodeDefinition>
-			</gmx:codeEntry>
-				<gmx:codeEntry>
-				<gmx:CodeDefinition gml:id="LicenseCode_AusGoalRestrictive">
-					<gml:identifier codeSpace="http://not.yet.defined">AusGoalRestrictive License</gml:identifier>
-					<gml:name codeSpace="http://not.yet.defined">AusGoal Restrictive License</gml:name>
-					<gml:remarks></gml:remarks>
+					<gml:remarks>https://www.gnu.org/licenses/gpl</gml:remarks>
 				</gmx:CodeDefinition>
 			</gmx:codeEntry>
 			</gmx:CodeListDictionary>
