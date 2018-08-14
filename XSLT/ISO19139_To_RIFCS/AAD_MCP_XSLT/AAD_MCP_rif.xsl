@@ -234,11 +234,11 @@
         
         
         <xsl:apply-templates
-            select="gmd:resourceConstraints/*:MD_CreativeCommonss[exists(*:licenseLink)]"
+            select="gmd:resourceConstraints/*:MD_CreativeCommons[exists(*:licenseLink)]"
             mode="AAD_registryObject_rights_licence_creative"/>
         
         <xsl:apply-templates
-            select="gmd:resourceConstraints/*:MD_CreativeCommonss"
+            select="gmd:resourceConstraints/*:MD_CreativeCommons"
             mode="AAD_registryObject_rights_rightsStatement_creative"/>
         
         <xsl:apply-templates
@@ -1026,7 +1026,7 @@
     </xsl:template>
 
     <!-- RegistryObject - Rights Licence - From CreativeCommons -->
-    <xsl:template match="*:MD_CreativeCommonss" mode="AAD_registryObject_rights_licence_creative">
+    <xsl:template match="*:MD_CreativeCommons" mode="AAD_registryObject_rights_licence_creative">
         <xsl:variable name="licenseLink" select="normalize-space(*:licenseLink/gmd:URL)"/>
         <xsl:for-each
             select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCode']/gmx:codeEntry/gmx:CodeDefinition">
@@ -1057,7 +1057,7 @@
     </xsl:template>
 
     <!-- RegistryObject - Rights RightsStatement - From CreativeCommons -->
-    <xsl:template match="*:MD_CreativeCommonss" mode="AAD_registryObject_rights_rightsStatement_creative">
+    <xsl:template match="*:MD_CreativeCommons" mode="AAD_registryObject_rights_rightsStatement_creative">
         <xsl:for-each select="gmd:attributionConstraints">
             <!-- If there is text in other contraints, use this; otherwise, do nothing -->
             <xsl:if test="string-length(normalize-space(.)) > 0">
