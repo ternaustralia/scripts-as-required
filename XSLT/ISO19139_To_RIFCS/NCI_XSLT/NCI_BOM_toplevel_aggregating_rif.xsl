@@ -49,7 +49,7 @@
     
     
     <xsl:template match="*:MD_Metadata" mode="NCI_top_level">
-        <xsl:message>NCI_topleve_aggregating</xsl:message>
+        <xsl:message>NCI_BOM_topleve_aggregating</xsl:message>
         
         <xsl:variable name="originatingSourceOrganisation" select="customGMD:originatingSourceOrganisation(.)"/>
         <xsl:message select="concat('$originatingSourceOrganisation: ', $originatingSourceOrganisation)"/>

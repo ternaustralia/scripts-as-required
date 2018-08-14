@@ -13,7 +13,6 @@
     xmlns:gmx="http://www.isotc211.org/2005/gmx"
     xmlns:oai="http://www.openarchives.org/OAI/2.0/" 
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
-    xmlns:default_local="http://default_local.nowhere.yet"
     xmlns:custom="http://custom.nowhere.yet"
     xmlns:customGMD="http://customGMD.nowhere.yet"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
@@ -139,7 +138,7 @@
                      mode="registryObject_relatedInfo"/>
                  
                 <xsl:apply-templates select="*:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="registryObject">
-                    <xsl:with-param name="originatingSourceURL" select="$originatingSourceURL"/>
+                    <xsl:with-param name="originatingSourceOrganisation" select="$originatingSourceOrganisation"/>
                     <xsl:with-param name="groupToUse" select="$groupToUse"/>
                 </xsl:apply-templates>
            
@@ -1261,6 +1260,9 @@
                     	                <xsl:when test="contains($CI_Date_sequence[1]/*:date/gco:Date, '/')">
                     	                    <xsl:value-of select="tokenize($CI_Date_sequence[1]/*:date/gco:Date, '/')[count(tokenize($CI_Date_sequence[1]/*:date/gco:Date, '/'))]"/>
                     	                </xsl:when>
+                       	    <xsl:when test="contains($CI_Date_sequence[1]/*:date/gco:DateTime, '/')">
+                       	        <xsl:value-of select="tokenize($CI_Date_sequence[1]/*:date/gco:DateTime, '/')[count(tokenize($CI_Date_sequence[1]/*:date/gco:DateTime, '/'))]"/>
+                          	    </xsl:when>
 	                         <xsl:when test="string-length(string($CI_Date_sequence[1]/*:date/gco:Date)) > 3">
 	                             <xsl:value-of select="substring($CI_Date_sequence[1]/*:date/gco:Date, 1, 4)"/>
 	                         </xsl:when>
@@ -1285,11 +1287,18 @@
                         <xsl:when test="string-length($dateValue) > 0">
                             <date>
                             	<xsl:variable name="codevalue" select="string($CI_Date_sequence[1]/*:dateType/*:CI_DateTypeCode/@codeListValue)"/>
-                                <xsl:if test="string-length($codevalue) > 0">
-	                                <xsl:attribute name="type">
-	                                    <xsl:value-of select="$codelist/entry[code = $codevalue]/description"/>
-	                                </xsl:attribute>
-	                            </xsl:if>
+                                        <xsl:choose>
+                                            <xsl:when test="string-length($codevalue) > 0">
+    	                                <xsl:attribute name="type">
+    	                                    <xsl:value-of select="$codelist/entry[code = $codevalue]/description"/>
+    	                                </xsl:attribute>
+    	                               </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:attribute name="type">
+                                                    <xsl:text>publicationDate</xsl:text>
+                                                </xsl:attribute>
+                                            </xsl:otherwise>
+                                        </xsl:choose> 
                                 <xsl:value-of select="$dateValue"/>
                             </date>
                         </xsl:when>

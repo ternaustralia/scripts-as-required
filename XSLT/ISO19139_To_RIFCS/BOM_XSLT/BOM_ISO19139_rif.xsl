@@ -837,7 +837,7 @@ xmlns:gco="http://www.isotc211.org/2005/gco"
     </xsl:template>
 
     <!-- RegistryObject - Rights Licence - From CreativeCommons -->
-    <xsl:template match="*:MD_CreativeCommonss" mode="registryObject_rights_licence_creative">
+    <xsl:template match="*:MD_CreativeCommons" mode="registryObject_rights_licence_creative">
         <xsl:variable name="licenseLink" select="normalize-space(*:licenseLink/gmd:URL)"/>
         <xsl:for-each
             select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCode']/gmx:codeEntry/gmx:CodeDefinition">
@@ -847,29 +847,13 @@ xmlns:gco="http://www.isotc211.org/2005/gco"
                         <licence>
                             <xsl:attribute name="type" select="gml:identifier"/>
                             <xsl:attribute name="rightsUri" select="$licenseLink"/>
-                            <xsl:if test="string-length(normalize-space(gml:name)) > 0">
-                                <xsl:value-of select="normalize-space(gml:name)"/>
-                            </xsl:if>
-                        </licence>
+                         </licence>
                     </rights>
                 </xsl:if>
             </xsl:if>
         </xsl:for-each>
 
-        <!--xsl:for-each select="gmd:otherConstraints">
-            <xsl:if test="string-length(normalize-space(.)) > 0">
-                <rights>
-                    <licence>
-                        <xsl:value-of select='normalize-space(.)'/>
-                    </licence>
-                </rights>
-            </xsl:if>
-        </xsl:for-each-->
-    </xsl:template>
-    
-    <xsl:template match="gmd:resourceConstraint" mode="registryObject_rights_rights">
-        <xsl:apply-templates select="gmd:MD_LegalConstraints" mode="registryObject_rights_rights"/>
-        <xsl:apply-templates select="gmd:MD_Constraints" mode="registryObject_rights_rights"/>
+        
     </xsl:template>
     
     <!-- RegistryObject - RightsStatement -->
@@ -923,9 +907,12 @@ xmlns:gco="http://www.isotc211.org/2005/gco"
             </rights>
     </xsl:template>
     
+    
     <xsl:template match="gmd:otherConstraints" mode="rights_licence_type">
         <xsl:variable name="inputTransformed" select="normalize-space(replace(replace(., 'icence', 'icense', 'i'), 'https', 'http', 'i'))"/>
-                
+        <xsl:if test="$global_debug">
+            <xsl:message select="concat('inputTransformed: ', $inputTransformed)"/>
+        </xsl:if>
         <xsl:variable name="codeDefinition_sequence" select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCodeAustralia']/gmx:codeEntry/gmx:CodeDefinition[contains($inputTransformed, normalize-space(replace(gml:remarks, '\{n\}', '')))]" as="node()*"/>
         
         <xsl:for-each select="$codeDefinition_sequence">
@@ -933,9 +920,13 @@ xmlns:gco="http://www.isotc211.org/2005/gco"
                 <xsl:attribute name="type">
                     <xsl:value-of select="gml:identifier"/>
                 </xsl:attribute>
+                <xsl:if test="$global_debug">
+                    <xsl:message select="concat('set type: ', gml:identifier)"/>
+                </xsl:if>
             </xsl:if>
         </xsl:for-each>
     </xsl:template>
+    
 
  <!-- RegistryObject - CitationInfo Element -->
     <xsl:template match="gmd:CI_Citation" mode="registryObject_citationMetadata_citationInfo">
