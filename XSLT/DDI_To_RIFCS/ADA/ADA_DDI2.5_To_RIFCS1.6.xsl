@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:oai="http://www.openarchives.org/OAI/2.0/" 
+<xsl:stylesheet version="2.0" 
+    xmlns:oai="http://www.openarchives.org/OAI/2.0/" 
     xmlns:ddi="http://www.icpsr.umich.edu/DDI" 
     xmlns:oai_ddi="https://dataverse-test.ada.edu.au/oai"
-    xmlns:custom="http://custom.nowhere.yet"
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xmlns:fn="http://www.w3.org/2005/xpath-functions"
     xmlns:localFunc="http://www.localfunc.net"
@@ -10,10 +10,9 @@
     xmlns:local="http://local.to.here"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="3.0"
-    exclude-result-prefixes="saxon local xs oai ddi oai_ddi custom fn localFunc">
-    
-    <xsl:import href="CustomFunctions.xsl"/>
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:math="https://www.w3.org/2005/xpath-functions/math"
+    exclude-result-prefixes="saxon local xs oai ddi oai_ddi fn localFunc math">
     
     <xsl:param name="global_originatingSource" select="'Australian Data Archive'"/>
     <xsl:param name="global_baseURI" select="'www.ada.edu.au'"/>
@@ -42,7 +41,7 @@
         <registryObject>
             <xsl:attribute name="group" select="$global_group"/>
             <key>
-                <xsl:value-of select="custom:registryObjectKeyFromString(*:stdyDscr/*:citation/*:titlStmt/*:IDNo)"/>
+                <xsl:value-of select="substring(string-join(for $n in fn:string-to-codepoints(reverse(*:stdyDscr/*:citation/*:titlStmt/*:IDNo)) return string($n), ''), 0, 500)"/>
             </key>
             <originatingSource>
                 <xsl:value-of select="$global_originatingSource"/>
@@ -51,12 +50,15 @@
             <collection>
                 <xsl:attribute name="type" select="'dataset'"/>
                 <xsl:attribute name="dateAccessioned" select="*:stdyDscr/*:citation/*:distStmt/*:depDate/@date[(string-length(.) > 0)]"/>
+                
                 <xsl:apply-templates select="*:stdyDscr/*:citation/*:titlStmt/*:IDNo[(string-length(.) > 0)]" mode="registryObject_identifier"/>
+                <xsl:apply-templates select="*:stdyDscr/*:stdyInfo/*:IDNo"  mode="registryObject_identifier"/>
                 <xsl:apply-templates select="*:stdyDscr/*:citation/*:titlStmt/*:titl[(string-length(.) > 0)]" mode="registryObject_name"/>
                 <xsl:apply-templates select="*:stdyDscr/*:citation/*:titlStmt/*:IDNo[(string-length(.) > 0)]" mode="registryObject_location"/>
                 <xsl:apply-templates select="*:stdyDscr/*:stdyInfo/*:subject/*:keyword[(string-length(.) > 0)]" mode="registryObject_subject"/>
                 <xsl:apply-templates select="*:stdyDscr/*:stdyInfo/*:abstract[(string-length(.) > 0)]" mode="registryObject_description"/>
                 <xsl:apply-templates select="*:stdyDscr/*:stdyInfo/*:sumDscr" mode="registryObject_coverage"/>
+                <xsl:apply-templates select="*:stdyDscr/*:stdyInfo/*:sumDscr" mode="registryObject_dates"/>
                 <xsl:apply-templates select="*:stdyDscr/*:othrStdyMat/*:relPubl" mode="registryObject_relatedInfo"/>
                 <xsl:apply-templates select="*:stdyDscr/*:citation/*:rspStmt/*:AuthEnty[(string-length(.) > 0)]" mode="registryObject_relatedObject"/>
                 <xsl:apply-templates select="*:docDscr/*:citation/*:prodStmt/*:producer[(string-length(.) > 0)]" mode="registryObject_relatedObject"/>
@@ -66,8 +68,8 @@
                 
                 <xsl:apply-templates select="." mode="registryObject_citationInfo"/>
                 
-                <xsl:apply-templates select="*:stdyDscr/*:citation/*:distStmt/*:depDate/@date[(string-length(.) > 0)]" mode="registryObject_dates_accepted"/>
-                <xsl:apply-templates select="*:stdyDscr/*:citation/*:distStmt/*:distDate/@date[(string-length(.) > 0)]" mode="registryObject_dates_available"/>
+                <xsl:apply-templates select="*:stdyDscr/*:citation/*:distStmt/*:depDate[(string-length(.) > 0)]" mode="registryObject_dates_accepted"/>
+                <xsl:apply-templates select="*:stdyDscr/*:citation/*:distStmt/*:distDate[(string-length(.) > 0)]" mode="registryObject_dates_available"/>
             </collection>
         </registryObject>
     </xsl:template>
@@ -130,14 +132,18 @@
     
     <xsl:template match="*:sumDscr" mode="registryObject_coverage">
         <coverage>
-            <!--xsl:apply-templates select="*:timePrd[(@event = 'start') and (string-length(@date) > 0)]" mode="registryObject_coverage_temporal_start"/-->
-            <!--xsl:apply-templates select="*:timePrd[(@event = 'single') and (string-length(@date) > 0)]" mode="registryObject_coverage_temporal_single"/-->
-            <xsl:apply-templates select="*:collDate[(@event = 'start') and (string-length(@date) > 0)]" mode="registryObject_coverage_temporal_start"/>
-            <xsl:apply-templates select="*:collDate[(@event = 'single') and (string-length(@date) > 0)]" mode="registryObject_coverage_temporal_single"/>
+            <xsl:apply-templates select="*:timePrd[(@event = 'start') and (string-length(@date) > 0)]" mode="registryObject_coverage_temporal_start"/>
+            <xsl:apply-templates select="*:timePrd[(@event = 'single') and (string-length(@date) > 0)]" mode="registryObject_coverage_temporal_single"/>
+        
             <xsl:apply-templates select="*:nation[string-length(.) > 0]" mode="registryObject_coverage_spatial"/>
             <xsl:apply-templates select="*:geogCover[string-length(.) > 0]" mode="registryObject_coverage_spatial"/>
             <xsl:apply-templates select="*:geogUnit[string-length(.) > 0]" mode="registryObject_coverage_spatial"/>
         </coverage>
+    </xsl:template>
+    
+    <xsl:template match="*:sumDscr" mode="registryObject_dates">
+        <xsl:apply-templates select="*:collDate[(@event = 'start') and (string-length(@date) > 0)]" mode="registryObject_collection_dates_start"/>
+        <xsl:apply-templates select="*:collDate[(@event = 'single') and (string-length(@date) > 0)]" mode="registryObject_collection_dates_single"/>
     </xsl:template>
     
     <xsl:template match="*:relPubl" mode="registryObject_relatedInfo">
@@ -155,7 +161,7 @@
         </relatedInfo>
     </xsl:template>
     
-    <!--xsl:template match="*:timePrd" mode="registryObject_coverage_temporal_start">
+    <xsl:template match="*:timePrd" mode="registryObject_coverage_temporal_start">
         <temporal>
             <date type="dateFrom" dateFormat="W3CDTF">
                 <xsl:value-of select="normalize-space(@date)"/>
@@ -167,35 +173,35 @@
                 </date>
             </xsl:if>
         </temporal>
-    </xsl:template-->
+    </xsl:template>
     
-    <!--xsl:template match="*:timePrd" mode="registryObject_coverage_temporal_single">
+    <xsl:template match="*:timePrd" mode="registryObject_coverage_temporal_single">
         <temporal>
             <date type="dateFrom" dateFormat="W3CDTF">
                 <xsl:value-of select="normalize-space(@date)"/>
             </date>
             </temporal>
-    </xsl:template-->
+    </xsl:template>
     
-    <xsl:template match="*:collDate" mode="registryObject_coverage_temporal_start">
-        <temporal>
+    <xsl:template match="*:collDate" mode="registryObject_collection_dates_start">
+        <dates type="created">
             <date type="dateFrom" dateFormat="W3CDTF">
-                <xsl:value-of select="normalize-space(@date)"/>
+                 <xsl:value-of select="normalize-space(@date)"/>
             </date>
             <xsl:if test="following-sibling::*:collDate[@event = 'end'][1]/@date[string-length(.) > 0]">
                <date type="dateTo" dateFormat="W3CDTF">
                    <xsl:value-of select="normalize-space(following-sibling::*:collDate[@event = 'end'][1]/@date)"/>
                </date>
             </xsl:if>
-        </temporal>
+        </dates>
     </xsl:template>
     
-    <xsl:template match="*:collDate" mode="registryObject_coverage_temporal_single">
-        <temporal>
-            <date type="dateFrom" dateFormat="W3CDTF">
+    <xsl:template match="*:collDate" mode="registryObject_collection_dates_single">
+        <dates type="created">
+            <date type="dateFrom" dateFormat="W3CDTF">>
                 <xsl:value-of select="normalize-space(@date)"/>
             </date>
-          </temporal>
+        </dates>
     </xsl:template>
     
     <xsl:template match="*:nation" mode="registryObject_coverage_spatial">
@@ -222,9 +228,9 @@
     
     
     <xsl:template match="*:IDNo" mode="registryObject_identifier">
-        <identifier type="{custom:getIdentifierType(.)}">
+        <identifier type="{@agency}">
             <xsl:value-of select="normalize-space(.)"/>
-        </identifier>
+      </identifier>
     </xsl:template>
     
     <xsl:template match="*:titl" mode="registryObject_name">
@@ -318,7 +324,7 @@
         </dates>
     </xsl:template>
     
-    <xsl:template match="@date" mode="registryObject_dates_available">
+    <xsl:template match="*:distDate" mode="registryObject_dates_available">
         <dates type="available">
             <date type="dateFrom" dateFormat="W3CDTF">
                 <xsl:value-of select="normalize-space(.)"/>
@@ -338,7 +344,7 @@
                 <xsl:apply-templates select="*:docDscr/*:citation/*:prodStmt/*:producer[(string-length(.) > 0)]" mode="registryObject_citation_publisher"/>
                 <xsl:apply-templates select="*:stdyDscr/*:citation/*:titlStmt/*:titl[(string-length(.) > 0)]" mode="registryObject_citation_title"/>
                 <xsl:apply-templates select="*:stdyDscr/*:citation/*:verStmt/*:version[(string-length(.) > 0)]" mode="registryObject_citation_version"/>
-                <xsl:apply-templates select="*:stdyDscr/*:citation/*:distStmt/*:distDate/@date[(string-length(.) > 3)]" mode="registryObject_citation_date_published"/>
+                <xsl:apply-templates select="*:stdyDscr/*:citation/*:distStmt/*:distDate[(string-length(.) > 0)]" mode="registryObject_citation_date_published"/>
                 <!--xsl:apply-templates select="*:stdyDscr/*:citation/*:titlStmt/*:IDNo[(string-length(.) > 0)]" mode="registryObject_citation_url"/-->
                 
             </citationMetadata>
@@ -355,7 +361,7 @@
     
     
     <xsl:template match="*:IDNo" mode="registryObject_citation_identifier">
-        <identifier type="{custom:getIdentifierType(.)}">
+        <identifier type="{lower-case(@agency)}">
             <xsl:value-of select="normalize-space(.)"/>
         </identifier>
     </xsl:template>
@@ -380,7 +386,7 @@
         </version>
     </xsl:template>
     
-    <xsl:template match="@date" mode="registryObject_citation_date_published">
+    <xsl:template match="*:distDate" mode="registryObject_citation_date_published">
         <date type="publicationDate">
             <xsl:value-of select="normalize-space(substring(., 1, 4))"/>
         </date>
@@ -500,8 +506,6 @@
                      </registryObject>
                 </xsl:if>
         </xsl:template>
-  
-            
     
     <xsl:function name="local:formatKey">
         <xsl:param name="input"/>
