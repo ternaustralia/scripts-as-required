@@ -7,7 +7,6 @@
     xmlns:custom="http://custom.nowhere.yet"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
     exclude-result-prefixes="xsl xsi fn xs custom">
-    <!-- stylesheet to convert data.gov.au xml (transformed from json with python script) to RIF-CS -->
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
     
