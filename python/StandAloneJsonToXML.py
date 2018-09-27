@@ -17,7 +17,6 @@ if not(options.jsonURL):
 
 
 print("Opening url ", options.jsonURL)
-#page = urllib.urlopen('https://biocache.ala.org.au/ws/v2/api-docs')
 page = urllib.urlopen(options.jsonURL)
 content = page.read()
 obj = json.loads(content)
