@@ -11,6 +11,14 @@
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
     
+    <xsl:param name="global_debug" select="true()" as="xs:boolean"/>
+    <xsl:param name="global_debugExceptions" select="true()" as="xs:boolean"/>
+    <xsl:param name="global_originatingSource" select="'{default}'"/>
+    <xsl:param name="global_baseURI" select="'{default}'"/>
+    <xsl:param name="global_acronym" select="'{default}'"/>
+    <xsl:param name="global_group" select="'{default}'"/>
+    <xsl:param name="global_publisherName" select="'{default}'"/>
+    
     <!-- =========================================== -->
     <!-- dataset (datasets) Template             -->
     <!-- =========================================== -->
