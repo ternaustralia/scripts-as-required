@@ -20,7 +20,6 @@
     <xsl:param name="global_AAD_publisherName" select="'Australian Antarctic Data Centre'"/>
     <xsl:param name="global_AAD_contributorName" select="'Australian Antarctic Division'"/>
     <xsl:param name="global_AAD_publisherPlace" select="'Hobart'"/>
-    <xsl:variable name="anzsrcCodelist" select="document('anzsrc-codelist.xml')"/>
     <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>
     <xsl:variable name="gmdCodelists" select="document('codelists.xml')"/>
    
@@ -445,23 +444,9 @@
         		<xsl:value-of select="normalize-space(.)"/>
             </subject>
         </xsl:for-each>
-
-        <xsl:for-each select="gmd:keyword">
-            <xsl:message select="lower-case(normalize-space(.))"/>
-            <xsl:variable name="code"
-                select="(normalize-space($anzsrcCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='ANZSRCCode']/gmx:codeEntry/gmx:CodeDefinition/gml:identifier[lower-case(following-sibling::gml:name) = lower-case(normalize-space(.))]))[1]"/>
-            <xsl:if test="string-length($code) > 0">
-                <subject>
-                    <xsl:attribute name="type">
-                        <xsl:value-of select="'anzsrc-for'"/>
-                    </xsl:attribute>
-                    <xsl:value-of select="$code"/>
-                </subject>
-            </xsl:if>
-        </xsl:for-each>
     </xsl:template>
 
-    <xsl:template match="gmd:MD_TopicCategoryCode" mode="AAD_collection_subject">
+     <xsl:template match="gmd:MD_TopicCategoryCode" mode="AAD_collection_subject">
         <xsl:if test="string-length(normalize-space(.)) > 0">
             <subject type="local">
                 <xsl:value-of select="."/>

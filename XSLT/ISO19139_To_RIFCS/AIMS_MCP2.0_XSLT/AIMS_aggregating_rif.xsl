@@ -26,6 +26,8 @@
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
     
+    <xsl:param name="global_debug" select="false()" as="xs:boolean"/>
+    <xsl:param name="global_debugExceptions" select="true()" as="xs:boolean"/>
     <xsl:param name="global_EATLAS_baseURI" select="'eatlas.org.au'"/>
     <xsl:param name="global_AAD_baseURI" select="'data.aad.gov.au'"/>
     <xsl:param name="global_group" select="'AIMS:Australian Institute of Marine Science'"/>
@@ -61,14 +63,18 @@
     <xsl:template match="*:MD_Metadata" mode="AIMS_aggregating">
         
         <xsl:variable name="originatingSourceOrganisation" select="customGMD:originatingSourceOrganisation(.)"/>
-        <xsl:message select="concat('$originatingSourceOrganisation: ', $originatingSourceOrganisation)"/>
+        <xsl:if test="$global_debug">
+            <xsl:message select="concat('$originatingSourceOrganisation: ', $originatingSourceOrganisation)"/>
+        </xsl:if>
         
         <xsl:variable name="metadataPointOfTruth_sequence" select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage[contains(lower-case(following-sibling::gmd:protocol/gco:CharacterString), 'metadata-url')]/gmd:URL" as="xs:string*"/>
         
-        <xsl:message select="concat('$originatingSourceOrganisation: ', $originatingSourceOrganisation)"/>
-        <xsl:for-each select="distinct-values($metadataPointOfTruth_sequence)">
-            <xsl:message select="concat('$metadataPointOfTruth_sequence: ', .)"/>
-        </xsl:for-each>
+        <xsl:if test="$global_debug">
+             <xsl:message select="concat('$originatingSourceOrganisation: ', $originatingSourceOrganisation)"/>
+          <xsl:for-each select="distinct-values($metadataPointOfTruth_sequence)">
+              <xsl:message select="concat('$metadataPointOfTruth_sequence: ', .)"/>
+          </xsl:for-each>
+        </xsl:if>
         
         
         <xsl:choose>

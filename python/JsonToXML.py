@@ -63,10 +63,12 @@ def parse_element(doc, root, j, namespaceUri):
     for e in j:
         parse_element(doc, root, e)
   elif isinstance(j, unicode):
+    print("isinstance unicode ", j)
     text = doc.createTextNode(j)
+    print("created text node ", text.data)
     root.appendChild(text)
   elif isinstance(j, str):
-    print("isinstance str") 
+    print("isinstance str", j)
     text = doc.createTextNode(j)
     root.appendChild(text)
   elif isinstance(j, numbers.Number):
@@ -75,7 +77,7 @@ def parse_element(doc, root, j, namespaceUri):
   else:
     raise Exception("unhandled type %s for %s" % (type(j), j,))
 
-def writeXmlFromJson(dataSetUri, dataSetName, outputDirectory, splitElement=None):
+def writeXmlFromJson(dataSetUri, dataSetName, outputDirectory, splitElement=None, usePostfix=1):
 
     postfix=""
     rows=99
@@ -98,7 +100,8 @@ def writeXmlFromJson(dataSetUri, dataSetName, outputDirectory, splitElement=None
 
         while(count > (start)):
 
-            postfix = str.format("&rows="+str(rows)+"&start="+str(start))
+            if(usePostfix > 0):
+                postfix = str.format("&rows="+str(rows)+"&start="+str(start))
 
             try:
                 obj_addinfourl = urllib2.urlopen(dataSetUri+postfix, timeout=5)

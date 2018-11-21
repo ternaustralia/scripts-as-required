@@ -1,27 +1,27 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="2.0" 
-    xmlns:mcp="http://bluenet3.antcrc.utas.edu.au/mcp" 
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:mcp="http://schemas.aodn.org.au/mcp-2.0" 
     xmlns:gmd="http://www.isotc211.org/2005/gmd" 
+    xmlns:gmx="http://www.isotc211.org/2005/gmx" 
     xmlns:xlink="http://www.w3.org/1999/xlink" 
-    xmlns:srv="http://www.isotc211.org/2005/srv"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-    xmlns:gml="http://www.opengis.net/gml"
+    xmlns:dwc="http://rs.tdwg.org/dwc/terms/" 
+    xmlns:gml="http://www.opengis.net/gml" 
     xmlns:gco="http://www.isotc211.org/2005/gco" 
-    xmlns:gts="http://www.isotc211.org/2005/gts"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
     xmlns:geonet="http://www.fao.org/geonetwork" 
-    xmlns:gmx="http://www.isotc211.org/2005/gmx"
+    gco:isoType="gmd:MD_Metadata" 
+    xsi:schemaLocation="http://schemas.aodn.org.au/mcp-2.0 http://schemas.aodn.org.au/mcp-2.0/schema.xsd http://www.isotc211.org/2005/srv http://schemas.opengis.net/iso/19139/20060504/srv/srv.xsd http://www.isotc211.org/2005/gmx http://www.isotc211.org/2005/gmx/gmx.xsd http://rs.tdwg.org/dwc/terms/ http://schemas.aodn.org.au/mcp-2.0/mcpDwcTerms.xsd"
+    xmlns:srv="http://www.isotc211.org/2005/srv"
     xmlns:oai="http://www.openarchives.org/OAI/2.0/" 
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xmlns:custom="http://custom.nowhere.yet"
+    xmlns:customIMAS="http://customIMAS.nowhere.yet"
     xmlns:customGMD="http://customGMD.nowhere.yet"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
-    exclude-result-prefixes="geonet gmx oai xsi gmd srv gml gco gts custom customGMD">
-    <xsl:import href="Default_rif.xsl"/>
-    <xsl:import href="EATLAS_rif.xsl"/>
+    exclude-result-prefixes="xlink geonet gmx oai xsi gmd srv gml gco mcp dwc customIMAS custom customGMD">
+    
     <xsl:import href="IMAS_rif.xsl"/>
     <xsl:import href="IMOS_rif.xsl"/>
-    <xsl:import href="AAD_rif.xsl"/>
     <xsl:import href="AIMS_rif.xsl"/>
     <xsl:import href="CustomFunctions.xsl"/>
     <xsl:import href="CustomFunctionsGMD.xsl"/>
@@ -29,7 +29,7 @@
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
     
-    <xsl:param name="global_group" select="'AODN:Australian Ocean Data Network'"/>
+    <xsl:param name="global_group" select="'UTAS:University of Tasmania, Australia'"/>
     <xsl:param name="global_debug" select="false()" as="xs:boolean"/>
     <xsl:param name="global_debugExceptions" select="true()" as="xs:boolean"/>
     
@@ -56,13 +56,13 @@
                 <xsl:text>http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd</xsl:text>
             </xsl:attribute>
             
-            <xsl:apply-templates select="//*:MD_Metadata" mode="AODN_aggregating"/>
+            <xsl:apply-templates select="//*:MD_Metadata" mode="IMAS_aggregating"/>
         </registryObjects>
         
     </xsl:template>
     
     
-    <xsl:template match="*:MD_Metadata" mode="AODN_aggregating">
+    <xsl:template match="*:MD_Metadata" mode="IMAS_aggregating">
         
         <xsl:variable name="originatingSourceOrganisation" select="customGMD:originatingSourceOrganisation(.)"/>
         <xsl:if test="$global_debug">
@@ -120,28 +120,14 @@
                      <xsl:with-param name="aggregatingGroup" select="$global_group"/>
                  </xsl:apply-templates>
              </xsl:when>
-             <!--xsl:when test="
-                 contains(lower-case($originatingSourceOrganisation), 'csiro oceans')">
-                 <xsl:apply-templates select="." mode="CSIRO">
-                 <xsl:with-param name="sourceOrganisation" select="$global_group"/>
-                 </xsl:apply-templates>
-                 </xsl:when-->
-             <!-- Uncomment the following when we have the AAD XSLT working
-                 from the same anzlic as is fed to AODN -->
-             <!--xsl:when test="
-                 contains($metadataTruthURL, $global_AAD_baseURI) or
-                 custom:sequence_contains($contact_sequence, 'australian antarctic division') or
-                 custom:sequence_contains($contact_sequence, 'aad')">
-                 <xsl:apply-templates select="//*:MD_Metadata" mode="AAD">
-                 <xsl:with-param name="source" select="$global_group"/>
-                 </xsl:apply-templates>
-                 </xsl:when-->
              <xsl:otherwise>
-                 <xsl:apply-templates select="." mode="default">
-                     <xsl:with-param name="aggregatingGroup" select="$global_group"/>
-                     <xsl:with-param name="originatingSourceOrganisation" select="$originatingSourceOrganisation"/>
-                     <xsl:with-param name="metadataTruthURL" select="$metadataPointOfTruth_sequence[1]"/>
-                 </xsl:apply-templates>
+                 <xsl:if test="$global_debugExceptions">
+                     <xsl:message select="concat('Exception: No xslt for originating source ', $originatingSourceOrganisation, ' so using IMAS XSLT')">
+                         <xsl:apply-templates select="." mode="IMAS">
+                             <xsl:with-param name="aggregatingGroup" select="$global_group"/>
+                         </xsl:apply-templates>
+                     </xsl:message>
+                 </xsl:if>
              </xsl:otherwise>
          </xsl:choose>
     </xsl:template>

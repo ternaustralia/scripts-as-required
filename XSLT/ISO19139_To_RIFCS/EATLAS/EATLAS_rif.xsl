@@ -23,13 +23,15 @@
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
     
+    <xsl:param name="global_debug" select="false()" as="xs:boolean"/>
+    <xsl:param name="global_debugExceptions" select="true()" as="xs:boolean"/>
+    
     <xsl:param name="global_EATLAS_group" select="'eAtlas:eAtlas'"/>
     <xsl:param name="global_EATLAS_sourceURL" select="'http://eatlas.org.au'"/>
     <!--xsl:param name="global_EATLAS_originatingSourceOrganisation" select="'undetermined'"/-->
     
     <!--xsl:param name="global_EATLAS_ActivityKeyNERP" select="'to be determined'"/-->
     
-    <xsl:variable name="anzsrcCodelist" select="document('anzsrc-codelist.xml')"/>
     <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>
     <xsl:variable name="gmdCodelists" select="document('codelists.xml')"/>
     <xsl:template match="oai:responseDate"/>
@@ -86,10 +88,15 @@
             </xsl:choose>
         </xsl:variable> 
         
-        <xsl:message select="concat('metadataTruthURL: ', $metadataTruthURL)"/>
+        <xsl:if test="$global_debug">
+         <xsl:message select="concat('metadataTruthURL: ', $metadataTruthURL)"/>
+        </xsl:if>
+        
         <xsl:variable name="datasetURI" select="gmd:dataSetURI"/>
        
-        <xsl:message select="concat('datasetURI: ', $datasetURI)"/>
+        <xsl:if test="$global_debug">
+         <xsl:message select="concat('datasetURI: ', $datasetURI)"/>
+        </xsl:if>
         
         <xsl:variable name="originatingSourceURL">
             <xsl:choose>
@@ -105,22 +112,29 @@
             </xsl:choose>
         </xsl:variable> 
         
-        <xsl:message select="concat('originatingSourceURL: ', $originatingSourceURL)"/>
+        <xsl:if test="$global_debug">
+            <xsl:message select="concat('originatingSourceURL: ', $originatingSourceURL)"/>
+        </xsl:if>
         
         <xsl:variable name="downloaddataURL_sequence" select="customEATLAS:getProtocolURL_sequence('downloaddata', *:distributionInfo/*:MD_Distribution/*:transferOptions/*:MD_DigitalTransferOptions)"/>
         <xsl:variable name="title" select="*:identificationInfo/*/*:citation/*:CI_Citation/*:title"/>
         <xsl:variable name="restrictionCode_sequence" select="*:identificationInfo/*/*:resourceConstraints/*/*/*:MD_RestrictionCode/@codeListValue"/>
         <xsl:variable name="otherConstraints_sequence" select="*:identificationInfo/*/*:resourceConstraints/*/*:otherConstraints"/>
         
-        <xsl:variable name="fileIdentifier"><xsl:value-of select="*:fileIdentifier"/></xsl:variable>
+        <xsl:variable name="fileIdentifier">
+            <xsl:value-of select="*:fileIdentifier"/>
+        </xsl:variable>
         
-        <xsl:for-each select="distinct-values($restrictionCode_sequence)">
-            <xsl:message select="concat('restrictionCode :', .)"/>
-        </xsl:for-each>
+        <xsl:if test="$global_debug">
+            <xsl:for-each select="distinct-values($restrictionCode_sequence)">
+                <xsl:message select="concat('restrictionCode :', .)"/>
+            </xsl:for-each>
         
-        <xsl:for-each select="distinct-values($otherConstraints_sequence)">
-            <xsl:message select="concat('otherConstraints :', .)"/>
-        </xsl:for-each>
+            <xsl:for-each select="distinct-values($otherConstraints_sequence)">
+                <xsl:message select="concat('otherConstraints :', .)"/>
+            </xsl:for-each>
+        </xsl:if>
+        
         
         <xsl:variable name="coordinateReferenceSystem">
             <xsl:variable name="coordinateReferenceSystem_sequence" as="xs:string*">
@@ -141,7 +155,10 @@
             </xsl:if>
         </xsl:variable>
            
-        <xsl:message select="concat('crs :', $coordinateReferenceSystem)"/>
+           
+        <xsl:if test="$global_debug">
+           <xsl:message select="concat('crs :', $coordinateReferenceSystem)"/>
+        </xsl:if>
         
         <xsl:variable name="locationURL_sequence" as="xs:string*">
             <xsl:choose>
@@ -330,6 +347,11 @@
                             <xsl:apply-templates
                                 select="*:identificationInfo/*/*:credit"
                                 mode="EATLAS_registryObject_description_notes"/>
+                            
+                            <xsl:apply-templates
+                                select="*:dataQualityInfo/*:DQ_DataQuality/*:lineage/*:LI_Lineage/*:statement"
+                                mode="EATLAS_registryObject_description_lineage"/>
+                            
                                                     
                             <xsl:call-template name="EATLAS_set_registryObject_coverage_spatial">
                                 <xsl:with-param name="boundingBox" select="*:identificationInfo/*/*:extent/*:EX_Extent/*:geographicElement/*:EX_GeographicBoundingBox"/>
@@ -786,55 +808,7 @@
                 </subject>
             </xsl:if>
         </xsl:for-each>
-        
-        
-        <xsl:variable name="anzsrcMappedCode_sequence" as="xs:string*">
-            <xsl:for-each select="distinct-values(tokenize($subject_sequence, '\|'))">
-                
-                <xsl:if test="string-length(normalize-space(.)) > 0">
-                     <xsl:variable name="subjectSplit_sequence" as="xs:string*" select="tokenize(normalize-space(.), '&gt;')"/>
-                     <xsl:for-each select="distinct-values($subjectSplit_sequence)">
-                         
-                         <!-- seek an anzsrc-code within the text -->
-                         <xsl:variable name="match" as="xs:string*">
-                             <xsl:analyze-string select="normalize-space(.)"
-                                 regex="[0-9]+">
-                                 <xsl:matching-substring>
-                                     <xsl:value-of select="regex-group(0)"/>
-                                 </xsl:matching-substring>
-                             </xsl:analyze-string>
-                         </xsl:variable>
-                         
-                         <xsl:if test="count($match) > 0">
-                             <xsl:for-each select="distinct-values($match)">
-                                 <xsl:if test="string-length(normalize-space(.)) > 0">
-                                     <xsl:value-of select="."/>
-                                 </xsl:if>
-                             </xsl:for-each>
-                         </xsl:if>
-                         
-                         <!-- determines whether any text has a corresponding mapped code -->
-                         <xsl:variable name="keyword" select="normalize-space(.)"/>
-                         <xsl:variable name="code"
-                         select="(normalize-space($anzsrcCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='ANZSRCCode']/gmx:codeEntry/gmx:CodeDefinition/gml:identifier[lower-case(following-sibling::gml:name) = lower-case($keyword)]))[1]"/>
-                         <xsl:if test="string-length($code) > 0">
-                             <xsl:value-of select="$code"/>
-                         </xsl:if>
-                         
-                     </xsl:for-each>
-                 </xsl:if>
-            </xsl:for-each>
-        </xsl:variable>
-        
-        <xsl:for-each select="reverse($anzsrcMappedCode_sequence)">
-            <subject>
-                <xsl:attribute name="type">
-                    <xsl:value-of select="'anzsrc-for'"/>
-                </xsl:attribute>
-                <xsl:value-of select="."/>
-            </subject>
-        </xsl:for-each>
-    </xsl:template>
+     </xsl:template>
     
    <xsl:template match="*:MD_TopicCategoryCode" mode="EATLAS_registryObject_subject">
         <xsl:if test="string-length(normalize-space(.)) > 0">
@@ -866,6 +840,15 @@
     <xsl:template match="*:credit" mode="EATLAS_registryObject_description_notes">
         <xsl:if test="string-length(normalize-space(.)) > 0">
             <description type="notes">
+                <xsl:value-of select="."/>
+            </description>
+        </xsl:if>
+    </xsl:template>
+    
+    <!-- RegistryObject - Decription Element -->
+    <xsl:template match="*:statement" mode="EATLAS_registryObject_description_lineage">
+        <xsl:if test="string-length(normalize-space(.)) > 0">
+            <description type="lineage">
                 <xsl:value-of select="."/>
             </description>
         </xsl:if>
@@ -1435,7 +1418,9 @@
         <xsl:param name="sequence" as="xs:string*"/>
         <xsl:param name="substring" as="xs:string"/>
         
-        <xsl:message select="concat('match substring:', $substring)"/>
+        <xsl:if test="$global_debug">
+            <xsl:message select="concat('match substring:', $substring)"/>
+        </xsl:if>
         
         <xsl:variable name="matches_sequence" as="xs:string*">
             <xsl:for-each select="distinct-values($sequence)">
@@ -1447,11 +1432,12 @@
             </xsl:for-each>
         </xsl:variable>
         
-        <xsl:message select="concat('count matches :', count($matches_sequence))"/>
-        <xsl:for-each select="distinct-values($matches_sequence)">
-            <xsl:message select="concat('match :', .)"/>
-        </xsl:for-each>
-        
+        <xsl:if test="$global_debug">
+         <xsl:message select="concat('count matches :', count($matches_sequence))"/>
+         <xsl:for-each select="distinct-values($matches_sequence)">
+             <xsl:message select="concat('match :', .)"/>
+         </xsl:for-each>
+        </xsl:if>
         
         <xsl:choose>
          <xsl:when test="count($matches_sequence) > 0">
@@ -1524,7 +1510,9 @@
         <xsl:param name="distributorContactNode_sequence" as="node()*"/>
         <xsl:param name="metadataCreationDate"/>
         
-        <xsl:message select="concat('count pointOfContactNode_sequence :', count($pointOfContactNode_sequence))"/>
+        <xsl:if test="$global_debug">
+            <xsl:message select="concat('count pointOfContactNode_sequence :', count($pointOfContactNode_sequence))"/>
+        </xsl:if>
         
         <xsl:variable name="CI_Citation" select="." as="node()"></xsl:variable>
         <xsl:variable name="citedResponsibleParty_sequence" select="$CI_Citation/*:citedResponsibleParty" as="node()*"></xsl:variable>
@@ -1655,7 +1643,9 @@
              </xsl:for-each>
         </xsl:variable>
         
-        <xsl:message select="concat('count pointOfContactName_sequence :', count($pointOfContactName_sequence))"/>
+        <xsl:if test="$global_debug">   
+         <xsl:message select="concat('count pointOfContactName_sequence :', count($pointOfContactName_sequence))"/>
+        </xsl:if>
         
         <xsl:variable name="allCitedPartyName_sequence" as="xs:string*">
             <!-- Get individual names, regardless of role -->
@@ -1728,7 +1718,10 @@
             </xsl:choose>
         </xsl:variable>
         
-        <xsl:message select="concat('count contributors: ', count($allContributorName_sequence))"/>
+        <xsl:if test="$global_debug">
+            <xsl:message select="concat('count contributors: ', count($allContributorName_sequence))"/>
+        </xsl:if>
+        
         <xsl:if test="count($allContributorName_sequence) > 0">
            <citationInfo>
                 <citationMetadata>
@@ -1761,21 +1754,31 @@
                         </xsl:for-each>
                     </xsl:variable>
                     
-                    <xsl:message select="concat('CI_Date_sequence count:', count($CI_Date_sequence))"></xsl:message>
+                    <xsl:if test="$global_debug">
+                        <xsl:message select="concat('CI_Date_sequence count:', count($CI_Date_sequence))"></xsl:message>
+                    </xsl:if>
                     
                     <xsl:variable name="codelist" select="$gmdCodelists/codelists/codelist[@name = 'gmd:CI_DateTypeCode']"/>
-                    <xsl:message select="concat('codelist count:', count($codelist))"></xsl:message>
+                    <xsl:if test="$global_debug">
+                        <xsl:message select="concat('codelist count:', count($codelist))"></xsl:message>
+                    </xsl:if>
                     
                     <xsl:variable name="dateType">
                         <xsl:if test="count($CI_Date_sequence) > 0">
                             <xsl:variable name="codevalue" select="$CI_Date_sequence[1]/*:dateType/*:CI_DateTypeCode/@codeListValue"/>
-                            <xsl:message select="concat('codevalue', $codevalue)"></xsl:message>
+                            <xsl:if test="$global_debug">
+                                <xsl:message select="concat('codevalue', $codevalue)"></xsl:message>
+                            </xsl:if>
                             <xsl:value-of select="$codelist/entry[code = $codevalue]/description"/>
-                            <xsl:message select="concat('$codelist/entry[code = $codevalue]/description', $codelist/entry[code = $codevalue]/description)"></xsl:message>
+                            <xsl:if test="$global_debug">
+                                <xsl:message select="concat('$codelist/entry[code = $codevalue]/description', $codelist/entry[code = $codevalue]/description)"></xsl:message>
+                            </xsl:if>
                         </xsl:if>
                     </xsl:variable>
                     
-                    <xsl:message select="concat('dateType', $dateType)"></xsl:message>
+                    <xsl:if test="$global_debug">
+                        <xsl:message select="concat('dateType', $dateType)"></xsl:message>
+                    </xsl:if>
                     
                     <xsl:variable name="dateValue">
                         <xsl:if test="count($CI_Date_sequence)">
@@ -1788,7 +1791,9 @@
                         </xsl:if>
                     </xsl:variable>
                     
-                    <xsl:message select="concat('dateValue', $dateValue)"></xsl:message>
+                    <xsl:if test="$global_debug">
+                        <xsl:message select="concat('dateValue', $dateValue)"></xsl:message>
+                    </xsl:if>
                     
                     <xsl:choose>
                         <xsl:when test="(string-length($dateType) > 0) and (string-length($dateValue) > 0)">
@@ -1938,7 +1943,6 @@
                      </originatingSource>
          
                      <party type="{$type}">
-                         
                          <identifier type="global">
                              <xsl:value-of select="translate(normalize-space(current-grouping-key()),' ','')"/>
                          </identifier>

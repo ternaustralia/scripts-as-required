@@ -15,7 +15,7 @@
     xmlns:customGMD="http://customGMD.nowhere.yet"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
     exclude-result-prefixes="geonet gmx oai xsi gmd srv gml gco gts custom customGMD">
-    <xsl:import href="NCI_ISO19139_rif.xsl"/>
+    <xsl:import href="ISO19139_RIFCS.xsl"/>
     <xsl:import href="CustomFunctions.xsl"/>
     <xsl:import href="CustomFunctionsGMD.xsl"/>
     
@@ -27,7 +27,6 @@
     <xsl:param name="global_originatingSource" select="'Bureau of Meteorology'"/> <!-- Only used as originating source if organisation name cannot be determined from Point Of Contact -->
     <xsl:param name="global_group" select="'Bureau of Meteorology (Hosted at National Computational Infrastructure)'"/> 
     <xsl:param name="global_path" select="'/geonetwork/srv/eng/catalog.search#/metadata/'"/>
-    <xsl:param name="global_ActivityKeyNCI" select="'ncris.innovation.gov.au/activity/20'"/>
     
     <!-- stylesheet to convert iso19139 in OAI-PMH ListRecords response to RIF-CS -->
     
@@ -42,13 +41,13 @@
                 <xsl:text>http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd</xsl:text>
             </xsl:attribute>
             
-            <xsl:apply-templates select="//*:MD_Metadata" mode="NCI_top_level"/>
+            <xsl:apply-templates select="//*:MD_Metadata" mode="TOP_LEVEL"/>
         </registryObjects>
         
     </xsl:template>
     
     
-    <xsl:template match="*:MD_Metadata" mode="NCI_top_level">
+    <xsl:template match="*:MD_Metadata" mode="TOP_LEVEL">
         <xsl:message>NCI_BOM_topleve_aggregating</xsl:message>
         
         <xsl:variable name="originatingSourceOrganisation" select="customGMD:originatingSourceOrganisation(.)"/>
@@ -60,7 +59,7 @@
             <xsl:message select="concat('$metadataPointOfTruth_sequence: ', .)"/>
         </xsl:for-each>
         
-        <xsl:apply-templates select="." mode="NCI">
+        <xsl:apply-templates select="." mode="ISO19139_TO_RIFCS">
             <xsl:with-param name="aggregatingGroup" select="$global_group"/>
         </xsl:apply-templates>
         
@@ -75,7 +74,7 @@
                 </xsl:apply-templates>
             </xsl:when>
             <xsl:otherwise>
-                <xsl:apply-templates select="." mode="NCI">
+                <xsl:apply-templates select="." mode="ISO19139_TO_RIFCS">
                     <xsl:with-param name="aggregatingGroup" select="$global_group"/>
                 </xsl:apply-templates>
             </xsl:otherwise>

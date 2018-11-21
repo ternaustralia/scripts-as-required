@@ -12,80 +12,114 @@
     <xsl:import href="CustomFunctions.xsl"/>
     
     
-     <xsl:function name="customGMD:originatingSourceOrganisationFromMetadataURL" as="xs:string*">
-        <xsl:param name="metadataPointOfTruth_sequence" as="xs:string*"/>
+     <xsl:function name="customGMD:originatingSourceOrganisationFromURL" as="xs:string*">
+         <xsl:param name="url" as="xs:string"/>
         
            <xsl:choose>
             <!-- Note that we may have metadata point of truth containing 'eatlas' while originating source is AIMS.
                  In such a case, we want the eatlas crosswalk to be called, hence placing the test for 'eatlas'
                  in metadata point of truth above the test for 'aims' in originating source -->
              <xsl:when test="
-                custom:sequenceContains($metadataPointOfTruth_sequence, 'eatlas.org')">
+                 contains($url, 'eatlas.org')">
                 <xsl:text>eAtlas</xsl:text>
              </xsl:when>
              <xsl:when test="
-                custom:sequenceContains($metadataPointOfTruth_sequence, 'metoc.gov')">
+                 contains($url, 'metoc.gov')">
                 <xsl:text>Navy METOC (Meteorology and Oceanography)</xsl:text>
              </xsl:when>
              <xsl:when test="
-                custom:sequenceContains($metadataPointOfTruth_sequence, 'niwa.co.nz')">
+                 contains($url, 'niwa.co.nz')">
                 <xsl:text>National Institute of Water and Atmospheric Research (NIWA)</xsl:text>
              </xsl:when>
              <xsl:when test="
-                custom:sequenceContains($metadataPointOfTruth_sequence, 'ga.gov')">
-                <xsl:text>Geoscience Australia</xsl:text>
+                 contains($url, 'ga.gov')">
+                <xsl:text>Commonwealth of Australia (Geoscience Australia)</xsl:text>
              </xsl:when>
              <xsl:when test="
-                 custom:sequenceContains($metadataPointOfTruth_sequence, 'imas.utas')">
+                 contains($url, 'imas.utas')">
                  <xsl:text>Institute of Marine Science, University of Tasmania</xsl:text>
              </xsl:when>
              <xsl:when test="
-                 custom:sequenceContains($metadataPointOfTruth_sequence, 'imosmest.aodn') or
-                 custom:sequenceContains($metadataPointOfTruth_sequence, 'imos.aodn')">
+                 contains($url, 'imosmest.aodn') or
+                 contains($url, 'imos.aodn')">
                  <xsl:text>Integrated Marine Observing System</xsl:text>
              </xsl:when>
              <xsl:when test="
-                 custom:sequenceContains($metadataPointOfTruth_sequence, 'ivec.org') or
-                 custom:sequenceContains($metadataPointOfTruth_sequence, 'pawsey.org')">
+                 contains($url, 'ivec.org') or
+                 contains($url, 'pawsey.org')">
                  <xsl:text>Pawsey Super Computing Centre, University of Western Australia</xsl:text>
              </xsl:when>
              <xsl:when test="
-                 custom:sequenceContains($metadataPointOfTruth_sequence, 'data.aims')">
+                 contains($url, 'data.aims')">
                  <xsl:text>Australian Institute of Marine Science</xsl:text>
              </xsl:when>
              <xsl:when test="
-                 custom:sequenceContains($metadataPointOfTruth_sequence, 'aodn.org')">
+                 contains($url, 'aodn.org')">
                  <xsl:text>Australian Ocean Data Network</xsl:text>
              </xsl:when>
              <xsl:when test="
-                 custom:sequenceContains($metadataPointOfTruth_sequence, 'csiro.au')">
-                 <xsl:text>CSIRO Oceans &amp; Atmosphere</xsl:text>
+                 contains($url, 'csiro.au')">
+                 <xsl:text>CSIRO</xsl:text>
              </xsl:when>
              <xsl:when test="
-                 custom:sequenceContains($metadataPointOfTruth_sequence, 'aad')">
+                 contains($url, 'aad')">
                  <xsl:text>Australian Antarctic Division</xsl:text>
              </xsl:when>
         </xsl:choose>
      </xsl:function>
         
+        
+    <xsl:function name="customGMD:originatingSourceURL" as="xs:string">
+        <xsl:param name="MD_Metadata" as="node()"/>
+        
+        <xsl:variable name="metadataPointOfTruth_sequence" select="$MD_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage[contains(lower-case(following-sibling::gmd:protocol/gco:CharacterString), 'metadata-url')]/gmd:URL[string-length(.) > 0]" as="xs:string*"/>
+        
+        <xsl:variable name="originatingSourceURL_sequence" as="xs:string*">
+             <xsl:for-each select="distinct-values($metadataPointOfTruth_sequence)">
+                 <xsl:if test="string-length(custom:getDomainFromURL(.)) > 0">
+                     <xsl:value-of select="custom:getDomainFromURL(.)"/>
+                 </xsl:if>
+             </xsl:for-each>
+             <xsl:for-each select="$MD_Metadata/gmd:contact/gmd:CI_ResponsibleParty/gmd:contactInfo/gmd:CI_Contact/gmd:onlineResource/gmd:CI_OnlineResource/gmd:linkage/gmd:URL[string-length(.) > 0]">
+                 <xsl:if test="string-length(custom:getDomainFromURL(.)) > 0">
+                     <xsl:value-of select="custom:getDomainFromURL(.)"/>
+                 </xsl:if>
+             </xsl:for-each>
+            <xsl:for-each select="$MD_Metadata/gmd:pointOfContact/gmd:CI_ResponsibleParty/gmd:contactInfo/gmd:CI_Contact/gmd:onlineResource/gmd:CI_OnlineResource/gmd:linkage/gmd:URL[string-length(.) > 0]">
+                <xsl:if test="string-length(custom:getDomainFromURL(.)) > 0">
+                    <xsl:value-of select="custom:getDomainFromURL(.)"/>
+                </xsl:if>
+            </xsl:for-each>
+        </xsl:variable>
+        
+        <xsl:choose>
+         <xsl:when test="count($originatingSourceURL_sequence) > 0">
+             <xsl:copy-of select="$originatingSourceURL_sequence[1]"/>
+         </xsl:when>
+         <xsl:otherwise>
+             <xsl:text></xsl:text>
+         </xsl:otherwise>
+        </xsl:choose>
+        
+    </xsl:function>
+    
       
    
      <xsl:function name="customGMD:originatingSourceOrganisation" as="xs:string">
         <xsl:param name="MD_Metadata" as="node()"/>
         
         
-        <xsl:variable name="metadataPointOfTruth_sequence" select="$MD_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage[contains(lower-case(following-sibling::gmd:protocol/gco:CharacterString), 'metadata-url')]/gmd:URL" as="xs:string*"/>
-        <xsl:variable name="originatingSourceFromMetadataURL_sequence" select="customGMD:originatingSourceOrganisationFromMetadataURL($metadataPointOfTruth_sequence)"/>
         
+         <xsl:variable name="originatingSourceURL" select="customGMD:originatingSourceURL($MD_Metadata)"/>
+         
+         <xsl:variable name="originatingSourceOrgFromURL_sequence" select="customGMD:originatingSourceOrganisationFromURL($originatingSourceURL)"/>
+         
         <xsl:choose>
             
-            <xsl:when test="
-                (count($originatingSourceFromMetadataURL_sequence) > 0) and
-                (string-length($originatingSourceFromMetadataURL_sequence[1]) > 0)">
-                    <xsl:value-of select="$originatingSourceFromMetadataURL_sequence[1]"/>
+            <xsl:when test=" (count($originatingSourceOrgFromURL_sequence) > 0) and (string-length($originatingSourceOrgFromURL_sequence[1]) > 0)">
+                <xsl:value-of select="$originatingSourceOrgFromURL_sequence[1]"/>
             </xsl:when>
-                
-            <xsl:otherwise>
+           <xsl:otherwise>
                 <xsl:variable name="originatingSourceOrgansationFromParties" select="customGMD:originatingSourceOrganisationFromParties($MD_Metadata)"/>
                 <xsl:value-of select="$originatingSourceOrgansationFromParties"/>
             </xsl:otherwise>

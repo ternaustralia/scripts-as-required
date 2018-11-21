@@ -14,7 +14,7 @@
     xmlns:custom="http://custom.nowhere.yet"
     xmlns:customGMD="http://customGMD.nowhere.yet"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
-    exclude-result-prefixes="geonet gmx oai xsi gmd srv gml gco gts csw grg mcp customIMOS custom customGMD">
+    exclude-result-prefixes="xlink geonet gmx oai xsi gmd srv gml gco gts csw grg mcp customIMOS custom customGMD">
     <xsl:import href="CustomFunctions.xsl"/>
     <xsl:import href="CustomFunctionsGMD.xsl"/>
     <!-- stylesheet to convert iso19139 in OAI-PMH ListRecords response to RIF-CS -->
@@ -511,43 +511,6 @@
                 <xsl:value-of select="."></xsl:value-of>
             </subject>
         </xsl:if>
-        
-        <xsl:variable name="anzsrcMappedCode_sequence" as="xs:string*">
-                
-                <xsl:if test="string-length(normalize-space(.)) > 0">
-                    <xsl:variable name="subjectSplit_sequence" as="xs:string*" select="tokenize(., '&gt;')"/>
-                    <xsl:for-each select="distinct-values($subjectSplit_sequence)">
-                        
-                        <!-- seek an anzsrc-code within the text -->
-                        <xsl:variable name="match" as="xs:string*">
-                            <xsl:analyze-string select="normalize-space(.)"
-                                regex="[0-9]+">
-                                <xsl:matching-substring>
-                                    <xsl:value-of select="regex-group(0)"/>
-                                </xsl:matching-substring>
-                            </xsl:analyze-string>
-                        </xsl:variable>
-                        
-                        <xsl:if test="count($match) > 0">
-                            <xsl:for-each select="distinct-values($match)">
-                                <xsl:if test="string-length(normalize-space(.)) > 0">
-                                    <xsl:value-of select="."/>
-                                </xsl:if>
-                            </xsl:for-each>
-                        </xsl:if>
-                        
-                    </xsl:for-each>
-                </xsl:if>
-        </xsl:variable>
-        
-        <xsl:for-each select="reverse($anzsrcMappedCode_sequence)">
-            <subject>
-                <xsl:attribute name="type">
-                    <xsl:value-of select="'anzsrc-for'"/>
-                </xsl:attribute>
-                <xsl:value-of select="."/>
-            </subject>
-        </xsl:for-each>
     </xsl:template>
     
    <xsl:template match="gmd:MD_TopicCategoryCode" mode="IMOS_registryObject_subject">

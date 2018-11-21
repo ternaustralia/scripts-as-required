@@ -17,7 +17,13 @@
     xmlns:customGMD="http://customGMD.nowhere.yet"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
     exclude-result-prefixes="geonet gmx oai xsi gmd srv gml gco gts custom customGMD">
-    <xsl:variable name="anzsrcCodelist" select="document('anzsrc-codelist.xml')"/>
+    
+    <xsl:import href="CustomFunctions.xsl"/>
+    <xsl:import href="CustomFunctionsGMD.xsl"/>
+    
+    <xsl:param name="global_debug" select="false()" as="xs:boolean"/>
+    <xsl:param name="global_debugExceptions" select="true()" as="xs:boolean"/>
+    
     <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>
     <xsl:variable name="gmdCodelists" select="document('codelists.xml')"/>
     
@@ -41,53 +47,60 @@
     
     <xsl:template match="*:MD_Metadata" mode="default">
         <xsl:param name="aggregatingGroup"/>
+        <xsl:param name="originatingSourceOrganisation"/>
+        <xsl:param name="metadataTruthURL"/>
         
-        <xsl:message>Default XSLT</xsl:message>
+        <xsl:if test="$global_debug">
+            <xsl:message>Default XSLT</xsl:message>
+        </xsl:if>
         
-        <xsl:variable name="groupToUse" select="$aggregatingGroup"/>
-        
-        <xsl:variable name="metadataTruthURL" select="(gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage[contains(lower-case(following-sibling::gmd:protocol), 'metadata-url')]/gmd:URL)[1]"/>
-        <xsl:message select="concat('metadataTruthURL: ', $metadataTruthURL)"/>
-        
-        <xsl:variable name="originatingSourceOrganisation" select="customGMD:originatingSourceOrganisation(.)"/>
-        <xsl:message select="concat('originatingSourceOrganisation: ', $originatingSourceOrganisation)"/>
+        <xsl:if test="$global_debug">
+            <xsl:message select="concat('metadataTruthURL: ', $metadataTruthURL)"/>
+        </xsl:if>
         
         <xsl:variable name="datasetURI" select="gmd:dataSetURI"/>
-        <xsl:message select="concat('datasetURI: ', $datasetURI)"/>
+        <xsl:if test="$global_debug">
+            <xsl:message select="concat('datasetURI: ', $datasetURI)"/>
+        </xsl:if>
         
-        <xsl:variable name="originatingSourceURL">
+        <xsl:variable name="originatingSourceURL" select="customGMD:originatingSourceURL(.)"/>
+        <xsl:if test="$global_debug">
+            <xsl:message select="concat('originatingSourceURL: ', $originatingSourceURL)"/>
+        </xsl:if>
+        <xsl:variable name="originatingSourceOrganisation" select="customGMD:originatingSourceOrganisation(.)"/>
+        
+        <xsl:if test="$global_debug">
+            <xsl:message select="concat('originatingSourceOrganisation: ', $originatingSourceOrganisation)"/>
+        </xsl:if>
+        
+        <xsl:variable name="originatingSourceToUse" as="xs:string">
             <xsl:choose>
-                <xsl:when test="string-length($metadataTruthURL) > 0">
-                    <xsl:value-of select="custom:getDomainFromURL($metadataTruthURL)"/>
+                <xsl:when test="string-length($originatingSourceURL) > 0">
+                    <xsl:value-of select="$originatingSourceURL"/>
                 </xsl:when>
-                <xsl:when test="string-length($datasetURI) > 0">
-                    <xsl:value-of select="custom:getDomainFromURL($datasetURI)"/>
-                </xsl:when>
-                <xsl:when test="count(gmd:contact/gmd:CI_ResponsibleParty/gmd:contactInfo/gmd:CI_Contact/gmd:onlineResource/gmd:CI_OnlineResource/gmd:linkage/gmd:URL) > 0">
-                    <xsl:value-of select="custom:getDomainFromURL(gmd:contact/gmd:CI_ResponsibleParty/gmd:contactInfo/gmd:CI_Contact/gmd:onlineResource/gmd:CI_OnlineResource/gmd:linkage/gmd:URL[1])"/>
+                <xsl:when test="string-length($originatingSourceOrganisation) > 0">
+                    <xsl:value-of select="$originatingSourceOrganisation"/>
                 </xsl:when>
                 <xsl:otherwise>
-                    <xsl:text>undetermined</xsl:text>
+                    <xsl:value-of select="concat('Aggregated by ', $global_sourceURL)"/>
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:variable> 
         
-        <xsl:message select="concat('originatingSourceURL: ', $originatingSourceURL)"/>
-        <xsl:variable name="originatingSourceOrganisation" select="customGMD:originatingSourceOrganisation(.)"/>
-        <xsl:message select="concat('originatingSourceOrganisation: ', $originatingSourceOrganisation)"/>
-        
+        <xsl:if test="$global_debug">
+            <xsl:message select="concat('originatingSourceURL: ', $originatingSourceURL)"/>
+        </xsl:if>
         
         <registryObject>
-            <xsl:attribute name="group" select="substring-after($groupToUse, ':')"/>  
+            <xsl:attribute name="group" select="substring-after($aggregatingGroup, ':')"/>  
             
             <xsl:apply-templates select="*:fileIdentifier" mode="registryObject_key">
-                <xsl:with-param name="groupToUse" select="$groupToUse"/>
+                <xsl:with-param name="aggregatingGroup" select="$aggregatingGroup"/>
             </xsl:apply-templates>
         
             <originatingSource>
-                <xsl:value-of select="$originatingSourceURL"/>
+               <xsl:value-of select="$originatingSourceToUse"/>
             </originatingSource> 
-                
                 
             <xsl:element name="{custom:registryObjectClass(*:hierarchyLevel/*[contains(lower-case(name()),'scopecode')]/@codeListValue)}">
     
@@ -112,60 +125,67 @@
               
                 <xsl:if test="count(gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage[contains(lower-case(following-sibling::gmd:protocol/gco:CharacterString), 'metadata-url')]/gmd:URL) = 0">
                     <xsl:apply-templates select="*:fileIdentifier" mode="registryObject_location_metadata">
-                        <xsl:with-param name="groupToUse" select="$groupToUse"/>
+                        <xsl:with-param name="aggregatingGroup" select="$aggregatingGroup"/>
                     </xsl:apply-templates>
                 </xsl:if>
                 
                 <xsl:apply-templates select="*:parentIdentifier" mode="registryObject_related_object">
-                    <xsl:with-param name="groupToUse" select="$groupToUse"/>
+                    <xsl:with-param name="aggregatingGroup" select="$aggregatingGroup"/>
                 </xsl:apply-templates>
                  
                 <xsl:apply-templates select="*:dataSetURI" mode="registryObject_relatedInfo_data_via_service"/>
                 
                 <xsl:apply-templates select="*:children/*:childIdentifier" mode="registryObject_related_object">
-                    <xsl:with-param name="groupToUse" select="$groupToUse"/>
+                    <xsl:with-param name="aggregatingGroup" select="$aggregatingGroup"/>
                 </xsl:apply-templates>
                  
                    
                 
                 <xsl:apply-templates select="*:children/*:childIdentifier"
                     mode="registryObject_related_object">
-                    <xsl:with-param name="groupToUse" select="$groupToUse"/>
+                    <xsl:with-param name="aggregatingGroup" select="$aggregatingGroup"/>
                 </xsl:apply-templates>
                  
+                <xsl:apply-templates
+                    select="*:dataQualityInfo/*:DQ_DataQuality/*:lineage/*:LI_Lineage/*:statement"
+                    mode="registryObject_description_lineage"/>
+                
                 <xsl:apply-templates select="*:dataQualityInfo/*:DQ_DataQuality/*:lineage/*:LI_Lineage/*:source/*:LI_Source[string-length(*:sourceCitation/*:CI_Citation/*:identifier/*:MD_Identifier/*:code) > 0]"
                      mode="registryObject_relatedInfo"/>
                  
                 <xsl:apply-templates select="*:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="registryObject">
                     <xsl:with-param name="originatingSourceOrganisation" select="$originatingSourceOrganisation"/>
-                    <xsl:with-param name="groupToUse" select="$groupToUse"/>
+                    <xsl:with-param name="aggregatingGroup" select="$aggregatingGroup"/>
                 </xsl:apply-templates>
            
             </xsl:element>
         </registryObject>
 
         <xsl:apply-templates select="*:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="relatedRegistryObjects">
-            <xsl:with-param name="originatingSourceOrganisation" select="$originatingSourceOrganisation"/>
-            <xsl:with-param name="originatingSourceURL" select="$originatingSourceURL"/>
-            <xsl:with-param name="groupToUse" select="$groupToUse"/>
+            <xsl:with-param name="originatingSourceToUse" select="$originatingSourceToUse"/>
+            <xsl:with-param name="aggregatingGroup" select="$aggregatingGroup"/>
         </xsl:apply-templates>
             
     </xsl:template>
     
     <xsl:template match="*:distributionInfo" mode="registryObject_links">
-        <xsl:message select="concat('template match: ', name(.))"/>
+        <xsl:if test="$global_debug">
+            <xsl:message select="concat('template match: ', name(.))"/>
+        </xsl:if>
         <xsl:apply-templates select="*:MD_Distribution/*:transferOptions" mode="registryObject_links"/>
     </xsl:template>
     
     <xsl:template match="*:transferOptions"  mode="registryObject_links">
-        <xsl:message select="concat('template match: ', name(.))"/>
+        <xsl:if test="$global_debug">
+            <xsl:message select="concat('template match: ', name(.))"/>
+        </xsl:if>
         <xsl:apply-templates select="*:MD_DigitalTransferOptions" mode="registryObject_identifier"/>
         <xsl:apply-templates select="*:MD_DigitalTransferOptions" mode="registryObject_relatedInfo"/>
     </xsl:template>
     
    <xsl:template match="*[contains(lower-case(name()),'identification')]" mode="registryObject">
         <xsl:param name="originatingSourceOrganisation"/>
-        <xsl:param name="groupToUse"/>
+        <xsl:param name="aggregatingGroup"/>
         
         <xsl:apply-templates
             select="*:citation/*:CI_Citation/*:title"
@@ -178,7 +198,7 @@
             ancestor::*:MD_Metadata/*:contact/*:CI_ResponsibleParty[((string-length(normalize-space(*:organisationName))) > 0)]" 
             group-by="*:organisationName">
             <xsl:apply-templates select="." mode="registryObject_related_object">
-                <xsl:with-param name="groupToUse" select="$groupToUse"/>
+                <xsl:with-param name="aggregatingGroup" select="$aggregatingGroup"/>
             </xsl:apply-templates>
         </xsl:for-each-group>
         
@@ -248,7 +268,7 @@
             <xsl:apply-templates select="*:citation/*:CI_Citation"
                 mode="registryObject_citationMetadata_citationInfo">
                 <xsl:with-param name="originatingSourceOrganisation" select="$originatingSourceOrganisation"></xsl:with-param>
-                <xsl:with-param name="groupToUse" select="$groupToUse"></xsl:with-param>
+                <xsl:with-param name="aggregatingGroup" select="$aggregatingGroup"></xsl:with-param>
             </xsl:apply-templates>
         </xsl:if>
             
@@ -260,9 +280,8 @@
     <!-- =========================================== -->
     
     <xsl:template match="*[contains(lower-case(name()),'identification')]" mode="relatedRegistryObjects">
-        <xsl:param name="originatingSourceOrganisation"/>
-        <xsl:param name="originatingSourceURL"/>
-        <xsl:param name="groupToUse"/>
+        <xsl:param name="originatingSourceToUse"/>
+        <xsl:param name="aggregatingGroup"/>
     
         <xsl:for-each-group
             select="*:citation/*:CI_Citation/*:citedResponsibleParty/*:CI_ResponsibleParty[(string-length(normalize-space(*:organisationName))) > 0] |
@@ -271,8 +290,8 @@
             ancestor::*:MD_Metadata/*:contact/*:CI_ResponsibleParty[string-length(normalize-space(*:organisationName)) > 0]"
             group-by="*:organisationName">
             <xsl:call-template name="partyGroupDefault">
-                <xsl:with-param name="originatingSourceURL" select="$originatingSourceURL"/>
-                <xsl:with-param name="groupToUse" select="$groupToUse"/>
+                <xsl:with-param name="originatingSourceToUse" select="$originatingSourceToUse"/>
+                <xsl:with-param name="aggregatingGroup" select="$aggregatingGroup"/>
             </xsl:call-template>
         </xsl:for-each-group>
     </xsl:template>
@@ -283,9 +302,9 @@
 
     <!-- RegistryObject - Key Element  -->
     <xsl:template match="*:fileIdentifier" mode="registryObject_key">
-        <xsl:param name="groupToUse"/>
+        <xsl:param name="aggregatingGroup"/>
         <key>
-            <xsl:value-of select="concat(substring-before($groupToUse, ':'), '/', normalize-space(.))"/>
+            <xsl:value-of select="concat(substring-before($aggregatingGroup, ':'), '/', normalize-space(.))"/>
         </key>
     </xsl:template>
     
@@ -300,7 +319,9 @@
 
     <!-- RegistryObject - Identifier Element  -->
     <xsl:template match="*:MD_DigitalTransferOptions" mode="registryObject_identifier">
-        <xsl:message select="concat('template match: ', name(.))"/>
+        <xsl:if test="$global_debug">
+            <xsl:message select="concat('template match: ', name(.))"/>
+        </xsl:if>
         <xsl:for-each select="*:onLine/*:CI_OnlineResource">
             <xsl:if test="contains(lower-case(*:protocol), 'metadata-url')">
                 <xsl:if test="string-length(normalize-space(*:linkage/*:URL)) > 0">
@@ -335,7 +356,9 @@
     <xsl:template
         match="*:citation/*:CI_Citation/*:date"
         mode="registryObject_dates">
-        <xsl:message select="concat('registryObject_dates ', name(.))"/>
+        <xsl:if test="$global_debug">
+            <xsl:message select="concat('registryObject_dates ', name(.))"/>
+        </xsl:if>
         <xsl:variable name="dateValue">
             <xsl:if test="string-length(normalize-space(*:CI_Date/*:date/gco:Date)) > 0">
                 <xsl:value-of select="normalize-space(*:CI_Date/*:date/gco:Date)"/>
@@ -384,12 +407,12 @@
     
     <!-- RegistryObject - Related Object Element  -->
     <xsl:template match="*:parentIdentifier" mode="registryObject_related_object">
-        <xsl:param name="groupToUse"/>
+        <xsl:param name="aggregatingGroup"/>
         <xsl:variable name="identifier" select="normalize-space(.)"/>
         <xsl:if test="string-length($identifier) > 0">
             <relatedObject>
                 <key>
-                    <xsl:value-of select="concat(substring-before($groupToUse, ':'), '/', $identifier)"/>
+                    <xsl:value-of select="concat(substring-before($aggregatingGroup, ':'), '/', $identifier)"/>
                 </key>
                 <relation>
                     <xsl:attribute name="type">
@@ -436,10 +459,10 @@
     
     <!-- RegistryObject - Related Object (Organisation or Individual) Element -->
     <xsl:template match="*:CI_ResponsibleParty" mode="registryObject_related_object">
-        <xsl:param name="groupToUse"/>
+        <xsl:param name="aggregatingGroup"/>
          <relatedObject>
             <key>
-                <xsl:value-of select="concat(substring-before($groupToUse, ':'), '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
+                <xsl:value-of select="concat(substring-before($aggregatingGroup, ':'), '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
             </key>
             <xsl:for-each-group select="current-group()/*:role"
                 group-by="*:CI_RoleCode/@codeListValue">
@@ -469,12 +492,12 @@
 
     <!-- RegistryObject - Related Object Element  -->
     <xsl:template match="*:childIdentifier" mode="registryObject_related_object">
-        <xsl:param name="groupToUse"/>
+        <xsl:param name="aggregatingGroup"/>
         <xsl:variable name="identifier" select="normalize-space(.)"/>
         <xsl:if test="string-length($identifier) > 0">
             <relatedObject>
                 <key>
-                    <xsl:value-of select="concat(substring-before($groupToUse, ':'), '/', $identifier)"/>
+                    <xsl:value-of select="concat(substring-before($aggregatingGroup, ':'), '/', $identifier)"/>
                 </key>
                 <relation>
                     <xsl:attribute name="type">
@@ -793,8 +816,17 @@
         </xsl:if>
     </xsl:template>
     
+    <!-- RegistryObject - Decription Element -->
+    <xsl:template match="*:statement" mode="registryObject_description_lineage">
+        <xsl:if test="string-length(normalize-space(.)) > 0">
+            <description type="lineage">
+                <xsl:value-of select="."/>
+            </description>
+        </xsl:if>
+    </xsl:template>
     
-    <xsl:template match="*:dataQualityInfo/*:DQ_DataQuality/*:lineage/*:LI_Lineage/*:source/*:LI_Source" mode="registryObject_relatedInfo">
+    
+    <xsl:template match="*:LI_Source" mode="registryObject_relatedInfo">
      <xsl:if test="string-length(*:sourceCitation/*:CI_Citation/*:identifier/*:MD_Identifier/*:code) > 0">
         <relatedInfo>
            <xsl:attribute name="type">
@@ -1029,7 +1061,7 @@
     <!-- RegistryObject - CitationInfo Element -->
     <xsl:template match="*:CI_Citation" mode="registryObject_citationMetadata_citationInfo">
         <xsl:param name="originatingSourceOrganisation"/>
-        <xsl:param name="groupToUse"/>
+        <xsl:param name="aggregatingGroup"/>
          
         <!-- Attempt to obtain contributor names; only construct citation if we have contributor names -->
         
@@ -1125,7 +1157,9 @@
        </xsl:variable>
        
        
-         <xsl:message select="concat('Count($citationContributorName_sequence): ', count($citationContributorName_sequence))"/>
+        <xsl:if test="$global_debug">
+            <xsl:message select="concat('Count($citationContributorName_sequence): ', count($citationContributorName_sequence))"/>
+        </xsl:if>
        
        
         <xsl:variable name="pointOfContact_principalInvestigator_sequence" as="node()*" select="
@@ -1160,7 +1194,9 @@
         
       </xsl:variable>
       
-      <xsl:message select="concat('Count($pointOfContactContributorName_sequence): ', count($pointOfContactContributorName_sequence))"/>
+       <xsl:if test="$global_debug">
+        <xsl:message select="concat('Count($pointOfContactContributorName_sequence): ', count($pointOfContactContributorName_sequence))"/>
+       </xsl:if>
        
       
         <xsl:variable name="allContributorName_sequence" as="xs:string*">
@@ -1180,11 +1216,12 @@
             </xsl:if>
         </xsl:variable>
         
-        <xsl:message select="concat('Count($allContributorName_sequence): ', count($allContributorName_sequence))"/>
-      
-        <xsl:for-each select="$allContributorName_sequence">
-            <xsl:message select="concat('Contributor name: ', .)"/>
-        </xsl:for-each>
+        <xsl:if test="$global_debug">
+            <xsl:message select="concat('Count($allContributorName_sequence): ', count($allContributorName_sequence))"/>
+            <xsl:for-each select="$allContributorName_sequence">
+                 <xsl:message select="concat('Contributor name: ', .)"/>
+             </xsl:for-each>
+        </xsl:if>
         
         <!-- We can only accept one DOI; however, first we will find all -->
         <xsl:variable name = "doiIdentifier_sequence" as="xs:string*" select="*:identifier/*:MD_Identifier/*:code[contains(lower-case(.), 'doi')]"/>
@@ -1195,7 +1232,9 @@
                 </xsl:when>
                 <xsl:when test="count(ancestor::*:MD_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage[contains(lower-case(following-sibling::gmd:protocol), 'metadata-url')]/gmd:URL) > 0">
                     <xsl:if test="string-length((ancestor::*:MD_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage[contains(lower-case(following-sibling::gmd:protocol), 'metadata-url')]/gmd:URL)[1]) > 0">
-                        <xsl:message select="'Using metadata point of truth as citation identifier'"/>
+                        <xsl:if test="$global_debug">
+                            <xsl:message select="'Using metadata point of truth as citation identifier'"/>
+                        </xsl:if>
                         <xsl:value-of select="(ancestor::*:MD_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage[contains(lower-case(following-sibling::gmd:protocol), 'metadata-url')]/gmd:URL)[1]"/>
                     </xsl:if>
                 </xsl:when>
@@ -1247,9 +1286,14 @@
                         </xsl:for-each>
                     </xsl:variable>
                     
-                    <xsl:message select="concat('Count CI_Date_sequence: ', count($CI_Date_sequence))"/> 
-                    <xsl:if test="count($CI_Date_sequence) > 0">
-                        <xsl:message select="concat('First entry CI_Date_sequence: ', $CI_Date_sequence[1])"/> 
+                    <xsl:if test="$global_debug">
+                        <xsl:message select="concat('Count CI_Date_sequence: ', count($CI_Date_sequence))"/> 
+                    </xsl:if>
+                    
+                    <xsl:if test="$global_debug">
+                       <xsl:if test="count($CI_Date_sequence) > 0">
+                           <xsl:message select="concat('First entry CI_Date_sequence: ', $CI_Date_sequence[1])"/> 
+                       </xsl:if>
                     </xsl:if>
                     
                     <xsl:variable name="codelist" select="$gmdCodelists/codelists/codelist[@name = '*:CI_DateTypeCode']"/>
@@ -1320,16 +1364,22 @@
                     <xsl:variable name="publisherToUse">
                         <xsl:choose>
                             <xsl:when test="(count($publisher_sequence) > 0) and (string-length($publisher_sequence[1]/gmd:organisationName) > 0)">
-                                <xsl:message select="concat('Found party with publish role: ', $publisher_sequence[1]/gmd:organisationName)"/> 
+                                <xsl:if test="$global_debug">
+                                    <xsl:message select="concat('Found party with publish role: ', $publisher_sequence[1]/gmd:organisationName)"/> 
+                                </xsl:if>
                                 <xsl:copy-of select="$publisher_sequence[1]/gmd:organisationName"/>
                             </xsl:when>
                             <xsl:when test="string-length($originatingSourceOrganisation) > 0">
-                                <xsl:message select="concat('No party with publish role found, using originating source organisation: ', $originatingSourceOrganisation)"/> 
-                                <xsl:value-of select="$originatingSourceOrganisation"/>
+                                <xsl:if test="$global_debug">
+                                    <xsl:message select="concat('No party with publish role found, using originating source organisation: ', $originatingSourceOrganisation)"/> 
+                                </xsl:if>
+                                 <xsl:value-of select="$originatingSourceOrganisation"/>
                             </xsl:when>
                             <xsl:otherwise>
-                                <xsl:message select="concat('Resorting to group for publisher: ', substring-after($groupToUse, ':'))"/> 
-                                <xsl:value-of select="substring-after($groupToUse, ':')"/>
+                                <xsl:if test="$global_debug">
+                                    <xsl:message select="concat('Resorting to group for publisher: ', substring-after($aggregatingGroup, ':'))"/> 
+                                </xsl:if>
+                                <xsl:value-of select="substring-after($aggregatingGroup, ':')"/>
                             </xsl:otherwise>
                         </xsl:choose>
                     </xsl:variable>
@@ -1360,9 +1410,9 @@
     <!-- Party Registry Object (Individuals (person) and Organisations (group)) -->
     <xsl:template name="partyPersonDefault">
         <xsl:param name="originatingSourceURL"/>
-        <xsl:param name="groupToUse"/>
+        <xsl:param name="aggregatingGroup"/>
           
-        <registryObject group="{substring-after($groupToUse, ':')}">
+        <registryObject group="{substring-after($aggregatingGroup, ':')}">
 
         <!--
         <xsl:message select="concat('Creating key: ', translate(normalize-space(current-grouping-key()),' ',''))"/>
@@ -1371,7 +1421,7 @@
         -->
         
         <key>
-            <xsl:value-of select="concat(substring-before($groupToUse, ':'), '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
+            <xsl:value-of select="concat(substring-before($aggregatingGroup, ':'), '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
         </key>
        
         <originatingSource>
@@ -1401,7 +1451,7 @@
                      <relatedObject>
                          <key>
                              <xsl:value-of
-                                 select="concat(substring-before($groupToUse, ':'), '/', translate(normalize-space(*:organisationName),' ',''))"
+                                 select="concat(substring-before($aggregatingGroup, ':'), '/', translate(normalize-space(*:organisationName),' ',''))"
                              />
                          </key>
                          <relation type="isMemberOf"/>
@@ -1425,10 +1475,10 @@
         
     <!-- Party Registry Object (Individuals (person) and Organisations (group)) -->
     <xsl:template name="partyGroupDefault">
-        <xsl:param name="originatingSourceURL"/>
-        <xsl:param name="groupToUse"/>
+        <xsl:param name="originatingSourceToUse"/>
+        <xsl:param name="aggregatingGroup"/>
         
-        <registryObject group="{substring-after($groupToUse, ':')}">
+        <registryObject group="{substring-after($aggregatingGroup, ':')}">
             
             <!--
             <xsl:message select="concat('Creating key: ', translate(normalize-space(current-grouping-key()),' ',''))"/>
@@ -1436,11 +1486,11 @@
             <xsl:message select="concat('Organisation name: ', *:organisationName)"/>
             -->
             <key>
-                <xsl:value-of select="concat(substring-before($groupToUse, ':'), '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
+                <xsl:value-of select="concat(substring-before($aggregatingGroup, ':'), '/', translate(normalize-space(current-grouping-key()),' ',''))"/>
             </key>
             
             <originatingSource>
-                <xsl:value-of select="normalize-space($originatingSourceURL)"/>
+                <xsl:value-of select="normalize-space($originatingSourceToUse)"/>
             </originatingSource> 
             
             <party type="group">

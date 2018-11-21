@@ -27,6 +27,8 @@
     <xsl:strip-space elements="*"/>
     
     <xsl:param name="global_group" select="'IMOS:Integrated Marine Observing System'"/>
+    <xsl:param name="global_debug" select="false()" as="xs:boolean"/>
+    <xsl:param name="global_debugExceptions" select="true()" as="xs:boolean"/>
     
     <!-- stylesheet to convert iso19139 in OAI-PMH ListRecords response to RIF-CS -->
     <xsl:template match="oai:responseDate"/>
@@ -57,16 +59,22 @@
     
     
     <xsl:template match="*:MD_Metadata" mode="IMOS_aggregating">
-        <xsl:message>IMOS_aggregating</xsl:message>
+        <xsl:if test="$global_debug">
+         <xsl:message>IMOS_aggregating</xsl:message>
+        </xsl:if>
         
         <xsl:variable name="originatingSourceOrganisation" select="customGMD:originatingSourceOrganisation(.)"/>
-        <xsl:message select="concat('$originatingSourceOrganisation: ', $originatingSourceOrganisation)"/>
+        <xsl:if test="$global_debug">
+            <xsl:message select="concat('$originatingSourceOrganisation: ', $originatingSourceOrganisation)"/>
+        </xsl:if>
         
         <xsl:variable name="metadataPointOfTruth_sequence" select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage[contains(lower-case(following-sibling::gmd:protocol/gco:CharacterString), 'metadata-url')]/gmd:URL" as="xs:string*"/>
         
-        <xsl:for-each select="distinct-values($metadataPointOfTruth_sequence)">
-            <xsl:message select="concat('$metadataPointOfTruth_sequence: ', .)"/>
-        </xsl:for-each>
+        <xsl:if test="$global_debug">
+            <xsl:for-each select="distinct-values($metadataPointOfTruth_sequence)">
+                <xsl:message select="concat('$metadataPointOfTruth_sequence: ', .)"/>
+            </xsl:for-each>
+        </xsl:if>
         
                
         <xsl:choose>

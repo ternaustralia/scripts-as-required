@@ -53,7 +53,7 @@ def retrieveXML(count, filePath, uri):
     try:
         http = urllib3.PoolManager()
         print("Opening uri %s" % uri)
-        r = http.request('GET', uri)
+        r = http.request('GET', uri, headers={"Accept" : "text/html", "User-Agent" : "ARDC Assist"})
         result = r.data
     except Exception as e:
         print("Unable to open uri %s - exception: %s" % (uri, e))
@@ -67,6 +67,7 @@ def retrieveXML(count, filePath, uri):
         assert (doc != 0)
     except Exception as e:
         print("Error: Unable to parse xml at uri %s - exception: %s" % (uri, e))
+        print result
         return None
 
     assert (doc is not None)

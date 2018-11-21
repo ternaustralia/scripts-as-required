@@ -24,6 +24,9 @@
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
     
+    <xsl:param name="global_debug" select="false()" as="xs:boolean"/>
+    <xsl:param name="global_debugExceptions" select="true()" as="xs:boolean"/>
+    
     <xsl:param name="global_IMAS_group" select="'UTAS:University of Tasmania, Australia'"/>
     <xsl:param name="global_IMAS_sourceURL" select="'http://metadata.imas.utas.edu.au'"/>
     <!--xsl:param name="global_IMAS_originatingSourceOrganisation" select="'undetermined'"/-->
@@ -68,7 +71,7 @@
     <!-- RegistryObject RegistryObject Template          -->
     <!-- =========================================== -->
 
-    <xsl:template match="mcp:MD_Metadata" mode="IMAS">
+    <xsl:template match="*:MD_Metadata" mode="IMAS">
         <xsl:param name="aggregatingGroup"/>
         
         <xsl:variable name="groupToUse">
@@ -82,7 +85,9 @@
             </xsl:choose>
         </xsl:variable>
         
-        <xsl:message select="concat('groupToUse: ', $groupToUse)"/>
+        <xsl:if test="$global_debug">
+         <xsl:message select="concat('groupToUse: ', $groupToUse)"/>
+        </xsl:if>
         
         <xsl:variable name="metadataURL_sequence" select="customIMAS:getMetadataTruthURL_sequence(gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions)[1]"/>
         <xsl:variable name="metadataURL">
@@ -96,11 +101,15 @@
             </xsl:choose>
         </xsl:variable> 
         
-        <xsl:message select="concat('metadataURL: ', $metadataURL)"/>
+        <xsl:if test="$global_debug">
+         <xsl:message select="concat('metadataURL: ', $metadataURL)"/>
+        </xsl:if>
         
         
         <xsl:variable name="datasetURI" select="gmd:dataSetURI"/>
-        <xsl:message select="concat('datasetURI: ', $datasetURI)"/>
+        <xsl:if test="$global_debug">
+            <xsl:message select="concat('datasetURI: ', $datasetURI)"/>
+        </xsl:if>
         
         <xsl:variable name="originatingSourceURL">
             <xsl:choose>
@@ -116,13 +125,14 @@
             </xsl:choose>
         </xsl:variable> 
         
-        <xsl:message select="concat('originatingSourceURL: ', $originatingSourceURL)"/>
-        
-        <xsl:message select="concat('originatingSourceURL: ', $originatingSourceURL)"/>
-         
+        <xsl:if test="$global_debug">
+            <xsl:message select="concat('originatingSourceURL: ', $originatingSourceURL)"/>
+        </xsl:if>
         
         <xsl:variable name="dataSetURI" select="gmd:dataSetURI"/>
-        <!--xsl:message select="concat('dataSetURI: ', $dataSetURI)"/-->
+        <xsl:if test="$global_debug">
+            <xsl:message select="concat('dataSetURI: ', $dataSetURI)"/>
+        </xsl:if>
         
         <xsl:variable name="fileIdentifier" select="gmd:fileIdentifier"/>
         <!--xsl:message select="concat('fileIdentifier: ', $fileIdentifier)"/-->
@@ -402,6 +412,17 @@
                         <xsl:value-of select="$registryObjectTypeSubType_sequence[2]"/>
                     </xsl:attribute>
                     
+                    <xsl:if test="$registryObjectTypeSubType_sequence[1] = 'collection'">
+                        <xsl:if test="
+                            (count(gmd:dateStamp/*[contains(lower-case(name()),'date')]) > 0) and 
+                            (string-length(gmd:dateStamp/*[contains(lower-case(name()),'date')][1]) > 0)">
+                            <xsl:attribute name="dateAccessioned">
+                                <xsl:value-of select="gmd:dateStamp/*[contains(lower-case(name()),'date')][1]"/>
+                            </xsl:attribute>  
+                        </xsl:if>
+                        
+                    </xsl:if>
+                    
                     <xsl:call-template name="IMAS_set_registryObjectIdentifier">
                         <xsl:with-param name="identifier" select="gmd:fileIdentifier"/>
                         <xsl:with-param name="type" select="'global'"/>
@@ -489,7 +510,11 @@
 
                     <xsl:apply-templates select="gmd:identificationInfo/*/gmd:abstract"
                         mode="IMAS_registryObject_description"/>
-
+                    
+                    <xsl:apply-templates
+                        select="gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:statement"
+                        mode="IMAS_registryObject_description_lineage"/>
+                    
                     <xsl:apply-templates
                         select="gmd:identificationInfo/*/gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_GeographicBoundingBox"
                         mode="IMAS_registryObject_coverage_spatial">
@@ -975,6 +1000,15 @@
         <xsl:if test="string-length(normalize-space(.)) > 0">
             <description type="full">
                 <xsl:value-of select="normalize-space(.)"/>
+            </description>
+        </xsl:if>
+    </xsl:template>
+    
+    <!-- RegistryObject - Decription Element -->
+    <xsl:template match="gmd:statement" mode="IMAS_registryObject_description_lineage">
+        <xsl:if test="string-length(normalize-space(.)) > 0">
+            <description type="lineage">
+                <xsl:value-of select="."/>
             </description>
         </xsl:if>
     </xsl:template>
@@ -1729,9 +1763,11 @@
                 </xsl:choose>
             </xsl:variable>
             
-            <xsl:message select="concat('name:', $name)"/>
-            <xsl:message select="concat('type:', $type)"/>
-            <xsl:message select="concat('typeToUse:', $typeToUse)"/>
+            <xsl:if test="$global_debug">
+                <xsl:message select="concat('name:', $name)"/>
+                <xsl:message select="concat('type:', $type)"/>
+                <xsl:message select="concat('typeToUse:', $typeToUse)"/>
+            </xsl:if>
             
             <party type="{$typeToUse}">
                 
@@ -2041,38 +2077,19 @@
         <xsl:param name="scopeCode"/>
         <xsl:param name="publishingOrganisation"/>
         <xsl:choose>
-            <xsl:when test="string-length($scopeCode) = 0">
-                <!--xsl:message>Error: empty scope code</xsl:message-->
-            </xsl:when>
-            <xsl:when test="contains(lower-case($publishingOrganisation), 'aims')">
-                <xsl:call-template name="IMAS_getRegistryObjectTypeSubType_AIMS">
-                    <xsl:with-param name="scopeCode" select="$scopeCode"/>
-                </xsl:call-template>
-            </xsl:when>
-            <xsl:when test="contains(lower-case($publishingOrganisation), 'imas')">
-                <xsl:call-template name="IMAS_getRegistryObjectTypeSubType_IMAS">
-                    <xsl:with-param name="scopeCode" select="$scopeCode"/>
-                </xsl:call-template>
-            </xsl:when>
-            <xsl:otherwise>
-                <!--xsl:message>Defaulting to 'collection' due to no specific processing being required for originatingSource<xsl:value-of select="$originatingSource"></xsl:value-of></xsl:message-->
-                <xsl:text>collection</xsl:text>
-                <xsl:text>dataset</xsl:text>
-            </xsl:otherwise>
-        </xsl:choose>
-    </xsl:template>
-
-    <xsl:template name="IMAS_getRegistryObjectTypeSubType_AIMS" as="xs:string*">
-        <xsl:param name="scopeCode"/>
-        <xsl:choose>
-            <xsl:when test="string-length($scopeCode) = 0">
-                <!--xsl:message>Error: empty scope code</xsl:message-->
-            </xsl:when>
-            <xsl:when test="contains($scopeCode, 'dataset')">
-                <xsl:text>activity</xsl:text>
-                <xsl:text>project</xsl:text>
-            </xsl:when>
             <xsl:when test="contains($scopeCode, 'nonGeographicDataset')">
+                <xsl:text>collection</xsl:text>
+                <xsl:text>publication</xsl:text>
+            </xsl:when>
+            <xsl:when test="contains($scopeCode, 'collectionSession')">
+                <xsl:text>activity</xsl:text>
+                <xsl:text>program</xsl:text>
+            </xsl:when>
+            <xsl:when test="contains($scopeCode, 'series')">
+                <xsl:text>activity</xsl:text>
+                <xsl:text>program</xsl:text>
+            </xsl:when>
+            <xsl:when test="contains($scopeCode, 'fieldSession')">
                 <xsl:text>activity</xsl:text>
                 <xsl:text>project</xsl:text>
             </xsl:when>
@@ -2080,29 +2097,21 @@
                 <xsl:text>activity</xsl:text>
                 <xsl:text>project</xsl:text>
             </xsl:when>
-            <xsl:when test="contains($scopeCode, 'collectionSession')">
-                <xsl:text>activity</xsl:text>
-                <xsl:text>project</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains($scopeCode, 'sensor')">
-                <xsl:text>collection</xsl:text>
-                <xsl:text>dataset</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains($scopeCode, 'sensorSeries')">
-                <xsl:text>collection</xsl:text>
-                <xsl:text>collection</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains($scopeCode, 'software')">
-                <xsl:text>service</xsl:text>
-                <xsl:text>create</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains($scopeCode, 'model')">
-                <xsl:text>service</xsl:text>
-                <xsl:text>generate</xsl:text>
-            </xsl:when>
             <xsl:when test="contains($scopeCode, 'service')">
                 <xsl:text>service</xsl:text>
                 <xsl:text>report</xsl:text>
+            </xsl:when>
+            <xsl:when test="contains($scopeCode, 'software')">
+                <xsl:text>collection</xsl:text>
+                <xsl:text>software</xsl:text>
+            </xsl:when>
+            <xsl:when test="contains($scopeCode, 'model')">
+                <xsl:text>collection</xsl:text>
+                <xsl:text>software</xsl:text>
+            </xsl:when>
+            <xsl:when test="contains($scopeCode, 'model')">
+                <xsl:text>collection</xsl:text>
+                <xsl:text>software</xsl:text>
             </xsl:when>
             <xsl:otherwise>
                 <!--xsl:message>Defaulting due to unknown scope code <xsl:value-of select="$scopeCode"></xsl:value-of></xsl:message-->
@@ -2112,60 +2121,7 @@
         </xsl:choose>
     </xsl:template>
 
-    <xsl:template name="IMAS_getRegistryObjectTypeSubType_IMAS" as="xs:string*">
-        <xsl:param name="scopeCode"/>
-        <!--xsl:choose>
-            <xsl:when test="contains($scopeCode, 'dataset')">
-                <xsl:text>collection</xsl:text>
-                <xsl:text>dataset</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains($scopeCode, 'nonGeographicDataset')">
-                <xsl:text>collection</xsl:text>
-                <xsl:text>dataset</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains($scopeCode, 'collectionHardware')">
-                <xsl:text>activity</xsl:text>
-                <xsl:text>project</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains($scopeCode, 'collectionSession')">
-                <xsl:text>activity</xsl:text>
-                <xsl:text>project</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains($scopeCode, 'model')">
-                <xsl:text>service</xsl:text>
-                <xsl:text>generate</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains($scopeCode, 'series')">
-                <xsl:text>activity</xsl:text>
-                <xsl:text>program</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains($scopeCode, 'sensor')">
-                <xsl:text>activity</xsl:text>
-                <xsl:text>program</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains($scopeCode, 'sensorSeries')">
-                <xsl:text>activity</xsl:text>
-                <xsl:text>program</xsl:text>
-            </xsl:when>
-            
-            <xsl:when test="contains($scopeCode, 'software')">
-                <xsl:text>service</xsl:text>
-                <xsl:text>create</xsl:text>
-            </xsl:when>
-            <xsl:when test="contains($scopeCode, 'service')">
-                <xsl:text>service</xsl:text>
-                <xsl:text>report</xsl:text>
-            </xsl:when>
-            <xsl:otherwise>
-                <xsl:text>collection</xsl:text>
-                <xsl:text>dataset</xsl:text>
-            </xsl:otherwise>
-            </xsl:choose-->
-        <xsl:text>collection</xsl:text>
-        <xsl:text>dataset</xsl:text>
-    </xsl:template>
-
-
+    
     <xsl:function name="customIMAS:currentHasRole" as="xs:boolean*">
         <xsl:param name="current"/>
         <xsl:param name="role"/>
@@ -2408,16 +2364,24 @@
     
     <xsl:function name="customIMAS:nameNoTitle">
         <xsl:param name="name"/>
-        <xsl:message select="concat('Name before extract:', $name)"/>
+        
+        <xsl:if test="$global_debug">
+            <xsl:message select="concat('Name before extract:', $name)"/>
+        </xsl:if>
+        
         <xsl:variable name="temp" select="replace($name, '(Miss|Mr|Mrs|Ms|Dr|PhD|Assoc/Prof|Professor|Prof)', '')"/>
         <xsl:variable name="nameNoTitle" select="normalize-space(translate($temp, '.', ''))"/>
         <xsl:choose>
             <xsl:when test="substring($nameNoTitle, string-length($nameNoTitle), 1) = ','">
-                <xsl:message select="concat('Returning without last comma: ', substring($nameNoTitle, 1, string-length($nameNoTitle)-1))"/>
+                <xsl:if test="$global_debug">
+                    <xsl:message select="concat('Returning without last comma: ', substring($nameNoTitle, 1, string-length($nameNoTitle)-1))"/>
+                </xsl:if>
                 <xsl:value-of select="substring($nameNoTitle, 1, string-length($nameNoTitle)-1)"/>
             </xsl:when>
             <xsl:otherwise>
-                <xsl:message select="concat('Returning nameNoTitle: ', $nameNoTitle)"/>
+                <xsl:if test="$global_debug">
+                    <xsl:message select="concat('Returning nameNoTitle: ', $nameNoTitle)"/>
+                </xsl:if>
                 <xsl:value-of select="$nameNoTitle"/>
             </xsl:otherwise>
         </xsl:choose>

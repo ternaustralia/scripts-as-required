@@ -13,13 +13,14 @@
     exclude-result-prefixes="todo local dataset core xsi xs fn xsl custom">
     
     <!-- Params to override -->
-    <!--xsl:param name="global_debug" select="true()" as="xs:boolean"/>
+    <xsl:param name="global_debug" select="true()" as="xs:boolean"/>
     <xsl:param name="global_debugExceptions" select="true()" as="xs:boolean"/>
-    <xsl:param name="global_originatingSource" select="'insert_originatingSource_here'"/>
-    <xsl:param name="global_baseURI" select="'insert_baseURI_here'"/>
-    <xsl:param name="global_acronym" select="'insert_acronym_here'"/>
-    <xsl:param name="global_group" select="'insert_group_here'"/>
-    <xsl:param name="global_publisherName" select="'insert_publisher_here'"/-->
+    <xsl:param name="global_originatingSource" select="'{override required}'"/>
+    <xsl:param name="global_baseURI" select="'{override required}'"/>
+    <xsl:param name="global_path" select="'{override required}'"/>
+    <xsl:param name="global_acronym" select="'{override required}'"/>
+    <xsl:param name="global_group" select="'{override required}'"/>
+    <xsl:param name="global_publisherName" select="'{override required}'"/>
     
    <xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes" omit-xml-declaration="yes"/>
 
@@ -29,9 +30,7 @@
             <xsl:when test="count(//*:OAI-PMH) > 0">
                 <registryObjects xmlns="http://ands.org.au/standards/rif-cs/registryObjects" 
                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-                    xsi:schemaLocation="http://ands.org.au/standards/rif-cs/registryObjects 
-                    http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd">
-                
+                    xsi:schemaLocation="http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd">
                         
                     <xsl:apply-templates select="//*:result/*:equipment"/>
                     <xsl:apply-templates select="//*:result/*:dataSet"/>
@@ -48,20 +47,21 @@
    
     <xsl:template match="*:dataSet">
         <xsl:message select="concat('workflow: ', *:workflow)"/>
-        <xsl:apply-templates select="." mode="registryObject">
-               <xsl:with-param name="type" select="'dataset'"/>
-               <xsl:with-param name="class" select="'collection'"/>
-           </xsl:apply-templates>
-       
-           <xsl:apply-templates select="." mode="party"/>
+        <xsl:if test="lower-case(*:workflow) = 'validated'">
+            <xsl:apply-templates select="." mode="registryObject">
+                   <xsl:with-param name="type" select="'dataset'"/>
+                   <xsl:with-param name="class" select="'collection'"/>
+               </xsl:apply-templates>
            
+               <xsl:apply-templates select="." mode="party"/>
+        </xsl:if>
      </xsl:template>
     
     <xsl:template match="*:equipment">
         
         <!-- Create equipment record only if approved -->
         <xsl:message select="concat('workflow: ', *:workflow)"/>
-        <xsl:if test="contains(lower-case(*:workflow), 'approved')">
+        <xsl:if test="lower-case(*:workflow) = 'approved'">
             <xsl:apply-templates select="." mode="registryObject">
                 <xsl:with-param name="type" select="'create'"/>
                 <xsl:with-param name="class" select="'service'"/>
@@ -107,6 +107,9 @@
                 
                 <xsl:if test="string-length(*:doi) = 0">
                     <xsl:apply-templates select="." mode="collection_location_address_contact"/>
+                    
+                    <xsl:apply-templates select="*:info/*:portalUrl[string-length(.) > 0]" mode="collection_location"/>
+                
                 </xsl:if>
                 
                 <xsl:apply-templates select="*:title[string-length(.) > 0]" mode="collection_name"/>
@@ -222,6 +225,20 @@
         </location> 
     </xsl:template>
     
+    <xsl:template match="*:portalUrl" mode="collection_location">
+        <xsl:param name="class"/>
+        <location>
+            <address>
+                <electronic type="url" target="landingPage">
+                    <value>
+                        <xsl:value-of select="normalize-space(.)"/>
+                    </value>
+                </electronic>
+            </address>
+        </location> 
+    </xsl:template>
+    
+    
     <xsl:template match="*:title" mode="collection_name">
         <name type="primary">
             <namePart>
@@ -244,46 +261,84 @@
             </address>
         </location>
         
-        <xsl:apply-templates select=" *:addresses/*:address[contains(*:addressType/@uri, 'postal')][(string-length(*:building) > 0) or (string-length(*:geoLocation) > 0)]" mode="registryObject_postal_address"/>
-        <xsl:apply-templates select=" *:addresses/*:address[contains(*:addressType/@uri, 'street')][(string-length(*:building) > 0) or (string-length(*:geoLocation) > 0)]" mode="registryObject_street_address"/>
+        <xsl:apply-templates select=" *:addresses/*:address" mode="registryObject_address"/>
         
     </xsl:template>
     
-    <xsl:template match="*:address" mode="registryObject_postal_address">
-        <location>
-            <xsl:if test="string-length(*:building) > 0">
-                <address>
-                <physical type="postalAddress">    
-                    <addressPart type="addressLine">
-                        <xsl:value-of select="*:building"/>
-                    </addressPart>
-                </physical>
-              </address>
-            </xsl:if>
-            <xsl:if test="string-length(*:geoLocation) > 0">
-             <spatial type="dcmiPoint">
-                  <xsl:value-of select="*:geoLocation"/>
-              </spatial>
-            </xsl:if>
-          </location>
-    </xsl:template>
+    <xs:element minOccurs="0" name="street" type="xs:string"/>
+    <xs:element minOccurs="0" name="building" type="xs:string"/>
+    <xs:element minOccurs="0" name="postalcode" type="xs:string"/>
+    <xs:element minOccurs="0" name="city" type="xs:string"/>
     
-    <xsl:template match="*:address" mode="registryObject_street_address">
+    
+   <xsl:template match="*:address" mode="registryObject_address">
         <location>
-            <xsl:if test="string-length(*:building) > 0">
-                <address>
-                <physical type="streetAddress">    
-                    <addressPart type="addressLine">
-                        <xsl:value-of select="*:building"/>
-                    </addressPart>
-                </physical>
-              </address>
-            </xsl:if>
-            <xsl:if test="string-length(*:geoLocation) > 0">
+            <address>
+                <physical>
+                    
+            <xsl:choose>
+                <xsl:when test="count(*:addressLines) > 0">
+                       <xsl:attribute name="type">
+                           <xsl:choose>
+                             <xsl:when test="contains(*:addressType/@uri, 'postal')">
+                                 <xsl:text>postalAddress</xsl:text>
+                             </xsl:when>
+                               <xsl:when test="contains(*:addressType/@uri, 'street')">
+                                 <xsl:text>streetAddress</xsl:text>
+                             </xsl:when>
+                            </xsl:choose>
+                        </xsl:attribute>  
+                       <addressPart type="addressLine">
+                           <xsl:value-of select="string-join(*:addressLines, '&#xA;')"/>
+                       </addressPart>
+                  
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:for-each select="*:building">
+                        <addressPart type="streetName">
+                            <xsl:value-of select="."/>
+                        </addressPart>
+                    </xsl:for-each>
+                    <xsl:for-each select="*:street">
+                        <addressPart type="streetName">
+                            <xsl:value-of select="."/>
+                        </addressPart>
+                    </xsl:for-each>
+                        <xsl:for-each select="*:postalcode">
+                            <addressPart type="postCode">
+                                <xsl:value-of select="."/>
+                            </addressPart>
+                        </xsl:for-each>
+                    <xsl:for-each select="*:city">
+                        <addressPart type="suburbOrPlaceOrLocality">
+                            <xsl:value-of select="."/>
+                        </addressPart>
+                    </xsl:for-each>
+                </xsl:otherwise>
+            </xsl:choose>
+            
+            <xsl:for-each select="*:subdivision">
+                <addressPart type="stateOrTerritory">
+                    <xsl:value-of select="."/>
+                </addressPart>
+            </xsl:for-each>
+                        
+            <xsl:for-each select="*:country">
+                <addressPart type="country">
+                    <xsl:value-of select="."/>
+                </addressPart>
+            </xsl:for-each>
+            
+             </physical>
+            </address>
+            
+            <xsl:for-each select="*:geoLocation/*:point">
                 <spatial type="dcmiPoint">
-                    <xsl:value-of select="*:geoLocation"/>
+                    <xsl:value-of select="."/>
                 </spatial>
-            </xsl:if>
+            </xsl:for-each>
+            
+          
         </location>
     </xsl:template>
     
@@ -639,7 +694,7 @@
         </xsl:if>
         
         <xsl:choose>
-            <xsl:when test="(count($fileLicense_sequence) > 0) and (count(distinct-values($fileLicense_sequence)) = 0)">
+            <xsl:when test="(count($fileLicense_sequence) > 0) and (count(distinct-values($fileLicense_sequence)) = 1)">
                     <xsl:if test="string-length(substring-after($fileLicense_sequence[1], '/dk/atira/pure/dataset/documentlicenses/')) > 0">
                         <xsl:if test="$global_debug">
                                 <xsl:message select="concat('license to apply: ', substring-after($fileLicense_sequence[1], '/dk/atira/pure/dataset/documentlicenses/'))"/> 

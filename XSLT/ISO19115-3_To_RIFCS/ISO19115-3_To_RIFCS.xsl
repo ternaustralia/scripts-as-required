@@ -38,21 +38,25 @@
     xmlns:gaFunc="http://gafunc.nowhere.yet"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
     exclude-result-prefixes="csw gaFunc oai lan mrc xlink srv mrd geonet mas mri mcc mrl xs mco mrs xsi mda msr mdb mds mdq cat mdt mac cit mex gco gcx mmi gmx gex mpc gml custom">
+    
     <xsl:import href="CustomFunctions.xsl"/>
-    <!-- stylesheet to convert iso19139 in OAI-PMH ListRecords response to RIF-CS -->
+    
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements='*'/>
     <xsl:param name="global_debug" select="false()" as="xs:boolean"/>
-    <xsl:param name="global_debugExceptions" select="true()" as="xs:boolean"/>
-    <xsl:param name="global_originatingSource" select="'Geoscience Australia'"/>
-    <xsl:param name="global_acronym" select="'GA'"/>
-    <xsl:param name="global_baseURI" select="'ecat.ga.gov.au'"/>
-    <xsl:param name="global_baseURI_PID" select="'pid.geoscience.gov.au'"/>
-    <xsl:param name="global_path_PID" select="'/dataset/ga/'"/>
-    <xsl:param name="global_path" select="'/geonetwork/srv/eng/search?uuid='"/>
-    <xsl:param name="global_group" select="'Geoscience Australia'"/>
-    <xsl:param name="global_publisherName" select="'Geoscience Australia'"/>
-    <xsl:param name="global_publisherPlace" select="'Canberra'"/>
+    <xsl:param name="global_debugExceptions" select="false()" as="xs:boolean"/>
+    
+    <!-- Override the following by constructing a stylesheet with the params below populated appropriately, then import this stylesheet.  Run the stylesheet with the params, on your source XML -->
+    <xsl:param name="global_PID_Codespace" select="'{requires override}'"/>
+    <xsl:param name="global_originatingSource" select="'{requires override}'"/>
+    <xsl:param name="global_acronym" select="'{requires override}'"/>
+    <xsl:param name="global_baseURI" select="'{requires override}'"/>
+    <xsl:param name="global_baseURI_PID" select="'{requires override}'"/>
+    <xsl:param name="global_path_PID" select="'{requires override}'"/>
+    <xsl:param name="global_path" select="'{requires override}'"/>
+    <xsl:param name="global_group" select="'{requires override}'"/>
+    <xsl:param name="global_publisherName" select="'{requires override}'"/>
+    <xsl:param name="global_publisherPlace" select="'{requires override}'"/>
     <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>
     
     <!-- =========================================== -->
@@ -222,14 +226,26 @@
                 <xsl:apply-templates select="mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code"
                     mode="registryObject_identifier_global"/>
                 
-                <xsl:apply-templates select="mdb:alternativeMetadataReference/cit:CI_Citation/cit:identifier/mcc:MD_Identifier[contains(lower-case(mcc:codeSpace), 'ecatid')]/mcc:code"
-                    mode="registryObject_identifier_PID"/>
-                
-                <xsl:apply-templates select="mdb:alternativeMetadataReference/cit:CI_Citation/cit:identifier/mcc:MD_Identifier[contains(lower-case(mcc:codeSpace), 'ecatid')]/mcc:code"
-                    mode="registryObject_location"/>
-                <!--xsl:apply-templates select="mdb:metadataLinkage/cit:CI_OnlineResource[contains(lower-case(cit:description), 'point-of-truth metadata')]/cit:linkage[not(contains(., 'internal.ecat'))]" mode="registryObject_identifier_metadata_URL"/-->
-                    
-                <!--xsl:apply-templates select="mdb:metadataLinkage/cit:CI_OnlineResource[contains(lower-case(cit:description), 'point-of-truth metadata')]/cit:linkage[contains(., 'internal.ecat')]" mode="registryObject_identifier_metadata_URL_replace"/-->
+                <xsl:choose>
+                    <xsl:when test="string-length(mdb:alternativeMetadataReference/cit:CI_Citation/cit:identifier/mcc:MD_Identifier[contains(lower-case(mcc:codeSpace), $global_PID_Codespace)]/mcc:code) > 0">
+                        <xsl:apply-templates select="mdb:alternativeMetadataReference/cit:CI_Citation/cit:identifier/mcc:MD_Identifier[contains(lower-case(mcc:codeSpace), $global_PID_Codespace)]/mcc:code"
+                            mode="registryObject_identifier_PID"/>
+                        
+                        <xsl:apply-templates select="mdb:alternativeMetadataReference/cit:CI_Citation/cit:identifier/mcc:MD_Identifier[contains(lower-case(mcc:codeSpace), $global_PID_Codespace)]/mcc:code"
+                            mode="registryObject_location_PID"/>
+                     </xsl:when>    
+                    <xsl:when test="string-length(mdb:metadataLinkage/cit:CI_OnlineResource[contains(lower-case(cit:description), 'point-of-truth metadata')]/cit:linkage) > 0">
+                        <xsl:apply-templates select="mdb:metadataLinkage/cit:CI_OnlineResource[contains(lower-case(cit:description), 'point-of-truth metadata')]/cit:linkage" mode="registryObject_identifier_metadata_URL"/>
+                        <xsl:apply-templates select="mdb:metadataLinkage/cit:CI_OnlineResource[contains(lower-case(cit:description), 'point-of-truth metadata')]/cit:linkage" mode="registryObject_location_metadata_URL"/>
+                        
+                        <!--xsl:apply-templates select="mdb:metadataLinkage/cit:CI_OnlineResource[contains(lower-case(cit:description), 'point-of-truth metadata')]/cit:linkage[contains(., 'internal.ecat')]" mode="registryObject_identifier_metadata_URL_replace"/-->
+                    </xsl:when>
+                         
+                    <xsl:otherwise>
+                        <xsl:apply-templates select="mdb:metadataIdentifier/mcc:MD_Identifier/mcc:code"
+                                mode="registryObject_location_uuid"/>
+                    </xsl:otherwise>
+                </xsl:choose>
                 
                 <xsl:apply-templates
                     select="mdb:resourceLineage/mrl:LI_Lineage/mrl:statement[string-length(.) > 0]"
@@ -387,11 +403,11 @@
         </identifier>
     </xsl:template>
     
-    <!--xsl:template match="cit:linkage" mode="registryObject_identifier_metadata_URL">
+    <xsl:template match="cit:linkage" mode="registryObject_identifier_metadata_URL">
         <identifier type="uri">
             <xsl:value-of select="."/>    
         </identifier>
-    </xsl:template-->
+    </xsl:template>
     
     <!--xsl:template match="cit:linkage" mode="registryObject_identifier_metadata_URL_replace">
         <identifier type="uri">
@@ -429,7 +445,7 @@
         </identifier>
     </xsl:template>
     
-    <xsl:template match="mcc:code" mode="registryObject_location">
+    <xsl:template match="mcc:code" mode="registryObject_location_PID">
         <location>
             <address>
                 <electronic>
@@ -441,6 +457,42 @@
                     </xsl:attribute>
                     <value>
                         <xsl:value-of select="concat('http://', $global_baseURI_PID, $global_path_PID, .)"/>
+                    </value>
+                </electronic>
+            </address>
+        </location>
+    </xsl:template>
+    
+    <xsl:template match="cit:linkage" mode="registryObject_location_metadata_URL">
+        <location>
+            <address>
+                <electronic>
+                    <xsl:attribute name="type">
+                        <xsl:text>url</xsl:text>
+                    </xsl:attribute>
+                     <xsl:attribute name="target">
+                        <xsl:text>landingPage</xsl:text>
+                    </xsl:attribute>
+                    <value>
+                        <xsl:value-of select="."/>
+                    </value>
+                </electronic>
+            </address>
+        </location>
+    </xsl:template>
+    
+    <xsl:template match="mcc:code" mode="registryObject_location_uuid">
+        <location>
+            <address>
+                <electronic>
+                    <xsl:attribute name="type">
+                        <xsl:text>url</xsl:text>
+                    </xsl:attribute>
+                     <xsl:attribute name="target">
+                        <xsl:text>landingPage</xsl:text>
+                    </xsl:attribute>
+                    <value>
+                        <xsl:value-of select="concat('http://', $global_baseURI, $global_path, .)"/>
                     </value>
                 </electronic>
             </address>
