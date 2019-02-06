@@ -27,7 +27,7 @@
     <xsl:strip-space elements="*"/>
     
     <xsl:param name="global_group" select="'IMOS:Integrated Marine Observing System'"/>
-    <xsl:param name="global_debug" select="false()" as="xs:boolean"/>
+    <xsl:param name="global_debug" select="true()" as="xs:boolean"/>
     <xsl:param name="global_debugExceptions" select="true()" as="xs:boolean"/>
     
     <!-- stylesheet to convert iso19139 in OAI-PMH ListRecords response to RIF-CS -->
@@ -87,7 +87,7 @@
                 </xsl:apply-templates>
             </xsl:when>
             <xsl:when test="
-                custom:sequenceContains($metadataPointOfTruth_sequence, 'data.aims') or
+                custom:sequenceContains($metadataPointOfTruth_sequence, 'aims.gov') or
                 contains(lower-case($originatingSourceOrganisation), 'aims') or
                 contains(lower-case($originatingSourceOrganisation), 'australian institute of marine science')">
                 <xsl:apply-templates select="." mode="AIMS">

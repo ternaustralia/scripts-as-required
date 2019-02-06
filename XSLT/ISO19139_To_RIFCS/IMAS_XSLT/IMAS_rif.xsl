@@ -24,7 +24,7 @@
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
     
-    <xsl:param name="global_debug" select="false()" as="xs:boolean"/>
+    <xsl:param name="global_debug" select="true()" as="xs:boolean"/>
     <xsl:param name="global_debugExceptions" select="true()" as="xs:boolean"/>
     
     <xsl:param name="global_IMAS_group" select="'UTAS:University of Tasmania, Australia'"/>
@@ -36,7 +36,9 @@
     <xsl:param name="global_IMAS_cannedCitation" select="'The citation in a list of references is: citation author name/s (year metadata published), metadata title. Citation author organisation/s. File identifier and Data accessed at (add http link).'"/>
     <xsl:param name="global_IMAS_identifier_open" select="'39060c33-9246-49fe-8f97-758b67ced4ce'"/>
     
+    <xsl:param name="global_IMAS_onlineResourceUrlSubset_sequence" select="'http://metadata.imas.utas.edu.au:/geonetwork/srv/en/file.disclaimer?'" as="xs:string*"/>
     
+    <xsl:param name="global_IMAS_ignoreOnlineResourceProtocolSubset_sequence" select="'OGC:WPS--gogoduck','IMOS:AGGREGATION--bodaac','IMOS:NCWMS--proto '" as="xs:string*"/>
     
     <!--xsl:param name="global_IMAS_ActivityKeyNERP" select="'to be determined'"/-->
     <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>
@@ -535,9 +537,12 @@
                             mode="IMAS_registryObject_existence_dates"/>
                     </xsl:if>
                     
-                    <xsl:apply-templates
+                    <!--xsl:apply-templates
                         select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions"
-                        mode="IMAS_registryObject_relatedInfo"/>
+                        mode="IMAS_registryObject_relatedInfo"/-->
+                    
+                    <xsl:apply-templates select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource" mode="IMAS_registryObject_relatedInfo"/>
+                    
 
                     <xsl:apply-templates select="mcp:children/mcp:childIdentifier"
                         mode="IMAS_registryObject_relatedInfo"/>
@@ -800,7 +805,8 @@
     <xsl:template match="gmd:MD_Distribution" mode="IMAS_registryObject_location">
         <xsl:for-each select="gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource">
             <xsl:choose>
-                <!--xsl:when test="contains(lower-case(gmd:protocol), 'downloaddata')">
+                <!-- handing download data protocol without '?' or thredds in URL  here - download data protocol with '?' is handled by relatedInfo type='service' , as is thredds-->
+                <xsl:when test="contains(lower-case(*:protocol), 'downloaddata') and (not(contains(*:linkage/*:URL, '?'))) and (not(contains(*:linkage/*:URL, 'thredds')))">
                     <xsl:if test="string-length(normalize-space(*:linkage/*:URL)) > 0">
                         <xsl:variable name="title" select="*:description"/>
                         <xsl:variable name="notes" select="''"/>
@@ -842,7 +848,7 @@
                         </address>
                         </location>   
                     </xsl:if>
-                </xsl:when-->
+                </xsl:when>
                 
                 <xsl:when test="contains(lower-case(gmd:protocol), 'metadata-url')">
                     <location>
@@ -886,8 +892,25 @@
                             <xsl:value-of select="current-grouping-key()"/>
                         </xsl:variable>
                         <relation>
+                            <xsl:variable name="codelist"
+                                select="$gmdCodelists/codelists/codelist[@name = 'gmd:CI_RoleCode']"/>
+                            
+                            <xsl:variable name="type">
+                                <xsl:value-of select="$codelist/entry[code = $code]/description"/>
+                            </xsl:variable>
+                            
                             <xsl:attribute name="type">
-                                <xsl:value-of select="$code"/>
+                                <xsl:choose>
+                                    <xsl:when test="string-length($type) > 0">
+                                        <xsl:value-of select="$type"/>
+                                    </xsl:when>
+                                    <xsl:when test="string-length($code) > 0">
+                                        <xsl:value-of select="$code"/>  
+                                    </xsl:when>
+                                     <xsl:otherwise>
+                                         <xsl:text>unknown</xsl:text>
+                                     </xsl:otherwise>
+                                </xsl:choose>
                             </xsl:attribute>
                         </relation>
                     </xsl:for-each-group>
@@ -1212,13 +1235,10 @@
     </xsl:template>
 
     <!-- RegistryObject - RelatedInfo Element  -->
-    <xsl:template match="gmd:MD_DigitalTransferOptions" mode="IMAS_registryObject_relatedInfo">
+    <!--xsl:template match="gmd:MD_DigitalTransferOptions" mode="IMAS_registryObject_relatedInfo">
         <xsl:for-each select="gmd:onLine/gmd:CI_OnlineResource">
 
             <xsl:variable name="protocol" select="normalize-space(gmd:protocol)"/>
-            <!-- metadata-URL was added as electronic address and possibly citation identifier, too
-                 (if there was no alternative identifier - e.g. DOI - specified in CI_Citation)
-                 Add all other online resources here as relatedInfo -->
             <xsl:if test="(string-length($protocol) > 0) and 
                 not(contains($protocol, 'metadata-URL')) and
                 not(contains($protocol, 'get-map')) and
@@ -1243,19 +1263,16 @@
                         </identifier>
 
                         <xsl:choose>
-                            <!-- Use name as title if we have it... -->
                             <xsl:when test="string-length(normalize-space(gmd:name)) > 0">
                                 <title>
                                     <xsl:value-of select="normalize-space(gmd:name)"/>
                                 </title>
-                                <!-- ...and then description as notes -->
                                 <xsl:if test="string-length(normalize-space(gmd:description)) > 0">
                                     <notes>
                                         <xsl:value-of select="normalize-space(gmd:description)"/>
                                     </notes>
                                 </xsl:if>
                             </xsl:when>
-                            <!-- No name, so use description as title if we have it -->
                             <xsl:otherwise>
                                 <xsl:if test="string-length(normalize-space(gmd:description)) > 0">
                                     <title>
@@ -1269,6 +1286,166 @@
                 </xsl:if>
             </xsl:if>
         </xsl:for-each>
+    </xsl:template-->
+    
+    <!-- RegistryObject - RelatedInfo Element  -->
+    <xsl:template match="gmd:CI_OnlineResource" mode="IMAS_registryObject_relatedInfo">        
+        
+        <xsl:variable name="identifierValue" select="normalize-space(gmd:linkage/gmd:URL)"/>
+        <xsl:variable name="protocol" select="normalize-space(gmd:protocol)"/>
+        
+        <xsl:if test="$global_debug">
+            <xsl:if test="custom:strContainsSequenceSubset($identifierValue, $global_IMAS_onlineResourceUrlSubset_sequence)">
+                <xsl:message select="concat('Ignoring onlineResource url: ', $identifierValue)"/>
+            </xsl:if>
+            
+            <xsl:if test="custom:strContainsSequenceSubset($protocol, $global_IMAS_ignoreOnlineResourceProtocolSubset_sequence)">
+                <xsl:message select="concat('Ignoring onlineResource protocol: ', $protocol)"/>
+            </xsl:if>
+        </xsl:if>
+        
+        <xsl:if test="
+            not(custom:strContainsSequenceSubset($identifierValue, $global_IMAS_onlineResourceUrlSubset_sequence)) and
+            not(custom:strContainsSequenceSubset($protocol, $global_IMAS_ignoreOnlineResourceProtocolSubset_sequence))">
+        
+             <xsl:choose>
+                 <xsl:when test="
+                     contains(gmd:protocol, 'OGC:') or 
+                     contains(lower-case(gmd:linkage/gmd:URL), 'thredds') or
+                     (contains(lower-case(gmd:protocol), 'downloaddata') and contains(lower-case(gmd:linkage/gmd:URL), '?'))">
+                     <xsl:apply-templates select="." mode="IMAS_relatedInfo_service"/>
+                 </xsl:when>
+                 <xsl:when test="(contains(lower-case(gmd:protocol), 'publication')) or (contains(gmd:description, 'PUBLICATION'))">
+                     <xsl:apply-templates select="." mode="IMAS_relatedInfo_publication"/>
+                 </xsl:when>
+                 <xsl:when test="(not(contains(lower-case(gmd:protocol), 'metadata-url'))) and (not(contains(gmd:protocol, 'downloaddata')))">
+                     <xsl:apply-templates select="." mode="IMAS_relatedInfo_relatedInformation"/>
+                 </xsl:when>
+                 
+             </xsl:choose>
+        </xsl:if>
+        
+    </xsl:template>
+    
+    <xsl:template match="gmd:CI_OnlineResource" mode="IMAS_relatedInfo_service">       
+        
+        <xsl:variable name="identifierValue" select="normalize-space(gmd:linkage/gmd:URL)"/>
+        
+            <relatedInfo>
+                <xsl:attribute name="type" select="'service'"/>   
+                
+                <relation>
+                    <xsl:attribute name="type">
+                        <xsl:text>supports</xsl:text>
+                    </xsl:attribute>
+                    <xsl:if test="(contains($identifierValue, '?')) or (contains($identifierValue, '.nc'))">
+                        <url>
+                            <xsl:value-of select="$identifierValue"/>
+                        </url>
+                    </xsl:if>
+                </relation>
+                
+                <xsl:apply-templates select="." mode="IMAS_relatedInfo_all"/>
+            </relatedInfo>
+
+    </xsl:template>
+    
+    <xsl:template match="gmd:CI_OnlineResource" mode="IMAS_relatedInfo_publication">       
+        
+        <xsl:variable name="identifierValue" select="normalize-space(gmd:linkage/gmd:URL)"/>
+        
+        <relatedInfo>
+            <xsl:attribute name="type" select="'publication'"/>   
+            
+            <relation>
+                <xsl:attribute name="type">
+                    <xsl:text>isCitedBy</xsl:text>
+                </xsl:attribute>
+                <xsl:if test="(contains($identifierValue, '?'))">
+                    <url>
+                        <xsl:value-of select="$identifierValue"/>
+                    </url>
+                </xsl:if>
+            </relation>
+            
+            <xsl:apply-templates select="." mode="IMAS_relatedInfo_all"/>
+        </relatedInfo>
+        
+    </xsl:template>
+    
+    <xsl:template match="gmd:CI_OnlineResource" mode="IMAS_relatedInfo_relatedInformation">       
+        
+        <xsl:variable name="identifierValue" select="normalize-space(gmd:linkage/gmd:URL)"/>
+        
+        <relatedInfo>
+            <xsl:attribute name="type" select="'relatedInformation'"/>   
+            
+            <relation>
+                <xsl:attribute name="type">
+                    <xsl:text>hasAssociationWith</xsl:text>
+                </xsl:attribute>
+                <xsl:if test="(contains($identifierValue, '?'))">
+                    <url>
+                        <xsl:value-of select="replace($identifierValue, ':/\(?=[^/]\)', '/')"/>
+                    </url>
+                </xsl:if>
+            </relation>
+            
+            <xsl:apply-templates select="." mode="IMAS_relatedInfo_all"/>
+        </relatedInfo>
+        
+    </xsl:template>
+    
+    
+    <xsl:template match="gmd:CI_OnlineResource" mode="IMAS_relatedInfo_all">     
+        
+        <xsl:variable name="identifierValue" select="normalize-space(gmd:linkage/gmd:URL)"/>
+        
+            <identifier>
+                <xsl:attribute name="type">
+                    <xsl:choose>
+                        <xsl:when test="contains(lower-case($identifierValue), 'doi')">
+                            <xsl:text>doi</xsl:text>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:text>uri</xsl:text>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:attribute>
+                <xsl:choose>
+                    <xsl:when test="contains($identifierValue, '?')">
+                        <xsl:value-of select="substring-before(., '?')"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:value-of select="$identifierValue"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+                
+            </identifier>
+            
+            <xsl:choose>
+                <!-- Use description as title if we have it... -->
+                <xsl:when test="string-length(normalize-space(gmd:description)) > 0">
+                    <title>
+                        <xsl:value-of select="normalize-space(gmd:description)"/>
+                        
+                        <!-- ...and then name in brackets following -->
+                        <xsl:if
+                            test="string-length(normalize-space(gmd:name)) > 0">
+                            <xsl:value-of select="concat(' (', gmd:name, ')')"/>
+                        </xsl:if>
+                    </title>
+                </xsl:when>
+                <!-- No description, so use name as title if we have it -->
+                <xsl:otherwise>
+                    <xsl:if
+                        test="string-length(normalize-space(gmd:name)) > 0">
+                        <title>
+                            <xsl:value-of select="concat('(', gmd:name, ')')"/>
+                        </title>
+                    </xsl:if>
+                </xsl:otherwise>
+            </xsl:choose>
     </xsl:template>
 
     <!-- RegistryObject - RelatedInfo Element  -->
@@ -1360,16 +1537,17 @@
     <!-- RegistryObject - Rights Licence - From CreativeCommons -->
     <xsl:template match="mcp:MD_CreativeCommons" mode="IMAS_registryObject_rights_licence_creative">
         <xsl:variable name="licenseLink" select="normalize-space(mcp:licenseLink/gmd:URL)"/>
+        <xsl:variable name="licenseName" select="normalize-space(*:licenseName)"/>
         <xsl:for-each
-            select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCode']/gmx:codeEntry/gmx:CodeDefinition">
+            select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCodeAustralia' or @gml:id='LicenseCodeInternational']/gmx:codeEntry/gmx:CodeDefinition">
             <xsl:if test="string-length(normalize-space(gml:remarks)) > 0">
-                <xsl:if test="contains($licenseLink, gml:remarks)">
+                <xsl:if test="(lower-case(replace($licenseLink, '\d.\d|/', '')) = normalize-space(lower-case(replace(gml:remarks, '\{n\}|/', ''))))">
                     <rights>
                         <licence>
                             <xsl:attribute name="type" select="gml:identifier"/>
                             <xsl:attribute name="rightsUri" select="$licenseLink"/>
-                            <xsl:if test="string-length(normalize-space(gml:name)) > 0">
-                                <xsl:value-of select="normalize-space(gml:name)"/>
+                            <xsl:if test="string-length(normalize-space($licenseName)) > 0">
+                                <xsl:value-of select="normalize-space($licenseName)"/>
                             </xsl:if>
                         </licence>
                     </rights>
@@ -1406,16 +1584,17 @@
     <!-- RegistryObject - Rights Licence - From CreativeCommons -->
     <xsl:template match="mcp:MD_Commons" mode="IMAS_registryObject_rights_licence_creative">
         <xsl:variable name="licenseLink" select="normalize-space(mcp:licenseLink/gmd:URL)"/>
+        <xsl:variable name="licenseName" select="normalize-space(*:licenseName)"/>
         <xsl:for-each
-            select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCode']/gmx:codeEntry/gmx:CodeDefinition">
+            select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCodeAustralia' or @gml:id='LicenseCodeInternational']/gmx:codeEntry/gmx:CodeDefinition">
             <xsl:if test="string-length(normalize-space(gml:remarks)) > 0">
-                <xsl:if test="contains($licenseLink, gml:remarks)">
+                <xsl:if test="(lower-case(replace($licenseLink, '\d.\d|/', '')) = normalize-space(lower-case(replace(gml:remarks, '\{n\}|/', ''))))">
                     <rights>
                         <licence>
                             <xsl:attribute name="type" select="gml:identifier"/>
                             <xsl:attribute name="rightsUri" select="$licenseLink"/>
-                            <xsl:if test="string-length(normalize-space(gml:name)) > 0">
-                                <xsl:value-of select="normalize-space(gml:name)"/>
+                            <xsl:if test="string-length(normalize-space($licenseName)) > 0">
+                                <xsl:value-of select="normalize-space($licenseName)"/>
                             </xsl:if>
                         </licence>
                     </rights>
@@ -1532,7 +1711,7 @@
                 <xsl:variable name="otherConstraints" select="normalize-space(.)"/>
                 <!-- If there is text in other contraints, use this; otherwise, do nothing -->
                 <xsl:if test="string-length($otherConstraints) > 0">
-                    <xsl:for-each select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCode']/gmx:codeEntry/gmx:CodeDefinition">
+                    <xsl:for-each select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCodeAustralia' or @gml:id='LicenseCodeInternational']/gmx:codeEntry/gmx:CodeDefinition">
                         <xsl:if test="string-length(normalize-space(gml:remarks)) > 0">
                             <xsl:if test="contains($otherConstraints, gml:remarks)">
                                 <!--xsl:message>Identifier <xsl:value-of select='gml:identifier'/></xsl:message-->

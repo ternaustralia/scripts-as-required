@@ -265,7 +265,7 @@
         </xsl:if>   
     </xsl:template>
     
-    <xsl:template match="*:titl" mode="registryObject_altname">
+    <xsl:template match="*:altTitl" mode="registryObject_altname">
         <name type="alternative">
             <namePart>
                 <xsl:value-of select="normalize-space(.)"/>

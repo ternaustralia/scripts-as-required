@@ -26,14 +26,13 @@
     <xsl:import href="CustomFunctions.xsl"/>
     <xsl:import href="CustomFunctionsGMD.xsl"/>
     
+    <xsl:param name="global_group" select="'UTAS:University of Tasmania, Australia'"/>
+    <xsl:param name="global_debug" select="true()" as="xs:boolean"/>
+    <xsl:param name="global_debugExceptions" select="true()" as="xs:boolean"/>
+        
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
     
-    <xsl:param name="global_group" select="'UTAS:University of Tasmania, Australia'"/>
-    <xsl:param name="global_debug" select="false()" as="xs:boolean"/>
-    <xsl:param name="global_debugExceptions" select="true()" as="xs:boolean"/>
-    
-
     <!-- stylesheet to convert iso19139 in OAI-PMH ListRecords response to RIF-CS -->
     <xsl:template match="oai:responseDate"/>
     <xsl:template match="oai:request"/>
@@ -104,7 +103,15 @@
                      <xsl:with-param name="aggregatingGroup" select="$global_group"/>
                  </xsl:apply-templates>
              </xsl:when>
-             <xsl:when test="
+            <xsl:when test="
+                custom:sequenceContains($metadataPointOfTruth_sequence, 'aims.gov') or
+                contains(lower-case($originatingSourceOrganisation), 'aims') or
+                contains(lower-case($originatingSourceOrganisation), 'australian institute of marine science')">
+                <xsl:apply-templates select="." mode="AIMS">
+                    <xsl:with-param name="aggregatingGroup" select="$global_group"/>
+                </xsl:apply-templates>
+            </xsl:when>
+            <xsl:when test="
                  custom:sequenceContains($metadataPointOfTruth_sequence, 'imos') or
                  contains(lower-case($originatingSourceOrganisation), 'imos') or
                  contains(lower-case($originatingSourceOrganisation), 'integrated marine observing system')">
@@ -112,15 +119,7 @@
                      <xsl:with-param name="aggregatingGroup" select="$global_group"/>
                  </xsl:apply-templates>
              </xsl:when>
-             <xsl:when test="
-                 custom:sequenceContains($metadataPointOfTruth_sequence, 'data.aims') or
-                 contains(lower-case($originatingSourceOrganisation), 'aims') or
-                 contains(lower-case($originatingSourceOrganisation), 'australian institute of marine science')">
-                 <xsl:apply-templates select="." mode="AIMS">
-                     <xsl:with-param name="aggregatingGroup" select="$global_group"/>
-                 </xsl:apply-templates>
-             </xsl:when>
-             <xsl:otherwise>
+            <xsl:otherwise>
                  <xsl:if test="$global_debugExceptions">
                      <xsl:message select="concat('Exception: No xslt for originating source ', $originatingSourceOrganisation, ' so using IMAS XSLT')">
                          <xsl:apply-templates select="." mode="IMAS">

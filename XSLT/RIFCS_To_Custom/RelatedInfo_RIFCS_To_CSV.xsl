@@ -4,6 +4,7 @@
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xmlns:fn="http://www.w3.org/2005/xpath-functions"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
+    xpath-default-namespace="http://ands.org.au/standards/rif-cs/registryObjects"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0" >
     
     <xsl:param name="columnSeparator" select="'^'"/>
@@ -23,6 +24,8 @@
     
     <xsl:template match="/">
        
+        <xsl:text>&#xa;</xsl:text>
+        
         <xsl:text>type</xsl:text><xsl:value-of select="$columnSeparator"/>
         <xsl:text>title</xsl:text><xsl:value-of select="$columnSeparator"/>
         <xsl:text>identifier</xsl:text><xsl:value-of select="$columnSeparator"/>

@@ -442,15 +442,40 @@
         <identifier>
             <xsl:attribute name="type">
                     <xsl:choose>
+                        <!-- - If codespace is provided:
+                                      - use mapped type from codespace if it was determined (i.e.default 'local' was not returned); or
+                                      - use mapped type from identifier value if it was determined (i.e. default 'local' was not returned); or
+                                      - use the codeSpace provided
+                                  -If codespace was not provided:
+                                       - use mapped type from identifier value
+                           -->
                         <xsl:when test="string-length(following-sibling::mcc:codeSpace) > 0">
-                            <xsl:value-of select="following-sibling::mcc:codeSpace"/>
+                            <xsl:choose>
+                             <xsl:when test="custom:getIdentifierType(following-sibling::mcc:codeSpace) != 'local'">
+                                 <xsl:value-of select="custom:getIdentifierType(following-sibling::mcc:codeSpace)"/>
+                             </xsl:when>
+                                <xsl:when test="custom:getIdentifierType(.) != 'local'">
+                                    <xsl:value-of select="custom:getIdentifierType(.)"/>
+                                </xsl:when>
+                             <xsl:otherwise>
+                                 <xsl:value-of select="following-sibling::mcc:codeSpace"/>
+                             </xsl:otherwise>
+                            </xsl:choose>
                         </xsl:when>
                          <xsl:otherwise>
                             <xsl:value-of select="custom:getIdentifierType(.)"/>
                         </xsl:otherwise>
                     </xsl:choose>
             </xsl:attribute>
-            <xsl:value-of select="normalize-space(.)"/>
+            <xsl:choose>
+                <xsl:when test="contains(., 'hdl:')">
+                    <xsl:value-of select="normalize-space(replace(.,'hdl:', ''))"/>   
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="normalize-space(.)"/>   
+                </xsl:otherwise>
+            </xsl:choose>
+            
         </identifier>
     </xsl:template>
     
@@ -1075,9 +1100,18 @@
                                     <xsl:value-of select="concat('http://', $global_baseURI_PID, $global_path_PID, ancestor::mdb:MD_Metadata/mdb:alternativeMetadataReference/cit:CI_Citation/cit:identifier/mcc:MD_Identifier[contains(lower-case(mcc:codeSpace), 'ecatid')][1]//mcc:code[1])"/>   
                                 </xsl:when>
                                 <xsl:when 
-                                    test="count(cit:identifier[not(contains(mcc:MD_Identifier/mcc:codeSpace, 'ga-dataSetURI'))]/mcc:MD_Identifier/mcc:code) and (string-length(cit:identifier[not(contains(mcc:MD_Identifier/mcc:codeSpace, 'ga-dataSetURI'))][1]/mcc:MD_Identifier/mcc:code[1]) > 0)">
-                                    <xsl:attribute name="type" select="'uri'"/>
-                                    <xsl:value-of select="cit:identifier[not(contains(mcc:MD_Identifier/mcc:codeSpace, 'ga-dataSetURI'))][1]/mcc:MD_Identifier/mcc:code[1]"/>   
+                                    test="count(cit:identifier[not(contains(mcc:MD_Identifier/mcc:codeSpace, 'dataSetURI'))]/mcc:MD_Identifier/mcc:code) and (string-length(cit:identifier[not(contains(mcc:MD_Identifier/mcc:codeSpace, 'dataSetURI'))][1]/mcc:MD_Identifier/mcc:code[1]) > 0)">
+                                   <xsl:variable name="identifier" select="cit:identifier[not(contains(mcc:MD_Identifier/mcc:codeSpace, 'dataSetURI'))][1]/mcc:MD_Identifier/mcc:code[1]"/>   
+                                   <xsl:choose>
+                                       <xsl:when test="contains($identifier, 'hdl:')">
+                                            <xsl:attribute name="type" select="'handle'"/>
+                                            <xsl:value-of select="normalize-space(replace($identifier,'hdl:', ''))"/>   
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:attribute name="type" select="'uri'"/>
+                                            <xsl:value-of select="normalize-space($identifier)"/>   
+                                        </xsl:otherwise>
+                                    </xsl:choose>
                                 </xsl:when>
                                 <xsl:otherwise>
                                     <xsl:attribute name="type" select="'uri'"/>

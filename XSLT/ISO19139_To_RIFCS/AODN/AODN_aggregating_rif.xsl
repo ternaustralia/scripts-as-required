@@ -104,19 +104,19 @@
                      <xsl:with-param name="aggregatingGroup" select="$global_group"/>
                  </xsl:apply-templates>
              </xsl:when>
-             <xsl:when test="
+            <xsl:when test="
+                custom:sequenceContains($metadataPointOfTruth_sequence, 'aims.gov') or
+                contains(lower-case($originatingSourceOrganisation), 'aims') or
+                contains(lower-case($originatingSourceOrganisation), 'australian institute of marine science')">
+                <xsl:apply-templates select="." mode="AIMS">
+                    <xsl:with-param name="aggregatingGroup" select="$global_group"/>
+                </xsl:apply-templates>
+            </xsl:when>
+            <xsl:when test="
                  custom:sequenceContains($metadataPointOfTruth_sequence, 'imos') or
                  contains(lower-case($originatingSourceOrganisation), 'imos') or
                  contains(lower-case($originatingSourceOrganisation), 'integrated marine observing system')">
                  <xsl:apply-templates select="." mode="IMOS">
-                     <xsl:with-param name="aggregatingGroup" select="$global_group"/>
-                 </xsl:apply-templates>
-             </xsl:when>
-             <xsl:when test="
-                 custom:sequenceContains($metadataPointOfTruth_sequence, 'data.aims') or
-                 contains(lower-case($originatingSourceOrganisation), 'aims') or
-                 contains(lower-case($originatingSourceOrganisation), 'australian institute of marine science')">
-                 <xsl:apply-templates select="." mode="AIMS">
                      <xsl:with-param name="aggregatingGroup" select="$global_group"/>
                  </xsl:apply-templates>
              </xsl:when>

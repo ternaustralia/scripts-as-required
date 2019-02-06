@@ -72,7 +72,7 @@
             <xsl:message select="concat('truth: ', .)"/>
         </xsl:for-each>
         <xsl:variable name="originatingSourceOrganisation">
-            <xsl:variable name="originatingSourceFromMetadataURL_sequence" select="customGMD:originatingSourceOrganisationFromMetadataURL($metadataPointOfTruth_sequence)"/>
+            <xsl:variable name="originatingSourceFromMetadataURL_sequence" select="customGMD:originatingSourceOrganisationFromURL($metadataPointOfTruth_sequence)"/>
             <xsl:choose>
                 <xsl:when test="(count($originatingSourceFromMetadataURL_sequence) > 0) and (string-length($originatingSourceFromMetadataURL_sequence[1]) > 0)">
                     <xsl:value-of select="$originatingSourceFromMetadataURL_sequence[1]"/>

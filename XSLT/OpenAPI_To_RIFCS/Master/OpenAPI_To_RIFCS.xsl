@@ -65,8 +65,12 @@
                            </originatingSource>
        
                            <service type="webservice">
+                               
+                               <identifier type="url">
+                                   <xsl:value-of select="$fullPath"/>
+                               </identifier>
        
-                               <identifier type="uri">
+                               <identifier type="local">
                                    <xsl:value-of select="operationId"/>
                                </identifier>
        

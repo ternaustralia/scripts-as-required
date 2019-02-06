@@ -20,7 +20,6 @@
     <xsl:param name="global_AAD_publisherName" select="'Australian Antarctic Data Centre'"/>
     <xsl:param name="global_AAD_contributorName" select="'Australian Antarctic Division'"/>
     <xsl:param name="global_AAD_publisherPlace" select="'Hobart'"/>
-    <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>
     <xsl:variable name="gmdCodelists" select="document('codelists.xml')"/>
    
     <!-- =========================================== -->
@@ -400,10 +399,27 @@
                             <xsl:value-of select="$identifier_sequence[2]"/>
                         </identifier>
                         <relation>
+                            <xsl:variable name="codelist"
+                                select="$gmdCodelists/codelists/codelist[@name = 'gmd:CI_RoleCode']"/>
+                            
+                            <xsl:variable name="type">
+                                <xsl:value-of select="$codelist/entry[code = $code]/description"/>
+                            </xsl:variable>
+                            
                             <xsl:attribute name="type">
-                                <xsl:value-of select="$code"/>
+                                <xsl:choose>
+                                    <xsl:when test="string-length($type) > 0">
+                                        <xsl:value-of select="$type"/>
+                                    </xsl:when>
+                                    <xsl:when test="string-length($code) > 0">
+                                        <xsl:value-of select="$code"/>  
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:text>unknown</xsl:text>
+                                    </xsl:otherwise>
+                                </xsl:choose>
                             </xsl:attribute>
-                        </relation>
+                         </relation>
                     </relatedInfo>
                 </xsl:when>
                 <xsl:otherwise>
@@ -412,8 +428,25 @@
                             <xsl:value-of select="concat($global_AAD_acronym,'/', translate(normalize-space($transformedName),' ',''))"/>
                         </key>
                         <relation>
+                            <xsl:variable name="codelist"
+                                select="$gmdCodelists/codelists/codelist[@name = 'gmd:CI_RoleCode']"/>
+                            
+                            <xsl:variable name="type">
+                                <xsl:value-of select="$codelist/entry[code = $code]/description"/>
+                            </xsl:variable>
+                            
                             <xsl:attribute name="type">
-                                <xsl:value-of select="$code"/>
+                                <xsl:choose>
+                                    <xsl:when test="string-length($type) > 0">
+                                        <xsl:value-of select="$type"/>
+                                    </xsl:when>
+                                    <xsl:when test="string-length($code) > 0">
+                                        <xsl:value-of select="$code"/>  
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:text>unknown</xsl:text>
+                                    </xsl:otherwise>
+                                </xsl:choose>
                             </xsl:attribute>
                         </relation>
                     </relatedObject>

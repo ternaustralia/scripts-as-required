@@ -11,6 +11,8 @@ parser.add_option("--jsonURL", action="store", dest="jsonURL", help="URL to JSON
 
 #http://portal.tern.org.au/assets/core/swagger/swagger.yaml
 
+
+
 (options, args) = parser.parse_args()
 
 # Validate jsonURL
@@ -27,8 +29,12 @@ if not(options.jsonURL):
 
 # temp begin
 
-page = file('/home/ada168/projects/TERN/swagger.yaml', 'r')
-accept = "text/yaml"
+#page = file('/home/ada168/projects/TERN_Project/swagger.yaml', 'r')
+#accept = "text/yaml"
+page = file('/home/ada168/projects/ALA/api-docs.json', 'r')
+accept = "application/json"
+
+
 # temp end
 
 content = page.read()
@@ -60,8 +66,8 @@ try:
             for key, value in safeLoad.iteritems():
                print key, value
             #print yaml.dump(yaml.load(content))
-            xml = dicttoxml.dicttoxml(yaml.dump(yaml.load(content)))
-            print(xml)
+            xml = dicttoxml.dicttoxml(safeLoad.iteritems())
+            #print(xml)
         except Exception:
             print('Unable to convert yaml load to xml')
 

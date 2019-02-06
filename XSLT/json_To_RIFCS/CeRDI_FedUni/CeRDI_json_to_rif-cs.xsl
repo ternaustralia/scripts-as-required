@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:custom="http://custom.nowhere.yet"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+    xmlns:custom="http://custom.nowhere.yet"
+    xpath-default-namespace="http://json.to.xml"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects">
     <!-- stylesheet to convert data.gov.au xml (transformed from json with python script) to RIF-CS -->
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
@@ -18,9 +20,17 @@
     <xsl:param name="global_publisherName"
         select="'CeRDI Federation University Australia'"/>
     <xsl:param name="global_publisherPlace" select="'Australia'"/>
+    <xsl:param name="global_debug" select="false()"/>
 
     <xsl:template match="/">
-        <xsl:apply-templates select="//datasets"/>
+        <registryObjects>
+            <xsl:attribute name="xsi:schemaLocation">
+                <xsl:text>http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd</xsl:text>
+            </xsl:attribute>
+            
+            <xsl:apply-templates select="//datasets/result" mode="constructObjects"/>
+            
+        </registryObjects>
     </xsl:template>
     
     <!--xsl:template match="//datasets/help"/-->
@@ -30,18 +40,7 @@
     <!-- dataset (datasets) Template             -->
     <!-- =========================================== -->
     
-    <xsl:template match="datasets">
-        <registryObjects>
-            <xsl:attribute name="xsi:schemaLocation">
-                <xsl:text>http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd</xsl:text>
-            </xsl:attribute>
-            
-            <xsl:apply-templates select="result" mode="constructObjects"/>
-            
-        </registryObjects>
-    </xsl:template>
-    
-    <xsl:template match="result" mode="constructObjects">
+   <xsl:template match="result" mode="constructObjects">
         <xsl:apply-templates select="." mode="collection"/>
         <xsl:apply-templates select="." mode="party"/>
         <!--xsl:apply-templates select="." mode="service"/-->
@@ -473,7 +472,9 @@
         <!-- Related Services -->
         <xsl:for-each select="resources">
             <xsl:variable name="url" select="normalize-space(url)"/>
-            <xsl:message select="concat('url: ', $url)"/>
+            <xsl:if test="$global_debug">
+                <xsl:message select="concat('url: ', $url)"/>
+            </xsl:if>
             <xsl:if test="string-length($url)">
                 <xsl:variable name="serviceUrl">
                     <xsl:choose>
@@ -487,7 +488,9 @@
                 </xsl:variable>
                 <xsl:variable name="serviceName" select="custom:getServiceName($serviceUrl)"/>
                 <xsl:if test="string-length($serviceUrl) > 0">
-                    <xsl:message select="concat('serviceUrl: ', $serviceUrl)"/>
+                    <xsl:if test="$global_debug">
+                        <xsl:message select="concat('serviceUrl: ', $serviceUrl)"/>
+                    </xsl:if>
                     <relatedInfo type="service">
                         <identifier type="uri">
                             <xsl:value-of select="$serviceUrl"/>
@@ -859,7 +862,9 @@
         <xsl:param name="parent"/>
         <xsl:for-each select="$parent/resources">
             <xsl:variable name="url" select="normalize-space(url)"/>
-            <xsl:message select="concat('url: ', $url)"/>
+            <xsl:if test="$global_debug">
+                <xsl:message select="concat('url: ', $url)"/>
+            </xsl:if>
             <xsl:if test="string-length($url)">
                 <xsl:choose>
                     <xsl:when test="contains($url, '?')">
@@ -905,7 +910,9 @@
                                     </xsl:otherwise>
                                 </xsl:choose>
                             </xsl:variable>
-                            <xsl:message select="concat('serviceUrl: ', $serviceUrl)"/>
+                            <xsl:if test="$global_debug">
+                                <xsl:message select="concat('serviceUrl: ', $serviceUrl)"/>
+                            </xsl:if>
                             <xsl:value-of select="$serviceUrl"/>
                         </xsl:if>
                     </xsl:otherwise>
@@ -968,7 +975,9 @@
     <xsl:function name="custom:getServiceUrl">
         <xsl:param name="resources"/>
         <xsl:variable name="url" select="$resources/url"/>
-        <xsl:message select="concat('getServiceUrl url: ', $url)"/>
+        <xsl:if test="$global_debug">
+            <xsl:message select="concat('getServiceUrl url: ', $url)"/>
+        </xsl:if>
         <xsl:choose>
             <xsl:when test="contains($url, '?')">
                 <!-- Indicates parameters -->

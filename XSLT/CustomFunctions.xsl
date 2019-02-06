@@ -30,6 +30,29 @@
         </xsl:choose>
         
     </xsl:function>
+    
+    <xsl:function name="custom:strContainsSequenceSubset" as="xs:boolean">
+        <xsl:param name="str" as="xs:string"/>
+        <xsl:param name="sequence" as="xs:string*"/>
+        
+        <xsl:variable name="true_sequence" as="xs:boolean*">
+            <xsl:for-each select="distinct-values($sequence)">
+                <xsl:if test="contains(lower-case($str), lower-case(.))">
+                    <xsl:copy-of select="true()"/>
+                </xsl:if>
+            </xsl:for-each>
+        </xsl:variable>
+        
+        <xsl:choose>
+            <xsl:when test="count($true_sequence) > 0">
+                <xsl:copy-of select="true()"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:copy-of select="false()"/>
+            </xsl:otherwise>
+        </xsl:choose>
+        
+    </xsl:function>
 
     <xsl:function name="custom:sequenceContainsExact" as="xs:boolean">
         <xsl:param name="sequence" as="xs:string*"/>
@@ -86,6 +109,9 @@
             </xsl:when>
             <xsl:when test="contains(lower-case($identifier), 'http')">
                 <xsl:text>uri</xsl:text>
+            </xsl:when>
+            <xsl:when test="contains(lower-case($identifier), 'uuid')">
+                <xsl:text>global</xsl:text>
             </xsl:when>
             <xsl:otherwise>
                 <xsl:text>local</xsl:text>

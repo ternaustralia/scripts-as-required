@@ -198,37 +198,66 @@
         
         <xsl:variable name="currentValue" select="normalize-space(.)"/>
         
-        <xsl:variable name="codeDefinitionMatchRemarks_sequence" select="$licenseCodelist/custom:CT_CodelistCatalogue/custom:codelistItem/custom:CodeListDictionary[@custom:id='LicenseCodeAustralia']/custom:codeEntry/custom:CodeDefinition[contains($currentValue, normalize-space(replace(custom:remarks, '\{n\}', '')))]" as="node()*"/>
-        <xsl:variable name="codeDefinitionMatchIdentifier_sequence" select="$licenseCodelist/custom:CT_CodelistCatalogue/custom:codelistItem/custom:CodeListDictionary[@custom:id='LicenseCodeAustralia']/custom:codeEntry/custom:CodeDefinition[contains(translate($currentValue, ' ', '-'), normalize-space(custom:identifier))]" as="node()*"/>
+        <xsl:message select="concat('$currentValue', $currentValue)"/>
+        <xsl:message select="concat('$currentValue no number: ', replace($currentValue, '\d.\d', ''))"/>
+        
+        <xsl:variable name="customIdentifier_sequence" as="xs:string*">
+            <xsl:for-each select="$licenseCodelist/custom:CT_CodelistCatalogue/custom:codelistItem/custom:CodeListDictionary[(@custom:id='LicenseCodeAustralia')]/custom:codeEntry/custom:CodeDefinition">
+                <xsl:message select="concat('remarks no {n}: ', normalize-space(replace(custom:remarks, '\{n\}', '')))"/>
+               <xsl:if test="contains(replace($currentValue, '\d.\d', ''), normalize-space(replace(custom:remarks, '\{n\}', '')))">
+                   <xsl:message select="'Match on remarks'"/>
+                        <xsl:if test="string-length(custom:identifier) > 0">
+                            <xsl:value-of select="custom:identifier"/>
+                        </xsl:if>
+                    <xsl:message select="concat('remarks: ', normalize-space(replace(custom:remarks, '\{n\}', '')))"/>
+                </xsl:if> 
+           </xsl:for-each>
+            
+            <xsl:for-each select="$licenseCodelist/custom:CT_CodelistCatalogue/custom:codelistItem/custom:CodeListDictionary[(@custom:id='LicenseCodeInternational')]/custom:codeEntry/custom:CodeDefinition">
+                <xsl:message select="concat('remarks no {n}: ', normalize-space(replace(custom:remarks, '\{n\}', '')))"/>
+                <xsl:if test="contains(replace($currentValue, '\d.\d', ''), normalize-space(replace(custom:remarks, '\{n\}', '')))">
+                    <xsl:message select="'Match on remarks'"/>
+                    <xsl:if test="string-length(custom:identifier) > 0">
+                        <xsl:value-of select="custom:identifier"/>
+                    </xsl:if>
+                </xsl:if> 
+            </xsl:for-each>
+            
+            <xsl:for-each select="$licenseCodelist/custom:CT_CodelistCatalogue/custom:codelistItem/custom:CodeListDictionary[(@custom:id='LicenseCodeAustralia')]/custom:codeEntry/custom:CodeDefinition">
+                <xsl:message select="concat('current value no  -: ', translate($currentValue, ' ', '-'))"/>
+                <xsl:message select="concat('custom:identifier  -: ', normalize-space(custom:identifier))"/>
+                
+                <xsl:if test="contains(translate($currentValue, ' ', '-'), normalize-space(custom:identifier))">
+                    <xsl:message select="'Match on identifier'"/>
+                    <xsl:if test="string-length(custom:identifier) > 0">
+                        <xsl:value-of select="custom:identifier"/>
+                    </xsl:if>
+                </xsl:if> 
+            </xsl:for-each>
+            
+            <xsl:for-each select="$licenseCodelist/custom:CT_CodelistCatalogue/custom:codelistItem/custom:CodeListDictionary[(@custom:id='LicenseCodeInternational')]/custom:codeEntry/custom:CodeDefinition">
+                <xsl:message select="concat('current value no  -: ', translate($currentValue, ' ', '-'))"/>
+                <xsl:message select="concat('custom:identifier: ', normalize-space(custom:identifier))"/>
+                
+                <xsl:if test="contains(translate($currentValue, ' ', '-'), normalize-space(custom:identifier))">
+                    <xsl:message select="'Match on identifier'"/>
+                    <xsl:if test="string-length(custom:identifier) > 0">
+                        <xsl:value-of select="custom:identifier"/>
+                    </xsl:if>
+                </xsl:if> 
+            </xsl:for-each>
+            
+        </xsl:variable>
         
         <xsl:choose>
-            <xsl:when test="count($codeDefinitionMatchRemarks_sequence) > 0">
-                <xsl:for-each select="$codeDefinitionMatchRemarks_sequence">
-                    <xsl:if test="string-length(custom:identifier) > 0">
-                        <rights>
-                            <licence>
-                                <xsl:attribute name="type">
-                                    <xsl:value-of select="custom:identifier"/>
-                                    <xsl:message select="concat('Match found for ', $currentValue, ' so using custom:identifier: ', custom:identifier)"/>
-                                </xsl:attribute>
-                            </licence>
-                        </rights>
-                    </xsl:if>
-                </xsl:for-each>
-            </xsl:when>
-            <xsl:when test="count($codeDefinitionMatchIdentifier_sequence) > 0">
-                <xsl:for-each select="$codeDefinitionMatchIdentifier_sequence">
-                    <xsl:if test="string-length(custom:identifier) > 0">
-                        <rights>
-                            <licence>
-                                <xsl:attribute name="type">
-                                    <xsl:value-of select="custom:identifier"/>
-                                    <xsl:message select="concat('Match found for ', $currentValue, ' so using custom:identifier: ', custom:identifier)"/>
-                                </xsl:attribute>
-                            </licence>
-                        </rights>
-                    </xsl:if>
-                </xsl:for-each>
+            <xsl:when test="count($customIdentifier_sequence) > 0">
+                <rights>
+                    <licence>
+                        <xsl:attribute name="type">
+                            <xsl:value-of select="$customIdentifier_sequence[1]"/>
+                        </xsl:attribute>
+                    </licence>
+                </rights>
             </xsl:when>
             <xsl:otherwise>
                 <rights>
@@ -238,6 +267,7 @@
                 </rights>
             </xsl:otherwise>
         </xsl:choose>
+        
     </xsl:template>
     
     <xsl:template match="dc:description" mode="collection_description_full">

@@ -463,24 +463,30 @@
             <xsl:for-each-group select="current-group()/gmd:role"
                 group-by="gmd:CI_RoleCode/@codeListValue">
                 <xsl:variable name="code">
-                    <xsl:value-of select="normalize-space(current-grouping-key())"/>
+                    <xsl:value-of select="current-grouping-key()"/>
                 </xsl:variable>
-                <xsl:choose>
-                    <xsl:when test="string-length($code) > 0">
-                        <relation>
-                            <xsl:attribute name="type">
-                                <xsl:value-of select="$code"/>
-                            </xsl:attribute>
-                        </relation>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <relation>
-                            <xsl:attribute name="type">
+                <relation>
+                    <xsl:variable name="codelist"
+                        select="$gmdCodelists/codelists/codelist[@name = 'gmd:CI_RoleCode']"/>
+                    
+                    <xsl:variable name="type">
+                        <xsl:value-of select="$codelist/entry[code = $code]/description"/>
+                    </xsl:variable>
+                    
+                    <xsl:attribute name="type">
+                        <xsl:choose>
+                            <xsl:when test="string-length($type) > 0">
+                                <xsl:value-of select="$type"/>
+                            </xsl:when>
+                            <xsl:when test="string-length($code) > 0">
+                                <xsl:value-of select="$code"/>  
+                            </xsl:when>
+                            <xsl:otherwise>
                                 <xsl:text>unknown</xsl:text>
-                            </xsl:attribute>
-                        </relation>
-                    </xsl:otherwise>
-                </xsl:choose>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </xsl:attribute>
+                </relation>
                 
             </xsl:for-each-group>
         </relatedObject>
@@ -885,16 +891,17 @@
     <!-- RegistryObject - Rights Licence - From CreativeCommons -->
     <xsl:template match="*:MD_CreativeCommons" mode="IMOS_registryObject_rights_licence_creative">
         <xsl:variable name="licenseLink" select="normalize-space(*:licenseLink/gmd:URL)"/>
+        <xsl:variable name="licenseName" select="normalize-space(*:licenseName)"/>
         <xsl:for-each
-            select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCode']/gmx:codeEntry/gmx:CodeDefinition">
+            select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCodeAustralia' or @gml:id='LicenseCodeInternational']/gmx:codeEntry/gmx:CodeDefinition">
             <xsl:if test="string-length(normalize-space(gml:remarks)) > 0">
-                <xsl:if test="contains(lower-case($licenseLink), lower-case(gml:remarks))">
+                <xsl:if test="(lower-case(replace($licenseLink, '\d.\d|/', '')) = normalize-space(lower-case(replace(gml:remarks, '\{n\}|/', ''))))">
                     <rights>
                         <licence>
                             <xsl:attribute name="type" select="gml:identifier"/>
                             <xsl:attribute name="rightsUri" select="$licenseLink"/>
-                            <xsl:if test="string-length(normalize-space(mcp:licenseName)) > 0">
-                                <xsl:value-of select="normalize-space(mcp:licenseName)"/>
+                            <xsl:if test="string-length(normalize-space($licenseName)) > 0">
+                                <xsl:value-of select="normalize-space($licenseName)"/>
                             </xsl:if>
                         </licence>
                     </rights>
@@ -930,16 +937,17 @@
     <!-- RegistryObject - Rights Licence - From CreativeCommons -->
     <xsl:template match="*:MD_Commons" mode="IMOS_registryObject_rights_licence_creative">
         <xsl:variable name="licenseLink" select="normalize-space(*:licenseLink/gmd:URL)"/>
+        <xsl:variable name="licenseName" select="normalize-space(*:licenseName)"/>
         <xsl:for-each
-            select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCode']/gmx:codeEntry/gmx:CodeDefinition">
+            select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCodeAustralia' or @gml:id='LicenseCodeInternational']/gmx:codeEntry/gmx:CodeDefinition">
             <xsl:if test="string-length(normalize-space(gml:remarks)) > 0">
-                <xsl:if test="contains(lower-case($licenseLink), lower-case(gml:remarks))">
+                <xsl:if test="(lower-case(replace($licenseLink, '\d.\d|/', '')) = normalize-space(lower-case(replace(gml:remarks, '\{n\}|/', ''))))">
                     <rights>
                         <licence>
                             <xsl:attribute name="type" select="gml:identifier"/>
                             <xsl:attribute name="rightsUri" select="$licenseLink"/>
-                            <xsl:if test="string-length(normalize-space(mcp:licenseName)) > 0">
-                                <xsl:value-of select="normalize-space(mcp:licenseName)"/>
+                            <xsl:if test="string-length(normalize-space($licenseName)) > 0">
+                                <xsl:value-of select="normalize-space($licenseName)"/>
                             </xsl:if>
                         </licence>
                     </rights>
@@ -1035,7 +1043,7 @@
             <xsl:if test="contains(lower-case($otherConstraints), 'picccby')">
                 <rights>
                     <licence><xsl:text disable-output-escaping="yes">&lt;![CDATA[&lt;a href="http://polarcommons.org/ethics-and-norms-of-data-sharing.php"&gt; &lt;img src="http://polarcommons.org/images/PIC_print_small.png" style="border-width:0; width:40px; height:40px;" alt="Polar Information Commons's PICCCBY license."/&gt;&lt;/a&gt;&lt;a rel="license" href="http://creativecommons.org/licenses/by/3.0/" rel="license"&gt; &lt;img alt="Creative Commons License" style="border-width:0; width: 88px; height: 31px;" src="http://i.creativecommons.org/l/by/3.0/88x31.png" /&gt;&lt;/a&gt;]]&gt;</xsl:text>
-                        <!--xsl:for-each select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCode']/gmx:codeEntry/gmx:CodeDefinition">
+                        <!--xsl:for-each select="$licenseCodelist/gmx:CT_CodelistCatalogue/gmx:codelistItem/gmx:CodeListDictionary[@gml:id='LicenseCodeAustralia' or @gml:id='LicenseCodeInternational']/gmx:codeEntry/gmx:CodeDefinition">
                             <xsl:if test="string-length(normalize-space(gml:remarks)) > 0">
                             <xsl:if test="contains($otherConstraints, gml:remarks)">
                             <xsl:message>Identifier <xsl:value-of select='gml:identifier'/></xsl:message>

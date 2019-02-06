@@ -1,1 +1,1 @@
-../../CustomFunctionsGMD.xsl
+../MASTER/CustomFunctionsGMD.xsl

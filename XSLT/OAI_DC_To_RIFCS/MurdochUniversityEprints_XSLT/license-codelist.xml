@@ -25,44 +25,91 @@
 				<custom:CodeDefinition custom:id="LicenseCode_CC-BY_Australia">
 					<custom:identifier codeSpace="http://not.yet.defined">CC-BY</custom:identifier>
 					<custom:name codeSpace="http://not.yet.defined">Creative Commons Attribution {n} Australia License</custom:name>
-					<custom:remarks>http://creativecommons.org/licenses/by/{n}</custom:remarks>
+					<custom:remarks>http://creativecommons.org/licenses/by/{n}/au</custom:remarks>
 				</custom:CodeDefinition>
 			</custom:codeEntry>
 			<custom:codeEntry>
 				<custom:CodeDefinition custom:id="LicenseCode_CC-BY-ND_Australia">
 					<custom:identifier codeSpace="http://not.yet.defined">CC-BY-ND</custom:identifier>
 					<custom:name codeSpace="http://not.yet.defined">Creative Commons Attribution-NoDerivs {n} Australia License</custom:name>
-					<custom:remarks>http://creativecommons.org/licenses/by-nd/{n}</custom:remarks>
+					<custom:remarks>http://creativecommons.org/licenses/by-nd/{n}/au</custom:remarks>
 				</custom:CodeDefinition>
 			</custom:codeEntry>
 			<custom:codeEntry>
 				<custom:CodeDefinition custom:id="LicenseCode_CC-BY-NC-SA_Australia">
 					<custom:identifier codeSpace="http://not.yet.defined">CC-BY-NC-SA</custom:identifier>
 					<custom:name codeSpace="http://not.yet.defined">Creative Commons Attribution-NonCommercial-ShareAlike {n} Australia License</custom:name>
-					<custom:remarks>http://creativecommons.org/licenses/by-nc-sa/{n}</custom:remarks>
+					<custom:remarks>http://creativecommons.org/licenses/by-nc-sa/{n}/au</custom:remarks>
 				</custom:CodeDefinition>
 			</custom:codeEntry>
 			<custom:codeEntry>
 				<custom:CodeDefinition custom:id="LicenseCode_CC-BY-SA_Australia">
 					<custom:identifier codeSpace="http://not.yet.defined">CC-BY-SA</custom:identifier>
 					<custom:name codeSpace="http://not.yet.defined">Creative Commons Attribution-ShareAlike {n} Australia License</custom:name>
-					<custom:remarks>http://creativecommons.org/licenses/by-sa/{n}</custom:remarks>
+					<custom:remarks>http://creativecommons.org/licenses/by-sa/{n}/au</custom:remarks>
 				</custom:CodeDefinition>
 			</custom:codeEntry>
 			<custom:codeEntry>
 				<custom:CodeDefinition custom:id="LicenseCode_CC-BY-NC_Australia">
 					<custom:identifier codeSpace="http://not.yet.defined">CC-BY-NC</custom:identifier>
 					<custom:name codeSpace="http://not.yet.defined">Creative Commons Attribution-NonCommercial {n} Australia License</custom:name>
-					<custom:remarks>http://creativecommons.org/licenses/by-nc/{n}</custom:remarks>
+					<custom:remarks>http://creativecommons.org/licenses/by-nc/{n}/au</custom:remarks>
 				</custom:CodeDefinition>
 			</custom:codeEntry>
 			<custom:codeEntry>
 				<custom:CodeDefinition custom:id="LicenseCode_CC-BY-NC-ND_Australia">
 					<custom:identifier codeSpace="http://not.yet.defined">CC-BY-NC-ND</custom:identifier>
 					<custom:name codeSpace="http://not.yet.defined">Creative Commons Attribution-NonCommercial-NoDerivs {n} Australia License</custom:name>
-					<custom:remarks>http://creativecommons.org/licenses/by-nc-nd/{n}</custom:remarks>
+					<custom:remarks>http://creativecommons.org/licenses/by-nc-nd/{n}/au</custom:remarks>
 				</custom:CodeDefinition>
 			</custom:codeEntry>
         </custom:CodeListDictionary>
+	</custom:codelistItem>
+	<custom:codelistItem>
+		<custom:CodeListDictionary custom:id="LicenseCodeInternational">
+			<custom:identifier codeSpace="http://not.yet.defined">LicenseCodeInternational</custom:identifier>
+			<custom:codeEntry>
+				<custom:CodeDefinition custom:id="LicenseCode_CC-BY_International">
+					<custom:identifier codeSpace="http://not.yet.defined">CC-BY</custom:identifier>
+					<custom:name codeSpace="http://not.yet.defined">Creative Commons Attribution {n} International License</custom:name>
+					<custom:remarks>http://creativecommons.org/licenses/by/{n}</custom:remarks>
+				</custom:CodeDefinition>
+			</custom:codeEntry>
+			<custom:codeEntry>
+				<custom:CodeDefinition custom:id="LicenseCode_CC-BY-ND_International">
+					<custom:identifier codeSpace="http://not.yet.defined">CC-BY-ND</custom:identifier>
+					<custom:name codeSpace="http://not.yet.defined">Creative Commons Attribution-NoDerivs {n} International License</custom:name>
+					<custom:remarks>http://creativecommons.org/licenses/by-nd/{n}</custom:remarks>
+				</custom:CodeDefinition>
+			</custom:codeEntry>
+			<custom:codeEntry>
+				<custom:CodeDefinition custom:id="LicenseCode_CC-BY-NC-SA_International">
+					<custom:identifier codeSpace="http://not.yet.defined">CC-BY-NC-SA</custom:identifier>
+					<custom:name codeSpace="http://not.yet.defined">Creative Commons Attribution-NonCommercial-ShareAlike {n} International License</custom:name>
+					<custom:remarks>http://creativecommons.org/licenses/by-nc-sa/{n}</custom:remarks>
+				</custom:CodeDefinition>
+			</custom:codeEntry>
+			<custom:codeEntry>
+				<custom:CodeDefinition custom:id="LicenseCode_CC-BY-SA_International">
+					<custom:identifier codeSpace="http://not.yet.defined">CC-BY-SA</custom:identifier>
+					<custom:name codeSpace="http://not.yet.defined">Creative Commons Attribution-ShareAlike {n} International License</custom:name>
+					<custom:remarks>http://creativecommons.org/licenses/by-sa/{n}</custom:remarks>
+				</custom:CodeDefinition>
+			</custom:codeEntry>
+			<custom:codeEntry>
+				<custom:CodeDefinition custom:id="LicenseCode_CC-BY-NC_International">
+					<custom:identifier codeSpace="http://not.yet.defined">CC-BY-NC</custom:identifier>
+					<custom:name codeSpace="http://not.yet.defined">Creative Commons Attribution-NonCommercial {n} International License</custom:name>
+					<custom:remarks>http://creativecommons.org/licenses/by-nc/{n}</custom:remarks>
+				</custom:CodeDefinition>
+			</custom:codeEntry>
+			<custom:codeEntry>
+				<custom:CodeDefinition custom:id="LicenseCode_CC-BY-NC-ND_International">
+					<custom:identifier codeSpace="http://not.yet.defined">CC-BY-NC-ND</custom:identifier>
+					<custom:name codeSpace="http://not.yet.defined">Creative Commons Attribution-NonCommercial-NoDerivs {n} International License</custom:name>
+					<custom:remarks>http://creativecommons.org/licenses/by-nc-nd/{n}</custom:remarks>
+				</custom:CodeDefinition>
+			</custom:codeEntry>
+		</custom:CodeListDictionary>
 	</custom:codelistItem>
 </custom:CT_CodelistCatalogue>

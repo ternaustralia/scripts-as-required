@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet 
     xmlns:custom="http://nowhere.yet"
-    xmlns:gmd="http://www.isotc211.org/2005/gmd" 
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xmlns:fn="http://www.w3.org/2005/xpath-functions"
     xmlns="http://www.isotc211.org/2005/gmd"
@@ -12,6 +11,7 @@
     <xsl:param name="rawXMLPrefix" select="'http://geonetwork.tern.org.au/geonetwork/srv/eng/xml.metadata.get?uuid='"/>
     <xsl:param name="columnSeparator" select="'^'"/>
     <xsl:param name="valueSeparator" select="','"/>
+    <xsl:param name="includeMetadataURL" select="true()"/>
     <xsl:output omit-xml-declaration="yes" indent="yes" encoding="UTF-8"/>
     <xsl:strip-space elements="*"/>  
     
@@ -34,26 +34,36 @@
         <xsl:text>name</xsl:text><xsl:value-of select="$columnSeparator"/>
         <xsl:text>description</xsl:text><xsl:value-of select="$columnSeparator"/>
         
-        <xsl:apply-templates select="//gmd:MD_Metadata"/>
+        <xsl:apply-templates select="//*:MD_Metadata"/>
     </xsl:template>
     
-    <xsl:template match="gmd:MD_Metadata">
+    <xsl:template match="*:MD_Metadata">
        
-        <xsl:message select="concat('result: ', count(gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource[not(contains(gmd:protocol, 'metadata')) and not(contains(gmd:linkage, 'doi'))]))"></xsl:message>
+        <xsl:message select="concat('result: ', count(*:distributionInfo/*:MD_Distribution/*:transferOptions/*:MD_DigitalTransferOptions/*:onLine/*:CI_OnlineResource[not(contains(*:protocol, 'metadata'))]))"/>
         
-        <xsl:variable name="fileIdentifier" select="gmd:fileIdentifier"></xsl:variable>
+        <xsl:variable name="fileIdentifier" select="*:fileIdentifier"></xsl:variable>
         
-        <xsl:for-each select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource[not(contains(gmd:protocol, 'metadata')) and not(contains(gmd:linkage, 'doi'))]">
-            
-            <xsl:apply-templates select=".">
-                <xsl:with-param name="fileIdentifier" select="$fileIdentifier"/>
-            </xsl:apply-templates>
-        </xsl:for-each>
+        <xsl:choose>
+            <xsl:when test="boolean($includeMetadataURL) = true()">
+                <xsl:for-each select="*:distributionInfo/*:MD_Distribution/*:transferOptions/*:MD_DigitalTransferOptions/*:onLine/*:CI_OnlineResource">
+                    <xsl:apply-templates select=".">
+                        <xsl:with-param name="fileIdentifier" select="$fileIdentifier"/>
+                    </xsl:apply-templates>
+                </xsl:for-each>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:for-each select="*:distributionInfo/*:MD_Distribution/*:transferOptions/*:MD_DigitalTransferOptions/*:onLine/*:CI_OnlineResource[not(contains(lower-case(*:protocol), 'metadata'))]">
+                    <xsl:apply-templates select=".">
+                        <xsl:with-param name="fileIdentifier" select="$fileIdentifier"/>
+                    </xsl:apply-templates>
+                </xsl:for-each>
+            </xsl:otherwise>
+        </xsl:choose>
         
     </xsl:template>
     
     
-    <xsl:template match="gmd:CI_OnlineResource">
+    <xsl:template match="*:CI_OnlineResource">
         <xsl:param name="fileIdentifier"/>
        
         <xsl:text>&#xa;</xsl:text>
@@ -78,25 +88,25 @@
         
         <!--	column: linkage  -->
         <xsl:text>&quot;</xsl:text>
-        <xsl:value-of select="normalize-space(gmd:linkage/gmd:URL)"/>
+        <xsl:value-of select="normalize-space(*:linkage/*:URL)"/>
         <xsl:text>&quot;</xsl:text>
         <xsl:value-of select="$columnSeparator"/>
         
         <!--	column: protocol  -->
         <xsl:text>&quot;</xsl:text>
-        <xsl:value-of select="gmd:protocol"/>
+        <xsl:value-of select="*:protocol"/>
         <xsl:text>&quot;</xsl:text>
         <xsl:value-of select="$columnSeparator"/>
         
         <!--	column: name -->
         <xsl:text>&quot;</xsl:text>
-        <xsl:value-of select="gmd:name"/>
+        <xsl:value-of select="*:name"/>
         <xsl:text>&quot;</xsl:text>
         <xsl:value-of select="$columnSeparator"/>
         
         <!--	column: url_description -->
         <xsl:text>&quot;</xsl:text>
-        <xsl:value-of select="gmd:description"/>
+        <xsl:value-of select="*:description"/>
         <xsl:text>&quot;</xsl:text>
         <xsl:value-of select="$columnSeparator"/>
     </xsl:template>
