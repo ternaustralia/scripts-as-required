@@ -11,13 +11,15 @@
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	
-
+	
     <xsl:import href="CustomFunctions.xsl"/>
     
-    <xsl:param name="global_originatingSource" select="'Murdoch University'"/>
-    <xsl:param name="global_group" select="'Murdoch University Research Repository'"/>
-    <xsl:param name="global_acronym" select="'MurdochUniversity'"/>
-    <xsl:param name="global_publisherName" select="'Central Queensland University'"/>
+    <xsl:param name="global_originatingSource" select="''"/>
+    <xsl:param name="global_group" select="''"/>
+    <xsl:param name="global_acronym" select="''"/>
+    <xsl:param name="global_publisherName" select="''"/>
+    <xsl:param name="global_baseURI" select="''"/>
+    <xsl:param name="global_path" select="''"/>
     
     <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>
     
@@ -74,7 +76,9 @@
                 
                 <xsl:apply-templates select="dc:identifier[string-length(.) > 0]" mode="collection_identifier"/>
                 
-                <xsl:apply-templates select="dc:identifier[string-length(.) > 0]" mode="collection_location"/>
+                <xsl:apply-templates select="dc:identifier[contains(.,'doi') or contains(.,'10.')]" mode="collection_location_doi"/>
+                
+                <xsl:apply-templates select="../../oai:header/oai:identifier[contains(.,'oai:eprints.utas.edu.au:')]" mode="collection_location_nodoi"/>
                 
                 <xsl:apply-templates select="dc:title[string-length(.) > 0]" mode="collection_name"/>
                 
@@ -120,7 +124,7 @@
         </identifier>    
     </xsl:template>
     
-     <xsl:template match="dc:identifier" mode="collection_location">
+     <xsl:template match="dc:identifier" mode="collection_location_doi">
         <location>
             <address>
                 <electronic type="url" target="landingPage">
@@ -133,6 +137,18 @@
                                 <xsl:value-of select="normalize-space(.)"/>
                             </xsl:otherwise>
                         </xsl:choose>
+                    </value>
+                </electronic>
+            </address>
+        </location> 
+    </xsl:template>
+    
+    <xsl:template match="oai:identifier" mode="collection_location_nodoi">
+        <location>
+            <address>
+                <electronic type="url" target="landingPage">
+                    <value>
+                        <xsl:value-of select="concat($global_baseURI, $global_path, '/', substring-after(.,'oai:eprints.utas.edu.au:'))"/>
                     </value>
                 </electronic>
             </address>
