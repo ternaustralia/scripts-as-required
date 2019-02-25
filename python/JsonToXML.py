@@ -58,17 +58,17 @@ def parse_element(doc, root, j, namespaceUri):
         parse_element(doc, elem, value, namespaceUri)
         root.appendChild(elem)
   elif isinstance(j, list):
-    print("isinstance list of len ", len(j))
+    #print("isinstance list of len ", len(j))
     print(j)
     for e in j:
         parse_element(doc, root, e)
   elif isinstance(j, unicode):
-    print("isinstance unicode ", j)
+    #print("isinstance unicode ", j)
     text = doc.createTextNode(j)
-    print("created text node ", text.data)
+    #print("created text node ", text.data)
     root.appendChild(text)
   elif isinstance(j, str):
-    print("isinstance str", j)
+    #print("isinstance str", j)
     text = doc.createTextNode(j)
     root.appendChild(text)
   elif isinstance(j, numbers.Number):
@@ -77,101 +77,119 @@ def parse_element(doc, root, j, namespaceUri):
   else:
     raise Exception("unhandled type %s for %s" % (type(j), j,))
 
-def writeXmlFromJson(dataSetUri, dataSetName, outputDirectory, splitElement=None, usePostfix=1):
+def createOneFilePerRecord(outputDirectory, domain, elem, start, namespaceUri, namespacePrefix, splitElement):
+    # domImplementation = DOMImplementation()
 
-    postfix=""
-    rows=99
-    start=0
-    count=100
 
-    namespaceUri = "http://json.to.xml"
-    namespacePrefix = "jsonXml"
+    # Create one file per record, with domain name and increment
+    resultsList = elem.getElementsByTagNameNS(namespaceUri, splitElement)
+    for i in xrange(1, len(resultsList)):
+        results = resultsList[i]
 
-    domImplementation = DOMImplementation()
+        obj_xml_rootRecordDocument = Document()
+        rootRecord = obj_xml_rootRecordDocument.createElementNS(namespaceUri, namespacePrefix + ':' + 'record')
+        rootRecord.setAttribute('xmlns', namespaceUri)
+        rootRecord.setAttribute(('xmlns:' + namespacePrefix), namespaceUri)
+        obj_xml_rootRecordDocument.appendChild(rootRecord)
+
+        rootRecord.appendChild(results)
+
+        recordFilename = str.format(outputDirectory + '/' + domain + '_' + str(i + start[0]) + '.xml')
+        recordFile = open(recordFilename, 'w+')
+
+        recordFile.write(rootRecord.toprettyxml(encoding='utf-8', indent=' '))
+        recordFile.close()
+        print("This page of output split per record, and written to %s" % recordFilename)
+
+
+def process(namespaceUri, namespacePrefix, rows, start, dataSetUri, dataSetName, outputDirectory, domain, splitElement, usePostfix):
+
     obj_xml_rootDocument = Document()
     root = obj_xml_rootDocument.createElementNS(namespaceUri, namespacePrefix + ':' + 'root')
     root.setAttribute('xmlns', namespaceUri)
     root.setAttribute(('xmlns:' + namespacePrefix), namespaceUri)
     obj_xml_rootDocument.appendChild(root)
 
+
+    if (usePostfix > 0):
+        postfix = str.format("&rows=" + str(rows) + "&start=" + str(start[0]))
+
+    try:
+        obj_addinfourl = urllib2.urlopen(dataSetUri + postfix, timeout=5)
+    except exceptions.KeyboardInterrupt:
+        print "Interrupted - ", sys.exc_info()[0]
+        raise
+    except:
+        print("Exception %s when opening %s" % (sys.exc_info()[0], dataSetUri + postfix))
+        return
+
+    print("Retrieved content at " + dataSetUri + postfix)
+    assert (obj_addinfourl is not None)
+    obj_json_str = (obj_addinfourl.read())
+    # print(obj_json_str)
+    assert (obj_json_str is not None)
+    obj_dict = json.loads(obj_json_str)
+
+    elem = obj_xml_rootDocument.createElement("datasets")
+    parse_element(obj_xml_rootDocument, elem, obj_dict, namespaceUri)
+    root.appendChild(elem)
+
+    # print(obj_xml_rootDocument.toprettyxml())
+
+    count = 0
+
+    countElementList = elem.getElementsByTagNameNS(namespaceUri, 'count')
+    if (len(countElementList) == 1):
+        assert (len(countElementList[0].childNodes[0].data) > 0)
+        count = int(countElementList[0].childNodes[0].data)
+
+    print("Retrieved count %d " % count)
+
+    # obj_StreamReaderWriter.write(obj_xml_Document.toprettyxml(encoding='utf-8', indent=' ')
+
+    if (splitElement != None):
+        createOneFilePerRecord(outputDirectory, domain, elem, start, namespaceUri, namespacePrefix, splitElement)
+
+    else:
+
+        recordFilename = str.format(outputDirectory + '/' + domain + '_' + str(dataSetName) + '_' + str(start[0]) + '.xml')
+        recordFile = open(recordFilename, 'w+')
+
+        recordFile.write(obj_xml_rootDocument.toprettyxml(encoding='utf-8', indent=' '))
+        recordFile.close()
+        print("This page of output all written to %s" % recordFilename)
+
+    # outputFile.write(obj_xml_rootDocument.toprettyxml(encoding='utf-8', indent=' '))
+    # print("All output appended to %s" % outFileName)
+
+    start[0] = start[0] + 100
+    print("start inside: ", start[0])
+    print("Continuing if count (%d) greater than start (%d)  " % (count, start[0]))
+
+    return count
+
+
+def writeXmlFromJson(dataSetUri, dataSetName, outputDirectory, splitElement=None, usePostfix=1):
+
+    postfix=""
+    rows=99
+    start = [0]
+    count=100
+
+    namespaceUri = "http://json.to.xml"
+    namespacePrefix = "jsonXml"
+
+    domImplementation = DOMImplementation()
+
     domain = str(dataSetUri.split("//")[-1].split("/")[0].split('?')[0])
 
     try:
 
-        while(count > (start)):
+        while(count > start[0]):
 
-            if(usePostfix > 0):
-                postfix = str.format("&rows="+str(rows)+"&start="+str(start))
-
-            try:
-                obj_addinfourl = urllib2.urlopen(dataSetUri+postfix, timeout=5)
-            except exceptions.KeyboardInterrupt:
-                print "Interrupted - ", sys.exc_info()[0]
-                raise
-            except:
-                print("Exception %s when opening %s" % (sys.exc_info()[0], dataSetUri+postfix))
-                return
-
-
-            print("Retrieved content at "+dataSetUri+postfix)
-            assert(obj_addinfourl is not None)
-            obj_json_str = (obj_addinfourl.read())
-            #print(obj_json_str)
-            assert(obj_json_str is not None)
-            obj_dict = json.loads(obj_json_str)
-
-            elem = obj_xml_rootDocument.createElement("datasets")
-            parse_element(obj_xml_rootDocument, elem, obj_dict, namespaceUri)
-            root.appendChild(elem)
-
-            #print(obj_xml_rootDocument.toprettyxml())
-
-            countElementList = elem.getElementsByTagNameNS(namespaceUri, 'count')
-            if(len(countElementList) == 1):
-                assert(len(countElementList[0].childNodes[0].data) > 0)
-                count=int(countElementList[0].childNodes[0].data)
-
-            print("Retrieved count %d " % count)
-
-            #obj_StreamReaderWriter.write(obj_xml_Document.toprettyxml(encoding='utf-8', indent=' ')
-
-            if(splitElement != None):
-
-                domImplementation = DOMImplementation()
-                obj_xml_rootRecordDocument = Document()
-                rootRecord = obj_xml_rootRecordDocument.createElementNS(namespaceUri, namespacePrefix + ':' + 'record')
-                rootRecord.setAttribute('xmlns', namespaceUri)
-                rootRecord.setAttribute(('xmlns:' + namespacePrefix), namespaceUri)
-                obj_xml_rootRecordDocument.appendChild(rootRecord)
-
-               # Create one file per record, with domain name and increment
-                resultsList = elem.getElementsByTagNameNS(namespaceUri, splitElement)
-                for i in xrange(1, len(resultsList)):
-
-                    results = resultsList[i]
-
-                    rootRecord.appendChild(results)
-
-                    recordFilename = str.format(outputDirectory + '/' + domain + '_' + str(i + start) + '.xml')
-                    recordFile = open(recordFilename, 'w+')
-
-                    recordFile.write(rootRecord.toprettyxml(encoding='utf-8', indent=' '))
-                    recordFile.close()
-                    print("This page of output split per record, and written to %s" % recordFilename)
-            else:
-
-                recordFilename = str.format(outputDirectory + '/' + domain + '_' + str(dataSetName) + '_' + str(start) + '.xml')
-                recordFile = open(recordFilename, 'w+')
-
-                recordFile.write(obj_xml_rootDocument.toprettyxml(encoding='utf-8', indent=' '))
-                recordFile.close()
-                print("This page of output all written to %s" % recordFilename)
-
-            #outputFile.write(obj_xml_rootDocument.toprettyxml(encoding='utf-8', indent=' '))
-            #print("All output appended to %s" % outFileName)
-
-            start += 100
-            print("Continuing if count (%d) greater than start (%d)  " % (count, start))
+            count = process(namespaceUri, namespacePrefix, rows, start, dataSetUri, dataSetName, outputDirectory, domain, splitElement, usePostfix)
+            print("count returned: ", count)
+            print("start returned: ", start[0])
 
     except exceptions.KeyboardInterrupt:
         print "Interrupted - ", sys.exc_info()[0]
@@ -179,6 +197,7 @@ def writeXmlFromJson(dataSetUri, dataSetName, outputDirectory, splitElement=None
     except:
         print "Exception - ", sys.exc_info()[0]
         traceback.print_exc(file=sys.stdout)
+
 
 
 
