@@ -6,7 +6,7 @@
     <xsl:import href="ISO19115-3_To_RIFCS.xsl"/>
     
     <xsl:param name="global_PID_Codespace" select="'pid'"/>
-    <xsl:param name="global_debug" select="false()" as="xs:boolean"/>
+    <xsl:param name="global_debug" select="true()" as="xs:boolean"/>
     <xsl:param name="global_debugExceptions" select="true()" as="xs:boolean"/>
     <xsl:param name="global_originatingSource" select="'Terrestrial Ecosystem Research Network (TERN)'"/>
     <xsl:param name="global_acronym" select="'TERN'"/>

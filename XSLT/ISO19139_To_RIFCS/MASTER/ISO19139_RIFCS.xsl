@@ -12,6 +12,8 @@
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xmlns:localFunc="http://iso19139.nowhere.yet"
     xmlns:customGMD="http://customGMD.nowhere.yet"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:skos="http://www.w3.org/2004/02/skos/core#"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
     exclude-result-prefixes="geonet gmx oai xsi gmd srv gco gts customGMD xs localFunc">
     
@@ -24,6 +26,7 @@
     <xsl:param name="global_debugExceptions" select="true()" as="xs:boolean"/>
     <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>
     <xsl:variable name="gmdCodelists" select="document('codelists.xml')"/>
+    <!--xsl:variable name="anzsrcCodelist" select="document('anzsrc-for-2008.xml')"/-->
     <xsl:param name="global_baseURI" select="'geonetwork.nci.org.au'"/>
     <xsl:param name="global_acronym" select="'NCI'"/>
     <xsl:param name="global_originatingSource" select="'National Computational Infrastructure'"/> <!-- Only used as originating source if organisation name cannot be determined from Point Of Contact -->
@@ -104,7 +107,8 @@
                 </xsl:if>
                        
                 <xsl:apply-templates  select="gmd:distributionInfo/gmd:MD_Distribution/gmd:distributionFormat/gmd:MD_Format/gmd:formatDistributor/gmd:MD_Distributor/gmd:distributorTransferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource[contains(gmd:name, 'Digital Object Identifier for dataset') and contains(gmd:name, gmd:fileIdentifier)]/gmd:linkage/gmd:URL" mode="registryObject_identifier"/>   
-                <xsl:apply-templates select="gmd:dataSetURI" mode="registryObject_identifier"/>
+                <xsl:apply-templates select="gmd:dataSetURI[string-length(.) > 0]" mode="registryObject_identifier"/>
+                <xsl:apply-templates select="gmd:identificationInfo/*[contains(lower-case(name()),'identification')]/gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier/gmd:code"  mode="registryObject_identifier"/>
                 <xsl:apply-templates select="gmd:fileIdentifier" mode="registryObject_identifier"/>
                 <xsl:apply-templates select="gmd:fileIdentifier" mode="registryObject_location_metadata"/>
                 <xsl:apply-templates select="gmd:parentIdentifier" mode="registryObject_related_object"/>
@@ -260,6 +264,12 @@
         <key>
             <xsl:value-of select="concat($global_acronym, '/', normalize-space(.))"/>
         </key>
+    </xsl:template>
+    
+    <xsl:template match="gmd:code" mode="registryObject_identifier">
+        <identifier type="local">
+            <xsl:value-of select="."/>
+        </identifier>
     </xsl:template>
 
     <xsl:template match="gmd:fileIdentifier" mode="registryObject_identifier">
@@ -513,11 +523,19 @@
     <xsl:template match="gmd:keyword" mode="registryObject_subject">
         <xsl:if test="string-length(normalize-space(.)) > 0">
             <subject type="local">
-                <xsl:value-of select="."></xsl:value-of>
+                <xsl:value-of select="."/>
             </subject>
+           
+           <!--xsl:variable name="keyword" select="normalize-space(.)"/>
+            <xsl:variable name="code"
+                select="$anzsrcCodelist/rdf:RDF/rdf:Description[lower-case(skos:prefLabel) = lower-case($keyword)]/skos:notation"/>
+           <xsl:if test="string-length($code) > 0">
+               <subject type="anzsrc-for">
+                   <xsl:value-of select="$code"/>
+               </subject>
+           </xsl:if-->
         </xsl:if>
-        
-        </xsl:template>
+      </xsl:template>
     
    <xsl:template match="gmd:MD_TopicCategoryCode" mode="registryObject_subject">
         <xsl:if test="string-length(normalize-space(.)) > 0">

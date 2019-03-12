@@ -856,14 +856,26 @@
                 <xsl:otherwise>
                     <xsl:for-each-group select="current-group()/gmd:role"
                         group-by="gmd:CI_RoleCode/@codeListValue">
-                        <xsl:variable name="code">
-                            <xsl:value-of select="current-grouping-key()"/>
+                        <xsl:variable name="codelist"
+                            select="$gmdCodelists/codelists/codelist[@name = 'gmd:CI_RoleCode']"/>
+                        
+                        <xsl:variable name="type">
+                            <xsl:value-of select="$codelist/entry[code = $code]/description"/>
                         </xsl:variable>
-                        <relation>
-                            <xsl:attribute name="type">
-                                <xsl:value-of select="$code"/>
-                            </xsl:attribute>
-                        </relation>
+                        
+                        <xsl:attribute name="type">
+                            <xsl:choose>
+                                <xsl:when test="string-length($type) > 0">
+                                    <xsl:value-of select="$type"/>
+                                </xsl:when>
+                                <xsl:when test="string-length($code) > 0">
+                                    <xsl:value-of select="$code"/>  
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:text>unknown</xsl:text>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        </xsl:attribute>
                     </xsl:for-each-group>
                 </xsl:otherwise>
             </xsl:choose>
