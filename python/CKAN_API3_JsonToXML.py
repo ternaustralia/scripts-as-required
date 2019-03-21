@@ -41,6 +41,11 @@ def processList(value):
                             dataSetName = dataset_uri
                             print("Found datasetname: ", dataSetName)
                             dataSetName_list.append(dataSetName)
+                elif (entry.has_key(u'id')):
+                    print(type(entry.get(u'id')).__name__)
+                    dataSetName = entry.get(u'id')
+                    print("Found datasetname: ", dataSetName)
+                    dataSetName_list.append(dataSetName)
 
             else:
                 print("Length of entry: %d " % (len(entry)))
@@ -50,6 +55,7 @@ def processList(value):
                 dataSetName_list.append(dataSetName)
     else:
         print("Not list")
+        print type(value).__name__
 
     return list(dataSetName_list)
 
@@ -72,6 +78,7 @@ parser = OptionParser(usage=usage)
 parser.add_option("--identifierListURI", action="store", dest="identifierListURI", help="uri of all identifiers in JSON, e.g. http://data.gov.au/api/3/action/package_list")
 parser.add_option("--descriptionByIdentifierURI", action="store", dest="descriptionByIdentifierURI", help="uri of description per identifier, in JSON, e.g. http://data.gov.au/api/3/action/package_show?id=%s")
 parser.add_option("--outputDirectory", action="store", dest="outputDirectory", help="output directory for JSON files to be written to")
+parser.add_option("--customPaginateIdentifierList", action="store", dest="customPaginateIdentifierList", help="custom pagination token for getting identifier list")
 
 (options, args) = parser.parse_args()
 
@@ -103,36 +110,75 @@ if len(options.outputDirectory) < 1:
 identifierListURI = options.identifierListURI
 descriptionByIdentifierURI = options.descriptionByIdentifierURI
 outputDirectory = options.outputDirectory
+customPaginateIdentifierList = options.customPaginateIdentifierList
 
 if os.path.exists(outputDirectory):
     shutil.rmtree(outputDirectory)
 print("Constructing directory " + outputDirectory)
 os.makedirs(outputDirectory)
 
-print ("Reading datasets names from "+identifierListURI)
-openedFile = urllib2.urlopen(identifierListURI, timeout=5)
-loadedJson = json.loads(openedFile.read())
-
-if loadedJson is None:
-    exit
-
-print("OutputDirectory directory requested: " + outputDirectory)
-
 fullDirectoryPath = outputDirectory + '/' + 'Records'
 if os.path.exists(fullDirectoryPath):
     shutil.rmtree(fullDirectoryPath)
 os.makedirs(fullDirectoryPath)
 
+print("OutputDirectory directory requested: " + outputDirectory)
 print "Created full directory path %s? %s " % (fullDirectoryPath, os.path.exists(fullDirectoryPath))
 
-if(isinstance(loadedJson, dict)):
-    for key in loadedJson.keys():
-      value = loadedJson[key]
-      dataSetName_list = list(processList(value))
-      for dataSetName in dataSetName_list:
-          processDataset(dataSetName, fullDirectoryPath)
-else:
-    if (isinstance(loadedJson, list)):
+getMore = bool(1)
+paginationValue = 0
+
+if (customPaginateIdentifierList != None):
+    print('Using customPaginateIdentifierList ', customPaginateIdentifierList)
+
+
+while(getMore and (paginationValue > -1)):
+
+    if (customPaginateIdentifierList != None):
+        urlPaginate = identifierListURI+'?'+customPaginateIdentifierList+'='+str(paginationValue)
+        print ("Reading datasets names from "+urlPaginate)
+        openedFile = urllib2.urlopen(urlPaginate, timeout=5)
+    else:
+        print ("Reading datasets names from " + identifierListURI)
+        openedFile = urllib2.urlopen(identifierListURI, timeout=5)
+
+    loadedJson = json.loads(openedFile.read())
+
+    if loadedJson is None:
+        exit
+
+    getMore = bool(0)
+
+    if(isinstance(loadedJson, dict)):
+        if(loadedJson.has_key(u'hasMore')):
+            print(type(loadedJson.get(u'hasMore')).__name__)
+            hasMorejSON = loadedJson.get(u'hasMore')
+            print("Found hasMore: ", hasMorejSON)
+            if(hasMorejSON == True):
+                getMore = bool(1)
+                print("Found hasMore set to 1")
+
+        if (customPaginateIdentifierList != None):
+            if (loadedJson.has_key(customPaginateIdentifierList)):
+                print(customPaginateIdentifierList+' found')
+                print(type(loadedJson.get(customPaginateIdentifierList)).__name__)
+                customPaginateIdentifierListJSON = loadedJson.get(customPaginateIdentifierList)
+                print("Found customPaginateIdentifierList", customPaginateIdentifierListJSON)
+                paginationValue = paginationValue + 100
+                print("Setting pagination value", paginationValue)
+            else:
+                # If pagination requested, but value not found
+                print(customPaginateIdentifierList + ' not found')
+                paginationValue = -1
+
+        # print(loadedJson)
+        # for key in loadedJson.keys():
+        #   value = loadedJson[key]
+        #   print(value)
+        #   dataSetName_list = processList(value)
+        #   for dataSetName in dataSetName_list:
+        #       processDataset(dataSetName, fullDirectoryPath)
+    elif (isinstance(loadedJson, list)):
         dataSetName_list = processList(loadedJson)
         for dataSetName in dataSetName_list:
             processDataset(dataSetName, fullDirectoryPath)
@@ -141,6 +187,7 @@ else:
     else:
         print ("Not a dict or list, so not sure what to do")
         assert(1)
+
 
 
 

@@ -27,6 +27,9 @@
     <xsl:param name="global_originatingSource" select="'The University of Adelaide'"/> <!-- Only used as originating source if organisation name cannot be determined from Point Of Contact -->
     <xsl:param name="global_group" select="'National Computational Infrastructure'"/> 
     <xsl:param name="global_path" select="'/geonetwork/srv/eng/catalog.search#/metadata/'"/>
+    <xsl:param name="global_includeDataServiceLinks" select="false()" as="xs:boolean"/>
+    <xsl:param name="global_debug" select="false()" as="xs:boolean"/>
+    
     
     <!-- stylesheet to convert iso19139 in OAI-PMH ListRecords response to RIF-CS -->
     

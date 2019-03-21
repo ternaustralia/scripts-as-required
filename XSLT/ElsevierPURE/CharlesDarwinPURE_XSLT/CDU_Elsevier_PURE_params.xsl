@@ -14,5 +14,5 @@
     <xsl:param name="global_acronym" select="'CDU_PURE'"/>
     <xsl:param name="global_group" select="'Charles Darwin University (API 511)'"/>
     <xsl:param name="global_publisherName" select="'Charles Darwin University'"/>
-    
+    <xsl:param name="global_validateWorkflow" select="true()"/>
 </xsl:stylesheet>

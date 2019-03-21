@@ -34,6 +34,8 @@
     <xsl:param name="global_path" select="'/geonetwork/srv/eng/catalog.search#/metadata/'"/>
     
     <xsl:param name="global_regex_URLinstring" select="'(https?:)(//([^#\s]*))?'"/>
+    
+    <xsl:param name="global_includeDataServiceLinks" select="false()" as="xs:boolean"/>
    
     
     <!-- =========================================== -->
@@ -61,17 +63,20 @@
         
         <xsl:if test="$global_debug">
             <xsl:message select="concat('licenseCodelist loaded: ', count($licenseCodelist))"/>
+            <xsl:message select="concat('Aggregating group: ', $global_group)"/>
         </xsl:if>
         
         <xsl:variable name="originatingSourceOrganisation" select="customGMD:originatingSourceOrganisation(.)"/>
         
-        <xsl:message select="concat('Aggregating group: ', $global_group)"/>
+        
         
          <xsl:variable name="originatingSourceOrganisation">
             <xsl:choose>
                 <xsl:when test="string-length(customGMD:originatingSourceOrganisation(.)) > 0">
                     <xsl:value-of select="customGMD:originatingSourceOrganisation(.)"/>
-                    <xsl:message select="concat('OriginatingSourceOrganisation: ', customGMD:originatingSourceOrganisation(.))"/>
+                    <xsl:if test="$global_debug">
+                         <xsl:message select="concat('OriginatingSourceOrganisation: ', customGMD:originatingSourceOrganisation(.))"/>
+                    </xsl:if>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:value-of select="$global_originatingSource"/>
@@ -99,7 +104,7 @@
                         <xsl:if test="
                             (count(gmd:dateStamp/*[contains(lower-case(name()),'date')]) > 0) and 
                             (string-length(gmd:dateStamp/*[contains(lower-case(name()),'date')][1]) > 0)">
-                            <xsl:attribute name="dateAccessioned">
+                            <xsl:attribute name="dateModified">
                                 <xsl:value-of select="gmd:dateStamp/*[contains(lower-case(name()),'date')][1]"/>
                             </xsl:attribute>  
                         </xsl:if>
@@ -108,7 +113,7 @@
                        
                 <xsl:apply-templates  select="gmd:distributionInfo/gmd:MD_Distribution/gmd:distributionFormat/gmd:MD_Format/gmd:formatDistributor/gmd:MD_Distributor/gmd:distributorTransferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource[contains(gmd:name, 'Digital Object Identifier for dataset') and contains(gmd:name, gmd:fileIdentifier)]/gmd:linkage/gmd:URL" mode="registryObject_identifier"/>   
                 <xsl:apply-templates select="gmd:dataSetURI[string-length(.) > 0]" mode="registryObject_identifier"/>
-                <xsl:apply-templates select="gmd:identificationInfo/*[contains(lower-case(name()),'identification')]/gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier/gmd:code"  mode="registryObject_identifier"/>
+                <!--xsl:apply-templates select="gmd:identificationInfo/*[contains(lower-case(name()),'identification')]/gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier/gmd:code"  mode="registryObject_identifier_local"/-->
                 <xsl:apply-templates select="gmd:fileIdentifier" mode="registryObject_identifier"/>
                 <xsl:apply-templates select="gmd:fileIdentifier" mode="registryObject_location_metadata"/>
                 <xsl:apply-templates select="gmd:parentIdentifier" mode="registryObject_related_object"/>
@@ -154,29 +159,57 @@
         
         <xsl:for-each-group
             select="gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) > 0] |
-            ancestor::gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) > 0] |
+            ancestor::gmd:MD_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) > 0] |
             gmd:pointOfContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) > 0] |
             ancestor::gmd:MD_Metadata/gmd:contact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) > 0]"
             group-by="gmd:individualName">
             <xsl:apply-templates select="." mode="registryObject_related_object_individual"/>
         </xsl:for-each-group>
-        
-        <xsl:for-each-group
-            select="gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[((string-length(normalize-space(gmd:organisationName))) > 0) and ((string-length(normalize-space(gmd:individualName))) > 0)] |
-            ancestor::gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[((string-length(normalize-space(gmd:organisationName))) > 0) and ((string-length(normalize-space(gmd:individualName))) > 0)] |
-            gmd:pointOfContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName)) > 0) and ((string-length(normalize-space(gmd:individualName))) > 0)] |
-            ancestor::gmd:MD_Metadata/gmd:contact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName)) > 0) and ((string-length(normalize-space(gmd:individualName))) > 0)]"
-            group-by="gmd:organisationName">
-            <xsl:apply-templates select="." mode="registryObject_related_object_organisation_with_individual_name"/>
-        </xsl:for-each-group>
        
        <xsl:for-each-group
-           select="gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[((string-length(normalize-space(gmd:organisationName))) > 0) and ((string-length(normalize-space(gmd:individualName))) = 0)] |
-           ancestor::gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[((string-length(normalize-space(gmd:organisationName))) > 0) and ((string-length(normalize-space(gmd:individualName))) = 0)] |
-           gmd:pointOfContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName)) > 0) and ((string-length(normalize-space(gmd:individualName))) = 0)] |
-           ancestor::gmd:MD_Metadata/gmd:contact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName)) > 0) and ((string-length(normalize-space(gmd:individualName))) = 0)]"
+           select="gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:positionName))) > 0] |
+           ancestor::gmd:MD_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:positionName))) > 0] |
+           gmd:pointOfContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:positionName))) > 0] |
+           ancestor::gmd:MD_Metadata/gmd:contact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:positionName))) > 0]"
+           group-by="gmd:positionName">
+           <xsl:apply-templates select="." mode="registryObject_related_object_position"/>
+       </xsl:for-each-group>
+        
+        <!-- get a list of all organisation names from responsible parties where there is no corresponding individual name or position name -->
+       <xsl:variable name="organisationNamesOnly_sequence" as="xs:string*">
+           <xsl:for-each-group
+               select="gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[((string-length(normalize-space(gmd:organisationName))) > 0) and ((string-length(normalize-space(gmd:individualName))) = 0) and ((string-length(normalize-space(gmd:positionName))) = 0)] |
+               ancestor::gmd:MD_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[((string-length(normalize-space(gmd:organisationName))) > 0) and ((string-length(normalize-space(gmd:individualName))) = 0) and ((string-length(normalize-space(gmd:positionName))) = 0)] |
+               gmd:pointOfContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName)) > 0) and ((string-length(normalize-space(gmd:individualName))) = 0) and ((string-length(normalize-space(gmd:positionName))) = 0)] |
+               ancestor::gmd:MD_Metadata/gmd:contact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName)) > 0) and ((string-length(normalize-space(gmd:individualName))) = 0) and ((string-length(normalize-space(gmd:positionName))) = 0)]"
+               group-by="gmd:organisationName">
+               <xsl:value-of select="current-grouping-key()"/>
+           </xsl:for-each-group>
+       </xsl:variable>
+       
+       <xsl:if test="$global_debug">
+        <xsl:message select="concat('count organisationNamesOnly_sequence: ', count($organisationNamesOnly_sequence))"/>
+       </xsl:if>
+       
+       <xsl:for-each-group
+           select="gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[((string-length(normalize-space(gmd:organisationName))) > 0) and (((string-length(normalize-space(gmd:individualName))) > 0) or ((string-length(normalize-space(gmd:positionName))) > 0))] |
+           ancestor::gmd:MD_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[((string-length(normalize-space(gmd:organisationName))) > 0) and (((string-length(normalize-space(gmd:individualName))) > 0) or ((string-length(normalize-space(gmd:positionName))) > 0))] |
+           gmd:pointOfContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName)) > 0) and (((string-length(normalize-space(gmd:individualName))) > 0) or ((string-length(normalize-space(gmd:positionName))) > 0))] |
+           ancestor::gmd:MD_Metadata/gmd:contact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName)) > 0) and (((string-length(normalize-space(gmd:individualName))) > 0) or ((string-length(normalize-space(gmd:positionName))) > 0))]"
            group-by="gmd:organisationName">
-           <xsl:apply-templates select="." mode="registryObject_related_object_organisation_no_individual_name"/>
+           <xsl:apply-templates select="." mode="registryObject_related_object_organisation_with_individual_or_position_name">
+               <xsl:with-param name="organisationNamesOnly_sequence" select="$organisationNamesOnly_sequence"/>
+           </xsl:apply-templates>
+       </xsl:for-each-group>
+       
+           
+       <xsl:for-each-group
+           select="gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[((string-length(normalize-space(gmd:organisationName))) > 0) and ((string-length(normalize-space(gmd:individualName))) = 0) and ((string-length(normalize-space(gmd:positionName))) = 0)] |
+           ancestor::gmd:MD_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[((string-length(normalize-space(gmd:organisationName))) > 0) and ((string-length(normalize-space(gmd:individualName))) = 0) and ((string-length(normalize-space(gmd:positionName))) = 0)] |
+           gmd:pointOfContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName)) > 0) and ((string-length(normalize-space(gmd:individualName))) = 0) and ((string-length(normalize-space(gmd:positionName))) = 0)] |
+           ancestor::gmd:MD_Metadata/gmd:contact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName)) > 0) and ((string-length(normalize-space(gmd:individualName))) = 0) and ((string-length(normalize-space(gmd:positionName))) = 0)]"
+           group-by="gmd:organisationName">
+           <xsl:apply-templates select="." mode="registryObject_related_object_organisation_no_individual_or_position_name"/>
        </xsl:for-each-group>
         
         <xsl:apply-templates
@@ -186,6 +219,18 @@
        <xsl:apply-templates
             select="gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword"
             mode="registryObject_subject"/>
+       
+       <xsl:variable name="landingPage" select="concat('http://', $global_baseURI, $global_path, ancestor::gmd:MD_Metadata/gmd:fileIdentifier)"/>
+       
+       <xsl:if test="$global_debug">
+        <xsl:message select="concat('date: ', ancestor::gmd:MD_Metadata/gmd:dateStamp)"/>
+       </xsl:if>
+       
+       <xsl:apply-templates
+           select="ancestor::gmd:MD_Metadata/gmd:dateStamp/gco:DateTime[string-length(.)> 0]"
+           mode="registryObject_description_brief">
+           <xsl:with-param name="landingPage" select="$landingPage"/>
+       </xsl:apply-templates>
         
        <xsl:apply-templates
            select="gmd:abstract[string-length(.) > 0]"
@@ -231,7 +276,7 @@
         <xsl:param name="originatingSource"/>
         <xsl:for-each-group
             select="gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) > 0] |
-            ancestor::gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) > 0] |
+            ancestor::gmd:MD_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:individualName))) > 0] |
             gmd:pointOfContact/gmd:CI_ResponsibleParty[string-length(normalize-space(gmd:individualName)) > 0] |
             ancestor::gmd:MD_Metadata/gmd:contact/gmd:CI_ResponsibleParty[string-length(normalize-space(gmd:individualName)) > 0]"
             group-by="gmd:individualName">
@@ -242,7 +287,7 @@
         
         <xsl:for-each-group
             select="gmd:citation/gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName))) > 0] |
-            ancestor::gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName))) > 0] |
+            ancestor::gmd:MD_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty[(string-length(normalize-space(gmd:organisationName))) > 0] |
             gmd:pointOfContact/gmd:CI_ResponsibleParty[string-length(normalize-space(gmd:organisationName)) > 0] |
             ancestor::gmd:MD_Metadata/gmd:contact/gmd:CI_ResponsibleParty[string-length(normalize-space(gmd:organisationName)) > 0]"
             group-by="gmd:organisationName">
@@ -266,11 +311,11 @@
         </key>
     </xsl:template>
     
-    <xsl:template match="gmd:code" mode="registryObject_identifier">
+    <!--xsl:template match="gmd:code" mode="registryObject_identifier_local">
         <identifier type="local">
             <xsl:value-of select="."/>
         </identifier>
-    </xsl:template>
+    </xsl:template-->
 
     <xsl:template match="gmd:fileIdentifier" mode="registryObject_identifier">
         <xsl:if test="string-length(normalize-space(.)) > 0">
@@ -412,14 +457,31 @@
                 <xsl:when test="(count(current-group()/gmd:role) > 0)">
                     <xsl:for-each-group select="current-group()/gmd:role"
                         group-by="gmd:CI_RoleCode/@codeListValue">
-                        <xsl:variable name="code">
+                        <xsl:variable name="role">
                             <xsl:value-of select="normalize-space(current-grouping-key())"/>
                         </xsl:variable>
                          <xsl:choose>
-                            <xsl:when test="(string-length($code) > 0) ">
+                            <xsl:when test="(string-length($role) > 0) ">
                                 <relation>
+                                    <xsl:variable name="codelist"
+                                        select="$gmdCodelists/codelists/codelist[contains(@name,'CI_RoleCode')]"/>
+                                    
+                                    <xsl:variable name="type">
+                                        <xsl:value-of select="$codelist/entry[code = $role]/description"/>
+                                    </xsl:variable>
+                                    
                                     <xsl:attribute name="type">
-                                        <xsl:value-of select="$code"/>
+                                        <xsl:choose>
+                                            <xsl:when test="string-length($type) > 0">
+                                                <xsl:value-of select="$type"/>
+                                            </xsl:when>
+                                            <xsl:when test="string-length($role) > 0">
+                                                <xsl:value-of select="$role"/>  
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:text>unknown</xsl:text>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
                                     </xsl:attribute>
                                 </relation>
                             </xsl:when>
@@ -437,23 +499,82 @@
         </relatedObject>
     </xsl:template>
     
-    <!-- RegistryObject - Related Object (Organisation or Individual) Element -->
-    <xsl:template match="gmd:CI_ResponsibleParty" mode="registryObject_related_object_organisation_with_individual_name">
+    <!-- RegistryObject - Related Object (Individual) Element -->
+    <xsl:template match="gmd:CI_ResponsibleParty" mode="registryObject_related_object_position">
         <relatedObject>
             <key>
                 <xsl:value-of select="concat($global_acronym,'/', translate(normalize-space(current-grouping-key()),' ',''))"/>
             </key>
-            
-            <relation>
-                <xsl:attribute name="type">
-                    <xsl:text>isAssociatedWith</xsl:text>
-                </xsl:attribute>
-            </relation>
-            
+            <xsl:choose>
+                <xsl:when test="(count(current-group()/gmd:role) > 0)">
+                    <xsl:for-each-group select="current-group()/gmd:role"
+                        group-by="gmd:CI_RoleCode/@codeListValue">
+                        <xsl:variable name="role">
+                            <xsl:value-of select="normalize-space(current-grouping-key())"/>
+                        </xsl:variable>
+                        <xsl:choose>
+                            <xsl:when test="(string-length($role) > 0) ">
+                                <relation>
+                                    <xsl:variable name="codelist"
+                                        select="$gmdCodelists/codelists/codelist[contains(@name,'CI_RoleCode')]"/>
+                                    
+                                    <xsl:variable name="type">
+                                        <xsl:value-of select="$codelist/entry[code = $role]/description"/>
+                                    </xsl:variable>
+                                    
+                                    <xsl:attribute name="type">
+                                        <xsl:choose>
+                                            <xsl:when test="string-length($type) > 0">
+                                                <xsl:value-of select="$type"/>
+                                            </xsl:when>
+                                            <xsl:when test="string-length($role) > 0">
+                                                <xsl:value-of select="$role"/>  
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:text>unknown</xsl:text>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
+                                    </xsl:attribute>
+                                </relation>
+                            </xsl:when>
+                        </xsl:choose>
+                    </xsl:for-each-group>
+                </xsl:when>     
+                <xsl:otherwise>
+                    <relation>
+                        <xsl:attribute name="type">
+                            <xsl:text>isAssociatedWith</xsl:text>
+                        </xsl:attribute>
+                    </relation>
+                </xsl:otherwise>
+            </xsl:choose>
         </relatedObject>
     </xsl:template>
     
-    <xsl:template match="gmd:CI_ResponsibleParty" mode="registryObject_related_object_organisation_no_individual_name">
+    
+    <!-- RegistryObject - Related Object (Organisation or Individual) Element -->
+    <!-- if the name is in the sequence param, that means that the org has already been associated with a source role
+        so you don't have to add it as 'associated' because it hasn't missed out and best if just the sourced roles are used in this case -->
+    <xsl:template match="gmd:CI_ResponsibleParty" mode="registryObject_related_object_organisation_with_individual_or_position_name">
+        <xsl:param name="organisationNamesOnly_sequence" as="xs:string*"/>
+        
+       <xsl:if test="count($organisationNamesOnly_sequence[. = current-grouping-key()]) = 0">
+            <relatedObject>
+                <key>
+                    <xsl:value-of select="concat($global_acronym,'/', translate(normalize-space(current-grouping-key()),' ',''))"/>
+                </key>
+                
+                <relation>
+                    <xsl:attribute name="type">
+                        <xsl:text>isAssociatedWith</xsl:text>
+                    </xsl:attribute>
+                </relation>
+                
+            </relatedObject>
+        </xsl:if>
+    </xsl:template>
+    
+    <xsl:template match="gmd:CI_ResponsibleParty" mode="registryObject_related_object_organisation_no_individual_or_position_name">
         <relatedObject>
             <key>
                 <xsl:value-of select="concat($global_acronym,'/', translate(normalize-space(current-grouping-key()),' ',''))"/>
@@ -468,17 +589,34 @@
                 <xsl:when test="(count(current-group()/gmd:role) > 0)">
                     <xsl:for-each-group select="current-group()/gmd:role"
                         group-by="gmd:CI_RoleCode/@codeListValue">
-                        <xsl:variable name="code">
+                        <xsl:variable name="role">
                             <xsl:value-of select="normalize-space(current-grouping-key())"/>
                         </xsl:variable>
                         <xsl:if test="$global_debug">
-                            <xsl:message select="concat('code : ', $code)"/>
+                            <xsl:message select="concat('role : ', $role)"/>
                         </xsl:if>
                         <xsl:choose>
-                            <xsl:when test="(string-length($code) > 0) ">
+                            <xsl:when test="(string-length($role) > 0) ">
                                 <relation>
+                                    <xsl:variable name="codelist"
+                                        select="$gmdCodelists/codelists/codelist[contains(@name,'CI_RoleCode')]"/>
+                                    
+                                    <xsl:variable name="type">
+                                        <xsl:value-of select="$codelist/entry[code = $role]/description"/>
+                                    </xsl:variable>
+                                    
                                     <xsl:attribute name="type">
-                                        <xsl:value-of select="$code"/>
+                                        <xsl:choose>
+                                            <xsl:when test="string-length($type) > 0">
+                                                <xsl:value-of select="$type"/>
+                                            </xsl:when>
+                                            <xsl:when test="string-length($role) > 0">
+                                                <xsl:value-of select="$role"/>  
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:text>unknown</xsl:text>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
                                     </xsl:attribute>
                                 </relation>
                             </xsl:when>
@@ -558,6 +696,13 @@
             
             <xsl:apply-templates select="..[count(gmd:credit) > 0]"
                 mode="registryObject_description_full_add_credit"/>
+        </description>
+    </xsl:template>
+    
+    <xsl:template match="gco:DateTime" mode="registryObject_description_brief">
+        <xsl:param name="landingPage"/>
+        <description type="brief">
+            <xsl:value-of select="concat('This record was harvested by RDA at ',  current-dateTime(), ' from &lt;a href=''', $landingPage ,'''&gt;', $landingPage, '&lt;/a&gt; in ', $global_acronym, '''s Data Catalogue where it was last modified at ', . , '')"/>
         </description>
     </xsl:template>
     
@@ -762,10 +907,10 @@
     <xsl:template match="gmd:CI_OnlineResource" mode="registryObject_relatedInfo">         
         
         <xsl:choose>
-            <xsl:when test="contains(gmd:protocol, 'OGC:') or contains(lower-case(gmd:linkage/gmd:URL), 'thredds') or contains(lower-case(gmd:linkage/gmd:URL), 'ftp')">
+            <xsl:when test="($global_includeDataServiceLinks = true()) and (contains(gmd:protocol, 'OGC:') or contains(lower-case(gmd:linkage/gmd:URL), 'thredds') or contains(lower-case(gmd:linkage/gmd:URL), 'ftp'))">
                 <xsl:apply-templates select="." mode="relatedInfo_service"/>
             </xsl:when>
-            <xsl:when test="not(contains(lower-case(gmd:description), 'point of truth url of this metadata record'))">
+            <xsl:when test="not(contains(lower-case(gmd:description), 'point of truth url of this metadata record') and not(contains(gmd:protocol, 'OGC:'))) and not(contains(lower-case(gmd:linkage/gmd:URL), 'thredds')) and not(contains(lower-case(gmd:linkage/gmd:URL), 'ftp'))">
                 <xsl:apply-templates select=".[string-length(gmd:linkage/gmd:URL) > 0]" mode="relatedInfo_relatedInformation"/>
             </xsl:when>
             
@@ -1212,7 +1357,7 @@
                             <xsl:for-each select="distinct-values($allContributorName_sequence)">
                                 <xsl:choose>
                                     <xsl:when test="($publisherOrganisationName != .) or ((count($allContributorName_sequence) = 1))">
-                                        <contributor>
+                                        <contributor seq="{position()}">
                                             <namePart>
                                                 <xsl:value-of select="."/>
                                             </namePart>

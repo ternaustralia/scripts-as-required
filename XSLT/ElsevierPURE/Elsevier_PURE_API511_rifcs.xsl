@@ -21,6 +21,7 @@
     <xsl:param name="global_acronym" select="'{override required}'"/>
     <xsl:param name="global_group" select="'{override required}'"/>
     <xsl:param name="global_publisherName" select="'{override required}'"/>
+    <xsl:param name="global_validateWorkflow" select="false()"/>
     
    <xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes" omit-xml-declaration="yes"/>
 
@@ -47,7 +48,7 @@
    
     <xsl:template match="*:dataSet">
         <xsl:message select="concat('workflow: ', *:workflow)"/>
-        <xsl:if test="lower-case(*:workflow) = 'validated'">
+        <xsl:if test="($global_validateWorkflow = false()) or lower-case(*:workflow) = 'validated'">
             <xsl:apply-templates select="." mode="registryObject">
                    <xsl:with-param name="type" select="'dataset'"/>
                    <xsl:with-param name="class" select="'collection'"/>
@@ -61,7 +62,7 @@
         
         <!-- Create equipment record only if approved -->
         <xsl:message select="concat('workflow: ', *:workflow)"/>
-        <xsl:if test="lower-case(*:workflow) = 'approved'">
+        <xsl:if test="($global_validateWorkflow = false()) or lower-case(*:workflow) = 'approved'">
             <xsl:apply-templates select="." mode="registryObject">
                 <xsl:with-param name="type" select="'create'"/>
                 <xsl:with-param name="class" select="'service'"/>
@@ -597,7 +598,8 @@
                 </xsl:when>
                 <xsl:otherwise>
                     <identifier type="url">
-                        <xsl:value-of select="substring-before(*:link/@href, '?apiKey')"/>
+                        <!--xsl:value-of select="substring-before(*:link/@href, '?apiKey')"/-->
+                        <xsl:value-of select="concat('http://', $global_baseURI, $global_path, 'publications/', @uuid)"/>
                     </identifier>
                 </xsl:otherwise>
             </xsl:choose>
@@ -851,12 +853,14 @@
                 
                 <xsl:apply-templates select="*:title[string-length(.) > 0]" mode="citation_title"/>
                 
-                <xsl:apply-templates select="*:personAssociations/*:personAssociation[(string-length(*:person/@uuid) > 0) and (matches(lower-case(*:personRole), 'author|creator'))]" mode="citation_contributor_public"/>
+                <xsl:apply-templates select="*:personAssociations" mode="citation_contributor"/>
+                
+       <!--         <xsl:apply-templates select="*:personAssociations/*:personAssociation[(string-length(*:person/@uuid) > 0) and (matches(lower-case(*:personRole), 'author|creator'))]" mode="citation_contributor_public"/>
            
                 <xsl:apply-templates select="*:personAssociations/*:personAssociation[(string-length(*:externalPerson/@uuid) > 0) and (matches(lower-case(*:personRole), 'author|creator'))]" mode="citation_contributor_external"/>
            
                 <xsl:apply-templates select="*:personAssociations/*:personAssociation[((count(*:person) = 0) and (count(*:externalPerson) = 0)) and ((string-length(*:name/*:firstName) > 0) or (string-length(*:name/*:lastName) > 0)) and (matches(lower-case(*:personRole), 'author|creator'))]" mode="citation_contributor_private"/>
-           
+          --> 
                 <xsl:apply-templates select="*:publisher[string-length(*:name) > 0]" mode="citation_publisher"/>
                 
                 <xsl:apply-templates select="*:publicationDate[string-length(*:year) > 0]" mode="citation_publication_date"/>
@@ -875,7 +879,23 @@
             <xsl:value-of select="normalize-space(.)"/>
         </title>
     </xsl:template>
-  
+    
+    <xsl:template match="*:personAssociations" mode="citation_contributor">
+        
+        <!--xsl:for-each select="*:personAssociation[((string-length(*:name/*:firstName) > 0) or (string-length(*:name/*:lastName) > 0)) and (matches(lower-case(*:personRole), 'author|creator'))]"-->
+         <xsl:for-each select="*:personAssociation[((string-length(*:name/*:firstName) > 0) or (string-length(*:name/*:lastName) > 0))]">
+                <contributor seq="{position()}">
+                <namePart type="given">
+                    <xsl:value-of select="normalize-space(*:name/*:firstName)"/>
+                </namePart>    
+                <namePart type="family">
+                    <xsl:value-of select="normalize-space(*:name/*:lastName)"/>
+                </namePart>    
+            </contributor>
+        </xsl:for-each>
+    </xsl:template>
+    
+  <!--
     <xsl:template match="*:personAssociation" mode="citation_contributor_public">
         <contributor>
             <namePart type="given">
@@ -908,7 +928,7 @@
             </namePart>    
         </contributor>
     </xsl:template>
-    
+    -->
     <xsl:template match="*:publisher" mode="citation_publisher">
         <publisher>
             <xsl:value-of select="normalize-space(*:name)"/>
@@ -956,6 +976,9 @@
                                 <identifier type="global">
                                     <xsl:value-of select="*:person/@uuid"/>
                                 </identifier>
+                                <identifier type="url">
+                                    <xsl:value-of select="concat('http://', $global_baseURI, $global_path, 'persons/', *:person/@uuid)"/>
+                                </identifier>                            
                             </xsl:if>
                              <name type="primary">
                                  <namePart type="given">
@@ -972,7 +995,7 @@
             
         </xsl:template>
         
-        <xsl:template match="*:personAssociation" mode="party_external_people">
+        <!--xsl:template match="*:personAssociation" mode="party_external_people">
            
             <xsl:variable name="personName" select="concat(normalize-space(*:name/*:firstName), ' ', normalize-space(*:name/*:lastName))"/>
             <xsl:if test="$global_debug">
@@ -984,8 +1007,7 @@
                      <registryObject group="{$global_group}">
                         <key>
                             <xsl:value-of select="concat($global_acronym, ':', normalize-space(*:externalPerson/@uuid))"/> 
-                           <!-- xsl:value-of select="local:formatKey($personName)"/--> 
-                        </key>       
+                         </key>       
                         <originatingSource>
                              <xsl:value-of select="$global_originatingSource"/>
                         </originatingSource>
@@ -1011,7 +1033,7 @@
                    
                 </xsl:if>
             
-        </xsl:template>
+        </xsl:template-->
         
         
         <xsl:template match="*:externalOrganisations" mode="collection_description_notes">
@@ -1049,6 +1071,9 @@
                                 <identifier type="global">
                                     <xsl:value-of select="@uuid"/>
                                 </identifier>
+                                <identifier type="url">
+                                    <xsl:value-of select="concat('http://', $global_baseURI, $global_path, 'organisations/', @uuid)"/>
+                                </identifier>       
                             </xsl:if>
                             
                              <name type="primary">
@@ -1077,6 +1102,9 @@
                                 <identifier type="global">
                                     <xsl:value-of select="@uuid"/>
                                 </identifier>
+                                <identifier type="url">
+                                    <xsl:value-of select="concat('http://', $global_baseURI, $global_path, 'organisations/', @uuid)"/>
+                                </identifier>       
                             </xsl:if>
                              <name type="primary">
                                  <namePart>

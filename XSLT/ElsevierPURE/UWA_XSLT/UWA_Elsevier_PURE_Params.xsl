@@ -14,5 +14,6 @@
     <xsl:param name="global_acronym" select="'UWA_PURE'"/>
     <xsl:param name="global_group" select="'The University of Western Australia'"/>
     <xsl:param name="global_publisherName" select="'University of Western Australia'"/>
+    <xsl:param name="global_validateWorkflow" select="true()"/>
     
 </xsl:stylesheet>
