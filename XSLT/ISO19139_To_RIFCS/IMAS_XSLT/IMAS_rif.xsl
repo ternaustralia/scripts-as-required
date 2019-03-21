@@ -958,22 +958,22 @@
 
     <xsl:template name="IMAS_populateSubjects">
         <xsl:param name="parent"/>
-        <xsl:for-each select="$parent/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword">
+        <xsl:for-each select="$parent/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword/*">
             <xsl:variable name="idType">
                 <xsl:choose>
-                    <xsl:when test="contains(gmx:Anchor/@xlink:href, 'anzsrc-for')">
+                    <xsl:when test="contains(@xlink:href, 'anzsrc-for')">
                         <xsl:text>anzsrc-for</xsl:text>
                     </xsl:when>
-                    <xsl:when test="contains(gmx:Anchor/@xlink:href, 'anzsrc-toa')">
+                    <xsl:when test="contains(@xlink:href, 'anzsrc-toa')">
                         <xsl:text>anzsrc-toa</xsl:text>
                     </xsl:when>
-                    <xsl:when test="contains(gmx:Anchor/@xlink:href, 'anzsrc-toa')">
+                    <xsl:when test="contains(@xlink:href, 'anzsrc-toa')">
                         <xsl:text>anzsrc-for</xsl:text>
                     </xsl:when>
-                    <xsl:when test="contains(gmx:Anchor/@xlink:href, 'anzsrc-seo')">
+                    <xsl:when test="contains(@xlink:href, 'anzsrc-seo')">
                         <xsl:text>anzsrc-seo</xsl:text>
                     </xsl:when>
-                    <xsl:when test="contains(gmx:Anchor/@xlink:href, 'gcmd')">
+                    <xsl:when test="contains(@xlink:href, 'gcmd')">
                         <xsl:text>gcmd</xsl:text>
                     </xsl:when>
                     <xsl:otherwise>
@@ -982,7 +982,7 @@
                 </xsl:choose>
             </xsl:variable>
             
-            <xsl:variable name="termIdentifier" select="substring-after(gmx:Anchor/@xlink:href, 'id=')"/>
+            <xsl:variable name="termIdentifier" select="substring-after(@xlink:href, 'id=')"/>
             
             <xsl:variable name="id" select="tokenize($termIdentifier, '/')[last()]"/>
             
