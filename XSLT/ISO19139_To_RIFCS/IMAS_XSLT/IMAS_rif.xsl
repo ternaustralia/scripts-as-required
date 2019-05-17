@@ -136,7 +136,7 @@
             <xsl:message select="concat('dataSetURI: ', $dataSetURI)"/>
         </xsl:if>
         
-        <xsl:variable name="fileIdentifier" select="gmd:fileIdentifier"/>
+        <xsl:variable name="fileIdentifier" select="gmd:fileIdentifier[1]"/>
         <!--xsl:message select="concat('fileIdentifier: ', $fileIdentifier)"/-->
 
         <xsl:variable name="imasDataCatalogueURL">
@@ -426,7 +426,7 @@
                     </xsl:if>
                     
                     <xsl:call-template name="IMAS_set_registryObjectIdentifier">
-                        <xsl:with-param name="identifier" select="gmd:fileIdentifier"/>
+                        <xsl:with-param name="identifier" select="gmd:fileIdentifier[1]"/>
                         <xsl:with-param name="type" select="'global'"/>
                     </xsl:call-template>
                     

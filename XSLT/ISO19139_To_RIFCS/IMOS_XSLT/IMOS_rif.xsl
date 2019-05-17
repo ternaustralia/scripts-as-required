@@ -64,120 +64,117 @@
     <xsl:template match="*:MD_Metadata" mode="IMOS">
         <xsl:param name="aggregatingGroup"/>
         
-        <xsl:if test="$global_debug">
-            <xsl:message>IMOS XSLT</xsl:message>
-        </xsl:if>
-        
-        <xsl:variable name="groupToUse">
-            <xsl:choose>
-                <xsl:when test="string-length($aggregatingGroup) > 0">
-                    <xsl:value-of select="$aggregatingGroup"/>
-                </xsl:when>
-                <xsl:otherwise>
-                    <xsl:value-of select="$global_IMOS_group"/>
-                </xsl:otherwise>
-            </xsl:choose>
-        </xsl:variable>
-        
-        <xsl:variable name="metadataTruthURL" select="(gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage[contains(lower-case(following-sibling::gmd:protocol), 'metadata-url')]/gmd:URL)[1]"/>
-        
-        <xsl:variable name="datasetURI" select="gmd:dataSetURI"/>
-        <!--xsl:message select="concat('datasetURI: ', $datasetURI)"/-->
-        
-        <xsl:variable name="originatingSourceURL">
-            <xsl:choose>
-                <xsl:when test="string-length($metadataTruthURL) > 0">
-                    <xsl:value-of select="custom:getDomainFromURL($metadataTruthURL)"/>
-                </xsl:when>
-                <xsl:when test="string-length($datasetURI) > 0">
-                    <xsl:value-of select="custom:getDomainFromURL($datasetURI)"/>
-                </xsl:when>
-                <xsl:when test="count(gmd:contact/gmd:CI_ResponsibleParty/gmd:contactInfo/gmd:CI_Contact/gmd:onlineResource/gmd:CI_OnlineResource/gmd:linkage/gmd:URL) > 0">
-                    <xsl:value-of select="custom:getDomainFromURL(gmd:contact/gmd:CI_ResponsibleParty/gmd:contactInfo/gmd:CI_Contact/gmd:onlineResource/gmd:CI_OnlineResource/gmd:linkage/gmd:URL[1])"/>
-                </xsl:when>
-                <xsl:otherwise>
-                    <xsl:text>undetermined</xsl:text>
-                </xsl:otherwise>
-            </xsl:choose>
-        </xsl:variable> 
-        
-        <xsl:variable name="originatingSourceOrganisation" select="customGMD:originatingSourceOrganisation(.)"/>
-        
-        <xsl:if test="$global_debug">
-            <xsl:message select="concat('originatingSourceURL: ', $originatingSourceURL)"/>
-            <xsl:message select="concat('$originatingSourceOrganisation: ', $originatingSourceOrganisation)"/>
-        </xsl:if>
-        
-        
-        
-        
-        
-       
-       <registryObject>
-           <xsl:attribute name="group" select="substring-after($groupToUse, ':')"/>
+        <xsl:if test="not(contains(lower-case(gmd:hierarchyLevel/*[contains(lower-case(name()),'scopecode')]/@codeListValue), 'publication'))">
             
-            <xsl:apply-templates select="gmd:fileIdentifier" mode="IMOS_registryObject_key">
-                <xsl:with-param name="groupToUse" select="$groupToUse"/>
-            </xsl:apply-templates>
-        
-            <originatingSource>
-                <xsl:value-of select="$originatingSourceURL"/>
-            </originatingSource> 
-                
-                
-            <xsl:element name="{customIMOS:registryObjectClass(gmd:hierarchyLevel/*[contains(lower-case(name()),'scopecode')]/@codeListValue)}">
-    
-                <xsl:attribute name="type" select="customIMOS:registryObjectType(gmd:hierarchyLevel/*[contains(lower-case(name()),'scopecode')]/@codeListValue)"/>
-                        
-                <xsl:if test="customIMOS:registryObjectClass(gmd:hierarchyLevel/*[contains(lower-case(name()),'scopecode')]/@codeListValue) = 'collection'">
-                        <xsl:if test="
-                            (count(gmd:dateStamp/*[contains(lower-case(name()),'date')]) > 0) and 
-                            (string-length(gmd:dateStamp/*[contains(lower-case(name()),'date')][1]) > 0)">
-                            <xsl:attribute name="dateAccessioned">
-                                <xsl:value-of select="gmd:dateStamp/*[contains(lower-case(name()),'date')][1]"/>
-                            </xsl:attribute>  
-                        </xsl:if>
-                            
-                </xsl:if>
-                
-                <xsl:apply-templates select="gmd:fileIdentifier" mode="IMOS_registryObject_identifier"/>
-                       
-                <xsl:apply-templates select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage[contains(lower-case(following-sibling::gmd:protocol), 'metadata-url')]/gmd:URL" mode="IMOS_registryObject_identifier"/>
-                
-                <xsl:apply-templates select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage[contains(lower-case(following-sibling::gmd:protocol), 'metadata-url')]/gmd:URL" mode="IMOS_registryObject_location_metadata"/>
-                
-                <xsl:apply-templates select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource" mode="IMOS_registryObject_relatedInfo"/>
+            <xsl:if test="$global_debug">
+                <xsl:message>IMOS XSLT</xsl:message>
+            </xsl:if>
             
-                <xsl:apply-templates select="gmd:parentIdentifier" mode="IMOS_registryObject_related_object">
-                    <xsl:with-param name="groupToUse" select="$groupToUse"/>  
-                </xsl:apply-templates>
+            <xsl:variable name="groupToUse">
+                <xsl:choose>
+                    <xsl:when test="string-length($aggregatingGroup) > 0">
+                        <xsl:value-of select="$aggregatingGroup"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:value-of select="$global_IMOS_group"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:variable>
+            
+            <xsl:variable name="metadataTruthURL" select="(gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage[contains(lower-case(following-sibling::gmd:protocol), 'metadata-url')]/gmd:URL)[1]"/>
+            
+            <xsl:variable name="datasetURI" select="gmd:dataSetURI"/>
+            <!--xsl:message select="concat('datasetURI: ', $datasetURI)"/-->
+            
+            <xsl:variable name="originatingSourceURL">
+                <xsl:choose>
+                    <xsl:when test="string-length($metadataTruthURL) > 0">
+                        <xsl:value-of select="custom:getDomainFromURL($metadataTruthURL)"/>
+                    </xsl:when>
+                    <xsl:when test="string-length($datasetURI) > 0">
+                        <xsl:value-of select="custom:getDomainFromURL($datasetURI)"/>
+                    </xsl:when>
+                    <xsl:when test="count(gmd:contact/gmd:CI_ResponsibleParty/gmd:contactInfo/gmd:CI_Contact/gmd:onlineResource/gmd:CI_OnlineResource/gmd:linkage/gmd:URL) > 0">
+                        <xsl:value-of select="custom:getDomainFromURL(gmd:contact/gmd:CI_ResponsibleParty/gmd:contactInfo/gmd:CI_Contact/gmd:onlineResource/gmd:CI_OnlineResource/gmd:linkage/gmd:URL[1])"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:text>undetermined</xsl:text>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:variable> 
+            
+            <xsl:variable name="originatingSourceOrganisation" select="customGMD:originatingSourceOrganisation(.)"/>
+            
+            <xsl:if test="$global_debug">
+                <xsl:message select="concat('originatingSourceURL: ', $originatingSourceURL)"/>
+                <xsl:message select="concat('$originatingSourceOrganisation: ', $originatingSourceOrganisation)"/>
+            </xsl:if>
+           
+           <registryObject>
+               <xsl:attribute name="group" select="substring-after($groupToUse, ':')"/>
                 
-                <xsl:apply-templates select="gmd:children/gmd:childIdentifier" mode="IMOS_registryObject_related_object">
-                    <xsl:with-param name="groupToUse" select="$groupToUse"/>  
-                </xsl:apply-templates>
-             
-                <!--xsl:apply-templates select="gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:source/gmd:LI_Source[string-length(gmd:sourceCitation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier/gmd:code) > 0]"
-                     mode="IMOS_registryObject_relatedInfo"/-->
-                
-                <xsl:apply-templates
-                    select="gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:statement"
-                    mode="IMOS_registryObject_description_lineage"/>
-                 
-                 <xsl:apply-templates select="gmd:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="IMOS_registryObject">
-                    <xsl:with-param name="originatingSourceURL" select="$originatingSourceURL"/>
-                    <xsl:with-param name="originatingSourceOrganisation" select="$originatingSourceOrganisation"/>
+                <xsl:apply-templates select="gmd:fileIdentifier" mode="IMOS_registryObject_key">
                     <xsl:with-param name="groupToUse" select="$groupToUse"/>
                 </xsl:apply-templates>
-                
-            </xsl:element>
-        </registryObject>
             
-        <xsl:apply-templates select="gmd:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="IMOS_relatedRegistryObjects">
-            <xsl:with-param name="originatingSourceURL" select="$originatingSourceURL"/>
-            <xsl:with-param name="groupToUse" select="$groupToUse"/>
-        </xsl:apply-templates>
+                <originatingSource>
+                    <xsl:value-of select="$originatingSourceURL"/>
+                </originatingSource> 
                     
-               
+                    
+                <xsl:element name="{customIMOS:registryObjectClass(gmd:hierarchyLevel/*[contains(lower-case(name()),'scopecode')]/@codeListValue)}">
+        
+                    <xsl:attribute name="type" select="customIMOS:registryObjectType(gmd:hierarchyLevel/*[contains(lower-case(name()),'scopecode')]/@codeListValue)"/>
+                            
+                    <xsl:if test="customIMOS:registryObjectClass(gmd:hierarchyLevel/*[contains(lower-case(name()),'scopecode')]/@codeListValue) = 'collection'">
+                            <xsl:if test="
+                                (count(gmd:dateStamp/*[contains(lower-case(name()),'date')]) > 0) and 
+                                (string-length(gmd:dateStamp/*[contains(lower-case(name()),'date')][1]) > 0)">
+                                <xsl:attribute name="dateAccessioned">
+                                    <xsl:value-of select="gmd:dateStamp/*[contains(lower-case(name()),'date')][1]"/>
+                                </xsl:attribute>  
+                            </xsl:if>
+                                
+                    </xsl:if>
+                    
+                    <xsl:apply-templates select="gmd:fileIdentifier" mode="IMOS_registryObject_identifier"/>
+                           
+                    <xsl:apply-templates select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage[contains(lower-case(following-sibling::gmd:protocol), 'metadata-url')]/gmd:URL" mode="IMOS_registryObject_identifier"/>
+                    
+                    <xsl:apply-templates select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage[contains(lower-case(following-sibling::gmd:protocol), 'metadata-url')]/gmd:URL" mode="IMOS_registryObject_location_metadata"/>
+                    
+                    <xsl:apply-templates select="gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource" mode="IMOS_registryObject_relatedInfo"/>
+                
+                    <xsl:apply-templates select="gmd:parentIdentifier" mode="IMOS_registryObject_related_object">
+                        <xsl:with-param name="groupToUse" select="$groupToUse"/>  
+                    </xsl:apply-templates>
+                    
+                    <xsl:apply-templates select="gmd:children/gmd:childIdentifier" mode="IMOS_registryObject_related_object">
+                        <xsl:with-param name="groupToUse" select="$groupToUse"/>  
+                    </xsl:apply-templates>
+                 
+                    <!--xsl:apply-templates select="gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:source/gmd:LI_Source[string-length(gmd:sourceCitation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier/gmd:code) > 0]"
+                         mode="IMOS_registryObject_relatedInfo"/-->
+                    
+                    <xsl:apply-templates
+                        select="gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:statement"
+                        mode="IMOS_registryObject_description_lineage"/>
+                     
+                     <xsl:apply-templates select="gmd:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="IMOS_registryObject">
+                        <xsl:with-param name="originatingSourceURL" select="$originatingSourceURL"/>
+                        <xsl:with-param name="originatingSourceOrganisation" select="$originatingSourceOrganisation"/>
+                        <xsl:with-param name="groupToUse" select="$groupToUse"/>
+                    </xsl:apply-templates>
+                    
+                </xsl:element>
+            </registryObject>
+                
+            <xsl:apply-templates select="gmd:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="IMOS_relatedRegistryObjects">
+                <xsl:with-param name="originatingSourceURL" select="$originatingSourceURL"/>
+                <xsl:with-param name="groupToUse" select="$groupToUse"/>
+            </xsl:apply-templates>
+                        
+        </xsl:if>
 
     </xsl:template>
     

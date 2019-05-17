@@ -491,7 +491,7 @@
                 <xsl:otherwise>
                     <relation>
                         <xsl:attribute name="type">
-                            <xsl:text>isAssociatedWith</xsl:text>
+                            <xsl:text>hasAssociationWith</xsl:text>
                         </xsl:attribute>
                     </relation>
                 </xsl:otherwise>
@@ -543,7 +543,7 @@
                 <xsl:otherwise>
                     <relation>
                         <xsl:attribute name="type">
-                            <xsl:text>isAssociatedWith</xsl:text>
+                            <xsl:text>hasAssociationWith</xsl:text>
                         </xsl:attribute>
                     </relation>
                 </xsl:otherwise>
@@ -566,7 +566,7 @@
                 
                 <relation>
                     <xsl:attribute name="type">
-                        <xsl:text>isAssociatedWith</xsl:text>
+                        <xsl:text>hasAssociationWith</xsl:text>
                     </xsl:attribute>
                 </relation>
                 
@@ -623,7 +623,7 @@
                             <xsl:otherwise>
                                 <relation>
                                     <xsl:attribute name="type">
-                                        <xsl:text>isAssociatedWith</xsl:text>
+                                        <xsl:text>hasAssociationWith</xsl:text>
                                     </xsl:attribute>
                                 </relation>
                             </xsl:otherwise>
@@ -633,7 +633,7 @@
                 <xsl:otherwise>
                     <relation>
                         <xsl:attribute name="type">
-                            <xsl:text>isAssociatedWith</xsl:text>
+                            <xsl:text>hasAssociationWith</xsl:text>
                         </xsl:attribute>
                     </relation>
                 </xsl:otherwise>

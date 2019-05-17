@@ -51,7 +51,6 @@
             <xsl:attribute name="xsi:schemaLocation">
                 <xsl:text>http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd</xsl:text>
             </xsl:attribute>
-            
             <xsl:apply-templates select="//*:MD_Metadata" mode="IMOS_aggregating"/>
         </registryObjects>
         
