@@ -12,7 +12,7 @@
     <xsl:param name="global_baseURI" select="'research.bond.edu.au'"/>
     <xsl:param name="global_path" select="'/en/'"/>
     <xsl:param name="global_acronym" select="'BOND_PURE'"/>
-    <xsl:param name="global_group" select="'BOND University PURE Repository'"/>
+    <xsl:param name="global_group" select="'BOND University'"/>
     <xsl:param name="global_publisherName" select="'BOND University'"/>
     <xsl:param name="global_validateWorkflow" select="false()"/>
     

@@ -145,6 +145,7 @@ while(getMore and (paginationValue > -1)):
     loadedJson = json.loads(openedFile.read())
 
     if loadedJson is None:
+        print 'loadedJson is None'
         exit
 
     getMore = bool(0)
@@ -171,13 +172,13 @@ while(getMore and (paginationValue > -1)):
                 print(customPaginateIdentifierList + ' not found')
                 paginationValue = -1
 
-        # print(loadedJson)
-        # for key in loadedJson.keys():
-        #   value = loadedJson[key]
-        #   print(value)
-        #   dataSetName_list = processList(value)
-        #   for dataSetName in dataSetName_list:
-        #       processDataset(dataSetName, fullDirectoryPath)
+        print(loadedJson)
+        for key in loadedJson.keys():
+            value = loadedJson[key]
+            print(value)
+            dataSetName_list = processList(value)
+            for dataSetName in dataSetName_list:
+                processDataset(dataSetName, fullDirectoryPath)
     elif (isinstance(loadedJson, list)):
         dataSetName_list = processList(loadedJson)
         for dataSetName in dataSetName_list:

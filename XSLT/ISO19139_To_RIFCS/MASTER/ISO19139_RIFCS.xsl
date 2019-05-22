@@ -227,7 +227,7 @@
        </xsl:if>
        
        <xsl:apply-templates
-           select="ancestor::gmd:MD_Metadata/gmd:dateStamp/gco:DateTime[string-length(.)> 0]"
+           select="ancestor::gmd:MD_Metadata/gmd:dateStamp/*[contains(local-name(), 'Date')][string-length(.)> 0]"
            mode="registryObject_description_brief">
            <xsl:with-param name="landingPage" select="$landingPage"/>
        </xsl:apply-templates>
@@ -699,7 +699,7 @@
         </description>
     </xsl:template>
     
-    <xsl:template match="gco:DateTime" mode="registryObject_description_brief">
+    <xsl:template match="*[contains(local-name(), 'Date')]" mode="registryObject_description_brief">
         <xsl:param name="landingPage"/>
         <description type="brief">
             <xsl:value-of select="concat('This record was harvested by RDA at ',  current-dateTime(), ' from &lt;a href=''', $landingPage ,'''&gt;', $landingPage, '&lt;/a&gt; in ', $global_acronym, '''s Data Catalogue where it was last modified at ', . , '')"/>
@@ -1042,17 +1042,36 @@
         </xsl:if>
     </xsl:template>
 
-    <xsl:template match="*[contains(lower-case(name()),'identification')]" mode="registryObject_rights_access">
-      <rights>
-          <xsl:choose>
-              <xsl:when test="count(gmd:resourceConstraints/*/gmd:accessConstraints/gmd:MD_RestrictionCode[lower-case(@codeListValue) = 'restricted']) > 0">
-                  <accessRights type="restricted"/>
-              </xsl:when>
-              <xsl:otherwise>
-                  <accessRights type="open"/>   
-              </xsl:otherwise>
-          </xsl:choose>
-      </rights>
+
+
+
+   <xsl:template match="*[contains(lower-case(name()),'identification')]"  mode="registryObject_rights_access">
+       <!-- if there is one or more MD_ClassificationCode of 'unclassified', and all occurences of MD_ClassificationCode are 'unclassified', set accessRights to 'open' -->
+            <rights>
+                <accessRights>
+                    <xsl:choose>
+                        <xsl:when test="count(gmd:resourceConstraints/gmd:MD_SecurityConstraints/gmd:classification/gmd:MD_ClassificationCode[@codeListValue = 'unclassified']) > 0 and
+                            count(gmd:resourceConstraints/gmd:MD_SecurityConstraints/gmd:classification/gmd:MD_ClassificationCode/@codeListValue) = 
+                            count(gmd:resourceConstraints/gmd:MD_SecurityConstraints/gmd:classification/gmd:MD_ClassificationCode[@codeListValue = 'unclassified'])">
+                            <xsl:attribute name="type">
+                                <xsl:text>open</xsl:text>
+                            </xsl:attribute>
+                        </xsl:when>
+                        <!-- when MD_ClassificationCode is populated, but not as above -->
+                        <xsl:when test="count(gmd:resourceConstraints/gmd:MD_SecurityConstraints/gmd:classification/gmd:MD_ClassificationCode/@codeListValue) > 0">
+                            <xsl:attribute name="type">
+                                <xsl:text>restricted</xsl:text>
+                            </xsl:attribute>
+                        </xsl:when>
+                        <!-- all other cases -->
+                        <xsl:otherwise>
+                            <xsl:attribute name="type">
+                                <xsl:text>other</xsl:text>
+                            </xsl:attribute>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </accessRights>
+            </rights>
   </xsl:template>
   
    <xsl:template match="*" mode="registryObject_rights_licence_type_and_uri">

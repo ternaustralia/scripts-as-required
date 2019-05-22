@@ -78,7 +78,13 @@
                 
                 <xsl:apply-templates select="dc:identifier[contains(.,'doi') or contains(.,'10.')]" mode="collection_location_doi"/>
                 
-                <xsl:apply-templates select="../../oai:header/oai:identifier[contains(.,'oai:eprints.utas.edu.au:')]" mode="collection_location_nodoi"/>
+                <!-- if no doi, use handle as location -->
+                <xsl:if test="count(dc:identifier[contains(.,'doi') or contains(.,'10.')]) = 0">
+                    <xsl:apply-templates select="dc:identifier[contains(.,'handle.net')]" mode="collection_location_handle"/>
+                    
+                </xsl:if>
+                
+                <!--xsl:apply-templates select="../../oai:header/oai:identifier[contains(.,'oai:eprints.utas.edu.au:')]" mode="collection_location_nodoi"/-->
                 
                 <xsl:apply-templates select="dc:title[string-length(.) > 0]" mode="collection_name"/>
                 
@@ -143,7 +149,19 @@
         </location> 
     </xsl:template>
     
-    <xsl:template match="oai:identifier" mode="collection_location_nodoi">
+    <xsl:template match="dc:identifier" mode="collection_location_handle">
+        <location>
+            <address>
+                <electronic type="url" target="landingPage">
+                    <value>
+                        <xsl:value-of select="normalize-space(.)"/>
+                    </value>
+                </electronic>
+            </address>
+        </location> 
+    </xsl:template>
+    
+    <!--xsl:template match="oai:identifier" mode="collection_location_nodoi">
         <location>
             <address>
                 <electronic type="url" target="landingPage">
@@ -153,7 +171,7 @@
                 </electronic>
             </address>
         </location> 
-    </xsl:template>
+    </xsl:template-->
     
     <xsl:template match="dc:title" mode="collection_name">
         <name type="primary">
@@ -199,7 +217,7 @@
     </xsl:template>
    
     <xsl:template match="dc:rights" mode="collection_rights_rightsStatement">
-        <xsl:if test="contains(lower-case(.), 'open access')">
+        <xsl:if test="contains(lower-case(.), 'open')">
             <rights>
                 <accessRights type="open"/>
             </rights>
@@ -207,7 +225,7 @@
         
         <xsl:variable name="currentValue" select="normalize-space(.)"/>
         
-        <xsl:message select="concat('$currentValue', $currentValue)"/>
+        <xsl:message select="concat('$currentValue: ', $currentValue)"/>
         <xsl:message select="concat('$currentValue no number: ', replace($currentValue, '\d.\d', ''))"/>
         
         <xsl:variable name="customIdentifier_sequence" as="xs:string*">
@@ -225,7 +243,7 @@
             <xsl:for-each select="$licenseCodelist/custom:CT_CodelistCatalogue/custom:codelistItem/custom:CodeListDictionary[(@custom:id='LicenseCodeInternational')]/custom:codeEntry/custom:CodeDefinition">
                 <xsl:message select="concat('remarks no {n}: ', normalize-space(replace(custom:remarks, '\{n\}', '')))"/>
                 <xsl:if test="contains(replace($currentValue, '\d.\d', ''), normalize-space(replace(custom:remarks, '\{n\}', '')))">
-                    <xsl:message select="'Match on remarks'"/>
+                    <xsl:message select="concat('Match on remarks :', custom:remarks) "/>
                     <xsl:if test="string-length(custom:identifier) > 0">
                         <xsl:value-of select="custom:identifier"/>
                     </xsl:if>
@@ -236,8 +254,8 @@
                 <xsl:message select="concat('current value no  -: ', translate($currentValue, ' ', '-'))"/>
                 <xsl:message select="concat('custom:identifier  -: ', normalize-space(custom:identifier))"/>
                 
-                <xsl:if test="contains(translate($currentValue, ' ', '-'), normalize-space(custom:identifier))">
-                    <xsl:message select="'Match on identifier'"/>
+                <xsl:if test="contains(normalize-space(custom:identifier), translate($currentValue, ' ', '-'))">
+                    <xsl:message select="concat('Match on identifier :', custom:identifier) "/>
                     <xsl:if test="string-length(custom:identifier) > 0">
                         <xsl:value-of select="custom:identifier"/>
                     </xsl:if>
@@ -248,8 +266,8 @@
                 <xsl:message select="concat('current value no  -: ', translate($currentValue, ' ', '-'))"/>
                 <xsl:message select="concat('custom:identifier: ', normalize-space(custom:identifier))"/>
                 
-                <xsl:if test="contains(translate($currentValue, ' ', '-'), normalize-space(custom:identifier))">
-                    <xsl:message select="'Match on identifier'"/>
+                <xsl:if test="contains(normalize-space(custom:identifier), translate($currentValue, ' ', '-'))">
+                    <xsl:message select="concat('Match on identifier :', custom:identifier) "/>
                     <xsl:if test="string-length(custom:identifier) > 0">
                         <xsl:value-of select="custom:identifier"/>
                     </xsl:if>

@@ -3,7 +3,6 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:xs="http://www.w3.org/2001/XMLSchema" 
     xmlns:custom="http://custom.nowhere.yet"   
-    xpath-default-namespace="http://json.to.xml"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects">
     <!-- stylesheet to convert discover.data.vic.gov.au xml (transformed from json with python script) to RIF-CS -->
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
@@ -42,7 +41,7 @@
         <xsl:variable name="metadataURL">
             <xsl:variable name="name" select="normalize-space(name)"/>
             <xsl:if test="string-length($name)">
-                <xsl:value-of select="concat($global_baseURI, 'data/dataset/', $name)"/>
+                <xsl:value-of select="concat($global_baseURI, 'dataset/', $name)"/>
             </xsl:if>
         </xsl:variable>
 
@@ -184,7 +183,7 @@
                 <xsl:attribute name="type">
                     <xsl:text>uri</xsl:text>
                 </xsl:attribute>
-                <xsl:value-of select="concat($global_baseURI, 'data/dataset/', normalize-space(.))"
+                <xsl:value-of select="concat($global_baseURI, 'dataset/', normalize-space(.))"
                 />
             </identifier>
         </xsl:if>
@@ -218,7 +217,7 @@
                             <xsl:text>landingPage</xsl:text>
                         </xsl:attribute>
                         <value>
-                            <xsl:value-of select="concat($global_baseURI, 'data/dataset/', $name)"/>
+                            <xsl:value-of select="concat($global_baseURI, 'dataset/', $name)"/>
                         </value>
                     </electronic>
                 </address>
