@@ -35,7 +35,7 @@ def json2xml(json_obj, line_padding=""):
     return "%s%s" % (line_padding, json_obj)
 
 
-def parse_element(doc, root, j, namespaceUri):
+def parse_element(doc, root, j):
   if j is None:
     return
   if isinstance(j, dict):
@@ -45,17 +45,17 @@ def parse_element(doc, root, j, namespaceUri):
       if isinstance(value, list):
         for e in value:
           keyFormatted = key.replace(' ', '_')
-          elem = doc.createElementNS(namespaceUri, keyFormatted)
-          parse_element(doc, elem, e, namespaceUri)
+          elem = doc.createElement(keyFormatted)
+          parse_element(doc, elem, e)
           root.appendChild(elem)
       else:
         if key.isdigit():
-          elem = doc.createElementNS(namespaceUri, 'item')
+          elem = doc.createElement('item')
           elem.setAttribute('value', key)
         else:
           keyFormatted = key.replace(' ', '_')
-          elem = doc.createElementNS(namespaceUri, keyFormatted)
-        parse_element(doc, elem, value, namespaceUri)
+          elem = doc.createElement(keyFormatted)
+        parse_element(doc, elem, value)
         root.appendChild(elem)
   elif isinstance(j, list):
     #print("isinstance list of len ", len(j))
@@ -77,19 +77,19 @@ def parse_element(doc, root, j, namespaceUri):
   else:
     raise Exception("unhandled type %s for %s" % (type(j), j,))
 
-def createOneFilePerRecord(outputDirectory, domain, elem, start, namespaceUri, namespacePrefix, splitElement):
+def createOneFilePerRecord(outputDirectory, domain, elem, start, splitElement):
+
     # domImplementation = DOMImplementation()
 
 
     # Create one file per record, with domain name and increment
-    resultsList = elem.getElementsByTagNameNS(namespaceUri, splitElement)
+    resultsList = elem.getElementsByTagNameNS(splitElement)
+
     for i in xrange(1, len(resultsList)):
         results = resultsList[i]
 
         obj_xml_rootRecordDocument = Document()
-        rootRecord = obj_xml_rootRecordDocument.createElementNS(namespaceUri, namespacePrefix + ':' + 'record')
-        rootRecord.setAttribute('xmlns', namespaceUri)
-        rootRecord.setAttribute(('xmlns:' + namespacePrefix), namespaceUri)
+        rootRecord = obj_xml_rootRecordDocument.createElement('record')
         obj_xml_rootRecordDocument.appendChild(rootRecord)
 
         rootRecord.appendChild(results)
@@ -102,12 +102,11 @@ def createOneFilePerRecord(outputDirectory, domain, elem, start, namespaceUri, n
         print("This page of output split per record, and written to %s" % recordFilename)
 
 
-def process(namespaceUri, namespacePrefix, rows, start, dataSetUri, dataSetName, outputDirectory, domain, splitElement, usePostfix):
+def process(rows, start, dataSetUri, dataSetName, outputDirectory, domain, splitElement, usePostfix):
 
     obj_xml_rootDocument = Document()
-    root = obj_xml_rootDocument.createElementNS(namespaceUri, namespacePrefix + ':' + 'root')
-    root.setAttribute('xmlns', namespaceUri)
-    root.setAttribute(('xmlns:' + namespacePrefix), namespaceUri)
+    root = obj_xml_rootDocument.createElement('root')
+
     obj_xml_rootDocument.appendChild(root)
 
 
@@ -131,14 +130,16 @@ def process(namespaceUri, namespacePrefix, rows, start, dataSetUri, dataSetName,
     obj_dict = json.loads(obj_json_str)
 
     elem = obj_xml_rootDocument.createElement("datasets")
-    parse_element(obj_xml_rootDocument, elem, obj_dict, namespaceUri)
+    parse_element(obj_xml_rootDocument, elem, obj_dict)
+
     root.appendChild(elem)
 
     # print(obj_xml_rootDocument.toprettyxml())
 
     count = 0
 
-    countElementList = elem.getElementsByTagNameNS(namespaceUri, 'count')
+    countElementList = elem.getElementsByTagName('count')
+
     if (len(countElementList) == 1):
         assert (len(countElementList[0].childNodes[0].data) > 0)
         count = int(countElementList[0].childNodes[0].data)
@@ -148,7 +149,7 @@ def process(namespaceUri, namespacePrefix, rows, start, dataSetUri, dataSetName,
     # obj_StreamReaderWriter.write(obj_xml_Document.toprettyxml(encoding='utf-8', indent=' ')
 
     if (splitElement != None):
-        createOneFilePerRecord(outputDirectory, domain, elem, start, namespaceUri, namespacePrefix, splitElement)
+        createOneFilePerRecord(outputDirectory, domain, elem, start, splitElement)
 
     else:
 
@@ -176,9 +177,6 @@ def writeXmlFromJson(dataSetUri, dataSetName, outputDirectory, splitElement=None
     start = [0]
     count=100
 
-    namespaceUri = "http://json.to.xml"
-    namespacePrefix = "jsonXml"
-
     domImplementation = DOMImplementation()
 
     domain = str(dataSetUri.split("//")[-1].split("/")[0].split('?')[0])
@@ -187,7 +185,7 @@ def writeXmlFromJson(dataSetUri, dataSetName, outputDirectory, splitElement=None
 
         while(count > start[0]):
 
-            count = process(namespaceUri, namespacePrefix, rows, start, dataSetUri, dataSetName, outputDirectory, domain, splitElement, usePostfix)
+            count = process(rows, start, dataSetUri, dataSetName, outputDirectory, domain, splitElement, usePostfix)
             print("count returned: ", count)
             print("start returned: ", start[0])
 
@@ -199,10 +197,6 @@ def writeXmlFromJson(dataSetUri, dataSetName, outputDirectory, splitElement=None
         traceback.print_exc(file=sys.stdout)
 
 
-
-
-    #if outputFile is not None:
-        #outputFile.close()
 
   
 

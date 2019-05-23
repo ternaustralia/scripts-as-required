@@ -3,7 +3,6 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:xs="http://www.w3.org/2001/XMLSchema" 
     xmlns:custom="http://custom.nowhere.yet"
-    xpath-default-namespace="http://json.to.xml"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects">
     <!-- stylesheet to convert data.gov.au xml (transformed from json with python script) to RIF-CS -->
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
