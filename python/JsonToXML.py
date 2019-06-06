@@ -83,7 +83,7 @@ def createOneFilePerRecord(outputDirectory, domain, elem, start, splitElement):
 
 
     # Create one file per record, with domain name and increment
-    resultsList = elem.getElementsByTagNameNS(splitElement)
+    resultsList = elem.getElementsByTagName(splitElement)
 
     for i in xrange(1, len(resultsList)):
         results = resultsList[i]

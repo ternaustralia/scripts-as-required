@@ -3,7 +3,8 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:xs="http://www.w3.org/2001/XMLSchema" 
     xmlns:custom="http://custom.nowhere.yet"
-    xmlns="http://ands.org.au/standards/rif-cs/registryObjects">
+    xpath-default-namespace="http://www.openarchives.org/OAI/2.0/"
+    exclude-result-prefixes="custom">
     <!-- stylesheet to convert data.gov.au xml (transformed from json with python script) to RIF-CS -->
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
@@ -27,7 +28,7 @@
                 <xsl:text>http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd</xsl:text>
             </xsl:attribute>
             
-            <xsl:apply-templates select="//datasets/result" mode="constructObjects"/>
+            <xsl:apply-templates select="//datasets/result[extras[contains(lower-case(key), 'rda harvest') and contains(lower-case(value), 'true')]]" mode="constructObjects"/>
             
         </registryObjects>
     </xsl:template>

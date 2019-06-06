@@ -10,26 +10,25 @@
     
     <xsl:param name="global_debug" select="false()" as="xs:boolean"/>
     <xsl:param name="global_debugExceptions" select="true()" as="xs:boolean"/>
-    <xsl:param name="global_originatingSource" select="'Geoscience Australia'"/>
-    <xsl:param name="global_acronym" select="'GA'"/>
-    <xsl:param name="global_baseURI" select="'ecat.ga.gov.au'"/>
-    <xsl:param name="global_baseURI_PID" select="'pid.geoscience.gov.au'"/>
-    <xsl:param name="global_path_PID" select="'/dataset/ga/'"/>
-    <xsl:param name="global_path" select="'/geonetwork/srv/eng/search?uuid='"/>
-    <xsl:param name="global_group" select="'Geoscience Australia'"/>
-    <xsl:param name="global_publisherName" select="'Geoscience Australia'"/>
-    <xsl:param name="global_publisherPlace" select="'Canberra'"/>
-     
-    <xsl:template match="/">
+    <xsl:param name="global_originatingSource" select="'Australian Antarctic Data Centre'"/>
+    <xsl:param name="global_acronym" select="'AADC'"/>
+    <xsl:param name="global_baseURI" select="'data.aad.gov.au'"/>
+    <xsl:param name="global_baseURI_PID" select="'pid.aad.gov.au'"/>
+    <xsl:param name="global_path_PID" select="'/dataset/aad/'"/>
+    <xsl:param name="global_path" select="'/aadc/metadata/metadata_redirect.cfm?md='"/>
+    <xsl:param name="global_group" select="'Australian Antarctic Data Centre'"/>
+    <xsl:param name="global_publisherName" select="'Australian Antarctic Data Centre'"/>
+    <xsl:param name="global_publisherPlace" select="'Hobart'"/>
+    
+     <xsl:template match="/">
         <!-- include all records except those with scopecode 'Document'-->
         <registryObjects>
             <xsl:attribute name="xsi:schemaLocation">
                 <xsl:text>http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd</xsl:text>
             </xsl:attribute>
             
-            <xsl:for-each select="//mdb:MD_Metadata[count(mdb:metadataScope/mdb:MD_MetadataScope/mdb:resourceScope/mcc:MD_ScopeCode[contains(@codeListValue, 'document')]) = 0]">
-                <xsl:apply-templates select="." mode="registryObjects"/>
-            </xsl:for-each>
+           <xsl:apply-templates select="//mdb:MD_Metadata" mode="registryObjects"/>
+            
         </registryObjects>
     </xsl:template>
     

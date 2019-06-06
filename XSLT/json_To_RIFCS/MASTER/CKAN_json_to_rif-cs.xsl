@@ -3,16 +3,20 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:xs="http://www.w3.org/2001/XMLSchema" 
     xmlns:custom="http://custom.nowhere.yet"   
-    xmlns="http://ands.org.au/standards/rif-cs/registryObjects">
+    xmlns:local="http://local.nowhere.yet"   
+    xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
+    exclude-result-prefixes="custom">
+    
     <!-- stylesheet to convert discover.data.vic.gov.au xml (transformed from json with python script) to RIF-CS -->
     <xsl:output method="xml" version="1.0" encoding="UTF-8" omit-xml-declaration="yes" indent="yes"/>
     <xsl:strip-space elements="*"/>
-    <xsl:param name="global_originatingSource" select="'http://discover.data.vic.gov.au'"/>
-    <xsl:param name="global_baseURI" select="'http://discover.data.vic.gov.au/'"/>
-    <xsl:param name="global_group" select="'discover.data.vic.gov.au'"/>
-    <xsl:param name="global_contributor" select="'discover.data.vic.gov.au'"/>
-    <xsl:param name="global_publisherName" select="'discover.data.vic.gov.au'"/>
-    <xsl:param name="global_publisherPlace" select="'Victoria'"/>
+    
+    <xsl:param name="global_originatingSource" select="'{requires override}'"/>
+    <xsl:param name="global_baseURI" select="'{requires override}'"/>
+    <xsl:param name="global_group" select="'{requires override}'"/>
+    <xsl:param name="global_contributor" select="'{requires override}'"/>
+    <xsl:param name="global_publisherName" select="'{requires override}'"/>
+    <xsl:param name="global_publisherPlace" select="'{requires override}'"/>
 
     <xsl:template match="/">
         <xsl:apply-templates/>
@@ -111,14 +115,18 @@
                 <xsl:apply-templates select="spatial_coverage" mode="collection_coverage_spatial"/>
 
                 <xsl:apply-templates select="isopen" mode="collection_rights_accessRights"/>
+                
+                <!--xsl:apply-templates select="resources/release_date[string-length(.) > 0]" mode="collection_dates"/-->
 
                 <xsl:call-template name="collection_license">
                     <xsl:with-param name="title" select="license_title"/>
                     <xsl:with-param name="id" select="license_id"/>
                     <xsl:with-param name="url" select="license_url"/>
                 </xsl:call-template>
+                
+                
 
-                <xsl:apply-templates select="." mode="collection_relatedInfo"/>
+                <!--xsl:apply-templates select="." mode="collection_relatedInfo"/-->
 
 
                 <!--xsl:apply-templates select="" 
@@ -321,6 +329,13 @@
             </rights>
         </xsl:if>
     </xsl:template>
+    
+    <!-- ToDo:  take date of each resource and work out the first and end, then set as a range: -->
+    <!--xsl:template match="release_date" mode="collection_dates">
+        <dates type="dc.issued">
+            <xsl:value-of select="."/>
+        </dates>
+    </xsl:template-->
 
     <xsl:template match="spatial_coverage" mode="collection_coverage_spatial">
         <xsl:variable name="spatial" select="normalize-space(.)"/>
@@ -377,7 +392,7 @@
             <xsl:if test="string-length($url)">
                 <xsl:variable name="serviceUrl" select="custom:getServiceUrl(.)"/>
                 <xsl:variable name="serviceName" select="custom:getServiceName($serviceUrl)"/>
-
+                
                 <xsl:choose>
                     <xsl:when test="string-length($serviceUrl) > 0">
                         <relatedInfo type="service">
@@ -399,7 +414,7 @@
                                             </xsl:when>
                                             <xsl:otherwise>
                                                 <xsl:value-of select="$url"/>
-                                    </xsl:otherwise>
+                                            </xsl:otherwise>
                                         </xsl:choose>
                                     </url>
                                 </xsl:if>
@@ -423,8 +438,8 @@
                             </xsl:if>
                         </relatedInfo>
                     </xsl:when>
-                                        <xsl:otherwise>
-
+                    <xsl:otherwise>
+                        
                         <xsl:if test="contains(lower-case(webstore_url), 'active')">
                             <relatedInfo type="service">
                                 <xsl:variable name="id" select="normalize-space(id)"/>
@@ -470,18 +485,18 @@
                                         <xsl:choose>
                                             <xsl:when test="string-length($serviceName)">
                                                 <xsl:value-of
-                                                  select="concat($serviceName, ' for access to ', $organizationTitle, ' data')"
+                                                    select="concat($serviceName, ' for access to ', $organizationTitle, ' data')"
                                                 />
                                             </xsl:when>
                                             <xsl:otherwise>
                                                 <xsl:value-of
-                                                  select="concat('Service at ', $global_baseURI)"/>
+                                                    select="concat('Service at ', $global_baseURI)"/>
                                             </xsl:otherwise>
                                         </xsl:choose>
                                     </title>
                                 </xsl:if>
                             </relatedInfo>
-
+                            
                         </xsl:if>
                         <!--location>
                             <address>
@@ -580,6 +595,7 @@
 
             </citationMetadata>
         </citationInfo>
+        
     </xsl:template>
 
 
@@ -919,6 +935,8 @@
             </licence>
         </rights>
     </xsl:template>
+    
+    
 
     <xsl:function name="custom:getServiceName">
         <xsl:param name="url"/>
@@ -945,8 +963,8 @@
         <xsl:param name="resources"/>
         <xsl:variable name="url" select="$resources/url"/>
         <!--xsl:choose-->
-            <!-- Indicates parameters -->
-                <!--xsl:when test="contains($url, '?')">
+        <!-- Indicates parameters -->
+        <!--xsl:when test="contains($url, '?')">
                 <xsl:variable name="baseURL" select="substring-before($url, '?')"/>
                 <xsl:choose>
                     <xsl:when test="substring($baseURL, string-length($baseURL), 1) = '/'">
@@ -957,34 +975,34 @@
                     </xsl:otherwise>
                 </xsl:choose>
             </xsl:when-->
-                <!--xsl:otherwise-->
-                    <xsl:if
-                    test="contains(lower-case(normalize-space($resources/resource_type)), 'api')">
+        <!--xsl:otherwise-->
+        <xsl:if
+            test="contains(lower-case(normalize-space($resources/resource_type)), 'api')">
+            <xsl:choose>
+                <xsl:when test="contains($url, '?')">
+                    <!-- Indicates parameters -->
+                    <xsl:variable name="baseURL" select="substring-before($url, '?')"/>
+                    <!-- obtain base url before '?' and parameters -->
                     <xsl:choose>
-                        <xsl:when test="contains($url, '?')">
-                            <!-- Indicates parameters -->
-                            <xsl:variable name="baseURL" select="substring-before($url, '?')"/>
-                            <!-- obtain base url before '?' and parameters -->
-                            <xsl:choose>
-                                <xsl:when
-                                    test="substring($baseURL, string-length($baseURL), 1) = '/'">
-                                    <!-- remove trailing backslash if there is one -->
-                                    <xsl:value-of
-                                        select="substring($baseURL, 1, string-length($baseURL)-1)"/>
-                                </xsl:when>
-                                <xsl:otherwise>
-                                    <xsl:value-of select="$baseURL"/>
-                                </xsl:otherwise>
-                            </xsl:choose>
+                        <xsl:when
+                            test="substring($baseURL, string-length($baseURL), 1) = '/'">
+                            <!-- remove trailing backslash if there is one -->
+                            <xsl:value-of
+                                select="substring($baseURL, 1, string-length($baseURL)-1)"/>
                         </xsl:when>
                         <xsl:otherwise>
-                            <!-- retrieve url before file name and extension if there is one-->
-                            <xsl:value-of
-                                select="string-join(tokenize($url,'/')[position()!=last()],'/')"/>
+                            <xsl:value-of select="$baseURL"/>
                         </xsl:otherwise>
                     </xsl:choose>
-                </xsl:if>
-            <!--/xsl:otherwise-->
+                </xsl:when>
+                <xsl:otherwise>
+                    <!-- retrieve url before file name and extension if there is one-->
+                    <xsl:value-of
+                        select="string-join(tokenize($url,'/')[position()!=last()],'/')"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:if>
+        <!--/xsl:otherwise-->
         <!--/xsl:choose-->
     </xsl:function>
     
