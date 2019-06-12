@@ -165,7 +165,7 @@ def process(rows, start, dataSetUri, dataSetName, outputDirectory, domain, split
 
     start[0] = start[0] + 100
     print("start inside: ", start[0])
-    print("Continuing if count (%d) greater than start (%d)  " % (count, start[0]))
+    print("Continuing to paginate on this same dataseturl if count (%d) greater than start (%d)  " % (count, start[0]))
 
     return count
 

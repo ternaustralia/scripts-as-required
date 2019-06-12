@@ -114,7 +114,7 @@
 
                 <xsl:apply-templates select="spatial_coverage" mode="collection_coverage_spatial"/>
 
-                <xsl:apply-templates select="isopen" mode="collection_rights_accessRights"/>
+                <!--xsl:apply-templates select="isopen" mode="collection_rights_accessRights"/-->
                 
                 <!--xsl:apply-templates select="resources/release_date[string-length(.) > 0]" mode="collection_dates"/-->
 

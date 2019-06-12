@@ -389,7 +389,9 @@
         <location>
             <address>
                 <electronic type="url" target="landingPage">
-                    <xsl:value-of select="."/>
+                    <value>
+                        <xsl:value-of select="."/>
+                    </value>
                 </electronic>
             </address>
         </location>
