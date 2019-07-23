@@ -828,7 +828,7 @@
     <!-- RegistryObject - Decription Element -->
     <xsl:template match="*:purpose" mode="EATLAS_registryObject_description_notes">
         <xsl:if test="string-length(normalize-space(.)) > 0">
-            <description type="notes">
+            <description type="note">
                 <xsl:value-of select="."/>
             </description>
         </xsl:if>
@@ -837,7 +837,7 @@
     <!-- RegistryObject - Decription Element -->
     <xsl:template match="*:credit" mode="EATLAS_registryObject_description_notes">
         <xsl:if test="string-length(normalize-space(.)) > 0">
-            <description type="notes">
+            <description type="note">
                 <xsl:value-of select="."/>
             </description>
         </xsl:if>

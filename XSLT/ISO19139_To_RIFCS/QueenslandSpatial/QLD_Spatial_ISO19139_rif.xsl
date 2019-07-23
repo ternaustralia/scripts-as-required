@@ -526,7 +526,7 @@
     <!-- RegistryObject - Decription Element -->
     <xsl:template match="gmd:purpose" mode="registryObject_description_notes">
         <xsl:if test="string-length(normalize-space(.)) > 0">
-            <description type="notes">
+            <description type="note">
                 <xsl:value-of select="."/>
             </description>
         </xsl:if>
@@ -535,7 +535,7 @@
     <!-- RegistryObject - Decription Element -->
     <xsl:template match="gmd:credit" mode="registryObject_description_notes">
         <xsl:if test="string-length(normalize-space(.)) > 0">
-            <description type="notes">
+            <description type="note">
                 <xsl:value-of select="."/>
             </description>
         </xsl:if>

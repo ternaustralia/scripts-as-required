@@ -562,14 +562,14 @@
     
     <!-- RegistryObject - Description Element -->
     <xsl:template match="gmd:purpose" mode="registryObject_description_notes">
-            <description type="notes">
+            <description type="note">
                 <xsl:value-of select="."/>
             </description>
     </xsl:template>
     
     <!-- RegistryObject - Description Element -->
     <xsl:template match="gmd:credit" mode="registryObject_description_notes">
-            <description type="notes">
+            <description type="note">
                 <xsl:value-of select="."/>
             </description>
     </xsl:template>
@@ -583,7 +583,7 @@
     
     <!-- RegistryObject - Description Element -->
     <xsl:template match="gmd:otherConstraints" mode="registryObject_description_notes">
-        <description type="notes">
+        <description type="note">
             <xsl:value-of select="."/>
         </description>
     </xsl:template>

@@ -149,14 +149,18 @@
                 </xsl:if>
                 
                 <xsl:for-each select=".//mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource">
+                    <!-- Test for service (then call relatedService but only if current registry object is a collection); otherwise, handle as non service for all objects -->
                     <xsl:choose>
-                        <xsl:when test="contains(cit:protocol, 'ESRI') or contains(cit:protocol, 'OGC') or contains(lower-case(cit:linkage), 'thredds') or contains(lower-case(cit:linkage), '.nc') or contains(lower-case(cit:linkage), '?')">
-                            <xsl:if test="$registryObjectTypeSubType_sequence[1] = 'collection'">
-                                <xsl:apply-templates select="." mode="relatedInfo_service"/>
-                            </xsl:if>
+                        <xsl:when test="contains(lower-case(cit:linkage), 'thredds') or contains(lower-case(cit:linkage), '.nc')">
+                            <!-- Not sure what to do with many thredds and .nc links just yet - download link maybe later -->
+                        </xsl:when>
+                        <xsl:when test="contains(cit:protocol, 'ESRI') or contains(cit:protocol, 'OGC') or contains(lower-case(cit:linkage), '?')">
+                                <xsl:if test="$registryObjectTypeSubType_sequence[1] = 'collection'">
+                                    <xsl:apply-templates select="." mode="registryObject_relatedInfo_service"/>
+                                </xsl:if>
                           </xsl:when>
                         <xsl:when test="not(contains(lower-case(cit:description), 'point-of-truth'))">
-                            <xsl:apply-templates select="." mode="relatedInfo_relatedInformation"/>
+                            <xsl:apply-templates select="." mode="registryObject_relatedInfo_nonService"/>
                         </xsl:when>
                     </xsl:choose>
                 </xsl:for-each>
@@ -211,7 +215,9 @@
     <xsl:template match="*[contains(lower-case(name()),'identification')]" mode="registryObject">
         <xsl:param name="registryObjectTypeSubType_sequence"/>
         
-        <xsl:apply-templates select="mri:pointOfContact/cit:CI_Responsibility/cit:party/cit:CI_Organisation/cit:contactInfo/cit:CI_Contact/cit:address/cit:CI_Address/cit:electronicMailAddress[string-length(.) > 0]" mode="registryObject_location_email"/>
+        <xsl:for-each-group select="mri:pointOfContact/cit:CI_Responsibility/cit:party/cit:CI_Organisation/cit:contactInfo/cit:CI_Contact/cit:address/cit:CI_Address" group-by="cit:electronicMailAddress">
+            <xsl:apply-templates select="cit:electronicMailAddress" mode="registryObject_location_email"/>
+        </xsl:for-each-group>
         
         <xsl:apply-templates select="srv:containsOperations/srv:SV_OperationMetadata/srv:connectPoint/cit:CI_OnlineResource/cit:linkage" mode="registryObject_identifier_service_URL"/>
         <xsl:apply-templates select="srv:containsOperations/srv:SV_OperationMetadata/srv:connectPoint/cit:CI_OnlineResource/cit:linkage" mode="registryObject_location_service_URL"/>
@@ -281,11 +287,12 @@
         <xsl:if test="$registryObjectTypeSubType_sequence[1] = 'collection'">
             <xsl:apply-templates select="mdb:dateInfo/cit:CI_Date" mode="registryObject_dates"/>
             <xsl:apply-templates select="mri:citation/cit:CI_Citation/cit:date/cit:CI_Date" mode="registryObject_dates"/>
+            <xsl:apply-templates select="mri:citation/cit:CI_Citation" mode="registryObject_citationMetadata_citationInfo">
+                <xsl:with-param name="registryObjectTypeSubType_sequence" select="$registryObjectTypeSubType_sequence"/>
+            </xsl:apply-templates>
         </xsl:if>
         
-         <xsl:apply-templates select="mri:citation/cit:CI_Citation" mode="registryObject_citationMetadata_citationInfo">
-            <xsl:with-param name="registryObjectTypeSubType_sequence" select="$registryObjectTypeSubType_sequence"/>
-        </xsl:apply-templates>
+         
         
    </xsl:template>
     
@@ -829,33 +836,14 @@
             </relatedObject>
     </xsl:template>
     
-    <!-- RegistryObject - RelatedInfo Element  -->
-    <xsl:template match="cit:CI_OnlineResource" mode="registryObject_relatedInfo_service">         
-        
-        <xsl:if test="contains(cit:protocol, 'OGC:') or contains(lower-case(cit:linkage), 'thredds') or contains(lower-case(cit:linkage), '.nc') or contains(lower-case(cit:linkage), '?')">
-            <xsl:apply-templates select="." mode="relatedInfo_service"/>
-        </xsl:if>
-    
-    </xsl:template>
-    
-    <xsl:template match="cit:CI_OnlineResource" mode="registryObject_relatedInfo_all">    
-        <xsl:message select="'template registryObject_relatedInfo_all'"/>
-        <xsl:choose>
-            <xsl:when test="not(contains(lower-case(cit:description), 'point-of-truth'))">
-                <xsl:apply-templates select="." mode="relatedInfo_relatedInformation"/>
-            </xsl:when>
-            
-        </xsl:choose>
-        
-    </xsl:template>
-    
-     
-    <xsl:template match="cit:CI_OnlineResource" mode="relatedInfo_service">       
+  <xsl:template match="cit:CI_OnlineResource" mode="registryObject_relatedInfo_service">       
         
         <xsl:variable name="identifierValue" select="normalize-space(cit:linkage)"/>
         
         <relatedInfo>
             <xsl:attribute name="type" select="'service'"/>   
+            
+            <xsl:apply-templates select="." mode="relatedInfo_all"/>
             
             <relation>
                 <xsl:attribute name="type">
@@ -868,15 +856,17 @@
                 </xsl:if>
             </relation>
             
-            <xsl:apply-templates select="." mode="relatedInfo_all"/>
+            
         </relatedInfo>
         
     </xsl:template>
     
-    <xsl:template match="cit:CI_OnlineResource" mode="relatedInfo_relatedInformation">       
+    <xsl:template match="cit:CI_OnlineResource" mode="registryObject_relatedInfo_nonService">       
         
         <relatedInfo>
             <xsl:attribute name="type" select="'relatedInformation'"/>   
+            
+            <xsl:apply-templates select="." mode="relatedInfo_all"/>
             
             <relation>
                 <xsl:attribute name="type">
@@ -884,7 +874,7 @@
                 </xsl:attribute>
             </relation>
             
-            <xsl:apply-templates select="." mode="relatedInfo_all"/>
+            
         </relatedInfo>
         
     </xsl:template>
@@ -1242,7 +1232,7 @@
             </key>
             
             <originatingSource>
-                <xsl:value-of select="ancestor::mdb:MD_Metadata/mdb:identificationInfo/*[contains(lower-case(name()),'identification')]/mri:pointOfContact/cit:CI_Responsibility[1]/cit:party[1]/cit:CI_Organisation/cit:name[string-length(.) > 0][1]"/>
+                <xsl:value-of select="ancestor::mdb:MD_Metadata/mdb:identificationInfo/*[contains(lower-case(name()),'identification')]/mri:pointOfContact/cit:CI_Responsibility/cit:party/cit:CI_Organisation/cit:name[string-length(.) > 0][1]"/>
             </originatingSource> 
             
             <party type="person">
@@ -1276,7 +1266,6 @@
     </xsl:template>
         
     <xsl:template match="cit:CI_Organisation" mode="party_group">
-            <xsl:param name="originatingSource"/>
             
            <registryObject group="{$global_group}">
             
@@ -1285,7 +1274,7 @@
                </key>
                 
                 <originatingSource>
-                    <xsl:value-of select="ancestor::mdb:MD_Metadata/mdb:identificationInfo/*[contains(lower-case(name()),'identification')]/mri:pointOfContact/cit:CI_Responsibility[1]/cit:party[1]/cit:CI_Organisation/cit:name[string-length(.) > 0][1]"/>
+                    <xsl:value-of select="ancestor::mdb:MD_Metadata/mdb:identificationInfo/*[contains(lower-case(name()),'identification')]/mri:pointOfContact/cit:CI_Responsibility/cit:party/cit:CI_Organisation/cit:name[string-length(.) > 0][1]"/>
                 </originatingSource> 
                 
                 <party type="group">

@@ -17,7 +17,8 @@
     <xsl:param name="global_contributor" select="'{requires override}'"/>
     <xsl:param name="global_publisherName" select="'{requires override}'"/>
     <xsl:param name="global_publisherPlace" select="'{requires override}'"/>
-
+    <xsl:param name="global_includeDownloadLinks" select="false()"/>
+    
     <xsl:template match="/">
         <xsl:apply-templates/>
     </xsl:template>
@@ -112,6 +113,10 @@
                 
                 <xsl:apply-templates select="." mode="collection_description_full"/>
 
+                <xsl:if test="$global_includeDownloadLinks">
+                    <xsl:apply-templates select="." mode="collection_location_download"/>
+                </xsl:if>
+                
                 <xsl:apply-templates select="spatial_coverage" mode="collection_coverage_spatial"/>
 
                 <!--xsl:apply-templates select="isopen" mode="collection_rights_accessRights"/-->
@@ -320,6 +325,24 @@
             </xsl:for-each>
         </description>
     </xsl:template>
+    
+    <xsl:template match="result" mode="collection_location_download">
+            <xsl:for-each select="resources[not(contains(format, 'website'))]">
+                <xsl:if test="string-length(normalize-space(url)) > 0">
+                    <location>
+                        <address>
+                            <electronic type="url" target="directDownload">
+                                <value>
+                                <xsl:value-of select="url"/>
+                                </value>
+                            </electronic>
+                         </address>
+                    </location>
+                </xsl:if>
+            </xsl:for-each>
+    </xsl:template>
+    
+    
 
 
     <xsl:template match="isopen" mode="collection_rights_accessRights">

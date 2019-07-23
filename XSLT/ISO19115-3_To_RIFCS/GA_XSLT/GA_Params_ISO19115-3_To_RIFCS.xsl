@@ -4,7 +4,10 @@
     xmlns:mcc="http://standards.iso.org/iso/19115/-3/mcc/1.0" 
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
+    exclude-result-prefixes="mdb mcc">
+    
     
     <xsl:import href="ISO19115-3_To_RIFCS.xsl"/>
     
