@@ -5,6 +5,8 @@ import sys
 import re
 from xml.dom.minidom import parseString, Document, Node
 import codecs
+import os
+
 
 #working
 noConstraints = '''
@@ -160,7 +162,8 @@ def callCSW(cswUrl, conditionDict):
     if (searchResults.length == 1):
         print ("numberOfRecordsMatched: %d" % int(searchResults.item(0).getAttribute('numberOfRecordsMatched')))
 
-    print 'Results written to ' + str(fileName)
+    print 'Results written to ' + os.getcwd() + '/' + str(fileName)
+
 
 
 def main():

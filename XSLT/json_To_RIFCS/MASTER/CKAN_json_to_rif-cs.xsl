@@ -101,7 +101,7 @@
 
                 <xsl:apply-templates select="name" mode="collection_location_name"/>
 
-                <xsl:apply-templates select="url" mode="collection_location_url"/>
+                <!--xsl:apply-templates select="url" mode="collection_location_url"/-->
 
                 <xsl:apply-templates select="organization" mode="collection_related_object"/>
 
@@ -119,7 +119,7 @@
                 
                 <xsl:apply-templates select="spatial_coverage" mode="collection_coverage_spatial"/>
 
-                <!--xsl:apply-templates select="isopen" mode="collection_rights_accessRights"/-->
+                <xsl:apply-templates select="isopen" mode="collection_rights_accessRights"/>
                 
                 <!--xsl:apply-templates select="resources/release_date[string-length(.) > 0]" mode="collection_dates"/-->
 
@@ -946,10 +946,38 @@
         <xsl:param name="title"/>
         <xsl:param name="id"/>
         <xsl:param name="url"/>
+        
+        <xsl:variable name="idFormatted">
+            <xsl:choose>
+                <xsl:when test="contains(lower-case($id), 'cc')">
+                    <xsl:variable name="partsSequence" select="tokenize($id, '-|\s+')" as="xs:string*"/>
+                    <xsl:variable name="partsSequenceAlphaOnly" as="xs:string*">
+                        <xsl:for-each select="$partsSequence">
+                            <xsl:if test="not(matches(., '\d+'))">
+                                <xsl:if test="not(lower-case(.) = 'au')">
+                                    <xsl:value-of select="."/>
+                                </xsl:if>
+                            </xsl:if>
+                        </xsl:for-each>
+                    </xsl:variable>
+                    
+                    <xsl:for-each select="$partsSequenceAlphaOnly">
+                            <xsl:value-of select="."/>
+                            <xsl:if test="count($partsSequenceAlphaOnly) &gt; position()">
+                                <xsl:text>-</xsl:text>
+                            </xsl:if>
+                    </xsl:for-each>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="$id"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        
         <rights>
             <licence>
                 <xsl:attribute name="type">
-                    <xsl:value-of select="upper-case($id)"/>
+                    <xsl:value-of select="upper-case($idFormatted)"/>
                 </xsl:attribute>
                 <xsl:attribute name="rightsUri">
                     <xsl:value-of select="$url"/>

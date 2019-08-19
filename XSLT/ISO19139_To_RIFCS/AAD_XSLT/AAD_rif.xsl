@@ -324,7 +324,7 @@
                         <xsl:text>url</xsl:text>
                     </xsl:attribute>
                     <value>
-                        <xsl:value-of select="."/>
+                        <xsl:value-of select="normalize-space(.)"/>
                     </value>
                 </electronic>
             </address>
@@ -664,7 +664,7 @@
                                 <xsl:value-of select="$typeToUse"/>
                             </xsl:attribute>
                         </xsl:if>
-                        <xsl:value-of select="$identifierToUse"/>
+                        <xsl:value-of select="normalize-space($identifierToUse)"/>
                     </identifier>
                 </xsl:if>
 

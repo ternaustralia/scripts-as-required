@@ -1058,7 +1058,7 @@
                             </xsl:attribute>
                         </xsl:when>
                         <!-- when MD_ClassificationCode is populated, but not as above -->
-                        <xsl:when test="count(gmd:resourceConstraints/gmd:MD_SecurityConstraints/gmd:classification/gmd:MD_ClassificationCode/@codeListValue) > 0">
+                        <xsl:when test="count(gmd:resourceConstraints/gmd:MD_SecurityConstraints/gmd:classification/gmd:MD_ClassificationCode/@codeListValue[string-length(.) > 0]) > 0">
                             <xsl:attribute name="type">
                                 <xsl:text>restricted</xsl:text>
                             </xsl:attribute>

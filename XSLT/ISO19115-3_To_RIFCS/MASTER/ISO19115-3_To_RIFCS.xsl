@@ -1055,35 +1055,29 @@
         
         <!-- Attempt to obtain contributor names; only construct citation if we have contributor names -->
         
-       <xsl:variable name="allContributorParty_sequence" as="node()*" select="cit:citedResponsibleParty/cit:CI_Responsibility/cit:party "/>  
+        <xsl:variable name="allContributorName_sequence" as="xs:string*">
+            <xsl:choose>
+                <!-- use any invidual names that are either author or coAuthor -->
+                <xsl:when test="
+                    ((count(cit:citedResponsibleParty/cit:CI_Responsibility[contains(lower-case(cit:role/cit:CI_RoleCode/@codeListValue), 'author')]/cit:party/cit:CI_Individual/cit:name[string-length(.) > 0]) > 0) or
+                    (count(cit:citedResponsibleParty/cit:CI_Responsibility[contains(lower-case(cit:role/cit:CI_RoleCode/@codeListValue), 'author')]/cit:party/cit:CI_Organisation/cit:individual/cit:CI_Individual/cit:name[string-length(.) > 0]) > 0))">
+                    <!-- note that even when no results are found, value-of constructs empty text node, so copy-of is used below instead -->
+                    <xsl:copy-of select="cit:citedResponsibleParty/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'author']/cit:party/cit:CI_Individual/cit:name[string-length(.) > 0]"/>
+                    <xsl:copy-of select="cit:citedResponsibleParty/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'author']/cit:party/cit:CI_Organisation/cit:individual/cit:CI_Individual/cit:name[string-length(.) > 0]"/>
+                    <xsl:copy-of select="cit:citedResponsibleParty/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'coAuthor']/cit:party/cit:CI_Individual/cit:name[string-length(.) > 0]"/>
+                    <xsl:copy-of select="cit:citedResponsibleParty/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'coAuthor']/cit:party/cit:CI_Organisation/cit:individual/cit:CI_Individual/cit:name[string-length(.) > 0]"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <!-- there are no invidual names that are either author or coAuthor, so use organisation names -->
+                     <xsl:copy-of select="cit:citedResponsibleParty/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'author']/cit:party/cit:CI_Organisation/cit:name[string-length(.) > 0]"/>
+                    <xsl:copy-of select="cit:citedResponsibleParty/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'coAuthor']/cit:party/cit:CI_Organisation/cit:name[string-length(.) > 0]"/>
+                </xsl:otherwise>
+             </xsl:choose>
+        </xsl:variable>
         
-       <xsl:variable name="allContributorName_sequence" as="xs:string*">
-           <xsl:for-each select="$allContributorParty_sequence">
-               <xsl:choose>
-                   <xsl:when test="string-length(cit:CI_Individual/cit:name) = 0">
-                       <xsl:choose>
-                           <xsl:when test="count(cit:CI_Organisation/cit:individual/cit:CI_Individual/cit:name) > 0">
-                               <xsl:for-each select="cit:CI_Organisation/cit:individual/cit:CI_Individual/cit:name">
-                                   <xsl:value-of select="."/>
-                               </xsl:for-each>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:if test="string-length(cit:CI_Organisation/cit:name) > 0">
-                                    <xsl:value-of select="cit:CI_Organisation/cit:name"/>
-                                </xsl:if>
-                            </xsl:otherwise>
-                       </xsl:choose>
-                   </xsl:when>
-                   <xsl:otherwise>
-                       <xsl:value-of select="cit:CI_Individual/cit:name"/>
-                   </xsl:otherwise>
-               </xsl:choose>
-           </xsl:for-each>
-       </xsl:variable>
-            
-        <xsl:if test="$global_debug">
+       <xsl:if test="$global_debug">
             <xsl:for-each select="$allContributorName_sequence">
-                <xsl:message select="concat('Contributor name: ', .)"/>
+                    <xsl:message select="concat('Contributor name: ', .)"/>
             </xsl:for-each>
         </xsl:if>
         
@@ -1169,14 +1163,14 @@
                   name is within contributor list, remove it -->
                     
                     <xsl:variable name="publisher_sequence" as="node()*" select="
-                        cit:citedResponsibleParty/cit:CI_Responsibility/cit:party[preceding-sibling::cit:role/cit:CI_RoleCode/@codeListValue = 'publisher'] |
-                        ancestor::mdb:MD_Metadata/mdb:distributionInfo/*/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility/cit:party[preceding-sibling::cit:role/cit:CI_RoleCode/@codeListValue = 'publisher']"/>  
+                        cit:citedResponsibleParty/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'publisher']/cit:party |
+                        ancestor::mdb:MD_Metadata/mdb:distributionInfo/*/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'publisher']/cit:party"/>  
                     
                     
                     <xsl:choose>
                         <xsl:when test="count($allContributorName_sequence) > 0">
                             <xsl:for-each select="distinct-values($allContributorName_sequence)">
-                                        <contributor>
+                                        <contributor seq="{position()}">
                                             <namePart>
                                                 <xsl:value-of select="."/>
                                             </namePart>
@@ -1187,18 +1181,18 @@
                     
                     <publisher>
                         <xsl:choose>
-                            <xsl:when test="count(cit:citedResponsibleParty/cit:CI_Responsibility/cit:party[preceding-sibling::cit:role/cit:CI_RoleCode/@codeListValue = 'publisher']/cit:CI_Organisation/cit:name[string-length(.) > 0]) > 0">
-                                 <xsl:value-of select="cit:citedResponsibleParty/cit:CI_Responsibility[1]/cit:party[preceding-sibling::cit:role/cit:CI_RoleCode/@codeListValue = 'publisher'][1]/cit:CI_Organisation/cit:name"/>    
+                            <xsl:when test="count(cit:citedResponsibleParty/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'publisher']/cit:party/cit:CI_Organisation/cit:name[string-length(.) > 0]) > 0">
+                                <xsl:value-of select="cit:citedResponsibleParty/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'publisher'][1]/cit:party[1]/cit:CI_Organisation/cit:name"/>    
                             </xsl:when>
-                            <xsl:when test="count(ancestor::mdb:MD_Metadata/mdb:distributionInfo/*/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility/cit:party[preceding-sibling::cit:role/cit:CI_RoleCode/@codeListValue = 'publisher']/cit:CI_Organisation/cit:name[string-length(.) > 0]) > 0">
-                                <xsl:value-of select="ancestor::mdb:MD_Metadata/mdb:distributionInfo/*/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility[1]/cit:party[preceding-sibling::cit:role/cit:CI_RoleCode/@codeListValue = 'publisher'][1]/cit:CI_Organisation/cit:name[string-length(.) > 0]"/>
+                            <xsl:when test="count(ancestor::mdb:MD_Metadata/mdb:distributionInfo/*/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'publisher']/cit:party/cit:CI_Organisation/cit:name[string-length(.) > 0]) > 0">
+                                <xsl:value-of select="ancestor::mdb:MD_Metadata/mdb:distributionInfo/*/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'publisher'][1]/cit:party[1]/cit:CI_Organisation/cit:name"/>
                             </xsl:when>
-                            <xsl:when test="count(ancestor::mdb:MD_Metadata/mdb:identificationInfo/mri:MD_DataIdentification/mri:pointOfContact/cit:CI_Responsibility/cit:party[preceding-sibling::cit:role/cit:CI_RoleCode/@codeListValue = 'publisher']/cit:CI_Organisation/cit:name[string-length(.) > 0]) > 0">
-                                <xsl:value-of select="ancestor::mdb:MD_Metadata/mdb:identificationInfo/mri:MD_DataIdentification/mri:pointOfContact/cit:CI_Responsibility[1]/cit:party[preceding-sibling::cit:role/cit:CI_RoleCode/@codeListValue = 'publisher'][1]/cit:CI_Organisation/cit:name[string-length(.) > 0]"/>
+                            <xsl:when test="count(ancestor::mdb:MD_Metadata/mdb:identificationInfo/mri:MD_DataIdentification/mri:pointOfContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'publisher']/cit:party/cit:CI_Organisation/cit:name[string-length(.) > 0]) > 0">
+                                <xsl:value-of select="ancestor::mdb:MD_Metadata/mdb:identificationInfo/mri:MD_DataIdentification/mri:pointOfContact/cit:CI_Responsibility[cit:role/cit:CI_RoleCode/@codeListValue = 'publisher'][1]/cit:party[1]/cit:CI_Organisation/cit:name"/>
                             </xsl:when>
-                            <xsl:when test="count(ancestor::mdb:MD_Metadata/mdb:identificationInfo/mri:MD_DataIdentification/mri:pointOfContact/cit:CI_Responsibility/cit:party/cit:CI_Organisation/cit:name[string-length(.) > 0]) > 0">
-                                <xsl:value-of select="ancestor::mdb:MD_Metadata/mdb:identificationInfo/mri:MD_DataIdentification/mri:pointOfContact/cit:CI_Responsibility[1]/cit:party[1]/cit:CI_Organisation/cit:name[string-length(.) > 0]"/>
-                            </xsl:when>
+                            <!--xsl:when test="count(ancestor::mdb:MD_Metadata/mdb:identificationInfo/mri:MD_DataIdentification/mri:pointOfContact/cit:CI_Responsibility/cit:party/cit:CI_Organisation/cit:name[string-length(.) > 0]) > 0">
+                                <xsl:value-of select="ancestor::mdb:MD_Metadata/mdb:identificationInfo/mri:MD_DataIdentification/mri:pointOfContact/cit:CI_Responsibility[1]/cit:party[1]/cit:CI_Organisation/cit:name"/>
+                            </xsl:when-->
                         </xsl:choose>
                     </publisher>
                     
