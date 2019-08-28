@@ -29,8 +29,10 @@
             <xsl:apply-templates select="//*:codeBook/*:stdyDscr/*:citation/*:rspStmt/*:AuthEnty[(string-length(.) > 0)]" mode="party_author"/>
             <!--xsl:apply-templates select="//*:codeBook/*:docDscr/*:citation/*:prodStmt/*:producer[(string-length(.) > 0)]" mode="party_producer"/-->
             <xsl:apply-templates select="//*:codeBook/*:stdyDscr/*:citation/*:prodStmt/*:producer[(string-length(.) > 0)]" mode="party_producer"/>
+            
             <xsl:apply-templates select="//*:codeBook/*:stdyDscr/*:citation/*:rspStmt/*:AuthEnty/@affiliation[(string-length(.) > 0)]" mode="party_organisation"/>
-                
+            <xsl:apply-templates select="//*:codeBook/*:stdyDscr/*:citation/*:prodStmt/*:producer/@affiliation[(string-length(.) > 0)]" mode="party_organisation"/>
+            
         </registryObjects>
     </xsl:template>
     
@@ -60,8 +62,9 @@
                 <xsl:apply-templates select="*:stdyDscr/*:stdyInfo/*:sumDscr" mode="registryObject_dates"/>
                 <xsl:apply-templates select="*:stdyDscr/*:othrStdyMat/*:relPubl" mode="registryObject_relatedInfo"/>
                 <xsl:apply-templates select="*:stdyDscr/*:citation/*:rspStmt/*:AuthEnty[(string-length(.) > 0)]" mode="registryObject_relatedObject"/>
-                <!--xsl:apply-templates select="*:docDscr/*:citation/*:prodStmt/*:producer[(string-length(.) > 0)]" mode="registryObject_relatedObject"/-->
                 <xsl:apply-templates select="*:stdyDscr/*:citation/*:prodStmt/*:producer[(string-length(.) > 0)]" mode="registryObject_relatedObject"/>
+                <xsl:apply-templates select="*:stdyDscr/*:citation/*:rspStmt/*:AuthEnty/@affiliation[(string-length(.) > 0)]" mode="registryObject_relatedObject"/>
+                <xsl:apply-templates select="*:stdyDscr/*:citation/*:prodStmt/*:producer/@affiliation[(string-length(.) > 0)]" mode="registryObject_relatedObject"/>
                 <xsl:apply-templates select="*:stdyDscr/*:citation/*:titlStmt/*:altTitl[(string-length(.) > 0)]" mode="registryObject_altname"/>
                 <xsl:apply-templates select="*:stdyDscr/*:citation/*:prodStmt/*:copyright" mode="registryObject_rights_statement"/>
                 <xsl:apply-templates select="*:stdyDscr/*:stdyInfo/*:notes[contains(lower-case(.), 'copyright')]" mode="registryObject_rights_statement"/>
@@ -277,6 +280,18 @@
         </xsl:if>   
     </xsl:template>
     
+    <xsl:template match="@affiliation" mode="registryObject_relatedObject">
+        <xsl:message select="concat('affiliation for relatedObject: ', .)"/>
+        <xsl:if test="string-length(.) > 0">
+            <relatedObject>
+                <key>
+                    <xsl:value-of select="local:formatKey(.)"/> 
+                </key>
+                <relation type="hasAssociationWith"/>
+            </relatedObject>
+        </xsl:if>   
+    </xsl:template>
+    
     <xsl:template match="*:altTitl" mode="registryObject_altname">
         <name type="alternative">
             <namePart>
@@ -380,15 +395,13 @@
     
     <xsl:template match="*:codeBook" mode="registryObject_citationInfo">
       
-       
-        <xsl:apply-templates select="*:stdyDscr/*:citation/*:biblCit[(string-length(.) > 0)]" mode="registryObject_citation_full"/>
+        <xsl:apply-templates select="*:docDscr/*:citation/*:biblCit[(string-length(.) > 0)]" mode="registryObject_citation_full"/>
         
         <citationInfo>
             <citationMetadata>
                 <xsl:apply-templates select="*:stdyDscr/*:citation/*:titlStmt/*:IDNo[contains(lower-case(@agency), 'doi') and (string-length(.) > 0)]" mode="registryObject_citation_identifier_doi"/>
                 <xsl:apply-templates select="*:stdyDscr/*:citation/*:titlStmt/*:IDNo[not(contains(lower-case(@agency), 'doi')) and (string-length(.) > 0)]" mode="registryObject_citation_identifier_not_doi"/>
                 <xsl:apply-templates select="*:stdyDscr/*:citation/*:rspStmt/*:AuthEnty[(string-length(.) > 0)]" mode="registryObject_citation_contributor"/>
-                <!--xsl:apply-templates select="*:docDscr/*:citation/*:prodStmt/*:producer[(string-length(.) > 0)]" mode="registryObject_citation_publisher"/-->
                 <xsl:apply-templates select="*:stdyDscr/*:citation/*:prodStmt/*:producer[(string-length(.) > 0)]" mode="registryObject_citation_publisher"/>
                 <xsl:apply-templates select="*:stdyDscr/*:citation/*:titlStmt/*:titl[(string-length(.) > 0)]" mode="registryObject_citation_title"/>
                 <xsl:apply-templates select="*:docDscr/*:citation/*:verStmt/*:version[(string-length(.) > 0)]" mode="registryObject_citation_version"/>
@@ -454,10 +467,14 @@
     
     <xsl:template match="*:producer" mode="registryObject_citation_publisher">
         <publisher>
-            <xsl:value-of select="normalize-space(.)"/>
-            <xsl:if test="string-length(@affiliation) > 0">
-                <xsl:value-of select="concat(', ', @affiliation)"/>
-            </xsl:if>
+            <xsl:choose>
+                <xsl:when test="string-length(@affiliation) > 0">
+                   <xsl:value-of select="concat(', ', @affiliation)"/>
+               </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="normalize-space(.)"/>
+                </xsl:otherwise>
+            </xsl:choose>
         </publisher>
     </xsl:template>
     

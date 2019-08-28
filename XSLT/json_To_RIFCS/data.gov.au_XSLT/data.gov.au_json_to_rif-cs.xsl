@@ -124,7 +124,7 @@
  
                  <xsl:apply-templates select="name" mode="collection_location_name"/>
  
-                 <!--xsl:apply-templates select="url" mode="collection_location_url"/-->
+                 <xsl:apply-templates select="url" mode="collection_location_url"/>
  
                  <xsl:apply-templates select="organization" mode="collection_related_object"/>
                  

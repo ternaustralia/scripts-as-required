@@ -83,6 +83,20 @@
     
     <xsl:template match="mdb:MD_Metadata" mode="registryObjects">
         
+        <xsl:variable name="originatingSource">
+            <xsl:choose>
+                <xsl:when test="count(mdb:identificationInfo/*[contains(lower-case(name()),'identification')]/mri:pointOfContact/cit:CI_Responsibility/cit:party/cit:CI_Organisation/cit:name[string-length(.) > 0]) > 0">
+                    <xsl:value-of select="distinct-values(mdb:identificationInfo/*[contains(lower-case(name()),'identification')]/mri:pointOfContact/cit:CI_Responsibility/cit:party/cit:CI_Organisation/cit:name[string-length(.) > 0])"/>
+                </xsl:when>
+                <xsl:when test="count(mdb:identificationInfo/*[contains(lower-case(name()),'identification')]/mdb:contact/cit:CI_Responsibility/cit:party/cit:CI_Organisation/cit:name[string-length(.) > 0]) > 0">
+                    <xsl:value-of select="distinct-values(mdb:identificationInfo/*[contains(lower-case(name()),'identification')]/mdb:contact/cit:CI_Responsibility/cit:party/cit:CI_Organisation/cit:name[string-length(.) > 0])"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="$global_originatingSource"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        
         <registryObject>
             <xsl:attribute name="group">
                 <xsl:value-of select="$global_group"/>    
@@ -91,8 +105,8 @@
             <xsl:apply-templates select="mdb:metadataIdentifier/mcc:MD_Identifier[contains(mcc:codeSpace, 'uuid')]/mcc:code[string-length(.) > 0]" mode="registryObject_key"/>
         
             <originatingSource>
-                <xsl:value-of select="mdb:identificationInfo/*[contains(lower-case(name()),'identification')]/mri:pointOfContact/cit:CI_Responsibility/cit:party/cit:CI_Organisation/cit:name"/>
-            </originatingSource> 
+                <xsl:value-of select="$originatingSource"/>
+            </originatingSource>
             
             <xsl:variable name="registryObjectTypeSubType_sequence" as="xs:string*">
                 <xsl:variable name="scopeCode" select="mdb:metadataScope[1]/mdb:MD_MetadataScope[1]/mdb:resourceScope[1]/mcc:MD_ScopeCode[1]/@codeListValue[1]"/>
@@ -208,7 +222,9 @@
                 
         </registryObject>
         
-        <xsl:apply-templates select="mdb:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="relatedRegistryObjects"/>
+        <xsl:apply-templates select="mdb:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="relatedRegistryObjects">
+            <xsl:with-param name="originatingSource" select="$originatingSource"/>
+        </xsl:apply-templates>
 
     </xsl:template>
     
@@ -302,6 +318,7 @@
     <!-- =========================================== -->
     
     <xsl:template match="*[contains(lower-case(name()),'identification')]" mode="relatedRegistryObjects">
+        <xsl:param name="originatingSource"/>
         
         <xsl:for-each
             select="
@@ -319,7 +336,9 @@
             
             ancestor::mdb:MD_Metadata/mdb:contact/cit:CI_Responsibility/cit:party/cit:CI_Individual[(string-length(normalize-space(cit:name)) > 0) or (string-length(normalize-space(cit:positionName)) > 0)] |
             ancestor::mdb:MD_Metadata/mdb:contact/cit:CI_Responsibility/cit:party/cit:CI_Organisation/cit:individual/cit:CI_Individual[(string-length(normalize-space(cit:name)) > 0) or (string-length(normalize-space(cit:positionName)) > 0)]">
-            <xsl:apply-templates select="." mode="party_person"/>
+            <xsl:apply-templates select="." mode="party_person">
+                <xsl:with-param name="originatingSource" select="$originatingSource"/>
+            </xsl:apply-templates>
         </xsl:for-each>
     
         <xsl:for-each
@@ -329,7 +348,9 @@
             ancestor::mdb:MD_Metadata/mdb:distributionInfo/*/mrd:distributor/mrd:MD_Distributor/mrd:distributorContact/cit:CI_Responsibility/cit:party/cit:CI_Organisation[string-length(normalize-space(cit:name)) > 0] |
             ancestor::mdb:MD_Metadata/mdb:identificationInfo/*/mri:pointOfContact/cit:CI_Responsibility/cit:party/cit:CI_Organisation[string-length(normalize-space(cit:name)) > 0] |
             ancestor::mdb:MD_Metadata/mdb:contact/cit:CI_Responsibility/cit:party/cit:CI_Organisation[string-length(normalize-space(cit:name)) > 0]">
-            <xsl:apply-templates select="." mode="party_group"/>
+            <xsl:apply-templates select="." mode="party_group">
+                <xsl:with-param name="originatingSource" select="$originatingSource"/>
+            </xsl:apply-templates>
         </xsl:for-each>
     </xsl:template>
     
@@ -1207,6 +1228,7 @@
     <!-- ====================================== -->
 
     <xsl:template match="cit:CI_Individual" mode="party_person">
+        <xsl:param name="originatingSource"/>
         
         <xsl:variable name="name">
             <xsl:choose>
@@ -1226,7 +1248,7 @@
             </key>
             
             <originatingSource>
-                <xsl:value-of select="ancestor::mdb:MD_Metadata/mdb:identificationInfo/*[contains(lower-case(name()),'identification')]/mri:pointOfContact/cit:CI_Responsibility/cit:party/cit:CI_Organisation/cit:name[string-length(.) > 0][1]"/>
+                <xsl:value-of select="$originatingSource"/>
             </originatingSource> 
             
             <party type="person">
@@ -1260,6 +1282,7 @@
     </xsl:template>
         
     <xsl:template match="cit:CI_Organisation" mode="party_group">
+        <xsl:param name="originatingSource"/>
             
            <registryObject group="{$global_group}">
             
@@ -1268,7 +1291,7 @@
                </key>
                 
                 <originatingSource>
-                    <xsl:value-of select="ancestor::mdb:MD_Metadata/mdb:identificationInfo/*[contains(lower-case(name()),'identification')]/mri:pointOfContact/cit:CI_Responsibility/cit:party/cit:CI_Organisation/cit:name[string-length(.) > 0][1]"/>
+                    <xsl:value-of select="$originatingSource"/>
                 </originatingSource> 
                 
                 <party type="group">

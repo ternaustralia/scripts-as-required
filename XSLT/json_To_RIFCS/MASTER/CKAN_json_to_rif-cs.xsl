@@ -35,13 +35,17 @@
             <xsl:attribute name="xsi:schemaLocation">
                 <xsl:text>http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd</xsl:text>
             </xsl:attribute>
-            <xsl:apply-templates select="result" mode="collection"/>
-            <xsl:apply-templates select="result" mode="party"/>
-            <xsl:apply-templates select="result" mode="service"/>
-        </registryObjects>
+            <xsl:apply-templates select="*[contains(local-name(), 'result')]" mode="all"/>
+         </registryObjects>
+    </xsl:template>
+    
+    <xsl:template match="*[contains(local-name(), 'result')]" mode="all">
+        <xsl:apply-templates select="." mode="collection"/>
+        <xsl:apply-templates select="." mode="party"/>
+        <xsl:apply-templates select="." mode="service"/>
     </xsl:template>
 
-    <xsl:template match="result" mode="collection">
+    <xsl:template match="*[contains(local-name(), 'result')]" mode="collection">
 
         <xsl:variable name="metadataURL">
             <xsl:variable name="name" select="normalize-space(name)"/>
@@ -118,6 +122,8 @@
                 </xsl:if>
                 
                 <xsl:apply-templates select="spatial_coverage" mode="collection_coverage_spatial"/>
+               <!-- Override the following in top-level xslt to handle custom extras -->
+                <xsl:apply-templates select="."  mode="extras"/>
 
                 <xsl:apply-templates select="isopen" mode="collection_rights_accessRights"/>
                 
@@ -154,7 +160,7 @@
     <!-- Party RegistryObject Template          -->
     <!-- =========================================== -->
 
-    <xsl:template match="result" mode="party">
+    <xsl:template match="*[contains(local-name(), 'result')]" mode="party">
 
         <xsl:apply-templates select="organization"/>
 
@@ -359,8 +365,16 @@
             <xsl:value-of select="."/>
         </dates>
     </xsl:template-->
-
+    
+    <xsl:template match="extras"  mode="extras">
+        <xsl:message select="'Override this template in top-level custom xslt to handle custom extras'"/>
+    </xsl:template>
+    
     <xsl:template match="spatial_coverage" mode="collection_coverage_spatial">
+        <xsl:call-template name="spatial_coordinates"/>
+    </xsl:template>
+     
+    <xsl:template name="spatial_coordinates">
         <xsl:variable name="spatial" select="normalize-space(.)"/>
         <xsl:variable name="coordinate_sequence" as="xs:string*">
             <xsl:if test="contains($spatial, 'coordinates')">
@@ -796,7 +810,7 @@
     <!-- ====================================== -->
 
     <!-- Service Registry Object -->
-    <xsl:template match="result" mode="service">
+    <xsl:template match="*[contains(local-name(), 'result')]" mode="service">
         <xsl:variable name="organizationTitle" select="normalize-space(organization/title)"/>
         <xsl:variable name="organizationName" select="normalize-space(organization/name)"/>
         <xsl:variable name="organizationDescription"
