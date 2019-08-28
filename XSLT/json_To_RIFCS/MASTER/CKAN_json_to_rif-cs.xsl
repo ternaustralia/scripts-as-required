@@ -322,7 +322,7 @@
     </xsl:template>
     
      <!-- Collection - Decription (full) Element -->
-    <xsl:template match="result" mode="collection_description_full">
+    <xsl:template match="*[contains(local-name(), 'result')]" mode="collection_description_full">
         <description type="full">
              <xsl:for-each select="resources">
                 <xsl:if test="string-length(normalize-space(name)) > 0">
@@ -332,7 +332,7 @@
         </description>
     </xsl:template>
     
-    <xsl:template match="result" mode="collection_location_download">
+    <xsl:template match="*[contains(local-name(), 'result')]" mode="collection_location_download">
             <xsl:for-each select="resources[not(contains(format, 'website'))]">
                 <xsl:if test="string-length(normalize-space(url)) > 0">
                     <location>
@@ -421,7 +421,7 @@
     </xsl:template>
 
     <!-- Collection - Related Info Element - Services -->
-    <xsl:template match="result" mode="collection_relatedInfo">
+    <xsl:template match="*[contains(local-name(), 'result')]" mode="collection_relatedInfo">
         <xsl:variable name="organizationTitle" select="organization/title"/>
         <!-- Related Services -->
         <xsl:for-each select="resources">
