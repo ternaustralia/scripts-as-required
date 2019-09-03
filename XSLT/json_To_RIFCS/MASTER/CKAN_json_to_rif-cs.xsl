@@ -326,7 +326,7 @@
         <description type="full">
              <xsl:for-each select="resources">
                 <xsl:if test="string-length(normalize-space(name)) > 0">
-                    <xsl:value-of select="concat(normalize-space(name), '&lt;br/&gt;')"/>
+                    <xsl:value-of select="concat(normalize-space(name), ' - ', custom:reformatHyperlinks(normalize-space(description)), '&lt;br/&gt;')"/>
                 </xsl:if>
             </xsl:for-each>
         </description>
@@ -1001,7 +1001,31 @@
         </rights>
     </xsl:template>
     
-    
+   <!-- Change input from:
+            [link-text](http://link)
+         to:
+            <a href="http://link">link-text</a>  
+    -->
+    <xsl:function name="custom:reformatHyperlinks" as="xs:string">
+        <xsl:param name="input"/>
+	<xsl:variable name="result" as="xs:string*">
+        <xsl:analyze-string regex="(\[[^\]]*\])(\([^\)]*\))" select="$input">
+            <xsl:matching-substring>
+                <xsl:variable name="text_sequence" select="regex-group(1)" as="xs:string*"/>
+                <xsl:variable name="link_sequence" select="regex-group(2)" as="xs:string*"/>
+		<xsl:for-each select="$text_sequence">
+                	<xsl:if test="(string-length(.) > 0) and (string-length($link_sequence[position()]) > 0)">
+                    	<xsl:value-of select="concat('&lt;a href=&quot;', substring($link_sequence[position()], 2, string-length($link_sequence[position()])-2), '&quot;&gt;', substring(., 2, string-length(.)-2), '&lt;/a&gt;')"/>
+                	</xsl:if>
+		</xsl:for-each>
+            </xsl:matching-substring>
+            <xsl:non-matching-substring>
+                <xsl:copy-of select="."/>  
+            </xsl:non-matching-substring> 
+        </xsl:analyze-string>
+	</xsl:variable>
+	<xsl:copy-of select="string-join($result, '')"/>
+    </xsl:function> 
 
     <xsl:function name="custom:getServiceName">
         <xsl:param name="url"/>
