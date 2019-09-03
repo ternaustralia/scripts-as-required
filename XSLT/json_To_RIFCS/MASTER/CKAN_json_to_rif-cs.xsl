@@ -13,6 +13,7 @@
     
     <xsl:param name="global_originatingSource" select="'{requires override}'"/>
     <xsl:param name="global_baseURI" select="'{requires override}'"/>
+    <xsl:param name="global_acronym" select="'{requires override}'"/>
     <xsl:param name="global_group" select="'{requires override}'"/>
     <xsl:param name="global_contributor" select="'{requires override}'"/>
     <xsl:param name="global_publisherName" select="'{requires override}'"/>
@@ -179,7 +180,7 @@
     <xsl:template match="id" mode="collection_key">
         <xsl:if test="string-length(normalize-space(.))">
             <key>
-                <xsl:value-of select="concat($global_group,'/', lower-case(normalize-space(.)))"/>
+                <xsl:value-of select="concat($global_acronym,'/', lower-case(normalize-space(.)))"/>
             </key>
         </xsl:if>
     </xsl:template>
@@ -271,7 +272,7 @@
             <relatedObject>
                 <key>
                     <xsl:value-of
-                        select="concat($global_group,'/', translate(lower-case(normalize-space(title)),' ',''))"
+                        select="concat($global_acronym,'/', translate(lower-case(normalize-space(title)),' ',''))"
                     />
                 </key>
                 <relation>
@@ -341,6 +342,11 @@
                                 <value>
                                 <xsl:value-of select="url"/>
                                 </value>
+				<xsl:if test="string-length(name) > 0">
+				<title>
+				 <xsl:value-of select="concat('Via ', name)"/>
+				</title>
+				</xsl:if>
                             </electronic>
                          </address>
                     </location>
@@ -648,7 +654,7 @@
 
                 <key>
                     <xsl:value-of
-                        select="concat($global_group, '/', translate(lower-case($title),' ',''))"/>
+                        select="concat($global_acronym, '/', translate(lower-case($title),' ',''))"/>
                 </key>
 
                 <originatingSource>

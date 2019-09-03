@@ -10,6 +10,7 @@
 
     <xsl:param name="global_originatingSource" select="'http://data.aurin.org.au'"/>
     <xsl:param name="global_baseURI" select="'http://data.aurin.org.au/'"/>
+    <xsl:param name="global_acronym" select="'AURIN'"/>
     <xsl:param name="global_group" select="'Australian Urban Research Infrastructure Network (AURIN)'"/>
     <xsl:param name="global_contributor" select="'data.aurin.org.au'"/>
     <xsl:param name="global_publisherName" select="'data.aurin.org.au'"/>
