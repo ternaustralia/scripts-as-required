@@ -8,6 +8,7 @@
     <!-- stylesheet to convert data.aurin.gov.au xml (transformed from json with python script) to RIF-CS -->
     <xsl:import href="CKAN_json_to_rif-cs.xsl"/>
 
+    <xsl:strip-space elements="*"/>
     <xsl:param name="global_originatingSource" select="'http://data.aurin.org.au'"/>
     <xsl:param name="global_baseURI" select="'http://data.aurin.org.au/'"/>
     <xsl:param name="global_acronym" select="'AURIN'"/>

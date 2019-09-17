@@ -469,7 +469,7 @@
         <publisher>
             <xsl:choose>
                 <xsl:when test="string-length(@affiliation) > 0">
-                   <xsl:value-of select="concat(', ', @affiliation)"/>
+                   <xsl:value-of select="@affiliation"/>
                </xsl:when>
                 <xsl:otherwise>
                     <xsl:value-of select="normalize-space(.)"/>

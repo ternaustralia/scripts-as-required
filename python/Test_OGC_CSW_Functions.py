@@ -74,11 +74,13 @@ def constructQuery(conditionDict):
     query = ""
 
     for key, paramList in conditionDict.iteritems():
-        query += str.format('<ogc:{0}>', key)
+        if(len(conditionDict) > 1):
+            query += str.format('<ogc:{0}>', key)
         for params in paramList:
             query += str.format(queryPropertyTemplate, params["name"], params["value"])
 
-        query += str.format('</ogc:{0}>', key)
+        if (len(conditionDict) > 1):
+            query += str.format('</ogc:{0}>', key)
 
     return query
 

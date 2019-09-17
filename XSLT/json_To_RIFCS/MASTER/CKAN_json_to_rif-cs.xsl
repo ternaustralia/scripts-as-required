@@ -49,9 +49,9 @@
     <xsl:template match="*[contains(local-name(), 'result')]" mode="collection">
 
         <xsl:variable name="metadataURL">
-            <xsl:variable name="name" select="normalize-space(name)"/>
-            <xsl:if test="string-length($name)">
-                <xsl:value-of select="concat($global_baseURI, 'dataset/', $name)"/>
+            <xsl:variable name="id" select="normalize-space(id)"/>
+            <xsl:if test="string-length($id)">
+                <xsl:value-of select="concat($global_baseURI, 'dataset/', $id)"/>
             </xsl:if>
         </xsl:variable>
 
@@ -104,7 +104,7 @@
 
                 <xsl:apply-templates select="title" mode="collection_name"/>
 
-                <xsl:apply-templates select="name" mode="collection_location_name"/>
+                <xsl:apply-templates select="id" mode="collection_location_id"/>
 
                 <!--xsl:apply-templates select="url" mode="collection_location_url"/-->
 
@@ -123,6 +123,7 @@
                 </xsl:if>
                 
                 <xsl:apply-templates select="spatial_coverage" mode="collection_coverage_spatial"/>
+               <xsl:apply-templates select="spatial" mode="collection_coverage_spatial"/>
                <!-- Override the following in top-level xslt to handle custom extras -->
                 <xsl:apply-templates select="."  mode="extras"/>
 
@@ -190,21 +191,9 @@
         <xsl:if test="string-length(normalize-space(.))">
             <identifier>
                 <xsl:attribute name="type">
-                    <xsl:text>local</xsl:text>
-                </xsl:attribute>
-                <xsl:value-of select="normalize-space(.)"/>
-            </identifier>
-        </xsl:if>
-    </xsl:template>
-
-    <xsl:template match="name" mode="collection_identifier">
-        <xsl:if test="string-length(normalize-space(.))">
-            <identifier>
-                <xsl:attribute name="type">
                     <xsl:text>uri</xsl:text>
                 </xsl:attribute>
-                <xsl:value-of select="concat($global_baseURI, 'dataset/', normalize-space(.))"
-                />
+                <xsl:value-of select="concat($global_baseURI, 'dataset/', normalize-space(.))"/>
             </identifier>
         </xsl:if>
     </xsl:template>
@@ -223,10 +212,22 @@
         </xsl:if>
     </xsl:template>
 
+    <!-- Collection - Identifier Element  -->
+    <xsl:template match="name" mode="collection_identifier">
+        <xsl:if test="string-length(normalize-space(.))">
+            <identifier>
+                <xsl:attribute name="type">
+                    <xsl:text>local</xsl:text>
+                </xsl:attribute>
+                <xsl:value-of select="normalize-space(.)"/>
+            </identifier>
+        </xsl:if>
+    </xsl:template>
+
     <!-- Collection - Location Element  -->
-    <xsl:template match="name" mode="collection_location_name">
-        <xsl:variable name="name" select="normalize-space(.)"/>
-        <xsl:if test="string-length($name)">
+    <xsl:template match="id" mode="collection_location_id">
+        <xsl:variable name="id" select="normalize-space(.)"/>
+        <xsl:if test="string-length($id)">
             <location>
                 <address>
                     <electronic>
@@ -237,7 +238,7 @@
                             <xsl:text>landingPage</xsl:text>
                         </xsl:attribute>
                         <value>
-                            <xsl:value-of select="concat($global_baseURI, 'dataset/', $name)"/>
+                            <xsl:value-of select="concat($global_baseURI, 'dataset/', $id)"/>
                         </value>
                     </electronic>
                 </address>
@@ -272,12 +273,12 @@
             <relatedObject>
                 <key>
                     <xsl:value-of
-                        select="concat($global_acronym,'/', translate(lower-case(normalize-space(title)),' ',''))"
+                        select="concat($global_acronym,'/', translate(lower-case(normalize-space(id)),' ',''))"
                     />
                 </key>
                 <relation>
                     <xsl:attribute name="type">
-                        <xsl:text>owner</xsl:text>
+                        <xsl:text>isOwnedBy</xsl:text>
                     </xsl:attribute>
                 </relation>
             </relatedObject>
@@ -347,6 +348,11 @@
 				 <xsl:value-of select="concat('Via ', name)"/>
 				</title>
 				</xsl:if>
+                            <xsl:if test="string-length(mimetype_inner) > 0">
+                                    <mediaType>
+                                        <xsl:value-of select="mimetype_inner"/>
+                                     </mediaType>
+                                </xsl:if>
                             </electronic>
                          </address>
                     </location>
@@ -377,6 +383,10 @@
     </xsl:template>
     
     <xsl:template match="spatial_coverage" mode="collection_coverage_spatial">
+        <xsl:call-template name="spatial_coordinates"/>
+    </xsl:template>
+     
+    <xsl:template match="spatial" mode="collection_coverage_spatial">
         <xsl:call-template name="spatial_coordinates"/>
     </xsl:template>
      
@@ -649,12 +659,13 @@
     <!-- Party Registry Object (Individuals (person) and Organisations (group)) -->
     <xsl:template match="organization">
         <xsl:variable name="title" select="normalize-space(title)"/>
+        <xsl:variable name="id" select="normalize-space(id)"/>
         <xsl:if test="string-length($title) > 0">
             <registryObject group="{$global_group}">
 
                 <key>
                     <xsl:value-of
-                        select="concat($global_acronym, '/', translate(lower-case($title),' ',''))"/>
+                        select="concat($global_acronym, '/', translate(lower-case($id),' ',''))"/>
                 </key>
 
                 <originatingSource>
@@ -669,11 +680,10 @@
                 </originatingSource>
 
                 <party type="group">
-
-                    <xsl:variable name="name" select="normalize-space(name)"/>
-                    <xsl:if test="string-length($name)">
+                    
+                    <xsl:if test="string-length($id)">
                         <identifier type="uri">
-                            <xsl:value-of select="concat($global_baseURI,'organization/', $name)"/>
+                            <xsl:value-of select="concat($global_baseURI,'organization/', $id)"/>
                         </identifier>
                     </xsl:if>
 
@@ -683,7 +693,7 @@
                         </namePart>
                     </name>
 
-                    <xsl:if test="string-length($name)">
+                    <xsl:if test="string-length($id)">
                         <location>
                             <address>
                                 <electronic>
@@ -691,7 +701,7 @@
                                         <xsl:text>url</xsl:text>
                                     </xsl:attribute>
                                     <value>
-                                        <xsl:value-of select="concat($global_baseURI, 'organization/', $name)"/>
+                                        <xsl:value-of select="concat($global_baseURI, 'organization/', $id)"/>
                                     </value>
                                 </electronic>
                             </address>
