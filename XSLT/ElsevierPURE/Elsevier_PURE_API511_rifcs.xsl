@@ -114,9 +114,10 @@
                     <xsl:when test="contains(name(.), 'dataSet')">
                         <xsl:apply-templates select="." mode="collection_location"/>
                     </xsl:when>
-                    <xsl:otherwise>
+                    <xsl:when test="contains(name(.), 'equipment')">
+                        <xsl:apply-templates select="." mode="collection_location"/>
                         <xsl:apply-templates select="." mode="collection_location_address_contact"/>
-                    </xsl:otherwise>
+                    </xsl:when>
                 </xsl:choose>
                     
                 
@@ -152,6 +153,11 @@
                 <xsl:apply-templates select="*:descriptions/*:description[string-length(.) > 0]" mode="collection_description_full"/>
                 
                 <xsl:apply-templates select="*:description[string-length(.) > 0]" mode="collection_description_full"/>
+                
+                <!-- if no description, use name in description to avoid display error currently in RDA -->
+                <xsl:if test="(count(*:description[string-length(.) > 0]) = 0) and (count(*:descriptions/*:description[string-length(.) > 0]) = 0)">
+                    <xsl:apply-templates select="*:title[string-length(.) > 0]" mode="collection_description_full"/>
+                </xsl:if>
                 
                 
                 <!-- handle all links except licence links; they are handled later-->
@@ -256,6 +262,19 @@
                 <electronic type="url" target="landingPage">
                     <value>
                         <xsl:value-of select="concat('http://', $global_baseURI, $global_path, 'datasets/', @uuid)"/>
+                    </value>
+                </electronic>
+            </address>
+        </location> 
+    </xsl:template>
+    
+    <xsl:template match="*:equipment" mode="collection_location">
+        <xsl:param name="class"/>
+        <location>
+            <address>
+                <electronic type="url" target="landingPage">
+                    <value>
+                        <xsl:value-of select="concat('http://', $global_baseURI, $global_path, 'equipments/', @uuid)"/>
                     </value>
                 </electronic>
             </address>
@@ -589,6 +608,13 @@
     </xsl:template>
     
     <xsl:template match="*:description" mode="collection_description_full">
+        <description type="full">
+            <xsl:value-of select="."/>
+        </description>
+    </xsl:template>
+    
+    <!-- if no description, use name in description to avoid display error currently in RDA -->
+    <xsl:template match="*:title" mode="collection_description_full">
         <description type="full">
             <xsl:value-of select="."/>
         </description>
