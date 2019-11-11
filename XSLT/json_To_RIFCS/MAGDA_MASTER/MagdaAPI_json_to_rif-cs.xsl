@@ -86,15 +86,15 @@
                     </xsl:choose>
                 </xsl:attribute>
 
-                <xsl:if test="string-length(normalize-space(metadata_created))">
+                <xsl:if test="string-length(normalize-space(indexed))">
                     <xsl:attribute name="dateAccessioned">
-                        <xsl:value-of select="normalize-space(metadata_created)"/>
+                        <xsl:value-of select="normalize-space(indexed)"/>
                     </xsl:attribute>
                 </xsl:if>
 
-                <xsl:if test="string-length(normalize-space(metadata_modified))">
+                <xsl:if test="string-length(normalize-space(modified))">
                     <xsl:attribute name="dateModified">
-                        <xsl:value-of select="normalize-space(metadata_modified)"/>
+                        <xsl:value-of select="normalize-space(modified)"/>
                     </xsl:attribute>
                 </xsl:if>
 
@@ -112,7 +112,7 @@
 
                 <!--xsl:apply-templates select="author" mode="collection_related_object"/-->
 
-                <xsl:apply-templates select="tags" mode="collection_subject"/>
+                <xsl:apply-templates select="keywords" mode="collection_subject"/>
 
                 <xsl:apply-templates select="description" mode="collection_description_brief"/>
                 
@@ -129,7 +129,7 @@
 
                 <xsl:apply-templates select="isopen" mode="collection_rights_accessRights"/>
                 
-                <!--xsl:apply-templates select="resources/release_date[string-length(.) > 0]" mode="collection_dates"/-->
+                <xsl:apply-templates select="issued[string-length(.) > 0]" mode="collection_dates"/>
 
                 <xsl:apply-templates select="distributions" mode="collection_license"/>
                 
@@ -305,11 +305,11 @@
     </xsl:template-->
 
     <!-- Collection - Subject Element -->
-    <xsl:template match="tags" mode="collection_subject">
-        <xsl:if test="string-length(normalize-space(display_name))">
+    <xsl:template match="keywords" mode="collection_subject">
+        <xsl:if test="string-length(normalize-space(.))">
             <subject>
                 <xsl:attribute name="type">local</xsl:attribute>
-                <xsl:value-of select="normalize-space(display_name)"/>
+                <xsl:value-of select="normalize-space(.)"/>
             </subject>
         </xsl:if>
     </xsl:template>
@@ -371,12 +371,11 @@
         </xsl:if>
     </xsl:template>
     
-    <!-- ToDo:  take date of each resource and work out the first and end, then set as a range: -->
-    <!--xsl:template match="release_date" mode="collection_dates">
+    <xsl:template match="issued" mode="collection_dates">
         <dates type="dc.issued">
             <xsl:value-of select="."/>
         </dates>
-    </xsl:template-->
+    </xsl:template>
     
     <xsl:template match="extras"  mode="extras">
         <xsl:message select="'Override this template in top-level custom xslt to handle custom extras'"/>

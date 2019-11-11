@@ -105,6 +105,27 @@ def createOneFilePerRecord(outputDirectory, domain, elem, start, splitElement):
         recordFile.close()
         print("This page of output split per record, and written to %s" % recordFilename)
 
+def getCount(elem):
+
+    # For ckan api
+    count = 0
+    countElementList = elem.getElementsByTagName('count')
+
+    print('len(countElementList): %d' % len(countElementList))
+
+    # For MAGDA api
+    if (len(countElementList) == 0):
+        hitCountList = elem.getElementsByTagName('hitCount')
+        for val in hitCountList:
+            print(val.parentNode.tagName)
+            if(val.parentNode.tagName == 'datasets'):
+                countElementList.append(val)
+
+    if (len(countElementList) == 1):
+        assert (len(countElementList[0].childNodes[0].data) > 0)
+        count = int(countElementList[0].childNodes[0].data)
+
+    return count
 
 def process(rows, start, dataSetUri, dataSetName, outputDirectory, domain, splitElement, usePostfix):
 
@@ -138,15 +159,9 @@ def process(rows, start, dataSetUri, dataSetName, outputDirectory, domain, split
 
     root.appendChild(elem)
 
-    #print(obj_xml_rootDocument.toprettyxml())
+    #print(elem.toprettyxml())
 
-    count = 0
-
-    countElementList = elem.getElementsByTagName('hitCount')
-
-    if (len(countElementList) == 1):
-        assert (len(countElementList[0].childNodes[0].data) > 0)
-        count = int(countElementList[0].childNodes[0].data)
+    count = getCount(elem)
 
     print("Retrieved count %d " % count)
 
