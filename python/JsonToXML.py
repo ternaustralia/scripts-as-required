@@ -1,4 +1,4 @@
-import urllib2
+import urllib.request
 import json
 import io
 import sys
@@ -8,7 +8,7 @@ import getopt
 import numbers
 import codecs
 import os
-import exceptions
+#import exceptions
 import shutil
 from xml.dom.minidom import parseString, Document, DOMImplementation
 
@@ -62,8 +62,8 @@ def parse_element(doc, root, j):
     print(j)
     for e in j:
         parse_element(doc, root, e)
-  elif isinstance(j, unicode):
-    #print("isinstance unicode ", j)
+  elif isinstance(j, str):
+    #print("isinstance str ", j)
     text = doc.createTextNode(j)
     #print("created text node ", text.data)
     root.appendChild(text)
@@ -85,7 +85,10 @@ def createOneFilePerRecord(outputDirectory, domain, elem, start, splitElement):
     # Create one file per record, with domain name and increment
     resultsList = elem.getElementsByTagName(splitElement)
 
-    for i in xrange(1, len(resultsList)):
+    if(len(resultsList) == 0):
+        raise Exception('splitElement ' + splitElement + ' not found - add element on which to split on as command parameter')
+
+    for i in range(1, len(resultsList)):
         results = resultsList[i]
 
         obj_xml_rootRecordDocument = Document()
@@ -97,7 +100,8 @@ def createOneFilePerRecord(outputDirectory, domain, elem, start, splitElement):
         recordFilename = str.format(outputDirectory + '/' + domain + '_' + str(i + start[0]) + '.xml')
         recordFile = open(recordFilename, 'w+')
 
-        recordFile.write(rootRecord.toprettyxml(encoding='utf-8', indent=' '))
+        #recordFile.write(rootRecord.toprettyxml(encoding='utf-8', indent=' '))
+        recordFile.write(rootRecord.toprettyxml(indent=' '))
         recordFile.close()
         print("This page of output split per record, and written to %s" % recordFilename)
 
@@ -114,13 +118,13 @@ def process(rows, start, dataSetUri, dataSetName, outputDirectory, domain, split
         postfix = str.format("&rows=" + str(rows) + "&start=" + str(start[0]))
 
     try:
-        obj_addinfourl = urllib2.urlopen(dataSetUri + postfix, timeout=5)
-    except exceptions.KeyboardInterrupt:
-        print "Interrupted - ", sys.exc_info()[0]
+        obj_addinfourl = urllib.request.urlopen(dataSetUri + postfix, timeout=5)
+    except KeyboardInterrupt:
+        print("Interrupted - ", sys.exc_info()[0])
         raise
     except:
         print("Exception %s when opening %s" % (sys.exc_info()[0], dataSetUri + postfix))
-        return
+        raise
 
     print("Retrieved content at " + dataSetUri + postfix)
     assert (obj_addinfourl is not None)
@@ -134,11 +138,11 @@ def process(rows, start, dataSetUri, dataSetName, outputDirectory, domain, split
 
     root.appendChild(elem)
 
-    # print(obj_xml_rootDocument.toprettyxml())
+    #print(obj_xml_rootDocument.toprettyxml())
 
     count = 0
 
-    countElementList = elem.getElementsByTagName('count')
+    countElementList = elem.getElementsByTagName('hitCount')
 
     if (len(countElementList) == 1):
         assert (len(countElementList[0].childNodes[0].data) > 0)
@@ -147,12 +151,11 @@ def process(rows, start, dataSetUri, dataSetName, outputDirectory, domain, split
     print("Retrieved count %d " % count)
 
     # obj_StreamReaderWriter.write(obj_xml_Document.toprettyxml(encoding='utf-8', indent=' ')
-
+    print("splitElement: " + splitElement)
     if (splitElement != None):
         createOneFilePerRecord(outputDirectory, domain, elem, start, splitElement)
 
     else:
-
         recordFilename = str.format(outputDirectory + '/' + domain + '_' + str(dataSetName) + '_' + str(start[0]) + '.xml')
         recordFile = open(recordFilename, 'w+')
 
@@ -174,8 +177,9 @@ def writeXmlFromJson(dataSetUri, dataSetName, outputDirectory, splitElement=None
 
     postfix=""
     rows=99
-    start = [0]
-    count=100
+    start = [int]
+    start[0] = 0
+    count = 100
 
     domImplementation = DOMImplementation()
 
@@ -183,18 +187,19 @@ def writeXmlFromJson(dataSetUri, dataSetName, outputDirectory, splitElement=None
 
     try:
 
-        while(count > start[0]):
+        while(count > (start[0])):
 
             count = process(rows, start, dataSetUri, dataSetName, outputDirectory, domain, splitElement, usePostfix)
             print("count returned: ", count)
             print("start returned: ", start[0])
 
-    except exceptions.KeyboardInterrupt:
-        print "Interrupted - ", sys.exc_info()[0]
+    except KeyboardInterrupt:
+        print("Interrupted - ", sys.exc_info()[0])
         raise
     except:
-        print "Exception - ", sys.exc_info()[0]
-        traceback.print_exc(file=sys.stdout)
+        print("Exception - ", sys.exc_info()[0])
+        #traceback.print_exc(file=sys.stdout)
+        raise
 
 
 

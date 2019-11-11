@@ -24,8 +24,8 @@
             <xsl:attribute name="xsi:schemaLocation">
                 <xsl:text>http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd</xsl:text>
             </xsl:attribute>
-            <xsl:for-each select="//datasets/result">
-                <xsl:apply-templates select=".[contains(license_title, 'Creative Commons Attribution 2.5 Australia (CC BY 2.5 AU)')]" mode="all"/>
+            <xsl:for-each select="//*[contains(local-name(), 'result')]">
+               <xsl:apply-templates select=".[contains(license_title, 'Creative Commons Attribution 2.5 Australia (CC BY 2.5 AU)')]" mode="all"/>
                 <xsl:apply-templates select=".[contains(license_title, 'Creative Commons Attribution 3.0 Australia (CC BY 3.0 AU)')]" mode="all"/>
                 <xsl:apply-templates select=".[contains(license_title, 'Creative Commons Attribution 4.0 International (CC BY 4.0)')]" mode="all"/>
                 <xsl:apply-templates select=".[contains(license_title, 'Creative Commons Attribution-NonCommercial 2.0 Australia (CC BY-NC 2.0 AU)')]" mode="all"/>

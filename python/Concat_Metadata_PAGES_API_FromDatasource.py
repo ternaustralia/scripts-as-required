@@ -9,10 +9,10 @@
 from optparse import OptionParser
 from xml.dom.minidom import parse, Document, Node
 import codecs
-import urllib2
 import sys
 import os
 import shutil
+import urllib.request
 
 ###############################################################################################################################
 #
@@ -24,13 +24,15 @@ def retrieveXML(count, filePath, uri):
     assert (uri is not None)
 
     try:
-        proxy_handler = urllib2.ProxyHandler({})
-        opener = urllib2.build_opener(proxy_handler)
+        # proxy_handler = urllib.ProxyHandler({})
+        # opener = urllib.build_opener(proxy_handler)
+        # print("Opening uri: %s" % uri)
+        # req = urllib.Request(uri)
+        # req.add_header('Accept-Language', 'en-gb')
+        # req.add_header('Accept', 'application/xml')
+        # result = urllib.urlopen(req)
         print("Opening uri: %s" % uri)
-        req = urllib2.Request(uri)
-        req.add_header('Accept-Language', 'en-gb')
-        req.add_header('Accept', 'application/xml')
-        result = urllib2.urlopen(req)
+        result = urllib.request.urlopen(uri, timeout=30)
     except Exception as e:
         print("Unable to open uri %s - exception: %s" % (uri, e))
         sys.exit(-1)
@@ -57,7 +59,7 @@ def retrieveXML(count, filePath, uri):
         print("Unable to open file %s - exception: %s" % (filePath, e))
         sys.exit(-1)
 
-    outFile.write(doc.toprettyxml(indent="  ",encoding='utf-8'))
+    outFile.write(doc.toprettyxml(indent="  "))
     outFile.close()
 
     print("Results written to %s" % filePath)

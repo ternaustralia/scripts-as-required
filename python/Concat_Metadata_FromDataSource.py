@@ -26,8 +26,8 @@ import os
 import string
 import shutil
 
-import urllib3.contrib.pyopenssl
-urllib3.contrib.pyopenssl.inject_into_urllib3()
+#import urllib3.contrib.pyopenssl
+#urllib3.contrib.pyopenssl.inject_into_urllib3()
 
 ###############################################################################################################################
 #
@@ -41,9 +41,10 @@ def retrieveXML(count, filePath, uri):
   
   print (count)
   try:
+    print(uri)
     http = urllib3.PoolManager()
     print("Opening uri %s" % uri.encode())
-    r = http.request('GET', uri.encode())
+    r = http.request('GET', uri)
     result = r.data
   except Exception as e:
       print("Unable to open uri %s - exception: %s" % (uri.encode(), e))
@@ -75,6 +76,7 @@ def retrieveXML(count, filePath, uri):
       sys.exit(-1)
   
   outFile.write(doc.toprettyxml(indent="  ",encoding='utf-8'))
+  #outFile.write(doc.toprettyxml(indent="  "))
   outFile.close()
   
   resumptionTokenList = doc.getElementsByTagName('resumptionToken')
@@ -121,7 +123,7 @@ def confirm(prompt=None, resp=False):
         if not ans:
             return resp
         if ans not in ['y', 'Y', 'n', 'N']:
-            print 'please enter y or n.'
+            print ('please enter y or n.')
             continue
         if ans == 'y' or ans == 'Y':
             return True

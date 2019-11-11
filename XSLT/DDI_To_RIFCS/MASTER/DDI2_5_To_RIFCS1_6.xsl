@@ -337,11 +337,11 @@
                     <xsl:value-of select="*:confDec"/>
                 </xsl:if>
                 
-                <xsl:if test="not(contains(lower-case(*:specPerm), 'none'))">
+                <!--xsl:if test="not(contains(lower-case(*:specPerm), 'none'))">
                     <xsl:text>&#10;&#13;</xsl:text>
                     <xsl:text>&#10;&#13;</xsl:text>
                     <xsl:value-of select="*:specPerm"/>
-                </xsl:if>
+                </xsl:if-->
                 
                 <xsl:if test="not(contains(lower-case(*:restrctn), 'none'))">
                     <xsl:text>&#10;&#13;</xsl:text>
@@ -349,17 +349,17 @@
                     <xsl:value-of select="*:restrctn"/>
                 </xsl:if>
                 
-                <xsl:if test="not(contains(lower-case(*:citeReq), 'none'))">
+                <!--xsl:if test="not(contains(lower-case(*:citeReq), 'none'))">
                     <xsl:text>&#10;&#13;</xsl:text>
                     <xsl:text>&#10;&#13;</xsl:text>
                     <xsl:value-of select="*:citeReq"/>
-                </xsl:if>
+                </xsl:if-->
                 
-                <xsl:if test="not(contains(lower-case(*:deposReq), 'none'))">
+                <!--xsl:if test="not(contains(lower-case(*:deposReq), 'none'))">
                     <xsl:text>&#10;&#13;</xsl:text>
                     <xsl:text>&#10;&#13;</xsl:text>
                     <xsl:value-of select="*:deposReq"/>
-                </xsl:if>
+                </xsl:if-->
                 
                 <xsl:if test="not(contains(lower-case(*:dataAccs), 'none'))">
                     <xsl:text>&#10;&#13;</xsl:text>
@@ -367,11 +367,11 @@
                     <xsl:value-of select="*:dataAccs"/>
                 </xsl:if>
                 
-                <xsl:if test="not(contains(lower-case(*:disclaimer), 'none'))">
+                <!--xsl:if test="not(contains(lower-case(*:disclaimer), 'none'))">
                     <xsl:text>&#10;&#13;</xsl:text>
                     <xsl:text>&#10;&#13;</xsl:text>
                     <xsl:value-of select="*:disclaimer"/>
-                </xsl:if>
+                </xsl:if-->
             </accessRights>
         </rights>
         

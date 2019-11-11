@@ -6,7 +6,7 @@
     xmlns:custom="http://custom.nowhere.yet"
     xmlns="http://ands.org.au/standards/rif-cs/registryObjects">
     <!-- stylesheet to convert data.aurin.gov.au xml (transformed from json with python script) to RIF-CS -->
-    <xsl:import href="CKAN_json_to_rif-cs.xsl"/>
+    <xsl:import href="MagdaAPI_json_to_rif-cs.xsl"/>
     
     <xsl:strip-space elements="*"/>
     <xsl:param name="global_acronym" select="'data.gov.au'"/>
@@ -15,7 +15,7 @@
     <xsl:param name="global_group" select="'data.gov.au'"/>
     <xsl:param name="global_contributor" select="'data.gov.au'"/>
     <xsl:param name="global_publisherName" select="'data.gov.au'"/>
-    <xsl:param name="global_publisherPlace" select="'Canberra'"/>
+    <xsl:param name="global_publisherPlace" select="'Australia'"/>
     <xsl:param name="global_includeDownloadLinks" select="false()"/>
 
     <xsl:template match="/">
@@ -24,13 +24,14 @@
             <xsl:attribute name="xsi:schemaLocation">
                 <xsl:text>http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd</xsl:text>
             </xsl:attribute>
-            <xsl:for-each select="//*[contains(local-name(), 'result')]">
+            <xsl:for-each select="//*[contains(local-name(), 'dataSets')]">
                 <xsl:apply-templates select="." mode="all"/>
             </xsl:for-each>
         </registryObjects>
     </xsl:template>
     
-    <xsl:template match="*[contains(local-name(), 'result')]"  mode="extras">
+    <!--
+    <xsl:template match="*[contains(local-name(), 'dataSets')]"  mode="extras">
         <xsl:message select="'Template extras override in top-level custom xslt'"/>
         <xsl:for-each select="extras">
             <xsl:apply-templates select=".[contains(key, 'spatial')]" mode="spatial"/>
@@ -65,6 +66,6 @@
         </xsl:for-each>
     </xsl:template>
     
-    
+    -->
 </xsl:stylesheet>
 

@@ -37,8 +37,10 @@ import os
 import string
 import shutil
 
-import urllib3.contrib.pyopenssl
-urllib3.contrib.pyopenssl.inject_into_urllib3()
+#import urllib3.contrib.pyopenssl
+#urllib3.contrib.pyopenssl.inject_into_urllib3()
+
+import urllib3
 
 
 ###############################################################################################################################
@@ -67,7 +69,7 @@ def retrieveXML(count, filePath, uri):
         assert (doc != 0)
     except Exception as e:
         print("Error: Unable to parse xml at uri %s - exception: %s" % (uri, e))
-        print result
+        print(result)
         return None
 
     assert (doc is not None)
@@ -84,7 +86,7 @@ def retrieveXML(count, filePath, uri):
         print("Unable to open file %s - exception: %s" % (filePath, e))
         sys.exit(-1)
 
-    outFile.write(doc.toxml(encoding='utf-8'))
+    outFile.write(doc.toxml())
     outFile.close()
 
     searchResults = doc.getElementsByTagName('csw:SearchResults')
@@ -133,7 +135,7 @@ def confirm(prompt=None, resp=False):
         if not ans:
             return resp
         if ans not in ['y', 'Y', 'n', 'N']:
-            print 'please enter y or n.'
+            print('please enter y or n.')
             continue
         if ans == 'y' or ans == 'Y':
             return True
@@ -200,22 +202,21 @@ numberOfRecordsReturned = None
 numberOfRecordsMatched = None
 
 while (numberOfRecordsReturned != 0):
-    resultsDict = retrieveXML(count, filePath,
-                            dataSourceURI + "&startPosition=" + str(nextRecord))
+    resultsDict = retrieveXML(count, filePath, dataSourceURI + "&startPosition=" + str(nextRecord))
 
     if resultsDict != None:
-	numberOfRecordsMatched = resultsDict['numberOfRecordsMatched']
-    	print("numberOfRecordsMatched: %s" % resultsDict['numberOfRecordsMatched'])
+        numberOfRecordsMatched = resultsDict['numberOfRecordsMatched']
+        print("numberOfRecordsMatched: %s" % resultsDict['numberOfRecordsMatched'])
 
-    	numberOfRecordsReturned = resultsDict['numberOfRecordsReturned']
-    	print("numberOfRecordsReturned: %s" % resultsDict['numberOfRecordsReturned'])
+        numberOfRecordsReturned = resultsDict['numberOfRecordsReturned']
+        print("numberOfRecordsReturned: %s" % resultsDict['numberOfRecordsReturned'])
 
-    	nextRecord = resultsDict['nextRecord']
-    	print("nextRecord: %s" % resultsDict['nextRecord'])
+        nextRecord = resultsDict['nextRecord']
+        print("nextRecord: %s" % resultsDict['nextRecord'])
 
-    	count = count + 1
+        count = count + 1
     else:
-	numberOfRecordsReturned = 0
+        numberOfRecordsReturned = 0
 
 print("Output files written to directory %s" % outputDirectory)
 

@@ -1,4 +1,4 @@
-import urllib2
+import urllib
 import json
 import codecs
 import sys
@@ -7,10 +7,10 @@ import traceback
 import getopt
 import numbers
 import JsonToXML
-import exceptions
 import string
 import os
 import shutil
+import array
 
 from optparse import OptionParser
 from xml.dom.minidom import Document
@@ -25,7 +25,7 @@ def processList(value):
             print("Dataset: ", entry)
             dataSetName = None
             if isinstance(entry, dict):
-                if(entry.has_key(u'data')):
+                if('data' in entry):
                     data = entry.get(u'data')
                     if isinstance(data, dict):
                         package = data.get('package')
@@ -33,7 +33,7 @@ def processList(value):
                             dataSetName = package.get(u'name')
                             print("Found datasetname: ", dataSetName)
                             dataSetName_list.append(dataSetName)
-                elif(entry.has_key(u'dataset_uris')):
+                elif('dataset_uris' in entry):
                     dataset_uris = entry.get(u'dataset_uris')
                     if isinstance(dataset_uris, list):
                         print('dataset_uris is a list of len %d' % len(dataset_uris))
@@ -41,7 +41,7 @@ def processList(value):
                             dataSetName = dataset_uri
                             print("Found datasetname: ", dataSetName)
                             dataSetName_list.append(dataSetName)
-                elif (entry.has_key(u'id')):
+                elif ('id' in entry):
                     print(type(entry.get(u'id')).__name__)
                     dataSetName = entry.get(u'id')
                     print("Found datasetname: ", dataSetName)
@@ -55,7 +55,7 @@ def processList(value):
                 dataSetName_list.append(dataSetName)
     else:
         print("Not list")
-        print type(value).__name__
+        print(type(value).__name__)
 
     return list(dataSetName_list)
 
@@ -65,12 +65,12 @@ def processDataset(dataSetName, fullDirectoryPath):
                 #outFileName = (outputDirectory + '/%s.xml' % string.replace(string.replace(dataSetName, ':', ''), '/', ''))
                 dataSetUri = (descriptionByIdentifierURI % dataSetName)
                 JsonToXML.writeXmlFromJson(dataSetUri, dataSetName, fullDirectoryPath)
-            except exceptions.KeyboardInterrupt:
-                print "Interrupted - ", sys.exc_info()[0]
+            except KeyboardInterrupt:
+                print("Interrupted - ", sys.exc_info()[0])
                 sys.exit(0)
             except:
-                traceback.print_exc(file=sys.stdout)
-                print "Exception - ", sys.exc_info()[0]
+                #traceback.print_exc(file=sys.stdout)
+                print("Exception - ", sys.exc_info()[0])
 
 # Get data source link from input
 usage = "usage: %prog [options] arg1"
@@ -123,7 +123,7 @@ if os.path.exists(fullDirectoryPath):
 os.makedirs(fullDirectoryPath)
 
 print("OutputDirectory directory requested: " + outputDirectory)
-print "Created full directory path %s? %s " % (fullDirectoryPath, os.path.exists(fullDirectoryPath))
+print("Created full directory path %s? %s " % (fullDirectoryPath, os.path.exists(fullDirectoryPath)))
 
 getMore = bool(1)
 paginationValue = 0
@@ -137,21 +137,21 @@ while(getMore and (paginationValue > -1)):
     if (customPaginateIdentifierList != None):
         urlPaginate = identifierListURI+'?'+customPaginateIdentifierList+'='+str(paginationValue)
         print ("Reading datasets names from "+urlPaginate)
-        openedFile = urllib2.urlopen(urlPaginate, timeout=5)
+        openedFile = urllib.request.urlopen(urlPaginate, timeout=5)
     else:
         print ("Reading datasets names from " + identifierListURI)
-        openedFile = urllib2.urlopen(identifierListURI, timeout=5)
+        openedFile = urllib.request.urlopen(identifierListURI, timeout=5)
 
     loadedJson = json.loads(openedFile.read())
 
     if loadedJson is None:
-        print 'loadedJson is None'
+        print('loadedJson is None')
         exit
 
     getMore = bool(0)
 
     if(isinstance(loadedJson, dict)):
-        if(loadedJson.has_key(u'hasMore')):
+        if('hasMore' in loadedJson):
             print(type(loadedJson.get(u'hasMore')).__name__)
             hasMorejSON = loadedJson.get(u'hasMore')
             print("Found hasMore: ", hasMorejSON)
@@ -160,12 +160,19 @@ while(getMore and (paginationValue > -1)):
                 print("Found hasMore set to 1")
 
         if (customPaginateIdentifierList != None):
-            if (loadedJson.has_key(customPaginateIdentifierList)):
+            print("customPaginateIdentifierList provided:")
+            print(customPaginateIdentifierList)
+            resultList = [val for key, val in loadedJson.items() if customPaginateIdentifierList.lower() in key.lower()]
+            print(str(resultList))
+            print(len(resultList))
+
+            if (len(resultList) > 0):
                 print(customPaginateIdentifierList+' found')
                 print(type(loadedJson.get(customPaginateIdentifierList)).__name__)
                 customPaginateIdentifierListJSON = loadedJson.get(customPaginateIdentifierList)
                 print("Found customPaginateIdentifierList", customPaginateIdentifierListJSON)
-                paginationValue = paginationValue + 100
+                #paginationValue = paginationValue + 100
+                paginationValue = int(resultList[0])
                 print("Setting pagination value", paginationValue)
             else:
                 # If pagination requested, but value not found
