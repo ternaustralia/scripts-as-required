@@ -373,7 +373,9 @@
     
     <xsl:template match="issued" mode="collection_dates">
         <dates type="dc.issued">
-            <xsl:value-of select="."/>
+            <date type="dateFrom" dateFormat="W3CDTF">
+                <xsl:value-of select="."/>
+            </date>
         </dates>
     </xsl:template>
     
@@ -392,12 +394,14 @@
     <xsl:template name="spatial_coordinates">
         
         <xsl:if test="string-length(text) > 0">
-          <spatial>
-                <xsl:attribute name="type">
-                    <xsl:text>text</xsl:text>
-                </xsl:attribute>
-                <xsl:value-of select="text"/>
-            </spatial>
+            <coverage>
+                <spatial>
+                      <xsl:attribute name="type">
+                          <xsl:text>text</xsl:text>
+                      </xsl:attribute>
+                      <xsl:value-of select="text"/>
+                  </spatial>
+            </coverage>
         </xsl:if>
         
         <xsl:variable name="coordinate_sequence" as="xs:string*">
@@ -676,7 +680,7 @@
                 <party type="group">
                     
                     <xsl:if test="string-length(normalize-space($identifier))">
-                        <identifier type="'local'">
+                        <identifier type="local">
                             <xsl:value-of select="$identifier"/>
                         </identifier>
                     </xsl:if>
