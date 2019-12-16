@@ -95,6 +95,9 @@
             <xsl:when test="contains(lower-case($identifier), 'doi.org')">
                 <xsl:text>doi</xsl:text>
             </xsl:when>
+            <xsl:when test="starts-with($identifier, '10.')"> <!-- in case it doesn't contain doi.org -->
+                <xsl:text>doi</xsl:text>
+            </xsl:when>
             <xsl:when test="contains(lower-case($identifier), 'scopus')">
                 <xsl:text>scopus</xsl:text>
             </xsl:when>
@@ -106,6 +109,9 @@
             </xsl:when>
             <xsl:when test="contains(lower-case($identifier), 'fundref')">
                 <xsl:text>fundref</xsl:text>
+            </xsl:when>
+            <xsl:when test="starts-with(lower-case($identifier), 'arc')">
+                <xsl:text>arc</xsl:text>
             </xsl:when>
             <xsl:when test="contains(lower-case($identifier), 'http')">
                 <xsl:text>uri</xsl:text>

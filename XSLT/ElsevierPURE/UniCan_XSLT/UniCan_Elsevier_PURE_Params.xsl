@@ -12,7 +12,7 @@
     <xsl:param name="global_baseURI" select="'researchsystem.canberra.edu.au'"/>
     <xsl:param name="global_path" select="'/en/'"/>
     <xsl:param name="global_acronym" select="'UWA_PURE'"/>
-    <xsl:param name="global_group" select="'University of Canberra'"/>
+    <xsl:param name="global_group" select="'University of Canberra PURE'"/>
     <xsl:param name="global_publisherName" select="'University of Canberra'"/>
     <xsl:param name="global_validateWorkflow" select="false()"/>
     

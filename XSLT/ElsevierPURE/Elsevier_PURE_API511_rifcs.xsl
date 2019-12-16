@@ -955,7 +955,7 @@
                                             <xsl:text>open</xsl:text>
                                             <xsl:if test="$global_debug">
                                                 <xsl:message
-                                                  select="'setting accessrights to ''open'' -- collection-level visibility is ''free'', access permission is ''open'', all files have ''free'' visibility'"
+                                                  select="'setting accessrights to ''open'' -- collection-level visibility is ''free'', access permission is ''open'', no files or all files have ''free'' visibility'"
                                                 />
                                             </xsl:if>
                                         </xsl:otherwise>

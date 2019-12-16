@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="2.0"
-    xmlns="http://www.lyncode.com/xoai" 
+    xmlns="http://ands.org.au/standards/rif-cs/registryObjects" 
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:murFunc="http://mur.nowhere.yet"
     xmlns:custom="http://custom.nowhere.yet"
@@ -17,12 +17,12 @@
 	
     <xsl:import href="CustomFunctions.xsl"/>
     
-    <xsl:param name="global_originatingSource" select="''"/>
-    <xsl:param name="global_group" select="''"/>
-    <xsl:param name="global_acronym" select="''"/>
-    <xsl:param name="global_publisherName" select="''"/>
-    <xsl:param name="global_baseURI" select="''"/>
-    <xsl:param name="global_path" select="''"/>
+    <xsl:param name="global_originatingSource" select="'{requires override}'"/>
+    <xsl:param name="global_group" select="'{requires override}'"/>
+    <xsl:param name="global_acronym" select="'{requires override}'"/>
+    <xsl:param name="global_publisherName" select="'{requires override}'"/>
+    <xsl:param name="global_baseURI" select="'{requires override}'"/>
+    <xsl:param name="global_path" select="'{requires override}'"/>
     
     <xsl:variable name="licenseCodelist" select="document('license-codelist.xml')"/>
     
@@ -66,8 +66,6 @@
             </originatingSource>
             <xsl:element name="{$class}">
                 
-                <xsl:message select="concat('found: ', normalize-space(element[@name ='local']/element[@name ='identifier']/element[@name='unepublicationid']))"/>
-                
                 <xsl:attribute name="type">
                     <xsl:choose>
                         <xsl:when test="boolean(custom:sequenceContains(element[@name ='dc']/element[@name ='type'], 'dataset')) = true()">
@@ -81,9 +79,21 @@
              
                 <xsl:apply-templates select="@todo[string-length(.) > 0]" mode="collection_date_modified"/>
                 
-                <xsl:apply-templates select="../../oai:header/oai:datestamp" mode="collection_date_accessioned"/>
+                <xsl:apply-templates select="element[@name ='dc']/element[@name ='date']/element[@name ='accessioned']" mode="collection_date_accessioned"/>
+                
+                <xsl:apply-templates select="element[@name ='dc']/element[@name ='date']/element[@name ='issued']" mode="collection_date_issued"/>
+                
+                <xsl:apply-templates select="element[@name ='dc']/element[@name ='date']/element[@name ='deposit']" mode="collection_date_deposit"/>
+                
+                <xsl:apply-templates select="element[@name ='dc']/element[@name ='relation']/element[@name='uri'][string-length(.) > 0]" mode="collection_relatedInfo_uri"/>
+                
+                <xsl:apply-templates select="element[@name ='local']/element[@name ='relation']/element[@name ='grantdescription'][string-length(.) > 0]" mode="collection_relatedInfo_grantid"/>
                 
                 <xsl:apply-templates select="element[@name ='local']/element[@name ='identifier']/element[@name='unepublicationid'][string-length(.) > 0]" mode="collection_identifier"/>
+                
+                <xsl:apply-templates select="element[@name ='local']/element[@name ='dcrelation']/element[@name='publication'][string-length(.) > 0]" mode="collection_description_notes_publicationTitle"/>
+                
+                <xsl:apply-templates select="element[@name ='local']/element[@name ='relation']/element[@name='fundingsourcenote'][string-length(.) > 0]" mode="collection_description_notes_fundingSource"/>
                 
                 <xsl:apply-templates select="element[@name ='dc']/element[@name ='identifier']/element[@name='uri'][string-length(.) > 0]" mode="collection_identifier"/>
                 
@@ -113,18 +123,93 @@
                 
                 <xsl:apply-templates select="element[@name ='dc']/element[@name ='coverage']/element[@name ='spatial'][string-length(.) > 0]" mode="collection_spatial_coverage"/>
                 
-                <xsl:apply-templates select="element[@name ='local']/element[@name ='rights'][string-length(.) > 0]" mode="collection_rights_rightsStatement"/>
+                <xsl:apply-templates select="element[(@name ='local') or (@name ='dc') or (@name ='dcterms')]/element[@name ='rights'][string-length(.) > 0]" mode="collection_rights"/>
+                
+                <xsl:apply-templates select="element[(@name ='dcterms')]/element[lower-case(@name) ='rightsholder'][string-length(.) > 0]" mode="collection_rights"/>
                 
                 <xsl:apply-templates select="element[@name ='dcterms']/element[@name ='accessRights'][string-length(.) > 0]" mode="collection_rights_accessRights"/>
                 
-                <xsl:apply-templates select="dc:description[string-length(.) > 0]" mode="collection_description_full"/>
+                <xsl:apply-templates select="element[@name ='dc']/element[@name ='description'][string-length(.) > 0]" mode="collection_description_full"/>
                
-                <xsl:apply-templates select="dc:date[string-length(.) > 0]" mode="collection_dates_coverage"/>  
+                <xsl:apply-templates select="element[@name ='dc']/element[@name ='coverage']/element[@name ='temporal'][string-length(.) > 0]" mode="collection_dates_coverage"/>
                 
-                <xsl:apply-templates select="dc:source[string-length(.) > 0]" mode="collection_citation_info"/>  
+                <xsl:apply-templates select="." mode="collection_citation_information"/>
+                
              
             </xsl:element>
         </registryObject>
+    </xsl:template>
+    
+    <xsl:template match="metadata" mode="collection_citation_information">
+        
+        <citationInfo>
+            <citationMetadata>
+                <xsl:choose>
+                    <xsl:when test="count(element[@name ='dc']/element[@name ='identifier']/element[@name='doi'][string-length(.) > 0]) > 0">
+                        <xsl:for-each select="element[@name ='dc']/element[@name ='identifier']/element[@name='doi'][string-length(.) > 0]">
+                            <identifier type="doi">
+                                <xsl:value-of select="normalize-space(.)"/>
+                            </identifier>
+                        </xsl:for-each>
+                    </xsl:when>
+                    <xsl:when test="count(element[@name ='dc']/element[@name ='identifier']/element[@name='uri'][string-length(.) > 0]) > 0">
+                        <xsl:for-each select="element[@name ='dc']/element[@name ='identifier']/element[@name='uri'][string-length(.) > 0]">
+                            <identifier type="uri">
+                                <xsl:value-of select="normalize-space(.)"/>
+                            </identifier>
+                        </xsl:for-each>
+                    </xsl:when>
+                    <xsl:when test="count(element[@name ='local']/element[@name ='identifier']/element[@name='unepublicationid'][string-length(.) > 0]) > 0">
+                        <xsl:for-each select="element[@name ='local']/element[@name ='identifier']/element[@name='unepublicationid'][string-length(.) > 0]">
+                            <identifier type="local">
+                                <xsl:value-of select="normalize-space(.)"/>
+                            </identifier>
+                        </xsl:for-each>
+                    </xsl:when>
+                </xsl:choose>
+                
+                <xsl:for-each select="element[@name ='dc']/element[@name ='contributor']/element[@name ='author']/element/field[@name='value'][string-length(.) > 0]">
+                    <xsl:variable name="nameValueSpaceSeparated" select="tokenize(murFunc:formatName(.), '\s')" as="xs:string*"/> 
+                    <contributor seq="{position()}">
+                        <xsl:choose>
+                            <xsl:when test="count($nameValueSpaceSeparated) > 1">
+                                <namePart type="family">
+                                    <xsl:value-of select="$nameValueSpaceSeparated[count($nameValueSpaceSeparated)]"/>
+                                </namePart>
+                                <namePart type="given">
+                                    <xsl:value-of select="$nameValueSpaceSeparated[1]"/>
+                                </namePart>
+                            </xsl:when>
+                            <xsl:when test="count($nameValueSpaceSeparated) = 1">
+                                <namePart type="family">
+                                    <xsl:value-of select="$nameValueSpaceSeparated[1]"/>
+                                </namePart>
+                            </xsl:when>
+                        </xsl:choose>
+                    </contributor>
+                </xsl:for-each>
+                
+                <xsl:for-each select="element[@name ='dc']/element[@name ='title'][string-length(.) > 0]">
+                    <title>
+                        <xsl:value-of select="normalize-space(.)"/>
+                    </title>
+                </xsl:for-each>                
+                    
+                <!--version>@todo</version-->
+                
+                <xsl:for-each select="element[@name ='dc']/element[@name ='publisher'][string-length(.) > 0]">
+                    <publisher>
+                        <xsl:value-of select="normalize-space(.)"/>
+                    </publisher>
+                </xsl:for-each>
+                
+                <xsl:for-each select="element[@name ='dc']/element[@name ='date']/element[@name ='issued'][string-length(.) > 0]">
+                    <date type="publicationDate">
+                        <xsl:value-of select="normalize-space(.)"/>
+                    </date>
+                </xsl:for-each>
+            </citationMetadata>
+        </citationInfo>
     </xsl:template>
    
     
@@ -132,8 +217,30 @@
         <xsl:attribute name="dateModified" select="normalize-space(.)"/>
     </xsl:template>
     
-    <xsl:template match="oai:datestamp" mode="collection_date_accessioned">
-        <xsl:attribute name="dateAccessioned" select="normalize-space(.)"/>
+    <xsl:template match="element[@name ='accessioned']" mode="collection_date_accessioned">
+        <xsl:for-each select="element/field[@name='value']">
+            <xsl:attribute name="dateAccessioned" select="normalize-space(.)"/>
+        </xsl:for-each>
+    </xsl:template>
+    
+    <xsl:template match="element[@name ='issued']" mode="collection_date_issued">
+        <xsl:for-each select="element/field[@name='value']">
+            <dates type="dc.issued">
+                <date type="dateFrom" dateFormat="W3CDTF">
+                    <xsl:value-of select="."/>
+                </date>
+            </dates>
+        </xsl:for-each>
+    </xsl:template>
+    
+    <xsl:template match="element[@name ='deposit']" mode="collection_date_deposit">
+        <xsl:for-each select="element/field[@name='value']">
+            <dates type="dc.dateSubmitted">
+                <date type="dateFrom" dateFormat="W3CDTF">
+                    <xsl:value-of select="."/>
+                </date>
+            </dates>
+        </xsl:for-each>
     </xsl:template>
        
     <xsl:template match="element[@name='unepublicationid']" mode="collection_identifier">
@@ -224,8 +331,37 @@
         </relatedInfo>
     </xsl:template>
     
+    <xsl:template match="element[@name='uri']" mode="collection_relatedInfo_uri">
+        <xsl:for-each select="element/field[@name='value']">
+            <relatedInfo type='relatedInformation'>
+               <identifier type="{custom:getIdentifierType(.)}">
+                   <xsl:value-of select="normalize-space(.)"/>
+               </identifier>
+                <relation type="hasAssociationWith"/>
+           </relatedInfo>
+        </xsl:for-each>
+    </xsl:template>
+    
+    <xsl:template match="element[@name='grantdescription']" mode="collection_relatedInfo_grantid">
+        <xsl:for-each select="element/field[@name='value']">
+            <relatedInfo type='activity'>
+                <identifier type="{custom:getIdentifierType(.)}">
+                    <xsl:choose>
+                        <xsl:when test="starts-with(normalize-space(.), 'ARC/')">
+                            <xsl:value-of select="substring-after(normalize-space(.), 'ARC/')"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="normalize-space(.)"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </identifier>
+                <relation type="isOutputOf"/>
+            </relatedInfo>
+        </xsl:for-each>
+    </xsl:template>
+    
     <xsl:template match="element[@name ='author']" mode="collection_relatedObject">
-        <xsl:for-each select="element[@name='en']/field[@name='value']">
+        <xsl:for-each select="element/field[@name='value']">
              <relatedObject>
                  <key>
                      <xsl:value-of select="murFunc:formatKey(murFunc:formatName(.))"/> 
@@ -236,7 +372,7 @@
     </xsl:template>
     
     <xsl:template match="element[@name ='publisher']" mode="collection_relatedObject">
-        <xsl:for-each select="element[@name='en']/field[@name='value']">
+        <xsl:for-each select="element/field[@name='value']">
             <relatedObject>
                 <key>
                     <xsl:value-of select="murFunc:formatKey(murFunc:formatName(.))"/> 
@@ -258,57 +394,139 @@
                 <xsl:value-of select="normalize-space(.)"/>
             </subject>
         </xsl:for-each>
+        
+        <xsl:for-each select="element[not(@name = 'seo2008') and not(@name = 'for2008')]/element[@name = 'en']/field[@name = 'value']">
+            <subject type="local">
+                <xsl:value-of select="normalize-space(.)"/>
+            </subject>
+        </xsl:for-each>
+        
     </xsl:template>
    
     <xsl:template match="element[@name ='spatial']" mode="collection_spatial_coverage">
-        <xsl:for-each select="element[@name='en']/field[@name='value']">
+        <xsl:for-each select="element/field[@name='value']">
+            
+            <xsl:variable name="coordinate_sequence" as="xs:string*">
+                <xsl:analyze-string select="normalize-space(.)" regex="[\d.-]+">
+                    <xsl:matching-substring>
+                        <xsl:value-of select="regex-group(0)"/>
+                    </xsl:matching-substring>
+                </xsl:analyze-string>
+            </xsl:variable>
+            
+            <xsl:variable name="coordinate_sequence_notSwappedLatLongs" as="xs:string*">
+                <xsl:for-each select="$coordinate_sequence">
+                    <xsl:variable name="postInt" select="position()" as="xs:integer"/>
+                    <xsl:if test="$postInt &lt; count($coordinate_sequence)">
+                        <xsl:if test="($postInt mod 2) = 1">
+                            <xsl:value-of select="concat(., ',', $coordinate_sequence[$postInt + 1])"/>
+                            <!-- Swap below with above (uncomment below and comment above) if you need to swap lat long order (i.e. long lat instead)-->
+                            <!--xsl:value-of select="concat($coordinate_sequence[$postInt + 1], ',', .)"/-->
+                        </xsl:if>
+                    </xsl:if>
+                </xsl:for-each>
+            </xsl:variable>
+            
           <coverage>
-              <spatial type='text'>
-                  <xsl:value-of select='normalize-space(.)'/>
-              </spatial>
+              <xsl:choose>
+                  <xsl:when test="contains(lower-case(.), 'northlimit')">
+                      <spatial type="iso19139dcmiBox">
+                          <xsl:value-of select='normalize-space(.)'/>   
+                      </spatial>
+                  </xsl:when>
+                  <xsl:when test="count($coordinate_sequence) > 1">
+                      
+                      <xsl:variable name="coordinate_sequence_notSwappedLatLongs" as="xs:string*">
+                          <xsl:for-each select="$coordinate_sequence">
+                              <xsl:variable name="postInt" select="position()" as="xs:integer"/>
+                              <xsl:if test="$postInt &lt; count($coordinate_sequence)">
+                                  <xsl:if test="($postInt mod 2) = 1">
+                                      <xsl:value-of select="concat(., ',', $coordinate_sequence[$postInt + 1])"/>
+                                      <!-- Swap below with above (uncomment below and comment above) if you need to swap lat long order (i.e. long lat instead)-->
+                                      <!--xsl:value-of select="concat($coordinate_sequence[$postInt + 1], ',', .)"/-->
+                                  </xsl:if>
+                              </xsl:if>
+                          </xsl:for-each>
+                      </xsl:variable>
+                      <xsl:if test="count($coordinate_sequence_notSwappedLatLongs) > 0">
+                          <spatial type="gmlKmlPolyCoords">
+                            <xsl:value-of select="string-join($coordinate_sequence_notSwappedLatLongs, ' ')"/>     
+                        </spatial>
+                      </xsl:if>
+                    </xsl:when>
+                  <xsl:otherwise>
+                      <spatial type="text">
+                          <xsl:value-of select='normalize-space(.)'/>  
+                      </spatial>
+                  </xsl:otherwise>
+              </xsl:choose>
           </coverage>
         </xsl:for-each>
     </xsl:template>
     
-    <xsl:template match="element[@name ='rights']" mode="collection_rights_rightsStatement">
-        <xsl:for-each select="element[@name='rightsholder']/element[@name='en']/field[@name='value']">
+    <xsl:template match="element[lower-case(@name) ='rightsholder']" mode="collection_rights">
+        <xsl:for-each select="element/field[@name='value']">
             <rights>
                 <rightsStatement>
                     <xsl:value-of select="concat('Rights holder: ', normalize-space(.))"/>
                 </rightsStatement>
             </rights>
         </xsl:for-each>
-        <xsl:for-each select="element[@name='statement']/element[@name='en']/field[@name='value']">
+    </xsl:template>
+    
+    <xsl:template match="element[@name ='rights']" mode="collection_rights">
+        <xsl:for-each select="element[lower-case(@name)='rightsholder']/element/field[@name='value']">
+            <rights>
+                <rightsStatement>
+                    <xsl:value-of select="concat('Rights holder: ', normalize-space(.))"/>
+                </rightsStatement>
+            </rights>
+        </xsl:for-each>
+        <xsl:for-each select="element[@name='statement']/element/field[@name='value']">
             <rights>
                 <rightsStatement>
                     <xsl:value-of select="normalize-space(.)"/>
                 </rightsStatement>
             </rights>
         </xsl:for-each>
+        
+        <xsl:for-each select="element[@name='uri']/element[(@name='*') or (@name='en')]/field[@name='value']">
+            <rights>
+                <rightsStatement rightsUri="{normalize-space(.)}"/>
+            </rights>
+            
+            <xsl:if test="string-length(murFunc:getLicenseTypeFromUri(normalize-space(.))) > 0">
+                <rights>
+                    <licence>
+                        <xsl:attribute name="type">
+                            <xsl:value-of select="murFunc:getLicenseTypeFromUri(normalize-space(.))"/>
+                        </xsl:attribute>
+                    </licence>
+                </rights>
+            </xsl:if>
+        </xsl:for-each>
     </xsl:template>
     
     <xsl:template match="element[@name ='accessRights']" mode="collection_rights_accessRights">
         <rights>
-            <accessRights type="{lower-case(normalize-space(element[@name ='en']/field[@name ='value']))}"/>
+            <accessRights type="{lower-case(normalize-space(element[@name ='en']/field[@name ='value']))}">
+                <xsl:value-of select="normalize-space(element[@name ='en']/field[@name ='value'])"/>
+            </accessRights>
         </rights>
     </xsl:template>
    
-    <xsl:template match="dc:rights" mode="collection_rights_rightsStatement">
-        <xsl:if test="contains(lower-case(.), 'open')">
-            <rights>
-                <accessRights type="open"/>
-            </rights>
-        </xsl:if>
+    <xsl:function name="murFunc:getLicenseTypeFromUri" xs:as="xs:string">
+        <xsl:param name="uri"/>
         
-        <xsl:variable name="currentValue" select="normalize-space(.)"/>
+        <xsl:variable name="currentValueHttpNotHttps" select="normalize-space((replace($uri, 'https', 'http')))"/>
         
-        <xsl:message select="concat('$currentValue: ', $currentValue)"/>
-        <xsl:message select="concat('$currentValue no number: ', replace($currentValue, '\d.\d', ''))"/>
+        <xsl:message select="concat('$currentValue: ', $currentValueHttpNotHttps)"/>
+        <xsl:message select="concat('$currentValue no number: ', replace($currentValueHttpNotHttps, '\d.\d', ''))"/>
         
         <xsl:variable name="customIdentifier_sequence" as="xs:string*">
             <xsl:for-each select="$licenseCodelist/custom:CT_CodelistCatalogue/custom:codelistItem/custom:CodeListDictionary[(@custom:id='LicenseCodeAustralia')]/custom:codeEntry/custom:CodeDefinition">
                 <xsl:message select="concat('remarks no {n}: ', normalize-space(replace(custom:remarks, '\{n\}', '')))"/>
-                <xsl:if test="contains(replace($currentValue, '\d.\d', ''), normalize-space(replace(custom:remarks, '\{n\}', '')))">
+                <xsl:if test="contains(replace($currentValueHttpNotHttps, '\d.\d', ''), normalize-space(replace(custom:remarks, '\{n\}', '')))">
                     <xsl:message select="'Match on remarks'"/>
                     <xsl:if test="string-length(custom:identifier) > 0">
                         <xsl:value-of select="custom:identifier"/>
@@ -319,7 +537,7 @@
             
             <xsl:for-each select="$licenseCodelist/custom:CT_CodelistCatalogue/custom:codelistItem/custom:CodeListDictionary[(@custom:id='LicenseCodeInternational')]/custom:codeEntry/custom:CodeDefinition">
                 <xsl:message select="concat('remarks no {n}: ', normalize-space(replace(custom:remarks, '\{n\}', '')))"/>
-                <xsl:if test="contains(replace($currentValue, '\d.\d', ''), normalize-space(replace(custom:remarks, '\{n\}', '')))">
+                <xsl:if test="contains(replace($currentValueHttpNotHttps, '\d.\d', ''), normalize-space(replace(custom:remarks, '\{n\}', '')))">
                     <xsl:message select="concat('Match on remarks :', custom:remarks) "/>
                     <xsl:if test="string-length(custom:identifier) > 0">
                         <xsl:value-of select="custom:identifier"/>
@@ -328,10 +546,10 @@
             </xsl:for-each>
             
             <xsl:for-each select="$licenseCodelist/custom:CT_CodelistCatalogue/custom:codelistItem/custom:CodeListDictionary[(@custom:id='LicenseCodeAustralia')]/custom:codeEntry/custom:CodeDefinition">
-                <xsl:message select="concat('current value no  -: ', translate($currentValue, ' ', '-'))"/>
-                <xsl:message select="concat('custom:identifier  -: ', normalize-space(custom:identifier))"/>
+                <xsl:message select="concat('current value no  -: ', translate($currentValueHttpNotHttps, ' ', '-'))"/>
+                <xsl:message select="concat('custom:identifier: ', normalize-space(custom:identifier))"/>
                 
-                <xsl:if test="contains(normalize-space(custom:identifier), translate($currentValue, ' ', '-'))">
+                <xsl:if test="contains(normalize-space(custom:identifier), translate($currentValueHttpNotHttps, ' ', '-'))">
                     <xsl:message select="concat('Match on identifier :', custom:identifier) "/>
                     <xsl:if test="string-length(custom:identifier) > 0">
                         <xsl:value-of select="custom:identifier"/>
@@ -340,10 +558,10 @@
             </xsl:for-each>
             
             <xsl:for-each select="$licenseCodelist/custom:CT_CodelistCatalogue/custom:codelistItem/custom:CodeListDictionary[(@custom:id='LicenseCodeInternational')]/custom:codeEntry/custom:CodeDefinition">
-                <xsl:message select="concat('current value no  -: ', translate($currentValue, ' ', '-'))"/>
+                <xsl:message select="concat('current value no  -: ', translate($currentValueHttpNotHttps, ' ', '-'))"/>
                 <xsl:message select="concat('custom:identifier: ', normalize-space(custom:identifier))"/>
                 
-                <xsl:if test="contains(normalize-space(custom:identifier), translate($currentValue, ' ', '-'))">
+                <xsl:if test="contains(normalize-space(custom:identifier), translate($currentValueHttpNotHttps, ' ', '-'))">
                     <xsl:message select="concat('Match on identifier :', custom:identifier) "/>
                     <xsl:if test="string-length(custom:identifier) > 0">
                         <xsl:value-of select="custom:identifier"/>
@@ -355,75 +573,77 @@
         
         <xsl:choose>
             <xsl:when test="count($customIdentifier_sequence) > 0">
-                <rights>
-                    <licence>
-                        <xsl:attribute name="type">
-                            <xsl:value-of select="$customIdentifier_sequence[1]"/>
-                        </xsl:attribute>
-                    </licence>
-                </rights>
+                <xsl:value-of select="$customIdentifier_sequence[1]"/>
             </xsl:when>
             <xsl:otherwise>
-                <rights>
-                    <rightsStatement>
-                        <xsl:value-of select="normalize-space(.)"/>
-                    </rightsStatement>
-                </rights>
+                <xsl:text></xsl:text>
             </xsl:otherwise>
         </xsl:choose>
         
+    </xsl:function>
+    
+    <xsl:template match="element[@name ='description']" mode="collection_description_full">
+        <xsl:for-each select="element[@name='abstract']/element/field[@name='value'][string-length(.) > 0]">
+            <description type="full">
+                <xsl:value-of select="normalize-space(.)"/>
+            </description>
+        </xsl:for-each>
+        <xsl:for-each select="element/field[@name='value'][string-length(.) > 0]">
+            <description type="full">
+                <xsl:value-of select="normalize-space(.)"/>
+            </description>
+        </xsl:for-each>
     </xsl:template>
     
-    <xsl:template match="dc:description" mode="collection_description_full">
-        <description type="full">
-            <xsl:value-of select="normalize-space(.)"/>
-        </description>
+    <xsl:template match="element[@name='publication']" mode="collection_description_notes_publicationTitle">
+        <xsl:if test="count(element/field[@name='value'][string-length(.) > 0]) > 0">
+            <description type="note">
+                <xsl:text>&lt;b&gt;Related Publications&lt;/b&gt;</xsl:text>
+                <xsl:for-each select="element/field[@name='value'][string-length(.) > 0]">
+                    <xsl:text>&lt;br/&gt;</xsl:text>
+                    <xsl:value-of select="normalize-space(.)"/>
+                </xsl:for-each>
+            </description>
+        </xsl:if>
     </xsl:template>
     
-    <xsl:template match="dc:date" mode="collection_dates_coverage">
-    <xsl:message select="concat('input: ', .)"/>
+    <xsl:template match="element[@name='fundingsourcenote']" mode="collection_description_notes_fundingSource">
+        <xsl:if test="count(element/field[@name='value'][string-length(.) > 0]) > 0">
+                <description type="note">
+                    <xsl:text>&lt;b&gt;Funding Source&lt;/b&gt;</xsl:text>
+                    <xsl:for-each select="element/field[@name='value'][string-length(.) > 0]">
+                        <xsl:text>&lt;br/&gt;</xsl:text>
+                        <xsl:value-of select="normalize-space(.)"/>
+                    </xsl:for-each>
+                </description>
+        </xsl:if>
+    </xsl:template>
+    
+    
+    
+    <xsl:template match="element[@name ='temporal']" mode="collection_dates_coverage">
         <coverage>
             <temporal>
-                <xsl:analyze-string select="translate(translate(., ']', ''), '[', '')" regex="[\d]+[?]*[-]*[\d]*">
-                    <xsl:matching-substring>
-                        <xsl:choose>
-                            <xsl:when test="contains(regex-group(0), '-')">
-                                <date type="dateFrom" dateFormat="W3CDTF">
-                                    <xsl:value-of select="substring-before(regex-group(0), '-')"/>
-                                    <xsl:message select="concat('from: ', substring-before(regex-group(0), '-'))"/>
-                                </date>
-                                <date type="dateTo" dateFormat="W3CDTF">
-                                    <xsl:value-of select="substring-after(regex-group(0), '-')"/>
-                                    <xsl:message select="concat('to: ', substring-after(regex-group(0), '-'))"/>
-                                </date>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <date type="dateFrom" dateFormat="W3CDTF">
-                                    <xsl:value-of select="regex-group(0)"/>
-                                    <xsl:message select="concat('match: ', regex-group(0))"/>
-                                </date> 
-                            </xsl:otherwise>
-                        </xsl:choose>
-                        
-                    </xsl:matching-substring>
-                </xsl:analyze-string>
+                <text>
+                    <xsl:value-of select="normalize-space(.)"/>
+                </text>
             </temporal>
         </coverage>
     </xsl:template>  
     
-    <xsl:template match="dc:source" mode="collection_citation_info">
+    <!--xsl:template match="dc:source" mode="collection_citation_info">
         <citationInfo>
            <fullCitation>
                 <xsl:value-of select="normalize-space(.)"/>
             </fullCitation>
         </citationInfo>
-    </xsl:template>  
+    </xsl:template-->  
              
      <xsl:template match="metadata" mode="party">
         
          <xsl:for-each select="element[@name ='dc']/element[@name ='contributor']/element[(@name ='author') or (@name ='publisher')]">
             
-             <xsl:for-each select="element[@name='en']/field[@name='value']">
+             <xsl:for-each select="element/field[@name='value']">
                 <xsl:variable name="name" select="normalize-space(.)"/>
                 
                 <xsl:if test="(string-length(.) > 0)">

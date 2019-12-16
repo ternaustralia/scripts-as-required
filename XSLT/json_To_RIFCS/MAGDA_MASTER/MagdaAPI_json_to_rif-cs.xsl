@@ -405,24 +405,64 @@
         </xsl:if>
         
         <xsl:variable name="coordinate_sequence" as="xs:string*">
-            <xsl:analyze-string select="text" regex="[\d\s,.-]">
+            <xsl:analyze-string select="text" regex="[\d.-]+">
                 <xsl:matching-substring>
                     <xsl:value-of select="regex-group(0)"/>
                 </xsl:matching-substring>
             </xsl:analyze-string>
         </xsl:variable>
         
-    
-        <xsl:if test="count($coordinate_sequence) > 0">
+        <xsl:variable name="coordinate_sequence_notSwappedLatLongs" as="xs:string*">
+            <xsl:for-each select="$coordinate_sequence">
+                <xsl:variable name="postInt" select="position()" as="xs:integer"/>
+                <xsl:if test="$postInt &lt; count($coordinate_sequence)">
+                    <xsl:if test="($postInt mod 2) = 1">
+                        <xsl:value-of select="concat(., ',', $coordinate_sequence[$postInt + 1])"/>
+                        <!-- Swap below with above (uncomment below and comment above) if you need to swap lat long order (i.e. long lat instead)-->
+                        <!--xsl:value-of select="concat($coordinate_sequence[$postInt + 1], ',', .)"/-->
+                    </xsl:if>
+                </xsl:if>
+            </xsl:for-each>
+        </xsl:variable>
+        
+        <xsl:if test="count($coordinate_sequence_notSwappedLatLongs) > 0">
             <coverage>
                 <spatial>
                     <xsl:attribute name="type">
                         <xsl:text>gmlKmlPolyCoords</xsl:text>
                     </xsl:attribute>
-                    <xsl:value-of select="string-join($coordinate_sequence, '')"/>
-                </spatial>
+                    <xsl:value-of select="string-join($coordinate_sequence_notSwappedLatLongs, ' ')"/>
+                 </spatial>
             </coverage>
         </xsl:if>
+        
+    
+        <!--xsl:if test="count($coordinate_sequence) > 0">
+            <coverage>
+                <spatial>
+                    <xsl:attribute name="type">
+                        <xsl:text>gmlKmlPolyCoords</xsl:text>
+                    </xsl:attribute>
+                    <xsl:for-each select="$coordinate_sequence">
+                        <xsl:variable name="postfixSeparator">
+                            <xsl:choose>
+                                <xsl:when test="position() = last()">
+                                    <xsl:text></xsl:text>
+                                </xsl:when>
+                                <xsl:when test="(position() mod 2) = 0">
+                                    <xsl:text> </xsl:text>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:text>,</xsl:text>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        
+                        </xsl:variable>
+                        <xsl:value-of select="concat(.,$postfixSeparator)"/>
+                    </xsl:for-each>
+                 </spatial>
+            </coverage>
+        </xsl:if-->
         
         
     </xsl:template>
