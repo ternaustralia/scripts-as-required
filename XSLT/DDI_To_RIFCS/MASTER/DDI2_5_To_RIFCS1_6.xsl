@@ -124,7 +124,6 @@
     </xsl:template>
     
     <xsl:template match="*:topcClas" mode="registryObject_subject">
-        <xsl:message select="'WORK!'"/>
         <subject>
             <xsl:choose>
                 <xsl:when test="string-length(@vocab) > 0">
@@ -444,7 +443,8 @@
                 <xsl:apply-templates select="*:stdyDscr/*:citation/*:titlStmt/*:IDNo[contains(lower-case(@agency), 'doi') and (string-length(.) > 0)]" mode="registryObject_citation_identifier_doi"/>
                 <xsl:apply-templates select="*:stdyDscr/*:citation/*:titlStmt/*:IDNo[not(contains(lower-case(@agency), 'doi')) and (string-length(.) > 0)]" mode="registryObject_citation_identifier_not_doi"/>
                 <xsl:apply-templates select="*:stdyDscr/*:citation/*:rspStmt/*:AuthEnty[(string-length(.) > 0)]" mode="registryObject_citation_contributor"/>
-                <xsl:apply-templates select="*:stdyDscr/*:citation/*:prodStmt/*:producer[(string-length(.) > 0)]" mode="registryObject_citation_publisher"/>
+                <!--xsl:apply-templates select="*:stdyDscr/*:citation/*:prodStmt/*:producer[(string-length(.) > 0)]" mode="registryObject_citation_publisher"/-->
+                <xsl:apply-templates select="*:stdyDscr/*:citation/*:distStmt/*:distrbtr[(string-length(.) > 0)]" mode="registryObject_citation_publisher"/>
                 <xsl:apply-templates select="*:stdyDscr/*:citation/*:titlStmt/*:titl[(string-length(.) > 0)]" mode="registryObject_citation_title"/>
                 <xsl:apply-templates select="*:docDscr/*:citation/*:verStmt/*:version[(string-length(.) > 0)]" mode="registryObject_citation_version"/>
                 <xsl:apply-templates select="*:stdyDscr/*:citation/*:distStmt/*:distDate[(string-length(.) > 0)]" mode="registryObject_citation_date_published"/>
@@ -507,7 +507,7 @@
         </date>
     </xsl:template>
     
-    <xsl:template match="*:producer" mode="registryObject_citation_publisher">
+    <!--xsl:template match="*:producer" mode="registryObject_citation_publisher">
         <publisher>
             <xsl:choose>
                 <xsl:when test="string-length(@affiliation) > 0">
@@ -517,6 +517,12 @@
                     <xsl:value-of select="normalize-space(.)"/>
                 </xsl:otherwise>
             </xsl:choose>
+        </publisher>
+    </xsl:template-->
+    
+    <xsl:template match="*:distrbtr" mode="registryObject_citation_publisher">
+        <publisher>
+            <xsl:value-of select="normalize-space(.)"/>
         </publisher>
     </xsl:template>
     

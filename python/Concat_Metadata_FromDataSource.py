@@ -75,8 +75,8 @@ def retrieveXML(count, filePath, uri):
       print("Unable to open file %s - exception: %s" % (filePath, e))
       sys.exit(-1)
   
-  outFile.write(doc.toprettyxml(indent="  ",encoding='utf-8'))
-  #outFile.write(doc.toprettyxml(indent="  "))
+  #outFile.write(doc.toprettyxml(indent="  ", encoding="utf-8"))
+  outFile.write(doc.toprettyxml(indent="  "))
   outFile.close()
   
   resumptionTokenList = doc.getElementsByTagName('resumptionToken')

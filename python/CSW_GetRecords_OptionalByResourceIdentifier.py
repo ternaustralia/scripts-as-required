@@ -1,4 +1,4 @@
-import urllib2
+import urllib
 import sys
 import re
 import Test_OGC_CSW_Functions
@@ -28,11 +28,17 @@ def main():
         assert((identifierList.__class__.__name__) == 'list')
 
 
-
         for identifier in identifierList:
             print(identifier)
 
             paramDict = dict({"name" : "ResourceIdentifier", "value" : identifier})
+            print("type(paramDict)")
+            print(type(paramDict))
+
+            for key, value in paramDict.items():
+                print(key)
+                print(value)
+
             paramList.append(paramDict)
 
         conditionDict = dict({"Or" : paramList})

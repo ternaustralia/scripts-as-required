@@ -47,8 +47,12 @@
         <xsl:message select="concat('name(.): ', name(oai:metadata/metadata))"/>
            <xsl:apply-templates select="oai:metadata/metadata" mode="collection"/>
             <!--  xsl:apply-templates select="oai:metadata/metadata/dc:funding" mode="funding_party"/-->
-            <xsl:apply-templates select="oai:metadata/metadata" mode="party"/> 
-     </xsl:template>
+        <xsl:apply-templates select="oai:metadata/metadata/element[@name ='dc']/element[@name ='contributor']/element[(@name ='author') or (@name ='publisher')]" mode="party_person"/> 
+        <xsl:apply-templates select="oai:metadata/metadata/element[@name ='local']/element[@name ='datasetcontact']/element[@name ='name']" mode="party_person"/> 
+        <xsl:apply-templates select="oai:metadata/metadata/element[@name ='local']/element[@name ='datasetcustodian']/element[@name ='name']" mode="party_person"/> 
+        
+        <xsl:apply-templates select="oai:metadata/metadata/element[@name ='dc']/element[@name ='contributor']/element[@name ='corporate']" mode="party_group"/> 
+    </xsl:template>
     
     <xsl:template match="metadata" mode="collection">
         <xsl:variable name="class" select="'collection'"/>
@@ -116,6 +120,14 @@
                 <!-- xsl:apply-templates select="dc:identifier.orcid" mode="collection_relatedInfo"/ -->
                 
                 <xsl:apply-templates select="element[@name ='dc']/element[@name ='contributor']/element[@name ='author'][string-length(.) > 0]" mode="collection_relatedObject"/>
+                
+                <xsl:apply-templates select="element[@name ='local']/element[@name ='datasetcontact']/element[@name ='name'][string-length(.) > 0]" mode="collection_relatedObject_isOwnedBy"/>
+                
+                <xsl:apply-templates select="element[@name ='local']/element[@name ='datasetcontact']/element[@name ='email'][string-length(.) > 0]" mode="collection_contact_email"/>
+                
+                <xsl:apply-templates select="element[@name ='local']/element[@name ='datasetcustodian']/element[@name ='name'][string-length(.) > 0]" mode="collection_relatedObject_isManagedBy"/>
+                
+                <xsl:apply-templates select="element[@name ='dc']/element[@name ='contributor']/element[@name ='corporate'][string-length(.) > 0]" mode="collection_relatedObject"/> 
                
                 <xsl:apply-templates select="element[@name ='dc']/element[@name ='publisher'][string-length(.) > 0]" mode="collection_relatedObject"/>
                 
@@ -188,6 +200,16 @@
                         </xsl:choose>
                     </contributor>
                 </xsl:for-each>
+                
+                
+                <xsl:for-each select="element[@name ='dc']/element[@name ='contributor']/element[@name ='corporate']/element/field[@name='value'][string-length(.) > 0]">
+                    <contributor>
+                        <namePart type="family">
+                            <xsl:value-of select="."/>
+                        </namePart>
+                    </contributor>
+                </xsl:for-each>
+                
                 
                 <xsl:for-each select="element[@name ='dc']/element[@name ='title'][string-length(.) > 0]">
                     <title>
@@ -266,6 +288,22 @@
         <identifier type="doi">
             <xsl:value-of select="normalize-space(.)"/>
         </identifier>    
+    </xsl:template>
+    
+    
+    
+    <xsl:template match="element" mode="collection_contact_email">
+        <xsl:for-each select="element/field[@name='value']">
+            <location>
+                <address>
+                    <electronic type="email">
+                        <value>
+                            <xsl:value-of select="normalize-space(.)"/>
+                        </value>
+                    </electronic>
+                </address>
+            </location> 
+        </xsl:for-each>
     </xsl:template>
     
     <xsl:template match="element[@name='doi']" mode="collection_location_doi">
@@ -360,7 +398,7 @@
         </xsl:for-each>
     </xsl:template>
     
-    <xsl:template match="element[@name ='author']" mode="collection_relatedObject">
+    <xsl:template match="element" mode="collection_relatedObject">
         <xsl:for-each select="element/field[@name='value']">
              <relatedObject>
                  <key>
@@ -368,6 +406,28 @@
                  </key>
                  <relation type="hasCollector"/>
              </relatedObject>
+        </xsl:for-each>
+    </xsl:template>
+    
+    <xsl:template match="element" mode="collection_relatedObject_isOwnedBy">
+        <xsl:for-each select="element/field[@name='value']">
+            <relatedObject>
+                <key>
+                    <xsl:value-of select="murFunc:formatKey(murFunc:formatName(.))"/> 
+                </key>
+                <relation type="isOwnedBy"/>
+            </relatedObject>
+        </xsl:for-each>
+    </xsl:template>
+    
+    <xsl:template match="element" mode="collection_relatedObject_isManagedBy">
+        <xsl:for-each select="element/field[@name='value']">
+            <relatedObject>
+                <key>
+                    <xsl:value-of select="murFunc:formatKey(murFunc:formatName(.))"/> 
+                </key>
+                <relation type="isManagedBy"/>
+            </relatedObject>
         </xsl:for-each>
     </xsl:template>
     
@@ -639,9 +699,9 @@
         </citationInfo>
     </xsl:template-->  
              
-     <xsl:template match="metadata" mode="party">
+     <xsl:template match="element" mode="party_person">
         
-         <xsl:for-each select="element[@name ='dc']/element[@name ='contributor']/element[(@name ='author') or (@name ='publisher')]">
+         <!--xsl:for-each select="element[@name ='dc']/element[@name ='contributor']/element[(@name ='author') or (@name ='publisher')]"-->
             
              <xsl:for-each select="element/field[@name='value']">
                 <xsl:variable name="name" select="normalize-space(.)"/>
@@ -670,14 +730,47 @@
                        </xsl:if>
                     </xsl:if>
                 </xsl:for-each>
-         </xsl:for-each>
+         <!--/xsl:for-each-->
         </xsl:template>
+    
+    <xsl:template match="element" mode="party_group">
+        
+        <xsl:for-each select="element/field[@name='value']">
+            <xsl:variable name="name" select="normalize-space(.)"/>
+            
+            <xsl:if test="(string-length(.) > 0)">
+                
+                <xsl:if test="string-length(normalize-space(.)) > 0">
+                    <registryObject group="{$global_group}">
+                        <key>
+                            <xsl:value-of select="murFunc:formatKey(murFunc:formatName(.))"/> 
+                        </key>
+                        <originatingSource>
+                            <xsl:value-of select="$global_originatingSource"/>
+                        </originatingSource>
+                        
+                        <party>
+                            <xsl:attribute name="type" select="'group'"/>
+                            
+                            <name type="primary">
+                                <namePart>
+                                    <xsl:value-of select="murFunc:formatName(normalize-space(.))"/>
+                                </namePart>   
+                            </name>
+                        </party>
+                    </registryObject>
+                </xsl:if>
+            </xsl:if>
+        </xsl:for-each>
+    </xsl:template>
                    
     <xsl:function name="murFunc:formatName">
         <xsl:param name="name"/>
         
+        <xsl:message select="concat('formatName input: ', $name)"/>
+        
         <xsl:variable name="namePart_sequence" as="xs:string*">
-            <xsl:analyze-string select="$name" regex="[A-Za-z()-]+">
+            <xsl:analyze-string select="$name" regex="[A-Za-zÀ-ÿ()-]+">
                 <xsl:matching-substring>
                     <xsl:if test="regex-group(0) != '-'">
                         <xsl:value-of select="regex-group(0)"/>

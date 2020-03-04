@@ -237,7 +237,7 @@
            
        <!-- extract name part from url - may be just an underscore, so we will test this later with length-->
       <xsl:variable name="nameFromURL">
-          <xsl:analyze-string select="substring-after(@rdf:resource, 'authors/')" regex="^[a-zA-Z-]*[_+][a-zA-Z-]*">
+          <xsl:analyze-string select="substring-after(@rdf:resource, 'authors/')" regex="^[a-zA-ZÀ-ÿ-]*[_+][a-zA-ZÀ-ÿ-]*">
               <xsl:matching-substring>
                   <xsl:value-of select="regex-group(0)"/>
               </xsl:matching-substring>
@@ -304,7 +304,7 @@
         <xsl:choose>
             <xsl:when test="contains(upper-case(.), 'CC BY')">
                 <xsl:variable name="ccNoNumber" as="xs:string*">
-                    <xsl:analyze-string select="." regex="[A-Za-z\s-]+">
+                    <xsl:analyze-string select="." regex="[A-Za-zÀ-ÿ\s-]+">
                         <xsl:matching-substring>
                             <xsl:if test="string-length(regex-group(0)) > 0">
                                 <xsl:value-of select="regex-group(0)"/>

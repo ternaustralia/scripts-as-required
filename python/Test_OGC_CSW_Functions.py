@@ -1,5 +1,4 @@
-import urllib3.contrib.pyopenssl
-urllib3.contrib.pyopenssl.inject_into_urllib3()
+import urllib3
 
 import sys
 import re
@@ -73,11 +72,16 @@ def constructQuery(conditionDict):
 
     query = ""
 
-    for key, paramList in conditionDict.iteritems():
+    for key, paramList in conditionDict.items():
         if(len(conditionDict) > 1):
             query += str.format('<ogc:{0}>', key)
-        for params in paramList:
-            query += str.format(queryPropertyTemplate, params["name"], params["value"])
+        for paramDict in paramList:
+            print(type(paramDict))
+            for param in paramDict.items():
+                print(type(param))
+                print(param)
+            print(paramDict["name"])
+            query += str.format(queryPropertyTemplate, paramDict["name"], paramDict["value"])
 
         if (len(conditionDict) > 1):
             query += str.format('</ogc:{0}>', key)
@@ -89,7 +93,7 @@ def dictFormatted(conditionDict):
 
     formatted = ""
 
-    for key, paramList in conditionDict.iteritems():
+    for key, paramList in conditionDict.items():
         formatted += str.format('{0}_', key)
         for params in paramList:
             formatted += str.format('{0}_{1}_', params["name"], params["value"])
@@ -107,11 +111,11 @@ def callCSW(cswUrl, conditionDict):
 
         query = constructQuery(conditionDict)
         if(query == None):
-            print "Unable to construct query"
+            print("Unable to construct query")
             return
 
         fullQuery = queryTemplate.format(startPosition, query)
-        print fullQuery
+        print(fullQuery)
         conditionsOkForFileName = re.sub('[/:]', '_', dictFormatted(conditionDict))
         urlOkForFileName = re.sub('[/:]', '_', cswUrl)
         fileName = str.format('{0}{1}{2}', urlOkForFileName, conditionsOkForFileName, 'records.xml')
@@ -155,16 +159,17 @@ def callCSW(cswUrl, conditionDict):
         print("Unable to open file %s - exception: %s" % (fileName, e))
         sys.exit(-1)
 
-    outFile.write(doc.toxml(encoding='utf-8'))
+    #outFile.write(doc.toxml(encoding='utf-8'))
+    outFile.write(doc.toxml())
     outFile.close()
 
     searchResults = doc.getElementsByTagName('csw:SearchResults')
     assert (searchResults.length <= 1)
     print("Search Results length: %d" % searchResults.length)
     if (searchResults.length == 1):
-        print ("numberOfRecordsMatched: %d" % int(searchResults.item(0).getAttribute('numberOfRecordsMatched')))
+        print("numberOfRecordsMatched: %d" % int(searchResults.item(0).getAttribute('numberOfRecordsMatched')))
 
-    print 'Results written to ' + os.getcwd() + '/' + str(fileName)
+    print('Results written to ' + os.getcwd() + '/' + str(fileName))
 
 
 
