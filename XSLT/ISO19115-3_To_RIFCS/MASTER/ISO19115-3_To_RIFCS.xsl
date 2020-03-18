@@ -167,6 +167,7 @@
                     <xsl:choose>
                         <xsl:when test="contains(lower-case(cit:linkage), 'thredds') or contains(lower-case(cit:linkage), '.nc')">
                             <!-- Not sure what to do with many thredds and .nc links just yet - download link maybe later -->
+                            <xsl:apply-templates select="." mode="registryObject_relatedInfo_dataDownload"/>
                         </xsl:when>
                         <xsl:when test="(cit:function/cit:CI_OnLineFunctionCode/@codeListValue = 'download') or (cit:protocol = 'WWW:DOWNLOAD-1.0-http--download')">
                             <xsl:apply-templates select="." mode="registryObject_relatedInfo_dataDownload"/>
@@ -308,7 +309,7 @@
         <xsl:apply-templates
             select="mri:resourceConstraints/mco:MD_LegalConstraints[(string-length(mco:reference/cit:CI_Citation/cit:title) > 0) and (mco:useConstraints/mco:MD_RestrictionCode/@codeListValue = 'license')]"
             mode="registryObject_rights_license_citation"/>
-        
+
         <xsl:apply-templates
             select="mri:resourceConstraints/mco:MD_LegalConstraints[(string-length(mco:reference/cit:CI_Citation/cit:title) > 0) and (mco:accessConstraints/mco:MD_RestrictionCode/@codeListValue = 'license') and (count(mco:otherConstraints[string-length(.) > 0]) > 0)]"
             mode="registryObject_rights_license_citation_access"/>
@@ -752,6 +753,9 @@
                     <xsl:when test="$identifierLink = 'https://vocabs.ands.org.au/viewById/238'">
                         <xsl:text>gcmd</xsl:text>
                     </xsl:when>
+                    <xsl:when test="contains($identifierLink, 'https://vocabs.ands.org.au/viewById/')">
+                        <xsl:value-of select="following-sibling::mri:thesaurusName/cit:CI_Citation/cit:identifier/mcc:MD_Identifier/mcc:code/gcx:Anchor"/>
+                    </xsl:when>
                     <xsl:when test="($uuid = 'data_group') and (gcx:Anchor/@xlink:title ='Parameter')">
                         <xsl:text>data-group</xsl:text>
                     </xsl:when>
@@ -778,7 +782,6 @@
                     <xsl:value-of select="normalize-space(concat(., ' ('))"></xsl:value-of>
                     <xsl:value-of select="(following-sibling::*)[gcx:Anchor/@xlink:title = 'UOM']"></xsl:value-of>
                     <xsl:text>) </xsl:text>
-                    <xsl:value-of select="(following-sibling::*)[gcx:Anchor/@xlink:title = 'Platform']"></xsl:value-of>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:value-of select="normalize-space(xlink:title)"></xsl:value-of>
@@ -1054,7 +1057,7 @@
                 <xsl:if
                     test="string-length(normalize-space(cit:name)) > 0">
                     <title>
-                        <xsl:value-of select="concat('(', cit:name, ')')"/>
+                        <xsl:value-of select="cit:name"/>
                     </title>
                 </xsl:if>
             </xsl:otherwise>
@@ -1477,12 +1480,12 @@
                              </xsl:for-each>
                         </xsl:when>
                         <xsl:otherwise>
-                            <!--  no individual position name, so use this address for this organisation -->
-                            <xsl:apply-templates select="cit:contactInfo/cit:CI_Contact/cit:address/cit:CI_Address[count(*) > 0]"/>
                             <xsl:apply-templates select="cit:contactInfo/cit:CI_Contact/cit:address/cit:CI_Address/cit:electronicMailAddress[string-length(.) > 0]"/>
-                            <xsl:apply-templates select="cit:contactInfo/cit:CI_Contact/cit:phone/cit:CI_Telephone[count(*) > 0]"/>
                         </xsl:otherwise>
-                   </xsl:choose>
+                    </xsl:choose>
+                    <!--  no individual position name, so use this address for this organisation -->
+                    <xsl:apply-templates select="cit:contactInfo/cit:CI_Contact/cit:address/cit:CI_Address[count(*) > 0]"/>
+                    <xsl:apply-templates select="cit:contactInfo/cit:CI_Contact/cit:phone/cit:CI_Telephone[count(*) > 0]"/>
 
                 </party>
         </registryObject>
