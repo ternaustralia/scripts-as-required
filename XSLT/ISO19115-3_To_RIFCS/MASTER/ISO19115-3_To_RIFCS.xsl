@@ -196,6 +196,9 @@
                 <xsl:choose>
                     <xsl:when test="string-length(mdb:metadataLinkage/cit:CI_OnlineResource
                         [contains(lower-case(cit:description), 'point-of-truth metadata')]/cit:linkage) > 0">
+                        <xsl:apply-templates 
+                            select="mdb:metadataLinkage/cit:CI_OnlineResource[contains(lower-case(cit:description), 'point-of-truth metadata')]/cit:linkage" 
+                            mode="registryObject_identifier_metadata_URL"/>
                         <xsl:apply-templates
                             select="mdb:metadataLinkage/cit:CI_OnlineResource[contains(lower-case(cit:description), 'point-of-truth metadata')]/cit:linkage"
                             mode="registryObject_location_metadata_URL"/>
@@ -218,13 +221,13 @@
                     select="mdb:identificationInfo/*/mri:credit[string-length(.) > 0]"
                     mode="registryObject_description_notes"/>
 
-                <xsl:apply-templates select="mdb:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="registryObject">
-                    <xsl:with-param name="registryObjectTypeSubType_sequence" select="$registryObjectTypeSubType_sequence"/>
-                </xsl:apply-templates>
-
                 <xsl:apply-templates
                     select="mdb:identificationInfo/*/mri:purpose[string-length(.) > 0]"
                     mode="registryObject_description_notes"/>
+
+                <xsl:apply-templates select="mdb:identificationInfo/*[contains(lower-case(name()),'identification')]" mode="registryObject">
+                    <xsl:with-param name="registryObjectTypeSubType_sequence" select="$registryObjectTypeSubType_sequence"/>
+                </xsl:apply-templates>
 
                 <xsl:apply-templates
                     select="mdb:resourceLineage/mrl:LI_Lineage/mrl:processStep/mrl:LE_ProcessStep/mrl:description[string-length(.) > 0]"
@@ -437,6 +440,12 @@
                 </electronic>
             </address>
         </location>
+    </xsl:template>
+
+    <xsl:template match="cit:linkage" mode="registryObject_identifier_metadata_URL">
+        <identifier type="uri">
+            <xsl:value-of select="."/>    
+        </identifier>
     </xsl:template>
 
     <xsl:template match="mcc:code" mode="registryObject_location_PID">
