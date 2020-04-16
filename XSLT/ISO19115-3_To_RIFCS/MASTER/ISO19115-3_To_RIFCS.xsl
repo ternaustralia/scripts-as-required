@@ -165,11 +165,20 @@
                 <xsl:for-each select=".//mrd:MD_DigitalTransferOptions/mrd:onLine/cit:CI_OnlineResource">
                     <!-- Test for service (then call relatedService but only if current registry object is a collection); otherwise, handle as non service for all objects -->
                     <xsl:choose>
-                        <xsl:when test="contains(lower-case(cit:linkage), 'thredds') or contains(lower-case(cit:linkage), '.nc')">
-                            <!-- Not sure what to do with many thredds and .nc links just yet - download link maybe later -->
+                        <!-- new logic comparable to GA -->
+                        <xsl:when test="(cit:protocol = 'WWW:LINK-1.0-http--link' and cit:function/cit:CI_OnLineFunctionCode/@codeListValue = 'download')">
                             <xsl:apply-templates select="." mode="registryObject_relatedInfo_dataDownload"/>
                         </xsl:when>
-                        <xsl:when test="(cit:function/cit:CI_OnLineFunctionCode/@codeListValue = 'download') or (cit:protocol = 'WWW:DOWNLOAD-1.0-http--download')">
+                        <xsl:when test="(cit:protocol = 'WWW:LINK-1.0-http--opendap' and cit:function/cit:CI_OnLineFunctionCode/@codeListValue = 'fileAccess')">
+                            <xsl:apply-templates select="." mode="registryObject_relatedInfo_service" /> <!-- opendap catalog page for dataset - is a <service type='OPeNDAP'> - relation: hasValueAddedBy-->
+                        </xsl:when>
+                        <xsl:when test="(cit:protocol = 'WWW:LINK-1.0-http--link' and cit:function/cit:CI_OnLineFunctionCode/@codeListValue = 'information')">
+                            <xsl:apply-templates select="." mode="registryObject_relatedInfo_service"/> <!-- THREDDS catalog page for dataset - is a <service type='THREDDS' - relation hasValueAddedBy> -->
+                        </xsl:when>
+                        <xsl:when test="(cit:protocol = 'WWW:LINK-1.0-http--link' and cit:function/cit:CI_OnLineFunctionCode/@codeListValue = 'fileAccess')">
+                            <xsl:apply-templates select="." mode="registryObject_relatedInfo_service"/> <!-- Access point for one or more files - file access - relation isAvailableThrough> -->
+                        </xsl:when>
+                        <xsl:when test="(cit:protocol = 'WWW:DOWNLOAD-1.0-http--download')">
                             <xsl:apply-templates select="." mode="registryObject_relatedInfo_dataDownload"/>
                         </xsl:when>
                         <xsl:when test="(cit:protocol = 'WWW:LINK-1.0-http--opendap')">
@@ -185,6 +194,12 @@
                         </xsl:when>
                         <xsl:when test="not(contains(lower-case(cit:description), 'point-of-truth'))">
                             <xsl:apply-templates select="." mode="registryObject_relatedInfo_nonService"/>
+                        </xsl:when>
+                        <xsl:when test="(cit:function/cit:CI_OnLineFunctionCode/@codeListValue = 'download')">
+                            <xsl:apply-templates select="." mode="registryObject_relatedInfo_dataDownload"/>
+                        </xsl:when>
+                        <xsl:when test="contains(lower-case(cit:linkage), 'thredds') or contains(lower-case(cit:linkage), '.nc')">
+                            <!-- Not sure what to do with many thredds and .nc links just yet - download link maybe later -->
                         </xsl:when>
                     </xsl:choose>
                 </xsl:for-each>
@@ -754,6 +769,12 @@
 
     <xsl:template match="mrl:description" mode="registryObject_relatedInfo_reuseInformation">
         <relatedInfo type="reuseInformation">
+            <identifier>
+                <xsl:attribute name="type">
+                    <xsl:value-of select="../mrl:reference/cit:CI_Citation/cit:title/gcx:Anchor/@xlink:role"></xsl:value-of>
+                </xsl:attribute>
+                <xsl:value-of select="../mrl:reference/cit:CI_Citation/cit:title/gcx:Anchor/@xlink:href"></xsl:value-of>
+            </identifier>
             <title>
                 <xsl:value-of select="../mrl:reference/cit:CI_Citation/cit:title"></xsl:value-of>
             </title>
@@ -765,6 +786,12 @@
 
     <xsl:template match="mdq:standaloneQualityReportDetails" mode="registryObject_relatedInfo_dataQuality">
         <relatedInfo type="dataQualityInformation">
+            <identifier>
+                <xsl:attribute name="type">
+                    <xsl:value-of select="../mrl:reference/cit:CI_Citation/cit:title/gcx:Anchor/@xlink:role"></xsl:value-of>
+                </xsl:attribute>
+                <xsl:value-of select="../mrl:reference/cit:CI_Citation/cit:title/gcx:Anchor/@xlink:href"></xsl:value-of>
+            </identifier>
             <title>
                 <xsl:value-of select="."></xsl:value-of>
             </title>
@@ -902,7 +929,7 @@
             </relatedObject>
     </xsl:template>
 
-  <xsl:template match="cit:CI_OnlineResource" mode="registryObject_relatedInfo_service">
+    <xsl:template match="cit:CI_OnlineResource" mode="registryObject_relatedInfo_service">
 
         <xsl:variable name="identifierValue" select="normalize-space(cit:linkage)"/>
 
@@ -1191,6 +1218,7 @@
                         <xsl:choose>
                                 <xsl:when
                                     test="../../../../mdb:metadataStandard/cit:CI_Citation/cit:identifier/mcc:MD_Identifier/mcc:codeSpace = 'http://dx.doi.org'">
+                                    <!-- This new section will be removed when the SHARED xml is updated and all records in geonetwork have the correct DOI properties set WK20200416 -->
                                     <xsl:variable name="identifier" select="../../../../mdb:metadataStandard/cit:CI_Citation/cit:identifier/mcc:MD_Identifier/mcc:code"/>
                                     <xsl:attribute name="type" select="'doi'"/>
                                     <xsl:value-of select="normalize-space(replace($identifier,'doi:', ''))"/>

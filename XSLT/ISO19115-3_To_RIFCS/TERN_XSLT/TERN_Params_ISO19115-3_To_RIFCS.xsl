@@ -197,7 +197,7 @@
         <xsl:apply-templates select="cit:contactInfo/cit:CI_Contact/cit:onlineResource/cit:CI_OnlineResource"/>
         <xsl:apply-templates select="cit:contactInfo/cit:CI_Contact/cit:onlineResource/cit:CI_OnlineResource[contains(lower-case(.), 'abn')]" mode="ABN"/>
 
-        <identifier>
+        <identifier> <!-- extra elements added compared to party_group template -->
           <xsl:attribute name="type">
             <xsl:value-of select="cit:name/gcx:Anchor/@xlink:role"/>
           </xsl:attribute>
@@ -217,7 +217,7 @@
                     ancestor::mdb:MD_Metadata/mdb:identificationInfo/*/mri:citation/cit:CI_Citation/cit:citedResponsibleParty/cit:CI_Responsibility/cit:party/cit:CI_Organisation/cit:name[string-length(normalize-space(gcx:Anchor/@xlink:href)) > 0 and 
 normalize-space(gcx:Anchor/@xlink:href) = $groupUri] |
 ancestor::mdb:MD_Metadata/mdb:identificationInfo/*/mri:pointOfContact/cit:CI_Responsibility/cit:party/cit:CI_Organisation/cit:name[string-length(normalize-space(gcx:Anchor/@xlink:href)) > 0 and 
-normalize-space(gcx:Anchor/@xlink:href) = $groupUri]">
+normalize-space(gcx:Anchor/@xlink:href) = $groupUri]"> <!-- extra elements added compared to party_group template -->
           <!-- ../../../../cit:citedResponsibleParty/cit:CI_Responsibility/cit:party/cit:CI_Organisation/cit:name -->
           <xsl:choose>
             <xsl:when test="(count(../cit:individual/cit:CI_Individual) > 0)">
@@ -249,8 +249,6 @@ normalize-space(gcx:Anchor/@xlink:href) = $groupUri]">
             </xsl:otherwise>
           </xsl:choose>
         </xsl:for-each>
-
-
         <!--  no individual position name, so use this address for this organisation -->
         <xsl:apply-templates select="cit:contactInfo/cit:CI_Contact/cit:address/cit:CI_Address[count(*) > 0]"/>
         <xsl:apply-templates select="cit:contactInfo/cit:CI_Contact/cit:phone/cit:CI_Telephone[count(*) > 0]"/>
@@ -258,4 +256,41 @@ normalize-space(gcx:Anchor/@xlink:href) = $groupUri]">
       </party>
     </registryObject>
   </xsl:template>
+
+  <xsl:template match="cit:CI_OnlineResource" mode="registryObject_relatedInfo_service">
+        <xsl:variable name="identifierValue" select="normalize-space(cit:linkage)"/>
+
+        <relatedInfo>
+            <xsl:attribute name="type" select="'service'"/>
+
+            <xsl:apply-templates select="." mode="relatedInfo_all"/>
+
+            <relation>
+                <xsl:attribute name="type">
+                    <xsl:choose>
+                      <xsl:when test="(cit:protocol = 'WWW:LINK-1.0-http--opendap' and cit:function/cit:CI_OnLineFunctionCode/@codeListValue = 'fileAccess')">
+                        <xsl:text>hasValueAddedBy</xsl:text>
+                      </xsl:when>
+                      <xsl:when test="(cit:protocol = 'WWW:LINK-1.0-http--link' and cit:function/cit:CI_OnLineFunctionCode/@codeListValue = 'information')">
+                        <xsl:text>hasValueAddedBy</xsl:text>
+                      </xsl:when>
+                      <xsl:when test="(cit:protocol = 'WWW:LINK-1.0-http--link' and cit:function/cit:CI_OnLineFunctionCode/@codeListValue = 'fileAccess')">
+                        <xsl:text>isAvailableThrough</xsl:text>
+                      </xsl:when>
+                      <xsl:otherwise>
+                        <xsl:text>supports</xsl:text>
+                      </xsl:otherwise>
+                    </xsl:choose>
+                  </xsl:attribute>
+                <xsl:if test="(contains($identifierValue, '?')) or (contains($identifierValue, '.nc'))">
+                    <url>
+                        <xsl:value-of select="$identifierValue"/>
+                    </url>
+                </xsl:if>
+            </relation>
+
+
+        </relatedInfo>
+
+    </xsl:template>
 </xsl:stylesheet>
